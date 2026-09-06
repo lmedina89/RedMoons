@@ -1,0 +1,10 @@
+{
+  "name": "hell-rpg-ashfall-foundation",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "node tests/static-server.mjs",
+    "check": "node tests/validate-project.mjs"
+  }
+}

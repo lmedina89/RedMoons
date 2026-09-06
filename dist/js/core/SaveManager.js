@@ -1,0 +1,82 @@
+import { SAVE_KEY, SAVE_VERSION, WORLD_HEIGHT, WORLD_WIDTH } from '../config.js';
+import { createDefaultState } from './GameState.js';
+import { ITEM_DEFS } from '../data/items.js';
+
+const plainObject = value => value && typeof value === 'object' && !Array.isArray(value);
+const finite = value => Number.isFinite(value);
+
+export class SaveManager {
+  load() {
+    const raw = localStorage.getItem(SAVE_KEY);
+    if (!raw) return createDefaultState();
+    try {
+      const parsed = JSON.parse(raw);
+      return this.validate(parsed);
+    } catch (error) {
+      try { localStorage.setItem(`${SAVE_KEY}.corrupt.${Date.now()}`, raw); } catch (_) { /* storage may be full */ }
+      console.warn('[Ashfall] Invalid save isolated; starting safely.', error);
+      return createDefaultState();
+    }
+  }
+
+  validate(value) {
+    if (!plainObject(value) || value.saveVersion !== SAVE_VERSION) throw new Error('Unsupported save schema');
+    const base = createDefaultState();
+    if (!plainObject(value.player) || !plainObject(value.player.stats)) throw new Error('Missing player state');
+    if (!Array.isArray(value.inventory) || !plainObject(value.equipment) || !plainObject(value.quests)) throw new Error('Invalid collections');
+
+    const state = structuredClone(base);
+    state.player.level = this.number(value.player.level, 1, 10, 1);
+    state.player.x = this.number(value.player.x, 48, WORLD_WIDTH - 48, base.player.x);
+    state.player.y = this.number(value.player.y, 48, WORLD_HEIGHT - 48, base.player.y);
+    state.player.xp = this.number(value.player.xp, 0, 1000000, 0);
+    state.player.hp = this.number(value.player.hp, 0, 100000, base.player.hp);
+    state.player.essence = this.number(value.player.essence, 0, 100000, base.player.essence);
+    state.player.unspentStatPoints = this.number(value.player.unspentStatPoints, 0, 500, 0);
+    state.player.unspentSkillPoints = this.number(value.player.unspentSkillPoints, 0, 100, 0);
+    state.player.currency = this.number(value.player.currency, 0, 99999999, 0);
+    for (const key of ['str', 'dex', 'vit', 'spr']) state.player.stats[key] = this.number(value.player.stats[key], 1, 500, 5);
+
+    state.inventory = value.inventory.slice(0, 80).filter(item => plainObject(item) && typeof item.instanceId === 'string' && typeof item.itemId === 'string' && ITEM_DEFS[item.itemId]).map(item => ({
+      instanceId: item.instanceId.slice(0, 64),
+      itemId: item.itemId.slice(0, 64),
+      rarity: typeof item.rarity === 'string' ? item.rarity : 'normal',
+      enhancement: this.number(item.enhancement, 0, 9, 0),
+      modifiers: plainObject(item.modifiers) ? Object.fromEntries(Object.entries(item.modifiers).filter(([, v]) => finite(v)).slice(0, 8)) : {}
+    }));
+    const ids = new Set(state.inventory.map(item => item.instanceId));
+    for (const slot of Object.keys(state.equipment)) {
+      const id = value.equipment[slot];
+      state.equipment[slot] = typeof id === 'string' && ids.has(id) ? id : null;
+    }
+    state.quests = structuredClone(base.quests);
+    for (const [id, fallback] of Object.entries(base.quests)) {
+      const incoming = value.quests[id];
+      if (!plainObject(incoming)) continue;
+      state.quests[id].state = ['locked', 'available', 'active', 'ready', 'complete'].includes(incoming.state) ? incoming.state : fallback.state;
+      if (plainObject(incoming.objectives)) {
+        for (const key of Object.keys(fallback.objectives)) state.quests[id].objectives[key] = this.number(incoming.objectives[key], 0, 9999, 0);
+      }
+    }
+    state.worldFlags = plainObject(value.worldFlags) ? structuredClone(value.worldFlags) : {};
+    state.npcStates = plainObject(value.npcStates) ? structuredClone(value.npcStates) : {};
+    state.settings = { ...base.settings, ...(plainObject(value.settings) ? value.settings : {}) };
+    state.nextItemSequence = this.number(value.nextItemSequence, 1, 99999999, state.inventory.length + 1);
+    return state;
+  }
+
+  number(value, min, max, fallback) {
+    return finite(value) ? Math.min(max, Math.max(min, value)) : fallback;
+  }
+
+  save(state) {
+    state.savedAt = Date.now();
+    state.saveVersion = SAVE_VERSION;
+    localStorage.setItem(SAVE_KEY, JSON.stringify(state));
+  }
+
+  reset() {
+    localStorage.removeItem(SAVE_KEY);
+    return createDefaultState();
+  }
+}
