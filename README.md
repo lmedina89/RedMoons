@@ -36,7 +36,9 @@ Append `?debug=1` to the local URL to enable Arcade Physics diagnostics. Diagnos
 
 ## GitHub Pages
 
-The included `.github/workflows/pages.yml` publishes the static `dist/` directory. Create a repository, push this project to the `main` branch, then choose **GitHub Actions** as the Pages source in repository settings. The game uses relative asset paths, so project-site subpaths work without changes.
+This package intentionally contains no `.github/workflows/` file, so Git clients using an OAuth token without GitHub's `workflow` scope can push it normally.
+
+Create a repository, push this project to the `main` branch, then open **Settings → Pages** and choose **Deploy from a branch**, branch **main**, folder **/(root)**. The root launcher forwards to the self-contained game under `dist/`. Relative asset paths keep project-site subpaths working without changes.
 
 ## Save behavior
 
