@@ -12,10 +12,10 @@ export class ActionInput {
     this.keys = scene.input.keyboard.addKeys({
       up: 'W', down: 'S', left: 'A', right: 'D',
       up2: 'UP', down2: 'DOWN', left2: 'LEFT', right2: 'RIGHT',
-      attack: 'SPACE', interact: 'E', run: 'SHIFT', inventory: 'I', stats: 'C', quests: 'Q'
+      attack: 'SPACE', interact: 'E', run: 'SHIFT', inventory: 'I', character: 'C', quests: 'Q'
     });
     scene.input.keyboard.on('keydown-I', () => window.dispatchEvent(new CustomEvent('ashfall-ui', { detail: { action: 'inventory' } })));
-    scene.input.keyboard.on('keydown-C', () => window.dispatchEvent(new CustomEvent('ashfall-ui', { detail: { action: 'stats' } })));
+    scene.input.keyboard.on('keydown-C', () => window.dispatchEvent(new CustomEvent('ashfall-ui', { detail: { action: 'character' } })));
     scene.input.keyboard.on('keydown-Q', () => window.dispatchEvent(new CustomEvent('ashfall-ui', { detail: { action: 'quests' } })));
   }
 

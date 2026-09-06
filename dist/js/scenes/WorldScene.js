@@ -3,7 +3,7 @@ import { ENEMY_DEFS } from '../data/enemies.js';
 import { ITEM_DEFS } from '../data/items.js';
 import { NPC_DEFS } from '../data/npcs.js';
 import { COLLIDERS, PROP_DEFS, SPAWN_REGIONS, ZONES } from '../data/world.js';
-import { DEBUG, PLAYER_START, RARITY, TILE_SIZE, WORLD_HEIGHT, WORLD_WIDTH } from '../config.js';
+import { DEBUG, GAME_VERSION, PLAYER_START, RARITY, TILE_SIZE, WORLD_HEIGHT, WORLD_WIDTH } from '../config.js';
 import { gameEvents } from '../core/EventBus.js';
 import { actionInput } from '../systems/ActionInput.js';
 import { CombatSystem } from '../systems/CombatSystem.js';
@@ -58,7 +58,7 @@ export class WorldScene extends Phaser.Scene {
     document.addEventListener('visibilitychange', () => { if (document.hidden) this.safeSave(); });
     this.updateZone();
     this.emitState();
-    gameEvents.emit('ready', { version: '0.1.0' });
+    gameEvents.emit('ready', { version: GAME_VERSION });
     gameEvents.emit('toast', { text: 'Find Warden Vesra in Cinder Refuge.', tone: 'quest' });
   }
 

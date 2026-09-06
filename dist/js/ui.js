@@ -2,15 +2,20 @@ import { ITEM_DEFS } from './data/items.js';
 import { QUEST_DEFS } from './data/quests.js';
 import { DEBUG, RARITY } from './config.js';
 import { gameEvents } from './core/EventBus.js';
-import { equipmentBonuses, xpForLevel } from './systems/StatsSystem.js';
+import { equipmentBonuses, previewDerivedStats, statBreakdown, xpForLevel } from './systems/StatsSystem.js';
 
 const $ = selector => document.querySelector(selector);
+const EQUIPMENT_SLOTS = Object.freeze([
+  ['head', 'Head'], ['chest', 'Chest'], ['hands', 'Hands'], ['legs', 'Legs'], ['feet', 'Feet'],
+  ['weapon', 'Weapon'], ['offhand', 'Offhand'], ['necklace', 'Necklace'], ['ring1', 'Ring 1'], ['ring2', 'Ring 2']
+]);
 
 export class UIManager {
   constructor() {
     this.snapshot = null;
     this.panel = null;
     this.selectedItem = null;
+    this.characterTab = 'overview';
     this.pendingStats = { str: 0, dex: 0, vit: 0, spr: 0 };
     this.confirmingStats = false;
     this.dialogueOpenAt = 0;
@@ -85,21 +90,35 @@ export class UIManager {
     $('#quest-tracker').innerHTML = quests.length ? `<strong>${quests[0].ready ? 'Return to Vesra' : quests[0].name}</strong><small>${quests[0].ready ? 'Objective complete' : `${quests[0].summary} • ${quests[0].progress}`}</small>` : `<strong>Warden Vesra</strong><small>Speak with the quest warden in Cinder Refuge.</small>`;
   }
 
-  openPanel(panel) {
-    if (!this.snapshot || !['inventory', 'stats', 'quests'].includes(panel)) return;
+  openPanel(requestedPanel) {
+    const panel = requestedPanel === 'stats' ? 'character' : requestedPanel;
+    if (!this.snapshot || !['inventory', 'character', 'quests'].includes(panel)) return;
     this.panel = panel;
     window.__ashfallUiBlocked = true;
     this.selectedItem = panel === 'inventory' ? this.selectedItem : null;
+    if (panel === 'character') this.characterTab = 'overview';
     this.pendingStats = { str: 0, dex: 0, vit: 0, spr: 0 };
     this.confirmingStats = false;
     $('#modal').classList.remove('hidden');
-    $('#modal-title').textContent = panel === 'inventory' ? 'Inventory & Equipment' : panel === 'stats' ? 'Character Growth' : 'Quest Journal';
+    $('#modal-title').textContent = panel === 'inventory' ? 'Inventory & Equipment' : panel === 'character' ? 'Character' : 'Quest Journal';
     this.renderPanel();
     $('#modal-close').focus();
   }
 
   closePanel() { this.panel = null; $('#modal').classList.add('hidden'); if ($('#dialogue-box').classList.contains('hidden') && $('#death-screen').classList.contains('hidden')) window.__ashfallUiBlocked = false; }
-  renderPanel() { if (this.panel === 'inventory') this.renderInventory(); if (this.panel === 'stats') this.renderStats(); if (this.panel === 'quests') this.renderQuests(); }
+  renderPanel() { if (this.panel === 'inventory') this.renderInventory(); if (this.panel === 'character') this.renderCharacter(); if (this.panel === 'quests') this.renderQuests(); }
+
+  equipmentSlotCards(state, { interactive = false, unequip = false } = {}) {
+    const byId = new Map(state.inventory.map(item => [item.instanceId, item]));
+    return EQUIPMENT_SLOTS.map(([slot, label]) => {
+      const item = byId.get(state.equipment[slot]);
+      const def = item && ITEM_DEFS[item.itemId];
+      const rarity = item ? (RARITY[item.rarity] || RARITY.normal) : null;
+      const stats = item ? this.itemStatSummary(item) : '';
+      const attrs = interactive && item ? `role="button" tabindex="0" data-equipped-item="${item.instanceId}"` : '';
+      return `<article class="equipment-slot-card ${item ? 'filled' : 'empty'}" ${attrs}><small>${label}</small><strong style="${rarity ? `color:${rarity.color}` : ''}">${def?.name || 'Empty'}</strong>${stats ? `<span>${stats}</span>` : '<span>—</span>'}${unequip && item ? `<button type="button" class="slot-unequip" data-char-unequip="${slot}" aria-label="Unequip ${def.name}">Unequip</button>` : ''}</article>`;
+    }).join('');
+  }
 
   renderInventory() {
     const { state } = this.snapshot;
@@ -114,8 +133,13 @@ export class UIManager {
       return `<button type="button" class="item-slot ${this.selectedItem === item.instanceId ? 'selected' : ''} ${equippedIds.has(item.instanceId) ? 'equipped' : ''}" data-item="${item.instanceId}" style="color:${color}">${def?.name || item.itemId}</button>`;
     }).join('');
     const selected = items.find(item => item.instanceId === this.selectedItem);
-    $('#modal-content').innerHTML = `<div class="inventory-layout"><div><div class="inventory-grid">${slots}</div><p class="empty-copy">${items.length}/30 slots • ${state.player.currency} ash coin</p></div><div class="item-details">${selected ? this.itemDetails(selected, equippedIds.has(selected.instanceId)) : '<h3>Select an item</h3><p>Tap gear to inspect its requirements, modifiers and equipped comparison.</p>'}</div></div>`;
+    $('#modal-content').innerHTML = `<div class="inventory-layout"><div><h3 class="section-heading">Equipped</h3><div class="equipment-strip">${this.equipmentSlotCards(state, { interactive: true })}</div><h3 class="section-heading inventory-heading">Pack</h3><div class="inventory-grid">${slots}</div><p class="empty-copy">${items.length}/30 slots • ${state.player.currency} ash coin</p></div><div class="item-details">${selected ? this.itemDetails(selected, equippedIds.has(selected.instanceId)) : '<h3>Select an item</h3><p>Tap gear to inspect its requirements, modifiers and equipped comparison. Multiple armor slots can be worn at the same time.</p>'}</div></div>`;
     document.querySelectorAll('[data-item]').forEach(button => button.addEventListener('click', () => { this.selectedItem = button.dataset.item; this.renderInventory(); }));
+    document.querySelectorAll('[data-equipped-item]').forEach(card => {
+      const select = () => { this.selectedItem = card.dataset.equippedItem; this.renderInventory(); };
+      card.addEventListener('click', select);
+      card.addEventListener('keydown', event => { if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); select(); } });
+    });
     $('[data-equip]')?.addEventListener('click', event => { gameEvents.emit('command', { type: 'equip', instanceId: event.currentTarget.dataset.equip }); setTimeout(() => this.panel === 'inventory' && this.renderInventory(), 0); });
     $('[data-unequip]')?.addEventListener('click', event => { gameEvents.emit('command', { type: 'unequip', slot: event.currentTarget.dataset.unequip }); setTimeout(() => this.panel === 'inventory' && this.renderInventory(), 0); });
   }
@@ -123,34 +147,82 @@ export class UIManager {
   itemDetails(item, equipped) {
     const def = ITEM_DEFS[item.itemId];
     const rarity = RARITY[item.rarity] || RARITY.normal;
-    const stats = [...Object.entries(def.baseStats || {}), ...Object.entries(item.modifiers || {})].map(([key, value]) => `<li>+${value} ${this.statLabel(key)}</li>`).join('') || '<li>No combat bonuses</li>';
+    const stats = Object.entries(this.itemTotalStats(item)).map(([key, value]) => `<li>+${value} ${this.statLabel(key)}</li>`).join('') || '<li>No combat bonuses</li>';
     const requirements = [`Level ${def.levelReq || 1}`, ...Object.entries(def.requirements || {}).map(([key, value]) => `${key.toUpperCase()} ${value}`)].join(' • ');
     const equippedItemId = this.snapshot.state.equipment[def.slot];
     const equippedItem = this.snapshot.state.inventory.find(candidate => candidate.instanceId === equippedItemId);
-    const compare = equippedItem && equippedItem.instanceId !== item.instanceId ? `<p>Compared with <strong>${ITEM_DEFS[equippedItem.itemId]?.name}</strong>: base defense ${this.totalStat(item, 'defense') - this.totalStat(equippedItem, 'defense') >= 0 ? '+' : ''}${this.totalStat(item, 'defense') - this.totalStat(equippedItem, 'defense')}, attack ${this.totalStat(item, 'attack') - this.totalStat(equippedItem, 'attack') >= 0 ? '+' : ''}${this.totalStat(item, 'attack') - this.totalStat(equippedItem, 'attack')}</p>` : '';
-    return `<h3 style="color:${rarity.color}">${def.name}</h3><span class="rarity-label" style="color:${rarity.color}">${rarity.label}</span><p>${def.slot ? def.slot.toUpperCase() : 'QUEST ITEM'} • Enhancement +${item.enhancement || 0} • Value ${def.value}</p><ul>${stats}</ul><p class="requirements">Requires ${requirements}</p>${compare}<footer>${def.slot ? equipped ? `<button type="button" data-unequip="${def.slot}">Unequip</button>` : `<button type="button" data-equip="${item.instanceId}">Equip</button>` : ''}</footer>`;
+    const compare = equippedItem && equippedItem.instanceId !== item.instanceId ? this.comparisonText(item, equippedItem) : '';
+    return `<h3 style="color:${rarity.color}">${def.name}</h3><span class="rarity-label" style="color:${rarity.color}">${rarity.label}</span><p>${def.slot ? this.slotLabel(def.slot).toUpperCase() : 'QUEST ITEM'} • Enhancement +${item.enhancement || 0} • Value ${def.value}</p><ul>${stats}</ul><p class="requirements">Base requirements: ${requirements}</p>${compare}<footer>${def.slot ? equipped ? `<button type="button" data-unequip="${def.slot}">Unequip</button>` : `<button type="button" data-equip="${item.instanceId}">Equip to ${this.slotLabel(def.slot)}</button>` : ''}</footer>`;
   }
 
-  totalStat(item, key) { const def = ITEM_DEFS[item.itemId]; return (def.baseStats?.[key] || 0) + (item.modifiers?.[key] || 0); }
-  statLabel(key) { return ({ maxHp: 'Max HP', maxEssence: 'Max Essence', str: 'STR', dex: 'DEX', vit: 'VIT', spr: 'SPR' })[key] || key[0].toUpperCase() + key.slice(1); }
+  comparisonText(item, equippedItem) {
+    const candidate = this.itemTotalStats(item);
+    const current = this.itemTotalStats(equippedItem);
+    const keys = [...new Set([...Object.keys(candidate), ...Object.keys(current)])];
+    const changes = keys.map(key => [key, (candidate[key] || 0) - (current[key] || 0)]).filter(([, value]) => value !== 0);
+    if (!changes.length) return `<p>Compared with <strong>${ITEM_DEFS[equippedItem.itemId]?.name}</strong>: equivalent listed bonuses.</p>`;
+    return `<p>Compared with <strong>${ITEM_DEFS[equippedItem.itemId]?.name}</strong>: ${changes.map(([key, value]) => `${value > 0 ? '+' : ''}${value} ${this.statLabel(key)}`).join(' • ')}</p>`;
+  }
 
-  renderStats() {
-    const { state, derived } = this.snapshot;
+  itemTotalStats(item) {
+    const def = ITEM_DEFS[item.itemId];
+    const totals = { ...(def?.baseStats || {}) };
+    for (const [key, value] of Object.entries(item.modifiers || {})) totals[key] = (totals[key] || 0) + value;
+    return totals;
+  }
+
+  itemStatSummary(item) {
+    return Object.entries(this.itemTotalStats(item)).slice(0, 2).map(([key, value]) => `+${value} ${this.statLabel(key)}`).join(' • ');
+  }
+
+  slotLabel(slot) { return Object.fromEntries(EQUIPMENT_SLOTS)[slot] || slot; }
+  statLabel(key) { return ({ maxHp: 'Max HP', maxEssence: 'Max Essence', moveSpeed: 'Move Speed', str: 'STR', dex: 'DEX', vit: 'VIT', spr: 'SPR' })[key] || key[0].toUpperCase() + key.slice(1); }
+  formatNumber(value) { return Number.isInteger(value) ? String(value) : value.toFixed(1).replace(/\.0$/, ''); }
+
+  renderCharacter() {
+    const tabs = `<nav class="character-tabs" aria-label="Character sections"><button type="button" data-character-tab="overview" class="${this.characterTab === 'overview' ? 'active' : ''}">Overview</button><button type="button" data-character-tab="growth" class="${this.characterTab === 'growth' ? 'active' : ''}">Growth <em class="tab-badge ${this.snapshot.state.player.unspentStatPoints ? '' : 'hidden'}">${this.snapshot.state.player.unspentStatPoints}</em></button></nav>`;
+    if (this.characterTab === 'growth') this.renderGrowth(tabs);
+    else this.renderCharacterOverview(tabs);
+    document.querySelectorAll('[data-character-tab]').forEach(button => button.addEventListener('click', () => { this.characterTab = button.dataset.characterTab; this.pendingStats = { str: 0, dex: 0, vit: 0, spr: 0 }; this.confirmingStats = false; this.renderCharacter(); }));
+  }
+
+  renderCharacterOverview(tabs) {
+    const { state } = this.snapshot;
+    const p = state.player;
+    const breakdown = statBreakdown(state);
+    const needed = p.level >= 10 ? null : xpForLevel(p.level);
+    const primary = ['str', 'dex', 'vit', 'spr'].map(key => {
+      const base = breakdown.basePrimary[key];
+      const gear = breakdown.gear[key] || 0;
+      const total = breakdown.totalPrimary[key];
+      return `<div class="character-stat-row"><small>${key.toUpperCase()}</small><strong>${total}</strong><span>${base} base${gear ? ` <b>+${gear} gear</b>` : ''}</span></div>`;
+    }).join('');
+    const combat = ['maxHp', 'maxEssence', 'attack', 'defense', 'moveSpeed'].map(key => {
+      const value = breakdown.totalDerived[key];
+      const impact = breakdown.gearImpact[key] || 0;
+      return `<div class="derived-card"><small>${this.statLabel(key)}</small><strong>${this.formatNumber(value)}</strong><span>${impact ? `+${this.formatNumber(impact)} from gear` : 'base value'}</span></div>`;
+    }).join('');
+    const directGear = Object.entries(equipmentBonuses(state)).filter(([, value]) => value).map(([key, value]) => `<span class="bonus-chip">+${value} ${this.statLabel(key)}</span>`).join('') || '<span class="empty-copy">No direct equipment bonuses.</span>';
+    $('#modal-content').innerHTML = `${tabs}<div class="character-summary"><div><small>LEVEL</small><strong>${p.level}</strong></div><div><small>EXPERIENCE</small><strong>${p.level >= 10 ? 'CAP' : `${p.xp} / ${needed}`}</strong></div><div><small>ASH COIN</small><strong>${p.currency}</strong></div><div><small>STAT POINTS</small><strong>${p.unspentStatPoints}</strong></div></div><div class="character-layout"><section class="character-panel"><h3>Equipped Gear</h3><div class="equipment-sheet">${this.equipmentSlotCards(state, { unequip: true })}</div></section><section class="character-panel"><h3>Primary Stats</h3><div class="character-primary-grid">${primary}</div><h3 class="character-subheading">Combat Stats</h3><div class="derived-grid character-derived">${combat}</div><h3 class="character-subheading">Equipment Buffs</h3><div class="bonus-list">${directGear}</div><h3 class="character-subheading">Active Effects</h3><p class="empty-copy effect-copy">None active.</p></section></div>`;
+    document.querySelectorAll('[data-char-unequip]').forEach(button => button.addEventListener('click', event => {
+      event.stopPropagation();
+      gameEvents.emit('command', { type: 'unequip', slot: button.dataset.charUnequip });
+      setTimeout(() => this.panel === 'character' && this.renderCharacter(), 0);
+    }));
+  }
+
+  renderGrowth(tabs) {
+    const { state } = this.snapshot;
     const p = state.player;
     const available = p.unspentStatPoints - Object.values(this.pendingStats).reduce((a, b) => a + b, 0);
     const descriptions = { str: 'Melee damage and heavy gear', dex: 'Speed, precision and light gear', vit: 'Health and defense', spr: 'Essence capacity' };
     const rows = ['str', 'dex', 'vit', 'spr'].map(key => `<div class="stat-row"><div><strong>${key.toUpperCase()}</strong><small>${descriptions[key]}</small></div><span>${p.stats[key]}${this.pendingStats[key] ? ` + ${this.pendingStats[key]}` : ''}</span><div class="stat-controls"><button type="button" data-stat-minus="${key}" ${this.pendingStats[key] <= 0 ? 'disabled' : ''}>−</button><b>${this.pendingStats[key]}</b><button type="button" data-stat-plus="${key}" ${available <= 0 ? 'disabled' : ''}>+</button></div></div>`).join('');
-    const preview = {
-      maxHp: derived.maxHp + this.pendingStats.vit * 9,
-      maxEssence: derived.maxEssence + this.pendingStats.spr * 6,
-      attack: Math.floor(derived.attack + this.pendingStats.str * 1.75 + this.pendingStats.dex * .45),
-      defense: Math.floor(derived.defense + this.pendingStats.vit * .65 + this.pendingStats.dex * .18)
-    };
+    const preview = previewDerivedStats(state, this.pendingStats);
     const spend = p.unspentStatPoints - available;
-    $('#modal-content').innerHTML = `<div class="stats-layout"><section class="stats-panel"><h3>Primary Stats</h3>${rows}<div class="stats-footer"><p>${available} unspent points<br>${p.unspentSkillPoints} skill point${p.unspentSkillPoints === 1 ? '' : 's'} reserved</p><button type="button" id="stats-apply" ${spend <= 0 ? 'disabled' : ''}>${this.confirmingStats ? `Confirm ${spend} points` : 'Apply Preview'}</button></div></section><section class="stats-panel"><h3>Derived Combat Stats</h3><div class="derived-grid">${Object.entries(preview).map(([key, value]) => `<div class="derived-card"><small>${this.statLabel(key)}</small><strong>${value}</strong></div>`).join('')}</div><p class="empty-copy">Values update as you preview points. Nothing is permanent until the second confirmation.</p><h3>Equipment Contribution</h3><div class="derived-grid">${Object.entries(equipmentBonuses(state)).filter(([, v]) => v).map(([key, value]) => `<div class="derived-card"><small>${this.statLabel(key)}</small><strong>+${value}</strong></div>`).join('') || '<p class="empty-copy">Starter equipment provides modest bonuses.</p>'}</div></section></div>`;
-    document.querySelectorAll('[data-stat-plus]').forEach(button => button.addEventListener('click', () => { if (available > 0) this.pendingStats[button.dataset.statPlus] += 1; this.confirmingStats = false; this.renderStats(); }));
-    document.querySelectorAll('[data-stat-minus]').forEach(button => button.addEventListener('click', () => { const key = button.dataset.statMinus; if (this.pendingStats[key] > 0) this.pendingStats[key] -= 1; this.confirmingStats = false; this.renderStats(); }));
-    $('#stats-apply')?.addEventListener('click', () => { if (!this.confirmingStats) { this.confirmingStats = true; this.renderStats(); return; } gameEvents.emit('command', { type: 'allocateStats', points: { ...this.pendingStats } }); this.pendingStats = { str: 0, dex: 0, vit: 0, spr: 0 }; this.confirmingStats = false; setTimeout(() => this.panel === 'stats' && this.renderStats(), 0); });
+    $('#modal-content').innerHTML = `${tabs}<div class="stats-layout"><section class="stats-panel"><h3>Primary Stats</h3>${rows}<div class="stats-footer"><p>${available} unspent points<br>${p.unspentSkillPoints} skill point${p.unspentSkillPoints === 1 ? '' : 's'} reserved</p><button type="button" id="stats-apply" ${spend <= 0 ? 'disabled' : ''}>${this.confirmingStats ? `Confirm ${spend} points` : 'Apply Preview'}</button></div></section><section class="stats-panel"><h3>Derived Combat Preview</h3><div class="derived-grid">${['maxHp', 'maxEssence', 'attack', 'defense', 'moveSpeed'].map(key => `<div class="derived-card"><small>${this.statLabel(key)}</small><strong>${this.formatNumber(preview[key])}</strong></div>`).join('')}</div><p class="empty-copy">Preview includes your currently equipped gear. Nothing is permanent until the second confirmation.</p><h3>Direct Equipment Bonuses</h3><div class="bonus-list">${Object.entries(equipmentBonuses(state)).filter(([, v]) => v).map(([key, value]) => `<span class="bonus-chip">+${value} ${this.statLabel(key)}</span>`).join('') || '<p class="empty-copy">No direct equipment bonuses.</p>'}</div></section></div>`;
+    document.querySelectorAll('[data-stat-plus]').forEach(button => button.addEventListener('click', () => { if (available > 0) this.pendingStats[button.dataset.statPlus] += 1; this.confirmingStats = false; this.renderCharacter(); }));
+    document.querySelectorAll('[data-stat-minus]').forEach(button => button.addEventListener('click', () => { const key = button.dataset.statMinus; if (this.pendingStats[key] > 0) this.pendingStats[key] -= 1; this.confirmingStats = false; this.renderCharacter(); }));
+    $('#stats-apply')?.addEventListener('click', () => { if (!this.confirmingStats) { this.confirmingStats = true; this.renderCharacter(); return; } gameEvents.emit('command', { type: 'allocateStats', points: { ...this.pendingStats } }); this.pendingStats = { str: 0, dex: 0, vit: 0, spr: 0 }; this.confirmingStats = false; setTimeout(() => this.panel === 'character' && this.renderCharacter(), 0); });
   }
 
   renderQuests() {

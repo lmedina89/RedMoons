@@ -51,6 +51,11 @@ export class InventorySystem {
     const check = this.canEquip(instance);
     if (!check.ok) return check;
     const def = ITEM_DEFS[instance.itemId];
+    // One item instance can occupy only one slot. Swapping a slot leaves the
+    // replaced item safely in inventory rather than deleting it.
+    for (const slot of Object.keys(this.state.equipment)) {
+      if (this.state.equipment[slot] === instanceId) this.state.equipment[slot] = null;
+    }
     this.state.equipment[def.slot] = instanceId;
     return { ok: true, reason: '' };
   }

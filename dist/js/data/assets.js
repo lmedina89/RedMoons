@@ -31,6 +31,28 @@ export const ASSET_DEFS = [
   { key: 'fire', path: `${W}fire.png`, frameWidth: 32, frameHeight: 64 }
 ];
 
+// All rows are expressed in the source spritesheet's real frame grid.
+// Direction order matches the rest of Ashfall: up, left, down, right.
+export const ANIMATION_GEOMETRIES = Object.freeze({
+  classic: Object.freeze({
+    idle: Object.freeze({ source: 'walk', rows: [0, 1, 2, 3], stride: 9, frames: 1 }),
+    walk: Object.freeze({ source: 'walk', rows: [0, 1, 2, 3], stride: 9, frames: 9 }),
+    slash: Object.freeze({ source: 'slash', rows: [0, 1, 2, 3], stride: 6, frames: 6 })
+  }),
+  expanded64: Object.freeze({
+    idle: Object.freeze({ source: 'texture', rows: [8, 9, 10, 11], stride: 13, frames: 1 }),
+    walk: Object.freeze({ source: 'texture', rows: [8, 9, 10, 11], stride: 13, frames: 9 }),
+    slash: Object.freeze({ source: 'texture', rows: [12, 13, 14, 15], stride: 13, frames: 6 })
+  }),
+  dcssSword128: Object.freeze({
+    // The DCSS sword source is not an Expanded LPC 4-row block. It stores
+    // up / left / down and mirrors the left-facing side row for right.
+    idle: Object.freeze({ source: 'texture', rows: [6, 7, 8, 7], stride: 13, frames: 1, mirror: [false, false, false, true] }),
+    walk: Object.freeze({ source: 'texture', rows: [6, 7, 8, 7], stride: 13, frames: 9, mirror: [false, false, false, true] }),
+    slash: Object.freeze({ source: 'texture', rows: [9, 10, 11, 10], stride: 13, frames: 6, mirror: [false, false, false, true] })
+  })
+});
+
 export const LAYER_ASSETS = Object.freeze({
   body: { walk: 'body-walk', slash: 'body-slash', geometry: 'classic' },
   hair: { walk: 'hair-walk', slash: 'hair-slash', geometry: 'classic' },
@@ -45,9 +67,8 @@ export const LAYER_ASSETS = Object.freeze({
   hands_plate: { walk: 'plate-hands-walk', slash: 'plate-hands-slash', geometry: 'classic' },
   head_chain: { walk: 'chain-head-walk', slash: 'chain-head-slash', geometry: 'classic' },
   head_plate: { walk: 'plate-head-walk', slash: 'plate-head-slash', geometry: 'classic' },
-  weapon_long_sword_bg: { texture: 'long-sword-bg', geometry: 'oversized128' },
-  weapon_long_sword_fg: { texture: 'long-sword-fg', geometry: 'oversized128' },
+  weapon_long_sword_bg: { texture: 'long-sword-bg', geometry: 'dcssSword128' },
+  weapon_long_sword_fg: { texture: 'long-sword-fg', geometry: 'dcssSword128' },
   shield_wood_bg: { texture: 'wood-shield-bg', geometry: 'expanded64' },
   shield_wood_fg: { texture: 'wood-shield-fg', geometry: 'expanded64' }
 });
-

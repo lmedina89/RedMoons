@@ -1,8 +1,5 @@
-import { LAYER_ASSETS } from '../data/assets.js';
+import { ANIMATION_GEOMETRIES, LAYER_ASSETS } from '../data/assets.js';
 import { ITEM_DEFS } from '../data/items.js';
-
-const CLASSIC = { walkColumns: 9, slashColumns: 6, walkRowBase: 0, slashRowBase: 0 };
-const EXPANDED = { walkColumns: 13, slashColumns: 13, walkRowBase: 8, slashRowBase: 12 };
 
 export class LayeredCharacter {
   constructor(scene, x, y, state, scale = 1.45) {
@@ -48,7 +45,7 @@ export class LayeredCharacter {
   setAsset(layerKey, assetKey) {
     const layer = this.layers.get(layerKey);
     layer.asset = assetKey ? LAYER_ASSETS[assetKey] : null;
-    layer.sprite.setVisible(Boolean(layer.asset));
+    layer.sprite.setVisible(Boolean(layer.asset)).setFlipX(false);
   }
 
   setFacing(dx, dy) {
@@ -60,21 +57,22 @@ export class LayeredCharacter {
   render(x, y, stateName, frame, baseDepth) {
     this.x = x;
     this.y = y;
+    const action = stateName === 'slash' ? 'slash' : stateName === 'idle' ? 'idle' : 'walk';
     for (const layer of this.layers.values()) {
       if (!layer.asset) continue;
       const asset = layer.asset;
-      const action = stateName === 'slash' ? 'slash' : 'walk';
-      const texture = asset.texture || asset[action];
+      const geometry = ANIMATION_GEOMETRIES[asset.geometry];
+      const animation = geometry?.[action];
+      if (!animation) { layer.sprite.setVisible(false); continue; }
+      const texture = asset[animation.source];
       if (!texture) { layer.sprite.setVisible(false); continue; }
-      layer.sprite.setVisible(true).setTexture(texture);
-      const expanded = asset.geometry === 'expanded64' || asset.geometry === 'oversized128';
-      const geometry = expanded ? EXPANDED : CLASSIC;
-      const row = (action === 'slash' ? geometry.slashRowBase : geometry.walkRowBase) + this.direction;
-      const columns = action === 'slash' ? geometry.slashColumns : geometry.walkColumns;
-      const maxFrame = action === 'slash' ? 5 : 8;
-      layer.sprite.setFrame(row * columns + Math.min(maxFrame, frame));
+      const row = animation.rows[this.direction];
+      const maxFrame = Math.max(0, animation.frames - 1);
+      const frameIndex = row * animation.stride + Math.min(maxFrame, action === 'idle' ? 0 : frame);
+      const mirrored = Boolean(animation.mirror?.[this.direction]);
+      layer.sprite.setVisible(true).setTexture(texture).setFrame(frameIndex).setFlipX(mirrored);
       layer.sprite.setPosition(x, y).setDepth(baseDepth + layer.order * 0.001);
-      if (asset.geometry === 'oversized128') layer.sprite.setOrigin(0.5, 0.595).setScale(this.scale);
+      if (asset.geometry === 'dcssSword128') layer.sprite.setOrigin(0.5, 0.595).setScale(this.scale);
       else layer.sprite.setOrigin(0.5, 0.69).setScale(this.scale);
     }
   }
@@ -85,4 +83,3 @@ export class LayeredCharacter {
   setVisible(value) { for (const layer of this.layers.values()) if (layer.asset) layer.sprite.setVisible(value); }
   destroy() { for (const layer of this.layers.values()) layer.sprite.destroy(); }
 }
-

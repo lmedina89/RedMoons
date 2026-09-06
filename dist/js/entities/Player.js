@@ -18,10 +18,19 @@ export class Player {
   }
 
   update(time, delta) {
-    if (this.dead) { this.body.setVelocity(0); this.visual.render(this.body.x, this.body.y, 'walk', 0, this.body.y); return; }
-    if (window.__ashfallUiBlocked) { this.body.setVelocity(0); this.visual.render(this.body.x, this.body.y, 'walk', 0, this.body.y); return; }
+    if (this.dead) { this.body.setVelocity(0); this.visual.render(this.body.x, this.body.y, 'idle', 0, this.body.y); return; }
+    if (window.__ashfallUiBlocked) { this.body.setVelocity(0); this.visual.render(this.body.x, this.body.y, 'idle', 0, this.body.y); return; }
     this.input.update();
+
+    let dx = this.input.moveX;
+    let dy = this.input.moveY;
+    const length = Math.hypot(dx, dy);
+    if (length > 1) { dx /= length; dy /= length; }
+
     if (this.input.consumeAttack() && time - this.attackStarted > 420) {
+      // Sample facing before the swing begins so a direction+attack input uses
+      // the intended direction instead of the previous movement direction.
+      if (length > 0.05) this.visual.setFacing(dx, dy);
       this.attackStarted = time;
       this.attackHit = false;
       this.body.setVelocity(0);
@@ -35,17 +44,13 @@ export class Player {
       return;
     }
 
-    let dx = this.input.moveX;
-    let dy = this.input.moveY;
-    const length = Math.hypot(dx, dy);
-    if (length > 1) { dx /= length; dy /= length; }
     const derived = derivedStats(this.state);
     const speed = derived.moveSpeed * (this.input.run ? 1.42 : 1);
     this.body.setVelocity(dx * speed, dy * speed);
     this.visual.setFacing(dx, dy);
     if (length > 0.05) this.walkClock += delta * (this.input.run ? 1.5 : 1);
     const frame = length > 0.05 ? 1 + Math.floor(this.walkClock / 92) % 8 : 0;
-    this.visual.render(this.body.x, this.body.y, 'walk', frame, this.body.y);
+    this.visual.render(this.body.x, this.body.y, length > 0.05 ? 'walk' : 'idle', frame, this.body.y);
     this.state.player.x = Math.round(this.body.x);
     this.state.player.y = Math.round(this.body.y);
   }

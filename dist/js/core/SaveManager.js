@@ -44,10 +44,15 @@ export class SaveManager {
       enhancement: this.number(item.enhancement, 0, 9, 0),
       modifiers: plainObject(item.modifiers) ? Object.fromEntries(Object.entries(item.modifiers).filter(([, v]) => finite(v)).slice(0, 8)) : {}
     }));
-    const ids = new Set(state.inventory.map(item => item.instanceId));
+    const itemsById = new Map(state.inventory.map(item => [item.instanceId, item]));
+    const equippedIds = new Set();
     for (const slot of Object.keys(state.equipment)) {
       const id = value.equipment[slot];
-      state.equipment[slot] = typeof id === 'string' && ids.has(id) ? id : null;
+      const item = typeof id === 'string' ? itemsById.get(id) : null;
+      const def = item && ITEM_DEFS[item.itemId];
+      const validForSlot = Boolean(item && def?.slot === slot && !equippedIds.has(id));
+      state.equipment[slot] = validForSlot ? id : null;
+      if (validForSlot) equippedIds.add(id);
     }
     state.quests = structuredClone(base.quests);
     for (const [id, fallback] of Object.entries(base.quests)) {

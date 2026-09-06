@@ -1,9 +1,9 @@
-import { PLAYER_START, SAVE_VERSION } from '../config.js';
+import { GAME_VERSION, PLAYER_START, SAVE_VERSION } from '../config.js';
 
 export function createDefaultState() {
   return {
     saveVersion: SAVE_VERSION,
-    gameVersion: '0.1.0',
+    gameVersion: GAME_VERSION,
     savedAt: 0,
     player: {
       x: PLAYER_START.x,
