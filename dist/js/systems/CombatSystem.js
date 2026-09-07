@@ -1,33 +1,24 @@
 import { derivedStats } from './StatsSystem.js';
+import { CombatResolver } from './CombatResolver.js';
+import { StatusController } from './StatusController.js';
+import { ProjectileManager } from './ProjectileManager.js';
+import { FxManager } from './FxManager.js';
+import { AudioManager } from './AudioManager.js';
+import { SkillController } from './SkillController.js';
 
 export class DamageNumberPool {
-  constructor(scene, size = 24) {
+  constructor(scene, size = 28) {
     this.scene = scene;
     this.items = Array.from({ length: size }, () => ({
-      text: scene.add.text(0, 0, '', { fontFamily: 'Arial Black, sans-serif', fontSize: '15px', color: '#ffd36a', stroke: '#170b08', strokeThickness: 4 }).setOrigin(0.5).setVisible(false).setDepth(9000),
-      busyUntil: 0
+      text: scene.add.text(0, 0, '', { fontFamily: 'Arial Black, sans-serif', fontSize: '15px', color: '#ffd36a', stroke: '#170b08', strokeThickness: 4 }).setOrigin(0.5).setVisible(false).setDepth(9000)
     }));
     this.index = 0;
   }
-  show(x, y, amount, hostile = false) {
+  show(x, y, amount, hostile = false, critical = false) {
     const item = this.items[this.index++ % this.items.length];
-    item.text.setPosition(x, y).setText(String(amount)).setColor(hostile ? '#ff6b56' : '#ffd36a').setAlpha(1).setVisible(true);
+    item.text.setPosition(x, y).setText(critical ? `${amount}!` : String(amount)).setFontSize(critical ? '19px' : '15px').setColor(hostile ? '#ff6b56' : critical ? '#fff1a8' : '#ffd36a').setAlpha(1).setVisible(true);
     this.scene.tweens.killTweensOf(item.text);
-    this.scene.tweens.add({ targets: item.text, y: y - 34, alpha: 0, duration: 620, ease: 'Quad.out', onComplete: () => item.text.setVisible(false) });
-  }
-}
-
-export class EffectPool {
-  constructor(scene, size = 18) {
-    this.scene = scene;
-    this.items = Array.from({ length: size }, () => scene.add.sprite(0, 0, 'hit-spark').setVisible(false).setDepth(8500));
-    this.index = 0;
-  }
-  burst(x, y) {
-    const sprite = this.items[this.index++ % this.items.length];
-    sprite.setPosition(x, y).setScale(0.5).setAlpha(1).setVisible(true);
-    this.scene.tweens.killTweensOf(sprite);
-    this.scene.tweens.add({ targets: sprite, scale: 1.8, alpha: 0, duration: 180, onComplete: () => sprite.setVisible(false) });
+    this.scene.tweens.add({ targets: item.text, y: y - (critical ? 42 : 34), alpha: 0, duration: critical ? 760 : 620, ease: 'Quad.out', onComplete: () => item.text.setVisible(false) });
   }
 }
 
@@ -39,7 +30,15 @@ export class CombatSystem {
     this.enemies = enemies;
     this.events = events;
     this.damageNumbers = new DamageNumberPool(scene);
-    this.effects = new EffectPool(scene);
+    this.fx = new FxManager(scene);
+    this.audio = new AudioManager(scene, state);
+    this.resolver = new CombatResolver(scene, state, this.damageNumbers, this.fx, this.audio, {
+      playerDamaged: amount => this.scene.afterPlayerDamage?.(amount)
+    });
+    this.statuses = new StatusController(scene, this.resolver, this.fx);
+    this.resolver.setStatusController(this.statuses);
+    this.projectiles = new ProjectileManager(scene, this.resolver, this.statuses, this.fx, this.audio, player, enemies);
+    this.skills = new SkillController(scene, state, player, this, this.statuses, this.fx, this.audio, events);
   }
 
   playerAttack(attack = {}) {
@@ -57,12 +56,104 @@ export class CombatSystem {
       const distance = Math.sqrt(distSq) || 1;
       const dot = (dx / distance) * facing[0] + (dy / distance) * facing[1];
       if (dot < 0.05 && distance > 34) continue;
-      if (enemy.takeDamage(damage, this.player.body.x, this.player.body.y, this.scene.time.now)) {
-        hitCount += 1;
-        this.effects.burst(enemy.sprite.x, enemy.sprite.y - 12);
-      }
+      const applied = this.resolver.damageEnemy(enemy, damage, {
+        type: 'physical', sourceX: this.player.body.x, sourceY: this.player.body.y,
+        critChance: Math.min(0.18, (this.state.player.stats.dex || 0) * 0.008), impact: 'physical'
+      });
+      if (applied) hitCount += 1;
     }
+    this.audio.play('sword', { throttleMs: 80 });
     if (!hitCount) this.events.emit('toast', { text: 'Your blade cuts only ash.', tone: 'muted', short: true, cooldownMs: 2400 });
   }
-}
 
+  playerCone(def, facing) {
+    const derived = derivedStats(this.state);
+    const cosThreshold = Math.cos((def.arcDegrees || 100) * Math.PI / 360);
+    let hits = 0;
+    for (const enemy of this.enemies) {
+      if (!enemy.sprite.active) continue;
+      const dx = enemy.sprite.x - this.player.body.x, dy = enemy.sprite.y - this.player.body.y;
+      const distance = Math.hypot(dx, dy);
+      if (distance > def.range) continue;
+      const dot = distance ? (dx / distance) * facing[0] + (dy / distance) * facing[1] : 1;
+      if (dot < cosThreshold) continue;
+      const amount = this.resolver.damageEnemy(enemy, derived.attack * def.damageMultiplier, {
+        type: def.damageType, sourceX: this.player.body.x, sourceY: this.player.body.y,
+        critChance: Math.min(0.2, (this.state.player.stats.dex || 0) * 0.009), impact: 'fire'
+      });
+      if (amount) {
+        hits += 1;
+        if (def.status && Math.random() <= (def.status.chance ?? 1)) this.statuses.apply(enemy, def.status.id, { power: derived.attack, x: this.player.body.x, y: this.player.body.y });
+      }
+    }
+    if (!hits) this.events.emit('toast', { text: `${def.name} finds no target.`, tone: 'muted', short: true, cooldownMs: 1200 });
+  }
+
+  playerRadial(def) {
+    const derived = derivedStats(this.state);
+    let hits = 0;
+    for (const enemy of this.enemies) {
+      if (!enemy.sprite.active) continue;
+      const distance = Phaser.Math.Distance.Between(this.player.body.x, this.player.body.y, enemy.sprite.x, enemy.sprite.y);
+      if (distance > def.radius) continue;
+      const amount = this.resolver.damageEnemy(enemy, derived.attack * def.damageMultiplier, {
+        type: def.damageType, sourceX: this.player.body.x, sourceY: this.player.body.y,
+        knockback: def.knockback || 0, impact: 'shadow'
+      });
+      if (amount) {
+        hits += 1;
+        if (def.status && Math.random() <= (def.status.chance ?? 1)) this.statuses.apply(enemy, def.status.id, { power: derived.attack, x: this.player.body.x, y: this.player.body.y });
+      }
+    }
+    if (hits >= 2 && this.state.settings.screenShake) this.scene.cameras.main.shake(90, 0.0025);
+  }
+
+  enemyMelee(amount, x, y, enemy = null) {
+    return this.resolver.damagePlayer(this.player, amount, { type: 'physical', sourceX: x, sourceY: y, impact: 'physical', enemy });
+  }
+
+  beginEnemyAbility(enemy, ability) {
+    const x = enemy.sprite.x, y = enemy.sprite.y;
+    if (ability.type === 'radial_aoe') enemy.abilityTelegraph = this.fx.telegraph(x, y, ability.radius, ability.telegraph || 'earth', ability.windupMs);
+    else this.fx.burst(x, y - 18, ability.telegraph === 'fire' ? 'blueflame' : ability.telegraph || 'physical', 0.72);
+  }
+
+  triggerEnemyAbility(enemy, ability, targetX, targetY) {
+    const x = enemy.sprite.x, y = enemy.sprite.y;
+    if (ability.type === 'projectile') {
+      this.projectiles.launch(ability.projectileId, {
+        team: 'enemy', x, y: y - 10, targetX, targetY,
+        damage: enemy.def.attack * ability.damageMultiplier, sourcePower: enemy.def.attack,
+        status: ability.status || null, sourceId: enemy.def.id
+      });
+      return;
+    }
+    if (ability.type === 'radial_aoe') {
+      enemy.abilityTelegraph?.destroy?.(); enemy.abilityTelegraph = null;
+      this.fx.ring(x, y, ability.radius, ability.telegraph || 'earth', 300);
+      const distance = Phaser.Math.Distance.Between(x, y, this.player.body.x, this.player.body.y);
+      if (distance <= ability.radius) {
+        const amount = this.resolver.damagePlayer(this.player, enemy.def.attack * ability.damageMultiplier, {
+          type: 'physical', sourceX: x, sourceY: y, knockback: ability.knockback || 0, impact: 'earth'
+        });
+        if (amount && ability.status && Math.random() <= (ability.status.chance ?? 1)) this.statuses.apply(this.player, ability.status.id, { power: enemy.def.attack, x, y });
+      }
+      this.audio.play('slam');
+      if (this.state.settings.screenShake) this.scene.cameras.main.shake(130, 0.004);
+    }
+  }
+
+  update(time) {
+    this.statuses.update(time);
+    this.projectiles.update(time);
+  }
+
+  snapshot(time = this.scene.time.now) {
+    return { skills: this.skills.snapshot(time), effects: this.statuses.snapshot(this.player, time) };
+  }
+
+  destroy() {
+    this.projectiles.clear();
+    this.audio.destroy();
+  }
+}

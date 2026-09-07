@@ -1,7 +1,8 @@
-import { SAVE_KEY, SAVE_VERSION } from '../config.js';
+import { GAME_VERSION, SAVE_KEY, SAVE_VERSION } from '../config.js';
 import { DEFAULT_MAP_ID, MAP_DEFS, mapForId } from '../data/world.js';
 import { createDefaultState } from './GameState.js';
 import { ITEM_DEFS } from '../data/items.js';
+import { normalizeSkillState } from '../data/skills.js';
 
 const plainObject = value => value && typeof value === 'object' && !Array.isArray(value);
 const finite = value => Number.isFinite(value);
@@ -44,13 +45,13 @@ export class SaveManager {
   }
 
   validate(value) {
-    if (!plainObject(value) || value.saveVersion !== SAVE_VERSION) throw new Error('Unsupported save schema');
+    if (!plainObject(value) || ![1, SAVE_VERSION].includes(value.saveVersion)) throw new Error('Unsupported save schema');
     const base = createDefaultState();
     if (!plainObject(value.player) || !plainObject(value.player.stats)) throw new Error('Missing player state');
     if (!Array.isArray(value.inventory) || !plainObject(value.equipment) || !plainObject(value.quests)) throw new Error('Invalid collections');
 
     const state = structuredClone(base);
-    // Preserve slot metadata for the title/load screen while keeping schema 1.
+    // Preserve slot metadata for the title/load screen while normalizing accepted schema-1/2 states to the current schema.
     // Older saves that predate savedAt/gameVersion normalize safely.
     state.savedAt = this.number(value.savedAt, 0, Number.MAX_SAFE_INTEGER, 0);
     state.gameVersion = typeof value.gameVersion === 'string' ? value.gameVersion.slice(0, 32) : base.gameVersion;
@@ -114,6 +115,8 @@ export class SaveManager {
     state.worldFlags = { ...base.worldFlags, ...(plainObject(value.worldFlags) ? structuredClone(value.worldFlags) : {}) };
     state.npcStates = plainObject(value.npcStates) ? structuredClone(value.npcStates) : {};
     state.settings = { ...base.settings, ...(plainObject(value.settings) ? value.settings : {}) };
+    if (plainObject(value.skills)) state.skills = structuredClone(value.skills);
+    normalizeSkillState(state);
     state.nextItemSequence = this.number(value.nextItemSequence, 1, 99999999, state.inventory.length + 1);
     return state;
   }
@@ -125,6 +128,7 @@ export class SaveManager {
   save(state) {
     state.savedAt = Date.now();
     state.saveVersion = SAVE_VERSION;
+    state.gameVersion = GAME_VERSION;
     localStorage.setItem(SAVE_KEY, JSON.stringify(state));
   }
 

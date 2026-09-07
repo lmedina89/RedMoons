@@ -147,7 +147,7 @@ This layout is intentional: future harvesting can continue from the preserved so
 
 ## 2026-09-07 user-created Demon / Heavenly / transformation concepts
 
-The following user-supplied full 832×3456 RGBA LPC-style sheets are preserved under `source-assets/character-concepts/2026-09-07/` and are **not runtime assets in v0.1.2.4.3**:
+The following user-supplied full 832×3456 RGBA LPC-style sheets are preserved under `source-assets/character-concepts/2026-09-07/` and are **not runtime assets in v0.1.3**:
 
 - `player-transformation/Transformation.png` — authoritative future player transformation source.
 - `demon-castle/DemonBase.png`
@@ -166,3 +166,12 @@ The user created/provided these sheets for this project. Their final gameplay ro
 ### v0.1.2.4.2 starter-handwrap runtime overlay
 
 `dist/assets/player/revised/starter-wraps-{walk,slash,backslash,halfslash}.png` is a deterministic recolor of the already-verified revised `legion-gloves-*` runtime pose layer. Geometry/alpha are unchanged; only visible RGB values are remapped to a worn brown leather-wrap palette so the Level-1 `Hide Handwraps` read as beginner gear instead of bright metal gloves. This introduces no new external artwork or license dependency.
+
+
+## v0.1.3 expanded LPC runtime crops
+
+v0.1.3 adds compact `spellcast`, `thrust`, `shoot` and `hurt` runtime crops for the active red-haired player base, the combo-safe starter clothing layers, and the Skeleton/Slate Skeleton bases. These are deterministic action-region crops/derivatives of source art already preserved by the project; the full 832×3456 authoring sheets remain outside `dist/`.
+
+The starter trouser and handwrap visual treatments are extended onto the matching expanded poses using the same v0.1.2.4.2 derivative policy: trouser appearance follows the verified player pose geometry and handwraps preserve verified glove alpha/geometry while remapping the visible palette. No external asset license is introduced by those deterministic derivatives.
+
+Bone Archer now uses a verified compact bow+arrow shoot overlay harvested from the preserved LPC Medieval Fantasy (`lpc_entry`) modular source. The exact `WEAPON_bow.png` and `WEAPON_arrow.png` sources plus the preserved LPC README are kept under `source-assets/combat-v013/classic-bow/`; the runtime composite is `dist/assets/enemies/skeleton-bow-shoot.png`. The project uses the OGA-BY 3.0 source option already documented for `lpc_entry`. Gravecaller intentionally uses its real Skeleton spellcast body action plus procedural shadow FX without inventing an unverified staff spellcast layer.

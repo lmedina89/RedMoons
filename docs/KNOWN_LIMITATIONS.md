@@ -1,26 +1,33 @@
-# Known limitations — v0.1.2.4.3
+# Known limitations — v0.1.3
 
-## v0.1.2.4.3 validation note
+## v0.1.3 validation note
 
-v0.1.2.4.2 proved that destination map/player rendering could survive the handoff, but physical iPhone Safari then exposed a stale Scene transition flag that froze all destination simulation until reset. v0.1.2.4.3 explicitly resets that transient flag on every Scene create/restart. It cannot be considered closed until repeated no-refresh Cinder ↔ Hollow travel confirms movement, attacks, enemy AI and interactions resume immediately on the physical device. The staged `Transformation.png` and Demon/Heavenly character sheets remain source-only concepts; transformation mechanics and expanded action harvesting are deliberately deferred.
+v0.1.3 is built from the physical-iPhone-validated v0.1.2.4.3 map/save baseline. Automated checks validate content references, expanded LPC crop geometry/alpha, schema-1→2 normalization, combat-system wiring, projectile/status registries and the existing world/collision invariants. The new combat behavior still requires physical iPhone Safari validation; a static validator cannot prove touch timing, live Phaser collisions, WebAudio resume behavior or combat readability.
 
-## Current gameplay/system limits
+## Current combat limits
 
-- Set definitions/names exist, but **set bonuses are not active yet**. They remain reserved for the later loot/progression milestone.
-- Guild IDs and recruitable/adventurer NPC metadata are scaffolding only. Guild creation/joining, ranks, contribution, alliances, guild wars and sieges are not active yet.
-- NPC adventurers do not yet fight, level independently or leave town; the shared skill/status framework planned for v0.1.3 is needed before that becomes meaningful.
-- Skeletons can visually use legacy equipment whose animation coverage is sufficient for their current walk/single-slash behavior. This does not make every legacy item player-compatible.
-- Carrion/Rotwing, Goblin, Spider and Golem families still use the shared basic melee AI. Distinct projectiles, charges, caster logic and status effects wait for the v0.1.3 shared skill/status framework.
-- Building interiors are not enterable yet. v0.1.2.4 proves the separate-map architecture with Ashfall Hollow; later interiors can reuse the same system.
-- Ashfall Hollow is intentionally a **small architecture/content proof**, not a finished dungeon. It has a cave presentation, walls, a return transition and a small Spider population but no dungeon quest/boss/unique loot loop yet.
-- The first transition system is intentionally explicit **Use-to-enter** rather than automatic edge streaming.
+- The first player skill set is intentionally only **Ember Cleave, Ashen Guard and Ruin Pulse**. There is no skill tree, respec, trainer, skill-level progression or configurable skill library yet; level gates simply prove persistence and slot UI.
+- Bone Archer and Gravecaller use real LPC Skeleton **shoot/spellcast body actions** plus real world projectiles/FX, but dedicated bow/quiver/staff equipment layers are not yet harvested into the runtime. We intentionally did not fake an invisible weapon or load the full source library.
+- Skeleton Spearman-specific thrust AI is deferred to v0.1.3.1 even though shared thrust animation support now exists.
+- Burn, Poison, Slow, Guard and Stagger are the only live statuses. Bleed/freeze/curse/holy vulnerability and richer stacking/resistance rules are future content.
+- Combat SFX are a lightweight procedural WebAudio foundation. Curated recorded sword/impact/UI packs and music are not part of this milestone.
+- Hurt reactions are short and do not make every hit a hard interrupt. Stagger is the explicit control effect, with an immunity window to prevent permanent stun-lock.
+- Existing Carrion/Rotwing, Goblin and Spider families still mostly use shared melee behavior; v0.1.3 specializes only the five proof enemies needed to exercise projectile/caster/AOE systems.
+- Set bonuses remain inactive. Guild systems remain scaffolding only. NPC adventurers do not yet fight/level independently.
+
+## World/content limits
+
+- Cinder Region and Ashfall Hollow deliberately keep their v0.1.2.4.3 layouts. Major map beautification/encounter redesign waits until the new combat has been device-tested so future arenas can be shaped around projectiles, telegraphs and AOE spacing.
+- Building interiors are not enterable yet. Ashfall Hollow remains a small architecture/combat test map, not a finished dungeon quest/boss/unique-loot loop.
+- The first transition system remains explicit **Use-to-enter** rather than automatic edge streaming.
+- `Transformation.png` and the Demon/Heavenly character sheets remain preserved source-only. Transformation gameplay is intentionally deferred until the combat foundation is stable.
 
 ## Animation/art limits
 
-- Ashstone Golem uses its supplied seven-frame death sheet, currently mapped to the sheet's single verified collapse row for every facing.
-- Starter Wayfarer/Ashcloth/Hide/Road clothing now uses revised full-combo-compatible presentation layers for walk, slash, one-handed slash, backslash and halfslash. The Level-1 item IDs/stats are unchanged; the physical iPhone release gate must still confirm the visual stack stays aligned in live play.
-- The supplied Wolf source PSD remains inactive; its animation atlas needs a verified export/crop pass.
-- Several user-supplied enemy/humanoid/building assets still require complete final attribution collection before store/commercial distribution. Development authorization does not replace upstream license obligations.
+- Player base and the Level-1 starter outfit have verified compact spellcast/thrust/shoot/hurt crops. Most older equipment does **not** yet have those expanded actions; safe fallback keeps unsupported armor static and hides unsupported weapon/shield layers during special actions. Selected legacy gear can be migrated later using the starter-gear pipeline.
+- Ashstone Golem uses its supplied seven-frame death sheet mapped to the single verified collapse row for every facing.
+- The supplied Wolf source PSD remains inactive until its irregular atlas receives a verified export/crop pass.
+- Several user-supplied/source assets still require final attribution/license verification before store/commercial distribution. Development authorization does not replace upstream obligations.
 
 ## Asset-loading limits
 

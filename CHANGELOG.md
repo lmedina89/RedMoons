@@ -1,5 +1,20 @@
 # Changelog
 
+## v0.1.3 — Combat Systems Foundation
+
+- Built directly on physical-iPhone-validated v0.1.2.4.3; preserves the recovered map-transition lifecycle and visual/cache fixes.
+- Added data-driven skill, status, projectile and enemy-ability registries plus shared SkillController, StatusController, ProjectileManager, CombatResolver, FxManager, AudioManager and AnimationResolver foundations.
+- Added three first player skills: Ember Cleave, Ashen Guard and Ruin Pulse, exposed through three compact touch buttons and keyboard keys 1/2/3.
+- Added Burn, Poison, Slow, Guard and Stagger status behavior with duration/tick handling, stagger immunity and movement/damage modifiers.
+- Added pooled world projectiles and initial Toxic Spit, Blueflame Bolt, Bone Arrow and Grave Hex definitions.
+- Added specialized ability hooks for Blight Imp, Blueflame Imp, Skeleton Archer, Skeleton Mage and Ashstone Golem Earthshatter.
+- Harvested the preserved LPC Medieval Fantasy bow/arrow source into a verified compact Bone Archer shoot overlay; source pieces remain under `source-assets/combat-v013/classic-bow/`.
+- Added compact spellcast/shoot/thrust/hurt LPC action crops and safe animation fallback support; ordinary four-hit sword combat remains intact.
+- Added reusable procedural combat FX/telegraph and SFX-manager foundations with mobile-conscious throttling/concurrency behavior.
+- Advanced save schema from 1 to 2 solely for persistent skill unlocks/loadout; schema-1 saves migrate in place and retain existing character/equipment/map/quest state.
+- Added Combat Test Kit and direct Archer/Mage debug teleports for physical-device validation.
+- Transformation gameplay, Demon Castle, guild systems, major map redesign and large skill trees remain intentionally out of scope.
+
 ## v0.1.2.4.3 — Transition Lifecycle Recovery
 
 ### Physical-iPhone transition repair

@@ -1,5 +1,6 @@
 import { ANIMATION_GEOMETRIES, LAYER_ASSETS } from '../data/assets.js';
 import { ITEM_DEFS } from '../data/items.js';
+import { AnimationResolver } from '../systems/AnimationResolver.js';
 
 const ROOT_X = Object.freeze({
   slash: Object.freeze([[0,0,0,0,-1,-1],[0,2,1,1,1,1],[0,0,1,-1,-1,-1],[0,-2,-1,-1,-1,-1]]),
@@ -89,14 +90,9 @@ export class LayeredCharacter {
     else this.direction = dy < 0 ? 0 : 2;
   }
 
-  resolveAnimation(asset, requestedAction) {
+  resolveAnimation(asset, requestedAction, layerKey = '') {
     const geometry = ANIMATION_GEOMETRIES[asset.geometry];
-    if (!geometry) return null;
-    if (geometry[requestedAction]) return { geometry, animation: geometry[requestedAction], action: requestedAction };
-    if (asset.attackFallback && !['idle', 'walk'].includes(requestedAction) && geometry[asset.attackFallback]) {
-      return { geometry, animation: geometry[asset.attackFallback], action: asset.attackFallback };
-    }
-    return null;
+    return AnimationResolver.resolve(asset, geometry, requestedAction, layerKey);
   }
 
   render(x, y, stateName, frameStep, baseDepth, frameProgress = null) {
@@ -105,10 +101,10 @@ export class LayeredCharacter {
     const requestedAction = stateName || 'idle';
     const rootFrames = ROOT_X[requestedAction]?.[this.direction];
     const rootX = rootFrames ? (rootFrames[Math.max(0, Math.min(rootFrames.length - 1, frameStep || 0))] || 0) * this.scale : 0;
-    for (const layer of this.layers.values()) {
+    for (const [layerKey, layer] of this.layers.entries()) {
       if (!layer.asset) continue;
       const asset = layer.asset;
-      const resolved = this.resolveAnimation(asset, requestedAction);
+      const resolved = this.resolveAnimation(asset, requestedAction, layerKey);
       if (!resolved) { layer.sprite.setVisible(false); continue; }
       const { animation } = resolved;
       const texture = asset[animation.source];
@@ -133,9 +129,9 @@ export class LayeredCharacter {
 
   missingTextureKeys(requestedAction = 'idle') {
     const missing = [];
-    for (const layer of this.layers.values()) {
+    for (const [layerKey, layer] of this.layers.entries()) {
       if (!layer.asset) continue;
-      const resolved = this.resolveAnimation(layer.asset, requestedAction);
+      const resolved = this.resolveAnimation(layer.asset, requestedAction, layerKey);
       if (!resolved) continue;
       const textureKey = layer.asset[resolved.animation.source];
       if (textureKey && !this.scene.textures.exists(textureKey)) missing.push(textureKey);

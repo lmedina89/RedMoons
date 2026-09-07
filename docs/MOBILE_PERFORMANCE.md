@@ -1,10 +1,18 @@
-# Mobile Performance Considerations — v0.1.2.4.3
+# Mobile Performance Considerations — v0.1.3
 
 ## v0.1.2.4.3 transition memory/lifecycle policy
 
 Map assets remain **lazy by first visit**, but textures already loaded during the current browser session are retained. Physical iPhone Safari testing showed that eager TextureManager eviction during Phaser Scene restarts could leave the newly constructed player layer stack without usable textures even though the map itself rendered. Current two-map memory remains manageable, so reliability takes precedence over aggressive eviction in this hotfix. A later cache-eviction policy must be device-tested behind a clean scene handoff before reintroduction.
 
 Hell RPG remains designed first around iPhone-landscape constraints rather than treating mobile optimization as a final cleanup pass.
+
+## v0.1.3 combat/runtime policy
+
+Combat growth is bounded rather than allocation-heavy. `ProjectileManager` owns a fixed **40-sprite projectile pool**; `DamageNumberPool` reuses 28 text objects; `FxManager` preallocates small reusable impact/trail sprite pools and only uses short-lived Graphics objects for larger rings/telegraphs. Enemy decision work remains throttled and distance-gated. Temporary statuses and cooldowns are runtime-only and are not written into every save checkpoint.
+
+The new spellcast/thrust/shoot/hurt art is stored as compact 64×64 action crops instead of preloading the original 832×3456 LPC authoring sheets. Only the player/current gear and actors available on the active map enter its asset package. This keeps the new animation vocabulary compatible with the map-scoped loading rule.
+
+`AudioManager` currently synthesizes short SFX with WebAudio rather than decoding a large sound library. It is gesture-unlocked and throttles repeated sound IDs. Physical iPhone testing still needs to confirm Safari background/resume behavior before this foundation is considered polished.
 
 ## Existing runtime discipline
 
@@ -68,6 +76,6 @@ The current Cinder package is still the heaviest because multiple layered NPC/Sk
 - smaller/precomposed actor equipment atlases for fixed NPC/enemy loadouts;
 - ref-counted shared texture ownership if multiple concurrent scenes are introduced;
 - spatial buckets/chunk-owned actor activation for substantially larger exterior maps;
-- capped projectile/particle pools for v0.1.3 skills and FX;
-- audio decode/voice caps when the audio system arrives;
+- continue profiling the fixed projectile/FX pools as encounter density grows;
+- add recorded-audio decode/voice caps when curated sound assets replace/augment procedural SFX;
 - physical-device Safari memory profiling after major asset milestones.

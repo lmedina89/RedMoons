@@ -57,6 +57,8 @@ export const SPAWN_REGIONS = Object.freeze([
   { id: 'spawn_skeleton_edge', enemyId: 'enemy_ash_skeleton', x: 1770, y: 800, width: 160, height: 300, count: 3, respawnMs: 9400 },
 
   // Bone Road: fewer but more dangerous encounters.
+  { id: 'spawn_skeleton_archer', enemyId: 'enemy_skeleton_archer', x: 1965, y: 460, width: 210, height: 260, count: 1, respawnMs: 11200 },
+  { id: 'spawn_skeleton_mage', enemyId: 'enemy_skeleton_mage', x: 2160, y: 260, width: 190, height: 260, count: 1, respawnMs: 13200 },
   { id: 'spawn_slate_road', enemyId: 'enemy_slate_revenant', x: 1980, y: 150, width: 240, height: 410, count: 2, respawnMs: 10800 },
   { id: 'spawn_bloodbone_road', enemyId: 'enemy_bloodbone', x: 2110, y: 675, width: 230, height: 350, count: 2, respawnMs: 12200 },
   { id: 'spawn_gilded_guard', enemyId: 'enemy_gilded_guard', x: 2290, y: 165, width: 190, height: 300, count: 1, respawnMs: 15500 },

@@ -60,6 +60,8 @@ export class WorldScene extends Phaser.Scene {
     this.createNPCs();
     if (DEBUG) this.dynamicCollisionDebug = this.add.graphics().setDepth(15001);
     this.combat = new CombatSystem(this, this.state, this.player, this.enemies, gameEvents);
+    this.player.combat = this.combat;
+    for (const enemy of this.enemies) enemy.combat = this.combat;
     this.createLootPool();
     this.currentZone = null;
     this.lastHudUpdate = 0;
@@ -79,6 +81,7 @@ export class WorldScene extends Phaser.Scene {
       actionInput.unbind();
       window.removeEventListener('pagehide', this.onPageHide);
       document.removeEventListener('visibilitychange', this.onVisibilityChange);
+      this.combat?.destroy();
     });
     this.updateZone();
     this.emitState();
@@ -320,7 +323,9 @@ export class WorldScene extends Phaser.Scene {
   createEnemies() {
     this.enemies = [];
     const callbacks = {
-      hitPlayer: (amount, x, y) => this.hitPlayer(amount, x, y),
+      hitPlayer: (amount, x, y, enemy) => this.hitPlayer(amount, x, y, enemy),
+      beginAbility: (enemy, ability) => this.combat?.beginEnemyAbility(enemy, ability),
+      triggerAbility: (enemy, ability, targetX, targetY) => this.combat?.triggerEnemyAbility(enemy, ability, targetX, targetY),
       damageNumber: (x, y, amount, hostile) => this.combat?.damageNumbers.show(x, y, amount, hostile),
       died: enemy => this.onEnemyDied(enemy)
     };
@@ -376,7 +381,10 @@ export class WorldScene extends Phaser.Scene {
       }
     }
     this.queueKillReward(def, coins);
-    if (xpResult.levels) gameEvents.emit('toast', { text: `Level ${this.state.player.level}! +5 stat points, +1 skill point`, tone: 'level' });
+    if (xpResult.levels) {
+      gameEvents.emit('toast', { text: `Level ${this.state.player.level}! +5 stat points, +1 skill point`, tone: 'level' });
+      this.combat?.skills.syncUnlocks(true);
+    }
     this.emitState();
     this.safeSave();
   }
@@ -396,11 +404,13 @@ export class WorldScene extends Phaser.Scene {
     });
   }
 
-  hitPlayer(amount) {
-    const damage = this.player.takeDamage(amount, this.time.now);
-    if (!damage) return;
-    this.combat.damageNumbers.show(this.player.body.x, this.player.body.y - 40, damage, true);
-    gameEvents.emit('hit', { damage });
+  hitPlayer(amount, x = this.player.body.x, y = this.player.body.y, enemy = null) {
+    return this.combat?.enemyMelee(amount, x, y, enemy) || 0;
+  }
+
+  afterPlayerDamage(amount) {
+    if (!amount) return;
+    gameEvents.emit('hit', { damage: amount });
     if (this.player.dead && !this.deathAnnounced) {
       this.deathAnnounced = true;
       gameEvents.emit('death', { text: 'The ash takes you—but Cinder Refuge still calls.' });
@@ -511,6 +521,9 @@ export class WorldScene extends Phaser.Scene {
     if (!command) return;
     if (command.type === 'attack') actionInput.attackQueued = true;
     if (command.type === 'interact') actionInput.interactQueued = true;
+    if (command.type === 'skill') {
+      if (this.combat?.skills.useSlot(command.slot)) this.emitState();
+    }
     if (command.type === 'move') actionInput.setTouchMovement(command.x, command.y, command.active);
     if (command.type === 'equip') void this.equipItem(command.instanceId);
     if (command.type === 'unequip') { this.inventory.unequip(command.slot); this.player.refreshEquipment(); this.emitState(); this.safeSave(); }
@@ -547,7 +560,10 @@ export class WorldScene extends Phaser.Scene {
     };
     if (action === 'hollow') { this.transitionToMap('map_ashfall_hollow', 'hollow_center'); return; }
     if (action === 'refuge') { this.transitionToMap(DEFAULT_MAP_ID, 'cinder_start'); return; }
-    if (action === 'level') grantXp(this.state, 650);
+    if (action === 'level') {
+      const result = grantXp(this.state, 650);
+      if (result.levels) this.combat?.skills.syncUnlocks(true);
+    }
     if (action === 'vesra') moveNear(this.npcs.find(npc => npc.def.id === 'npc_vesra'));
     if (action === 'merchant') moveNear(this.npcs.find(npc => npc.def.id === 'npc_merchant'));
     if (action === 'imp') moveNear(this.enemies.find(enemy => enemy.sprite.active && enemy.def.id === 'enemy_cinder_imp')?.sprite);
@@ -559,6 +575,8 @@ export class WorldScene extends Phaser.Scene {
     if (action === 'carrion') moveNear(this.enemies.find(enemy => enemy.sprite.active && enemy.def.id === 'enemy_carrion_beast')?.sprite);
     if (action === 'rotwing') moveNear(this.enemies.find(enemy => enemy.sprite.active && enemy.def.id === 'enemy_rotwing_ravager')?.sprite);
     if (action === 'slate') moveNear(this.enemies.find(enemy => enemy.sprite.active && enemy.def.id === 'enemy_slate_revenant')?.sprite);
+    if (action === 'archer') moveNear(this.enemies.find(enemy => enemy.sprite.active && enemy.def.id === 'enemy_skeleton_archer')?.sprite);
+    if (action === 'mage') moveNear(this.enemies.find(enemy => enemy.sprite.active && enemy.def.id === 'enemy_skeleton_mage')?.sprite);
     if (action === 'bloodbone') moveNear(this.enemies.find(enemy => enemy.sprite.active && enemy.def.id === 'enemy_bloodbone')?.sprite);
     if (action === 'gilded') moveNear(this.enemies.find(enemy => enemy.sprite.active && enemy.def.id === 'enemy_gilded_guard')?.sprite);
     if (action === 'golem') moveNear(this.enemies.find(enemy => enemy.sprite.active && enemy.def.id === 'enemy_ashstone_golem')?.sprite);
@@ -585,6 +603,15 @@ export class WorldScene extends Phaser.Scene {
         'chest_silver_legion', 'chest_legion', 'chest_steel_plate', 'hands_legion', 'feet_leather_revised'
       ];
       for (const itemId of ids) if (!this.state.inventory.some(item => item.itemId === itemId)) this.inventory.add(this.inventory.createItem(itemId, 'normal'));
+    }
+    if (action === 'combatkit') {
+      this.combat?.skills.refillAndUnlock();
+      const derived = derivedStats(this.state);
+      this.state.player.hp = derived.maxHp;
+      this.combat?.statuses.clear(this.player);
+      this.player.dead = false;
+      this.deathAnnounced = false;
+      gameEvents.emit('death-cleared');
     }
     if (action === 'wings') {
       this.state.worldFlags.wingsUnlocked = true;
@@ -620,7 +647,7 @@ export class WorldScene extends Phaser.Scene {
     const derived = derivedStats(this.state);
     this.state.player.hp = Math.min(this.state.player.hp, derived.maxHp);
     this.state.player.essence = Math.min(this.state.player.essence, derived.maxEssence);
-    gameEvents.emit('state', { state: this.state, derived, quests: this.questSystem?.activeSummary() || [] });
+    gameEvents.emit('state', { state: this.state, derived, quests: this.questSystem?.activeSummary() || [], combat: this.combat?.snapshot(this.time.now) || { skills: [], effects: [] } });
   }
 
   safeSave() { try { this.saveManager.save(this.state); } catch (error) { console.warn('[Ashfall] Save failed', error); gameEvents.emit('toast', { text: 'Save could not be written on this device.', tone: 'danger' }); } }
@@ -649,7 +676,9 @@ export class WorldScene extends Phaser.Scene {
       if (DEBUG) this.drawDynamicCollisionDebug();
       return;
     }
+    this.combat?.update(time, delta);
     this.player.update(time, delta);
+    for (let slot = 0; slot < 3; slot += 1) if (actionInput.consumeSkill(slot)) this.combat?.skills.useSlot(slot);
     if (DEBUG) this.drawDynamicCollisionDebug();
     if (actionInput.consumeInteract()) this.interact();
     for (const enemy of this.enemies) enemy.update(time, delta, this.player);

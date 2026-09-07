@@ -1,42 +1,38 @@
-# v0.1.2.4.3 QA report — Transition Lifecycle Recovery
+# v0.1.3 QA report — Combat Systems Foundation
 
 ## Scope
 
-This is a narrow lifecycle hotfix built from v0.1.2.4.2. It does not add combat skills, transformation gameplay, content, maps or save-schema changes.
+v0.1.3 is built directly from the physical-iPhone-validated **v0.1.2.4.3** baseline. It intentionally preserves the two-map layout and transition lifecycle while adding the first reusable skill/status/projectile/FX/audio/expanded-animation architecture. Save schema advances from 1 to 2 only for persistent skill unlocks and three skill-slot IDs.
 
-## Physical-device finding
+## Automated validation completed before packaging
 
-v0.1.2.4.2 fixed the previous blank/invisible-player handoff: Ashfall Hollow and the player could render correctly after travel. Physical iPhone Safari testing then exposed a second lifecycle defect: the destination Scene was visually present but all simulation remained frozen until reset/reload.
-
-## Root cause
-
-`transitionToMap()` sets `this.transitioning = true` before destination asset preparation/fade. `WorldScene.update()` intentionally returns while that flag is true so the source-map player body cannot overwrite committed destination coordinates. Phaser `Scene.restart()` restarts the same Scene instance rather than constructing a new `WorldScene`, so the custom field remained true after restart. The destination rendered, but its update loop was permanently gated.
-
-## Repair
-
-`WorldScene.create()` now resets `this.transitioning = false` on every Scene creation/restart before ActionInput is rebound and before the destination gameplay loop begins. No input/physics pause API was involved; the stale transition guard itself was the freeze.
-
-The following v0.1.2.4.2 safeguards remain unchanged:
-- prepare destination assets before committing map identity/coordinates;
-- retain already-loaded textures for the browser session;
-- deterministic layered-player visual reconstruction and delayed integrity recovery;
-- combo-safe Level-1 starter visuals;
-- schema-1 map-aware save normalization.
-
-## Automated validation
-
-`npm run check` requires the Scene-create transition reset to exist and to occur before ActionInput is rebound. It also retains all existing map, save, asset, starter-gear, collision, loot and animation invariants. All JavaScript is checked with `node --check` before packaging.
+- All registered runtime asset paths exist and all JavaScript passes `node --check`.
+- Expanded player/starter/Skeleton spellcast, thrust, shoot and hurt crop dimensions and non-empty source frames are validated against the actual PNG alpha data.
+- The original four-hit sword geometry, starter gear compatibility, map transition ordering/lifecycle reset, collision model, loot eligibility and source/runtime separation remain regression checks.
+- Skill definitions are limited to the planned Level 1/3/5 foundation set.
+- Burn, Poison, Slow, Guard and Stagger definitions are present; all four projectile records and five enemy ability records resolve.
+- Blight Imp, Blueflame Imp, Bone Archer, Gravecaller and Ashstone Golem reference the intended abilities and the new Skeleton specialists have real world spawns.
+- Schema-1 state is normalized to schema 2, retains old build metadata until next write, preserves existing map/equipment data, and gains skill unlocks appropriate to its saved level.
+- Mobile skill buttons, keyboard 1/2/3 input and Combat Test Kit wiring are statically verified.
 
 ## Physical iPhone release gate
 
-1. Cinder → Hollow: immediately walk and attack; no reset/refresh.
-2. Confirm local Spiders continue updating and can attack/chase.
-3. Use the southern Hollow return transition.
-4. On Cinder arrival, immediately walk and attack again.
-5. Repeat at least five round trips.
-6. Save in Hollow → reload → Continue; confirm movement/enemy simulation immediately.
-7. Save in Cinder → reload → Continue; same expectation.
-8. Background/foreground Safari and repeat a map transition.
-9. Check for duplicate touches, duplicate toasts, stuck joystick state, frozen enemies or degraded performance.
+1. **Regression first:** Cinder → Hollow → Cinder several times; move, Attack and use skills immediately after every transition. No reset/refresh, invisible player or frozen simulation.
+2. New Game: confirm starter clothes remain aligned through all four ordinary sword attacks.
+3. Level 1: use **Ember Cleave** repeatedly; verify Essence cost, 4s cooldown, cone targeting, fire FX and occasional Burn.
+4. Use Combat Test Kit or level naturally: confirm **Ashen Guard** and **Ruin Pulse** populate slots at Levels 3/5 and survive save/reload.
+5. Ashen Guard: compare incoming damage while active and verify it expires; ensure Stagger resistance never creates permanent control immunity.
+6. Ruin Pulse: test several enemies around the player; verify radial hit, knockback/Stagger and no permanent enemy lock.
+7. Blight Imp: dodge Toxic Spit; on hit verify Poison ticks/stacking and expiration.
+8. Blueflame Imp: dodge Blueflame Bolt; on hit verify Burn behavior.
+9. Bone Archer: verify the visible bow+arrow shoot overlay stays aligned through all facings, then confirm straight non-homing arrow travel, wall collision/lifetime and damage on hit.
+10. Gravecaller: verify spellcast action, Grave Hex travel and temporary Slow.
+11. Ashstone Golem: verify visible Earthshatter ground telegraph appears before the slam and movement can escape it.
+12. Hurt/Stagger: confirm the player regains movement/Attack/skills after effects expire.
+13. Save a pre-v0.1.3/schema-1 character at Level 3+ or 5, deploy this build, Continue, and verify map/location/equipment/progression remain intact while correct skills appear.
+14. Background Safari and return during/after combat; verify input, projectiles, status timers and SFX do not duplicate or permanently stop.
+15. Run 10–15 minutes of combat and multiple transitions; look for projectile trails that never disappear, increasing slowdown, duplicated sounds/toasts or stuck telegraphs.
 
-v0.1.2.4.3 becomes the baseline only after this physical-device lifecycle gate passes.
+## Release decision
+
+Automated checks can establish structural correctness but cannot substitute for the physical-device gate above. v0.1.3 should not become the next stable checkpoint until player skills, the five enemy ability proofs, schema migration and the existing map-transition regression all pass on iPhone Safari.

@@ -1,0 +1,2 @@
+f6a2da02fb6dc4f95dec6fe512883e895ff28f1c41c5655545688702047b7a2c  source-assets/combat-v013/classic-bow/WEAPON_bow.png
+35833d5ff570c73638d87672456a3bbc952d0d147697576bf0f15829fded4f6b  source-assets/combat-v013/classic-bow/WEAPON_arrow.png

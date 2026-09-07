@@ -128,6 +128,10 @@ export class UIManager {
 
     $('#attack-button').addEventListener('pointerdown', event => { event.preventDefault(); gameEvents.emit('command', { type: 'attack' }); });
     $('#interact-button').addEventListener('pointerup', event => { event.preventDefault(); gameEvents.emit('command', { type: 'interact' }); });
+    document.querySelectorAll('[data-skill-slot]').forEach(button => button.addEventListener('pointerdown', event => {
+      event.preventDefault();
+      if (!button.disabled) gameEvents.emit('command', { type: 'skill', slot: Number(button.dataset.skillSlot) });
+    }));
   }
 
   renderHud() {
@@ -146,6 +150,17 @@ export class UIManager {
     $('#stat-badge').textContent = player.unspentStatPoints;
     $('#stat-badge').classList.toggle('hidden', player.unspentStatPoints <= 0);
     $('#quest-tracker').innerHTML = quests.length ? `<strong>${quests[0].ready ? 'Return to Vesra' : quests[0].name}</strong><small>${quests[0].ready ? 'Objective complete' : `${quests[0].summary} • ${quests[0].progress}`}</small>` : `<strong>Warden Vesra</strong><small>Speak with the quest warden in Cinder Refuge.</small>`;
+    for (const skill of this.snapshot.combat?.skills || []) {
+      const button = $(`#skill-button-${skill.slot}`);
+      if (!button) continue;
+      button.disabled = !skill.id || !skill.unlocked;
+      button.classList.toggle('unavailable', Boolean(skill.id && !skill.ready));
+      button.classList.toggle('cooling', skill.remainingMs > 0);
+      button.querySelector('span').textContent = skill.icon;
+      button.querySelector('small').textContent = skill.id ? skill.shortName : 'Locked';
+      button.querySelector('b').textContent = skill.remainingMs > 0 ? `${Math.ceil(skill.remainingMs / 1000)}s` : (skill.id && player.essence < skill.essenceCost ? `${skill.essenceCost}E` : '');
+      button.setAttribute('aria-label', skill.id ? `${skill.name}, ${skill.remainingMs > 0 ? `${Math.ceil(skill.remainingMs / 1000)} seconds cooldown` : `${skill.essenceCost} Essence`}` : `Skill ${skill.slot + 1} locked`);
+    }
   }
 
   openPanel(requestedPanel) {
@@ -291,7 +306,7 @@ export class UIManager {
       return `<div class="derived-card"><small>${this.statLabel(key)}</small><strong>${this.formatNumber(value)}</strong><span>${impact ? `+${this.formatNumber(impact)} from gear` : 'base value'}</span></div>`;
     }).join('');
     const directGear = Object.entries(equipmentBonuses(state)).filter(([, value]) => value).map(([key, value]) => `<span class="bonus-chip">+${value} ${this.statLabel(key)}</span>`).join('') || '<span class="empty-copy">No direct equipment bonuses.</span>';
-    $('#modal-content').innerHTML = `${tabs}<div class="character-summary"><div><small>LEVEL</small><strong>${p.level}</strong></div><div><small>EXPERIENCE</small><strong>${p.level >= 10 ? 'CAP' : `${p.xp} / ${needed}`}</strong></div><div><small>ASH COIN</small><strong>${p.currency}</strong></div><div><small>STAT POINTS</small><strong>${p.unspentStatPoints}</strong></div></div><div class="character-layout"><section class="character-panel"><h3>Equipped Gear</h3><div class="equipment-sheet">${this.equipmentSlotCards(state, { unequip: true })}</div></section><section class="character-panel"><h3>Primary Stats</h3><div class="character-primary-grid">${primary}</div><h3 class="character-subheading">Combat Stats</h3><div class="derived-grid character-derived">${combat}</div><h3 class="character-subheading">Equipment Buffs</h3><div class="bonus-list">${directGear}</div><h3 class="character-subheading">Active Effects</h3><p class="empty-copy effect-copy">None active.</p></section></div>`;
+    $('#modal-content').innerHTML = `${tabs}<div class="character-summary"><div><small>LEVEL</small><strong>${p.level}</strong></div><div><small>EXPERIENCE</small><strong>${p.level >= 10 ? 'CAP' : `${p.xp} / ${needed}`}</strong></div><div><small>ASH COIN</small><strong>${p.currency}</strong></div><div><small>STAT POINTS</small><strong>${p.unspentStatPoints}</strong></div></div><div class="character-layout"><section class="character-panel"><h3>Equipped Gear</h3><div class="equipment-sheet">${this.equipmentSlotCards(state, { unequip: true })}</div></section><section class="character-panel"><h3>Primary Stats</h3><div class="character-primary-grid">${primary}</div><h3 class="character-subheading">Combat Stats</h3><div class="derived-grid character-derived">${combat}</div><h3 class="character-subheading">Equipment Buffs</h3><div class="bonus-list">${directGear}</div><h3 class="character-subheading">Active Effects</h3><div class="bonus-list">${(this.snapshot.combat?.effects || []).map(effect => `<span class="bonus-chip status-${effect.kind}">${effect.name}${effect.stacks > 1 ? ` ×${effect.stacks}` : ''} • ${Math.ceil(effect.remainingMs / 1000)}s</span>`).join('') || '<span class="empty-copy">None active.</span>'}</div></section></div>`;
     document.querySelectorAll('[data-char-unequip]').forEach(button => button.addEventListener('click', event => {
       event.stopPropagation();
       gameEvents.emit('command', { type: 'unequip', slot: button.dataset.charUnequip });

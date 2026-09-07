@@ -1,4 +1,4 @@
-# Architecture — v0.1.2.4.3
+# Architecture — v0.1.3
 
 ## Map-transition lifecycle invariant (v0.1.2.4.3)
 
@@ -54,11 +54,11 @@ Randomized visible enemy weapon loadouts are **not** part of v0.1.1.1. Limited w
 
 ## Persistent state
 
-All persistent content uses stable IDs. Save schema 1 stores progression, map/entry identity and position, primary stats, unspent points, item instances, equipment slot references, quests, NPC/world flags and settings.
+All persistent content uses stable IDs. Save schema 2 stores progression, map/entry identity and position, primary stats, unspent points, item instances, equipment slot references, quests, NPC/world flags, settings, unlocked skills and the three equipped skill-slot IDs. Schema-1 saves migrate in place based on the character's existing level.
 
 Equipment has 12 named references: Head, Shoulders, Chest, Legs, Hands, Feet, Weapon, Offhand, Necklace, Ring 1, Ring 2 and Wings. Inventory owns item instances; equipment only references them. The Wings slot exists even while its progression gate is locked.
 
-The validator reconstructs a safe state, clamps numeric values, filters unknown item IDs, rejects wrong-slot/duplicate equipment references and normalizes known quest objectives. Defaults are merged into world flags so old schema-1 saves automatically gain `wingsUnlocked: false`. A narrow content migration upgrades only an equipped legacy Rustblade to the current player-ready Arming Sword. JSON parse failure is isolated rather than allowed to stop boot.
+The validator reconstructs a safe state, clamps numeric values, filters unknown item IDs, rejects wrong-slot/duplicate equipment references and normalizes known quest objectives. Defaults are merged into world flags so old saves automatically gain `wingsUnlocked: false`; schema-1 saves also gain the v0.1.3 skills earned by their existing level. A narrow content migration upgrades only an equipped legacy Rustblade to the current player-ready Arming Sword. JSON parse failure is isolated rather than allowed to stop boot.
 
 ## Input and UI
 
@@ -75,13 +75,25 @@ Skeleton loadouts are defined in `data/enemies.js` as weighted per-slot pools. A
 NPC definitions now include stable future-facing identity/activity/guild fields without implementing guild logic. Zone records likewise expose level ranges, safety/hostility, biome, event tags and dungeon hooks.
 
 Equipment set definitions live beside items as data-only metadata. `setId`/`gearFamily` can be authored before the bonus evaluator exists, avoiding a later item-schema rewrite.
+## v0.1.3 combat architecture
+
+`CombatSystem` is now the scene-level coordinator rather than the place where every ability is hard-coded. It composes focused systems: `SkillController` for unlocks/slots/cooldowns/Essence, `CombatResolver` for shared typed damage math, `StatusController` for timed effects and DOT/control, `ProjectileManager` for a fixed pool of physical world projectiles, `FxManager` for reusable procedural telegraphs/impacts/trails, `AudioManager` for mobile-unlocked/throttled SFX, and `AnimationResolver` for safe action selection across uneven LPC layer coverage.
+
+Player skill content lives in `data/skills.js`; statuses, projectiles and enemy abilities live in their own immutable registries. The first proof set is Ember Cleave, Ashen Guard and Ruin Pulse plus Toxic Spit, Blueflame Bolt, Bone Arrow, Grave Hex and Earthshatter. Damage carries extensible tags (`physical`, `fire`, `poison`, `holy`, `shadow`) so later transformations, bosses and resistances do not need a parallel damage path.
+
+Projectile actors are pooled and have speed, lifetime, radius, collision, trail/impact and payload definitions. Enemy abilities capture their target position at windup so arrows/spells remain dodgeable instead of homing. Earthshatter uses a visible ground telegraph before its radial hit. Statuses are target-owned timed records; Burn/Poison tick through the same resolver, Slow modifies movement, Guard modifies incoming damage/stagger chance and Stagger temporarily locks actions with an immunity window.
+
+The player and base Skeleton families now have compact `spellcast`, `thrust`, `shoot` and `hurt` runtime crops harvested from preserved full LPC sources. `AnimationResolver` only uses an expanded action when the visual layer really supplies it. During unsupported special actions, old armor holds a safe idle pose and unsupported weapons/shields hide temporarily rather than sampling nonexistent frames or falling back to an unrelated slash. This is the same selective-migration model planned for future legacy gear.
+
+Three compact mobile skill buttons share the same commands as keyboard keys 1/2/3. Normal Attack remains independent and keeps the existing four-hit weapon profile. Save schema 2 persists unlocked skill IDs and slot assignments; cooldowns and temporary statuses are deliberately runtime-only.
+
 ## v0.1.2.4 map and asset architecture
 
 `data/world.js` now separates **maps** from **zones**. A map owns world dimensions, renderer identity, entry points, zone membership and world-art asset keys. A zone remains gameplay metadata such as name, level band, hostility and biome. This allows several gameplay zones to share one exterior map while caves/interiors/distant regions use separate maps.
 
 `MAP_TRANSITIONS` links a source map/position to a destination `mapId` + stable `entryPointId`. `WorldScene` freezes source-map input, prepares and verifies the destination texture package, then commits the destination identity/entry coordinates, saves, fades out and restarts. Scene initialization resolves the active map from persisted state and explicitly reconstructs the layered player. v0.1.2.4.2 keeps already-loaded textures cached for the current browser session instead of evicting them during the restart; this is a deliberate WebKit reliability hotfix, not a return to global startup preloading. The first implementation connects `map_cinder_region` and `map_ashfall_hollow` in both directions.
 
-Save schema remains 1. `SaveManager` treats missing/invalid map metadata as the Cinder Region and clamps positions against the selected map bounds. This lets older saves migrate safely without a broad schema rewrite. Existing equipment slots are also preserved rather than force-populating the new starter clothes.
+Save schema is 2 in v0.1.3. `SaveManager` still accepts schema 1, treats missing/invalid map metadata as the Cinder Region, clamps positions against selected-map bounds, and normalizes skill unlocks/slots from the saved character level. Existing equipment and map state are preserved rather than force-populated.
 
 `systems/AssetResolver.js` converts the active map plus current actor/item definitions into a concrete texture package. It includes map world art, player base/current equipment, local enemy textures and possible layered loadout art, and local NPC visuals. Equipping an item can request its visual dependencies lazily. This keeps the central immutable asset registry while removing the assumption that every registered texture must be resident on every map.
 

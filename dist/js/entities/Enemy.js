@@ -1,4 +1,7 @@
+import { ENEMY_ABILITY_DEFS } from '../data/abilities.js';
 import { LayeredCharacter, createActorEquipmentState } from './LayeredCharacter.js';
+
+const ACTION_FRAMES = Object.freeze({ slash: 6, spellcast: 7, thrust: 8, shoot: 13, hurt: 6, attack: 6 });
 
 function weightedEntry(entries = []) {
   const valid = entries.filter(entry => entry && Number(entry.weight) > 0);
@@ -12,9 +15,7 @@ function weightedEntry(entries = []) {
   return valid.at(-1) || null;
 }
 
-function weightedChoice(entries = []) {
-  return weightedEntry(entries)?.itemId || null;
-}
+function weightedChoice(entries = []) { return weightedEntry(entries)?.itemId || null; }
 
 function rollLoadout(definition) {
   if (definition.fixedLoadout) return { ...definition.fixedLoadout };
@@ -34,24 +35,20 @@ export class Enemy {
     this.spawn = spawn;
     this.index = index;
     this.callbacks = callbacks;
+    this.combat = null;
     this.layered = Boolean(definition.layered);
     this.visualSpec = definition;
     if (this.layered) {
       this.sprite = scene.physics.add.sprite(0, 0, 'solid').setVisible(false);
-      // Keep layered actors on an unscaled helper sprite. Scaling the 2x2
-      // texture also scales Arcade body dimensions and creates huge phantom
-      // rectangles in diagnostics and proximity behavior.
       this.sprite.body.setSize(18, 16, false).setOffset(-8, 2);
       this.actorState = createActorEquipmentState({});
       this.visual = new LayeredCharacter(scene, 0, 0, this.actorState, (definition.scale || 1) * 1.3, {
-        baseAsset: definition.baseVisual || 'enemy_skeleton_base',
-        equipmentPolicy: 'npc'
+        baseAsset: definition.baseVisual || 'enemy_skeleton_base', equipmentPolicy: 'npc'
       });
     } else {
       this.visualSpec = this.rollVisualSpec();
       this.sprite = scene.physics.add.sprite(0, 0, this.visualSpec.walkTexture, 0)
-        .setScale((definition.scale || 1) * 1.25)
-        .setOrigin(0.5, definition.originY || 0.7);
+        .setScale((definition.scale || 1) * 1.25).setOrigin(0.5, definition.originY || 0.7);
       const body = definition.body || {};
       this.sprite.body.setSize(body.width || 24, body.height || 28).setOffset(body.offsetX ?? 20, body.offsetY ?? 28);
     }
@@ -70,6 +67,17 @@ export class Enemy {
     this.deathEndsAt = 0;
     this.animClock = Math.random() * 500;
     this.loadout = {};
+    this.hurtUntil = 0;
+    this.knockbackUntil = 0;
+    this.knockbackVX = 0;
+    this.knockbackVY = 0;
+    this.currentAbility = null;
+    this.abilityStartedAt = 0;
+    this.abilityTriggered = false;
+    this.abilityTargetX = 0;
+    this.abilityTargetY = 0;
+    this.abilityTelegraph = null;
+    this.abilityCooldowns = new Map();
     this.respawn(0);
   }
 
@@ -86,6 +94,14 @@ export class Enemy {
     this.visual.direction = this.direction;
   }
 
+  clearAbility() {
+    this.abilityTelegraph?.destroy?.();
+    this.abilityTelegraph = null;
+    this.currentAbility = null;
+    this.abilityStartedAt = 0;
+    this.abilityTriggered = false;
+  }
+
   respawn(time) {
     const margin = 36;
     const usableW = Math.max(1, this.spawn.width - margin * 2);
@@ -94,18 +110,23 @@ export class Enemy {
     this.homeY = this.spawn.y + margin + ((this.index * 83 + Math.random() * 53) % usableH);
     if (!this.layered) {
       this.visualSpec = this.rollVisualSpec();
-      this.sprite.setTexture(this.visualSpec.walkTexture, 0)
-        .setOrigin(0.5, this.def.originY || 0.7)
-        .setScale((this.def.scale || 1) * 1.25);
+      this.sprite.setTexture(this.visualSpec.walkTexture, 0).setOrigin(0.5, this.def.originY || 0.7).setScale((this.def.scale || 1) * 1.25);
     }
     this.sprite.setPosition(this.homeX, this.homeY).setActive(true).setVisible(!this.layered).clearTint();
     this.sprite.body.enable = true;
     this.hp = this.def.maxHp;
     this.deathStartedAt = 0;
     this.deathEndsAt = 0;
+    this.hurtUntil = 0;
+    this.knockbackUntil = 0;
+    this.knockbackVX = 0;
+    this.knockbackVY = 0;
     this.state = 'idle';
     this.stateUntil = time + 450 + Math.random() * 800;
     this.sprite.setVelocity(0);
+    this.clearAbility();
+    this.abilityCooldowns.clear();
+    this.combat?.statuses.clear(this);
     this.applyLoadout();
     this.visual?.setVisible(true);
     this.visual?.clearTint();
@@ -124,12 +145,76 @@ export class Enemy {
     this.visual.render(this.sprite.x, this.sprite.y, action, frameStep, this.sprite.y, progress);
   }
 
+  availableAbility(time, distance) {
+    for (const id of this.def.abilities || []) {
+      const ability = ENEMY_ABILITY_DEFS[id];
+      if (!ability || time < (this.abilityCooldowns.get(id) || 0)) continue;
+      if (distance > ability.range || distance < (ability.minRange || 0)) continue;
+      return ability;
+    }
+    return null;
+  }
+
+  beginAbility(ability, player, time) {
+    this.currentAbility = ability;
+    this.abilityStartedAt = time;
+    this.abilityTriggered = false;
+    this.abilityTargetX = player.body.x;
+    this.abilityTargetY = player.body.y;
+    this.state = 'ability';
+    this.stateUntil = time + ability.windupMs;
+    this.abilityCooldowns.set(ability.id, time + ability.cooldownMs);
+    this.sprite.setVelocity(0);
+    this.setDirection(this.abilityTargetX - this.sprite.x, this.abilityTargetY - this.sprite.y);
+    this.callbacks.beginAbility?.(this, ability);
+  }
+
+  updateAbility(time) {
+    const ability = this.currentAbility;
+    if (!ability) { this.state = 'recover'; this.stateUntil = time + 250; return; }
+    const elapsed = Math.max(0, time - this.abilityStartedAt);
+    const progress = Math.max(0, Math.min(0.999999, elapsed / Math.max(1, ability.windupMs)));
+    if (!this.abilityTriggered && progress >= (ability.triggerAt ?? 0.6)) {
+      this.abilityTriggered = true;
+      this.callbacks.triggerAbility?.(this, ability, this.abilityTargetX, this.abilityTargetY);
+    }
+    if (time >= this.stateUntil) {
+      if (!this.abilityTriggered) {
+        this.abilityTriggered = true;
+        this.callbacks.triggerAbility?.(this, ability, this.abilityTargetX, this.abilityTargetY);
+      }
+      this.clearAbility();
+      this.state = 'recover';
+      this.stateUntil = time + (ability.recoverMs || this.def.recoverMs || 350);
+    }
+  }
+
   update(time, delta, player) {
     if (this.state === 'dying') { this.updateDeath(time); return; }
     if (!this.sprite.active) {
       if (this.respawnAt && time >= this.respawnAt) this.respawn(time);
       return;
     }
+
+    if (time < this.knockbackUntil) {
+      this.sprite.setVelocity(this.knockbackVX, this.knockbackVY);
+      this.setDirection(this.knockbackVX, this.knockbackVY);
+      if (this.layered) this.renderVisual('hurt', Math.floor((time / 55) % 6), null);
+      return;
+    }
+    if (this.knockbackUntil) {
+      this.knockbackUntil = 0;
+      this.knockbackVX = 0;
+      this.knockbackVY = 0;
+    }
+
+    if (this.combat?.statuses.actionLocked(this)) {
+      if (this.state === 'ability') this.clearAbility();
+      this.state = 'recover';
+      this.stateUntil = Math.max(this.stateUntil, time + 150);
+      this.sprite.setVelocity(0);
+    }
+
     const dx = player.body.x - this.sprite.x;
     const dy = player.body.y - this.sprite.y;
     const distanceSq = dx * dx + dy * dy;
@@ -141,7 +226,12 @@ export class Enemy {
     }
 
     this.animClock += delta;
-    if (time >= this.nextThink) {
+    if (this.state === 'ability') {
+      this.sprite.setVelocity(0);
+      this.updateAbility(time);
+    }
+
+    if (time >= this.nextThink && this.state !== 'ability') {
       this.nextThink = time + 110;
       const distance = Math.sqrt(distanceSq);
       const homeDx = this.homeX - this.sprite.x;
@@ -151,36 +241,50 @@ export class Enemy {
       if (this.state === 'idle' && time >= this.stateUntil) { this.state = 'patrol'; this.stateUntil = time + 1000 + Math.random() * 1600; }
       if ((this.state === 'idle' || this.state === 'patrol') && distance < this.def.detectRange && !player.dead) { this.state = 'detect'; this.stateUntil = time + 220; }
       if (this.state === 'detect' && time >= this.stateUntil) this.state = 'chase';
-      if (this.state === 'chase' && distance <= this.def.attackRange) { this.state = 'attack'; this.stateUntil = time + this.def.attackCooldown; this.attackApplied = false; }
+
+      if (this.state === 'chase' && !player.dead) {
+        const ability = this.availableAbility(time, distance);
+        if (ability) this.beginAbility(ability, player, time);
+        else if (distance <= this.def.attackRange) { this.state = 'attack'; this.stateUntil = time + this.def.attackCooldown; this.attackApplied = false; }
+      }
       if (this.state === 'attack' && !this.attackApplied && time >= this.stateUntil - this.def.attackCooldown * 0.48) {
         this.attackApplied = true;
-        if (distance <= this.def.attackRange + 18) this.callbacks.hitPlayer(this.def.attack, this.sprite.x, this.sprite.y);
+        if (distance <= this.def.attackRange + 18) this.callbacks.hitPlayer(this.def.attack, this.sprite.x, this.sprite.y, this);
       }
       if (this.state === 'attack' && time >= this.stateUntil) { this.state = 'recover'; this.stateUntil = time + this.def.recoverMs; }
-      if (this.state === 'recover' && time >= this.stateUntil) { this.state = Math.random() < 0.42 ? 'reposition' : 'chase'; this.stateUntil = time + 420; }
+      if (this.state === 'recover' && time >= this.stateUntil) { this.state = Math.random() < 0.34 ? 'reposition' : 'chase'; this.stateUntil = time + 420; }
       if (this.state === 'reposition' && time >= this.stateUntil) this.state = 'chase';
       if (this.state === 'return' && homeDistance < 18) { this.state = 'idle'; this.stateUntil = time + 900; }
 
       let vx = 0, vy = 0;
-      if (this.state === 'chase') { const inv = distance ? 1 / distance : 0; vx = dx * inv * this.def.speed; vy = dy * inv * this.def.speed; }
-      else if (this.state === 'return') { const inv = homeDistance ? 1 / homeDistance : 0; vx = homeDx * inv * this.def.speed; vy = homeDy * inv * this.def.speed; }
+      const speed = this.def.speed * (this.combat?.statuses.moveMultiplier(this) ?? 1);
+      if (this.state === 'chase') { const inv = distance ? 1 / distance : 0; vx = dx * inv * speed; vy = dy * inv * speed; }
+      else if (this.state === 'return') { const inv = homeDistance ? 1 / homeDistance : 0; vx = homeDx * inv * speed; vy = homeDy * inv * speed; }
       else if (this.state === 'patrol') {
         const angle = this.index * 1.7 + time * 0.0005;
-        vx = Math.cos(angle) * this.def.speed * 0.35; vy = Math.sin(angle) * this.def.speed * 0.35;
+        vx = Math.cos(angle) * speed * 0.35; vy = Math.sin(angle) * speed * 0.35;
         if (time >= this.stateUntil) { this.state = 'idle'; this.stateUntil = time + 700 + Math.random() * 900; }
       } else if (this.state === 'reposition') {
-        const inv = distance ? 1 / distance : 0; vx = -dy * inv * this.def.speed * 0.65; vy = dx * inv * this.def.speed * 0.65;
+        const inv = distance ? 1 / distance : 0; vx = -dy * inv * speed * 0.65; vy = dx * inv * speed * 0.65;
       }
-      this.sprite.setVelocity(vx, vy);
+      if (this.state !== 'ability') this.sprite.setVelocity(vx, vy);
       this.setDirection(vx || dx, vy || dy);
     }
 
     const attacking = this.state === 'attack';
+    const usingAbility = this.state === 'ability' && this.currentAbility;
     if (this.layered) {
-      if (attacking) {
+      if (usingAbility) {
+        const progress = Math.max(0, Math.min(0.999999, (time - this.abilityStartedAt) / Math.max(1, this.currentAbility.windupMs)));
+        const action = this.currentAbility.animation === 'attack' ? 'slash' : this.currentAbility.animation;
+        const frames = ACTION_FRAMES[action] || 6;
+        this.renderVisual(action, Math.min(frames - 1, Math.floor(progress * frames)), progress);
+      } else if (attacking) {
         const progress = Math.max(0, Math.min(0.999999, 1 - Math.max(0, this.stateUntil - time) / this.def.attackCooldown));
-        const frame = Math.min(5, Math.floor(progress * 6));
-        this.renderVisual('slash', frame, progress);
+        this.renderVisual('slash', Math.min(5, Math.floor(progress * 6)), progress);
+      } else if (time < this.hurtUntil) {
+        const progress = Math.max(0, Math.min(0.999999, 1 - (this.hurtUntil - time) / 180));
+        this.renderVisual('hurt', Math.min(5, Math.floor(progress * 6)), progress);
       } else {
         const moving = Math.hypot(this.sprite.body.velocity.x, this.sprite.body.velocity.y) > 2;
         const frame = moving ? Math.floor(this.animClock / 130) % 8 : 0;
@@ -190,42 +294,55 @@ export class Enemy {
     }
 
     const spec = this.visualSpec || this.def;
-    const columns = attacking ? spec.attackFrames : spec.walkFrames;
-    const frameInRow = attacking
-      ? Math.min(columns - 1, Math.floor((1 - Math.max(0, this.stateUntil - time) / this.def.attackCooldown) * columns))
-      : Math.floor(this.animClock / (spec.frameMs || 130)) % columns;
-    const texture = attacking ? spec.attackTexture : spec.walkTexture;
-    const directionRows = attacking ? (spec.attackDirectionRows || spec.directionRows) : (spec.walkDirectionRows || spec.directionRows);
+    const actionAttacking = attacking || usingAbility;
+    const columns = actionAttacking ? spec.attackFrames : spec.walkFrames;
+    const actionProgress = usingAbility
+      ? Math.max(0, Math.min(0.999999, (time - this.abilityStartedAt) / Math.max(1, this.currentAbility.windupMs)))
+      : Math.max(0, Math.min(0.999999, 1 - Math.max(0, this.stateUntil - time) / this.def.attackCooldown));
+    const frameInRow = actionAttacking ? Math.min(columns - 1, Math.floor(actionProgress * columns)) : Math.floor(this.animClock / (spec.frameMs || 130)) % columns;
+    const texture = actionAttacking ? spec.attackTexture : spec.walkTexture;
+    const directionRows = actionAttacking ? (spec.attackDirectionRows || spec.directionRows) : (spec.walkDirectionRows || spec.directionRows);
     const sourceRow = directionRows?.[this.direction] ?? this.direction;
-    this.sprite
-      .setTexture(texture)
-      .setFrame(sourceRow * columns + frameInRow)
-      .setOrigin(0.5, attacking ? (spec.attackOriginY || this.def.attackOriginY || this.def.originY || 0.7) : (spec.originY || this.def.originY || 0.7))
+    this.sprite.setTexture(texture).setFrame(sourceRow * columns + frameInRow)
+      .setOrigin(0.5, actionAttacking ? (spec.attackOriginY || this.def.attackOriginY || this.def.originY || 0.7) : (spec.originY || this.def.originY || 0.7))
       .setDepth(this.sprite.y);
   }
 
-  takeDamage(amount, sourceX, sourceY, time) {
+  takeResolvedDamage(amount, sourceX, sourceY, time, options = {}) {
     if (!this.sprite.active || this.state === 'dying') return false;
-    const damage = Math.max(1, Math.floor(amount - this.def.defense * 0.45 + Math.random() * 4));
+    const damage = Math.max(1, Math.floor(amount));
     this.hp -= damage;
-    this.state = 'recover';
-    this.stateUntil = time + 210;
-    const angle = Phaser.Math.Angle.Between(sourceX, sourceY, this.sprite.x, this.sprite.y);
-    this.sprite.setVelocity(Math.cos(angle) * 150, Math.sin(angle) * 150);
-    if (this.layered) this.visual.setTintFill(0xffffff);
-    else this.sprite.setTintFill(0xffffff);
+    this.hurtUntil = Math.max(this.hurtUntil, time + 180);
+    if (options.knockback) {
+      const angle = Phaser.Math.Angle.Between(sourceX, sourceY, this.sprite.x, this.sprite.y);
+      this.knockbackVX = Math.cos(angle) * options.knockback;
+      this.knockbackVY = Math.sin(angle) * options.knockback;
+      this.knockbackUntil = Math.max(this.knockbackUntil, time + (options.knockbackDuration || 170));
+      this.sprite.setVelocity(this.knockbackVX, this.knockbackVY);
+      if (this.state === 'ability') this.clearAbility();
+      this.state = 'recover';
+      this.stateUntil = Math.max(this.stateUntil, this.knockbackUntil + 100);
+    }
+    if (this.layered) this.visual.setTintFill(0xffffff); else this.sprite.setTintFill(0xffffff);
     this.scene.time.delayedCall(85, () => {
       if (!this.sprite.active) return;
-      if (this.layered) this.visual.clearTint();
-      else this.sprite.clearTint();
+      if (this.layered) this.visual.clearTint(); else this.sprite.clearTint();
     });
-    this.callbacks.damageNumber(this.sprite.x, this.sprite.y - 38, damage, false);
     if (this.hp <= 0) this.die(time);
     return true;
   }
 
+  // Compatibility wrapper for pre-v0.1.3 call sites. CombatResolver is the
+  // authoritative damage math for new skills/projectiles/statuses.
+  takeDamage(amount, sourceX, sourceY, time) {
+    const damage = Math.max(1, Math.floor(amount - this.def.defense * 0.45 + Math.random() * 4));
+    return this.takeResolvedDamage(damage, sourceX, sourceY, time) ? true : false;
+  }
+
   die(time) {
     if (this.state === 'dying') return;
+    this.clearAbility();
+    this.combat?.statuses.clear(this);
     this.callbacks.died(this);
     this.sprite.setVelocity(0);
     this.sprite.body.enable = false;

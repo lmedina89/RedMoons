@@ -26,6 +26,7 @@ export function createDefaultState() {
       { instanceId: 'i_000004', itemId: 'hands_hide_wraps', rarity: 'normal', enhancement: 0, modifiers: {} },
       { instanceId: 'i_000005', itemId: 'feet_road_boots', rarity: 'normal', enhancement: 0, modifiers: {} }
     ],
+    skills: { unlocked: ['skill_ember_cleave'], slots: ['skill_ember_cleave', null, null] },
     equipment: {
       head: null,
       shoulders: null,

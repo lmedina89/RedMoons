@@ -21,7 +21,7 @@ export const ENEMY_DEFS = Object.freeze({
 
   enemy_blight_imp: {
     id: 'enemy_blight_imp', name: 'Blight Imp', family: 'imp', variant: 'blight', level: 2, maxHp: 43, attack: 9, defense: 2,
-    speed: 76, detectRange: 260, attackRange: 47, leashRange: 390, attackCooldown: 1050, recoverMs: 390,
+    speed: 76, detectRange: 280, attackRange: 47, leashRange: 390, attackCooldown: 1050, recoverMs: 390, abilities: ['toxic_spit'],
     xp: 30, currency: [2, 5], walkTexture: 'imp-green-pitchfork-walk', attackTexture: 'imp-green-pitchfork-attack', walkFrames: 4, attackFrames: 4,
     visualPool: [
       { walkTexture: 'imp-green-pitchfork-walk', attackTexture: 'imp-green-pitchfork-attack', weight: 45 },
@@ -38,7 +38,7 @@ export const ENEMY_DEFS = Object.freeze({
 
   enemy_blueflame_imp: {
     id: 'enemy_blueflame_imp', name: 'Blueflame Imp', family: 'imp', variant: 'blueflame', level: 4, maxHp: 76, attack: 14, defense: 4,
-    speed: 80, detectRange: 295, attackRange: 49, leashRange: 440, attackCooldown: 980, recoverMs: 350,
+    speed: 80, detectRange: 340, attackRange: 49, leashRange: 440, attackCooldown: 980, recoverMs: 350, abilities: ['blueflame_bolt'],
     xp: 61, currency: [5, 10], walkTexture: 'imp-blue-sword-walk', attackTexture: 'imp-blue-sword-attack', walkFrames: 4, attackFrames: 4,
     visualPool: [
       { walkTexture: 'imp-blue-sword-walk', attackTexture: 'imp-blue-sword-attack', weight: 45 },
@@ -107,7 +107,7 @@ export const ENEMY_DEFS = Object.freeze({
 
   enemy_ashstone_golem: {
     id: 'enemy_ashstone_golem', name: 'Ashstone Golem', family: 'construct', variant: 'ashstone', level: 7, maxHp: 260, attack: 23, defense: 10,
-    speed: 44, detectRange: 310, attackRange: 62, leashRange: 470, attackCooldown: 1350, recoverMs: 520,
+    speed: 44, detectRange: 310, attackRange: 62, leashRange: 470, attackCooldown: 1350, recoverMs: 520, abilities: ['earthshatter'],
     xp: 235, currency: [18, 30], walkTexture: 'golem-walk', attackTexture: 'golem-attack', walkFrames: 7, attackFrames: 7,
     scale: 1.08, originY: 0.72, attackOriginY: 0.80, body: { width: 30, height: 24, offsetX: 17, offsetY: 36 },
     deathTexture: 'golem-death', deathFrames: 7, deathFrameMs: 105, deathDirectionRows: [0, 0, 0, 0], deathOriginY: 0.72,
@@ -161,6 +161,31 @@ export const ENEMY_DEFS = Object.freeze({
       { itemId: 'hands_legion', chance: 0.04, rarityWeights: { normal: 0.60, magic: 0.33, noble: 0.07 } },
       { itemId: 'head_iron_revised', chance: 0.035, rarityWeights: { normal: 0.56, magic: 0.36, noble: 0.08 } },
       { itemId: 'chest_silver_legion', chance: 0.025, rarityWeights: { normal: 0.48, magic: 0.42, noble: 0.10 } }
+    ]
+  },
+
+  enemy_skeleton_archer: {
+    id: 'enemy_skeleton_archer', name: 'Bone Archer', family: 'skeleton', variant: 'archer', level: 4, maxHp: 72, attack: 13, defense: 3,
+    speed: 66, detectRange: 420, attackRange: 42, leashRange: 470, attackCooldown: 1320, recoverMs: 430, abilities: ['bone_arrow'],
+    xp: 58, currency: [4, 9], layered: true, baseVisual: 'enemy_skeleton_base', walkFrames: 9, attackFrames: 6, scale: 1.02,
+    fixedLoadout: { weapon: 'weapon_bone_bow_npc' },
+    loot: [
+      { itemId: 'head_bronze_revised', chance: 0.035, rarityWeights: basicLoot },
+      { itemId: 'feet_leather_revised', chance: 0.045, rarityWeights: basicLoot },
+      { itemId: 'weapon_bronze_arming_sword', chance: 0.018, rarityWeights: basicLoot }
+    ]
+  },
+
+  enemy_skeleton_mage: {
+    id: 'enemy_skeleton_mage', name: 'Gravecaller', family: 'skeleton', variant: 'mage', level: 5, maxHp: 88, attack: 16, defense: 3,
+    speed: 58, detectRange: 390, attackRange: 42, leashRange: 470, attackCooldown: 1380, recoverMs: 470, abilities: ['grave_hex'],
+    xp: 78, currency: [6, 12], layered: true, baseVisual: 'enemy_slate_skeleton_base', walkFrames: 9, attackFrames: 6, scale: 1.04,
+    fixedLoadout: {},
+    resistances: { shadow: 0.22 },
+    loot: [
+      { itemId: 'head_iron_revised', chance: 0.040, rarityWeights: goodLoot },
+      { itemId: 'chest_silver_legion', chance: 0.032, rarityWeights: goodLoot },
+      { itemId: 'weapon_iron_arming_sword', chance: 0.020, rarityWeights: goodLoot }
     ]
   },
 

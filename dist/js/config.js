@@ -1,5 +1,5 @@
-export const GAME_VERSION = '0.1.2.4.3';
-export const SAVE_VERSION = 1;
+export const GAME_VERSION = '0.1.3';
+export const SAVE_VERSION = 2;
 export const SAVE_KEY = 'hellrpg.ashfall.save.v1';
 export const TILE_SIZE = 32;
 export const WORLD_WIDTH = 2560;
