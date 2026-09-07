@@ -59,6 +59,7 @@ export class AudioManager {
       judgment_blast: [760, 360, 0.22, 'sine'],
       sanctified_nova: [360, 1180, 0.30, 'sine'],
       seraphic_judgment: [980, 240, 0.32, 'triangle'],
+      sanctuary_first_light: [420, 1320, 0.42, 'sine'],
       heavenfall: [220, 880, 0.34, 'triangle']
     };
     const [from, to, duration, type] = specs[id] || specs.hit;

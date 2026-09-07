@@ -32,13 +32,17 @@ assert.equal(azrael.chooseTarget([lone, clusterA, clusterB, clusterC]), clusterA
 // Celestial expansion contract: the two added AoEs are intentionally more
 // frequent than Heavenfall and all three major invocations participate in a
 // shared pacing lock so the spectacle stays readable on mobile.
-const { sanctifiedNova, seraphicJudgment, heavenfall } = AZRAEL_DEF.abilities;
-assert.ok(sanctifiedNova && seraphicJudgment, 'Expanded six-skill kit must include both new celestial AoEs');
+const { sanctifiedNova, seraphicJudgment, sanctuaryFirstLight, heavenfall } = AZRAEL_DEF.abilities;
+assert.ok(sanctifiedNova && seraphicJudgment && sanctuaryFirstLight, 'Expanded seven-skill kit must preserve both damage AoEs and Sanctuary of the First Light');
 assert.ok(sanctifiedNova.cooldownMs < heavenfall.cooldownMs);
 assert.ok(seraphicJudgment.cooldownMs < heavenfall.cooldownMs);
 assert.equal(sanctifiedNova.major, true);
 assert.equal(seraphicJudgment.major, true);
 assert.equal(heavenfall.major, true);
+assert.equal(sanctuaryFirstLight.major, true);
+assert.deepEqual([...sanctuaryFirstLight.pulseDelays], [0, 1650, 3300, 4950]);
+assert.ok(sanctuaryFirstLight.selfHealPct < sanctuaryFirstLight.celestialHealPct);
+assert.ok(sanctuaryFirstLight.celestialHealPct < sanctuaryFirstLight.playerHealPct);
 assert.deepEqual([...seraphicJudgment.pulseDelays], [0, 120, 250]);
 assert.ok(Math.abs([...seraphicJudgment.pulseScales].reduce((a, b) => a + b, 0) - 1) < 0.0001, 'Seraphic Judgment pulse damage must total its configured single-cast multiplier');
 
@@ -74,4 +78,4 @@ const applied = resolver.damageFriendly(friendlyAzrael, 25, { type: 'physical', 
 assert.ok(applied >= 1, 'High defense should still allow real minimum chip damage');
 assert.ok(hp < AZRAEL_DEF.maxHp, 'Azrael HP must decrease; he is not invulnerable');
 
-console.log('Azrael logic smoke passed: faction targeting, cluster choice, six-skill pacing, contribution gate, and real chip damage.');
+console.log('Azrael logic smoke passed: faction targeting, cluster choice, seven-skill pacing, Sanctuary contract, contribution gate, and real chip damage.');

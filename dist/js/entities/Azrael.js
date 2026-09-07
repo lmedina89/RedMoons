@@ -295,6 +295,9 @@ export class Azrael {
     } else if (ability.id === 'azrael_seraphic_judgment') {
       if (progress < 0.76) this.renderProgress('spellcast', progress / 0.76);
       else this.renderProgress('emote', (progress - 0.76) / 0.24);
+    } else if (ability.id === 'azrael_sanctuary_first_light') {
+      if (progress < 0.70) this.renderProgress('spellcast', progress / 0.70);
+      else this.renderProgress('emote', (progress - 0.70) / 0.30);
     } else if (ability.id === 'azrael_heavenfall') {
       if (progress < 0.68) this.renderProgress('spellcast', progress / 0.68);
       else this.renderProgress('emote', (progress - 0.68) / 0.32);
@@ -350,13 +353,20 @@ export class Azrael {
     const heavenfall = this.def.abilities.heavenfall;
     const sanctified = this.def.abilities.sanctifiedNova;
     const seraphic = this.def.abilities.seraphicJudgment;
+    const sanctuary = this.def.abilities.sanctuaryFirstLight;
     const cluster = this.clusterCount(this.target, available, heavenfall.targetClusterRadius);
     const seraphicCluster = this.clusterCount(this.target, available, seraphic.targetClusterRadius);
     const nearby = this.hostileCountNear(available, this.body.x, this.body.y, sanctified.radius);
+    const sanctuaryNeed = sanctuary ? (this.combat?.sanctuaryNeedScore?.(this, sanctuary) || 0) : 0;
 
     // Major celestial abilities share a short pacing lock so their huge visuals
     // read as deliberate invocations instead of becoming an unreadable nuke loop.
+    // Sanctuary is support-priority only when somebody actually inside its
+    // future field is meaningfully wounded; it never fires as empty spectacle.
     if (this.majorReady(time)) {
+      if (sanctuary && sanctuaryNeed >= sanctuary.castMissingThreshold && this.cooldownReady(sanctuary.id, time)) {
+        this.beginAbility(sanctuary, this.target, time); return;
+      }
       if (cluster >= heavenfall.minCluster && distance <= 390 && this.cooldownReady(heavenfall.id, time)) {
         this.beginAbility(heavenfall, this.target, time); return;
       }

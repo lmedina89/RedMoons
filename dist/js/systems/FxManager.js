@@ -360,6 +360,178 @@ export class FxManager {
     }
   }
 
+  sanctuaryFirstLightSeal(x, y, radius = 218, duration = 1180) {
+    const base = this.ancientCelestialSeal(x, y, radius, duration, 'sanctuary');
+    const g = this.scene.add.graphics().setDepth(8448);
+    const started = this.scene.time.now;
+    const timer = this.scene.time.addEvent({ delay: 38, loop: true, callback: () => {
+      if (!g.active) return;
+      const p = Math.min(1, (this.scene.time.now - started) / Math.max(1, duration));
+      const gather = 1.18 - p * 0.18;
+      const alpha = 0.28 + p * 0.60;
+      g.clear();
+      g.lineStyle(2.5, 0xffffff, alpha * 0.82).strokeCircle(x, y, radius * 0.92 * gather);
+      g.lineStyle(2, 0xffe79a, alpha).strokeCircle(x, y, radius * 0.58 * gather);
+      g.lineStyle(1.5, 0xdffcff, alpha * 0.78).strokeCircle(x, y, radius * 0.34);
+      for (let i = 0; i < 16; i += 1) {
+        const a = i * Math.PI / 8 - p * 0.74;
+        const r0 = radius * 0.70 * gather;
+        const r1 = radius * (0.82 + (i % 2) * 0.06) * gather;
+        g.lineStyle(i % 4 === 0 ? 3 : 1.5, i % 3 === 0 ? 0xffffff : 0xffe79a, alpha * (i % 4 === 0 ? 0.92 : 0.68));
+        g.lineBetween(x + Math.cos(a) * r0, y + Math.sin(a) * r0, x + Math.cos(a) * r1, y + Math.sin(a) * r1);
+      }
+      // Four ancient 'gate crowns' pull inward as the sanctuary prepares to bloom.
+      for (let i = 0; i < 4; i += 1) {
+        const a = i * Math.PI / 2 + p * 0.24;
+        const cx = x + Math.cos(a) * radius * 0.48;
+        const cy = y + Math.sin(a) * radius * 0.48;
+        const tx = -Math.sin(a), ty = Math.cos(a);
+        const rx = Math.cos(a), ry = Math.sin(a);
+        g.lineStyle(2.5, 0xe9fdff, alpha * 0.86);
+        g.beginPath();
+        g.moveTo(cx - tx * 12, cy - ty * 12);
+        g.lineTo(cx + rx * 10, cy + ry * 10);
+        g.lineTo(cx + tx * 12, cy + ty * 12);
+        g.lineTo(cx - rx * 4, cy - ry * 4);
+        g.closePath(); g.strokePath();
+      }
+      if (p >= 1) { timer.remove(false); if (g.active) g.destroy(); }
+    }});
+    return { destroy: () => { base.destroy(); timer.remove(false); if (g.active) g.destroy(); } };
+  }
+
+  sanctuaryFirstLightField(x, y, radius = 218, duration = 5600) {
+    const g = this.scene.add.graphics().setDepth(8428);
+    const started = this.scene.time.now;
+    const timer = this.scene.time.addEvent({ delay: 50, loop: true, callback: () => {
+      if (!g.active) return;
+      const elapsed = this.scene.time.now - started;
+      const p = Math.min(1, elapsed / Math.max(1, duration));
+      const bloom = Math.min(1, elapsed / 620);
+      const r = radius * (0.14 + bloom * 0.86);
+      const fade = p < 0.80 ? 1 : Math.max(0, (1 - p) / 0.20);
+      const breathe = 0.86 + Math.sin(elapsed * 0.0052) * 0.10;
+      const rot = elapsed * 0.00034;
+      g.clear();
+      g.fillStyle(0xfff3b0, 0.065 * fade * bloom).fillCircle(x, y, r * 0.96);
+      g.fillStyle(0xe6fbff, 0.030 * fade * bloom).fillCircle(x, y, r * 0.63);
+      g.lineStyle(4, 0xffeb9e, 0.64 * fade * breathe).strokeCircle(x, y, r);
+      g.lineStyle(2, 0xffffff, 0.74 * fade).strokeCircle(x, y, r * 0.82);
+      g.lineStyle(2, 0xdffcff, 0.54 * fade).strokeCircle(x, y, r * 0.61);
+      g.lineStyle(2, 0xfff7d0, 0.58 * fade).strokeCircle(x, y, r * 0.39);
+
+      // Counter-rotating celestial law geometry. These are invented glyphs,
+      // deliberately not a real-world sacred alphabet or symbol set.
+      for (let pass = 0; pass < 2; pass += 1) {
+        const step = pass ? 7 : 8;
+        const rr = r * (pass ? 0.52 : 0.72);
+        const offset = rot * (pass ? -1.25 : 1) + (pass ? Math.PI / 7 : 0);
+        g.lineStyle(pass ? 1.5 : 2, pass ? 0xe7fdff : 0xffe79a, (pass ? 0.42 : 0.52) * fade);
+        g.beginPath();
+        for (let i = 0; i <= step; i += 1) {
+          const a = offset + i * Math.PI * 2 / step;
+          const px = x + Math.cos(a) * rr;
+          const py = y + Math.sin(a) * rr;
+          if (!i) g.moveTo(px, py); else g.lineTo(px, py);
+        }
+        g.strokePath();
+      }
+
+      for (let i = 0; i < 16; i += 1) {
+        const a = i * Math.PI / 8 + rot * (i % 2 ? -1 : 1);
+        const rr = r * 0.90;
+        const cx = x + Math.cos(a) * rr;
+        const cy = y + Math.sin(a) * rr;
+        const tx = -Math.sin(a), ty = Math.cos(a);
+        const rx = Math.cos(a), ry = Math.sin(a);
+        const size = 5 + (i % 4);
+        g.lineStyle(i % 4 === 0 ? 2.5 : 1.5, i % 3 === 0 ? 0xffffff : 0xffe79a, (0.42 + (i % 4 === 0 ? 0.20 : 0)) * fade);
+        g.beginPath();
+        g.moveTo(cx + rx * size, cy + ry * size);
+        g.lineTo(cx + tx * size, cy + ty * size);
+        g.lineTo(cx - rx * size, cy - ry * size);
+        g.lineTo(cx - tx * size, cy - ty * size);
+        g.closePath(); g.strokePath();
+      }
+
+      // First-Light sun core and four winged gates make the field immediately
+      // readable as Azrael's ancient holy sanctuary rather than a generic heal.
+      g.fillStyle(0xffffff, 0.12 * fade * breathe).fillCircle(x, y, r * 0.18);
+      g.lineStyle(3, 0xfff0ad, 0.72 * fade).strokeCircle(x, y, r * 0.20);
+      for (let i = 0; i < 12; i += 1) {
+        const a = i * Math.PI / 6 - rot * 0.72;
+        g.lineStyle(i % 3 === 0 ? 3 : 1.5, i % 2 ? 0xe9fdff : 0xffe79a, 0.52 * fade);
+        g.lineBetween(x + Math.cos(a) * r * 0.22, y + Math.sin(a) * r * 0.22,
+          x + Math.cos(a) * r * 0.34, y + Math.sin(a) * r * 0.34);
+      }
+      for (let i = 0; i < 4; i += 1) {
+        const a = i * Math.PI / 2 - rot * 0.34;
+        const gx = x + Math.cos(a) * r * 0.48;
+        const gy = y + Math.sin(a) * r * 0.48;
+        const tx = -Math.sin(a), ty = Math.cos(a);
+        const rx = Math.cos(a), ry = Math.sin(a);
+        g.lineStyle(2.5, 0xdffcff, 0.58 * fade);
+        g.beginPath();
+        g.moveTo(gx, gy);
+        g.lineTo(gx + tx * 16 - rx * 6, gy + ty * 16 - ry * 6);
+        g.lineTo(gx + tx * 26, gy + ty * 26);
+        g.lineTo(gx + tx * 13 + rx * 6, gy + ty * 13 + ry * 6);
+        g.strokePath();
+        g.beginPath();
+        g.moveTo(gx, gy);
+        g.lineTo(gx - tx * 16 - rx * 6, gy - ty * 16 - ry * 6);
+        g.lineTo(gx - tx * 26, gy - ty * 26);
+        g.lineTo(gx - tx * 13 + rx * 6, gy - ty * 13 + ry * 6);
+        g.strokePath();
+      }
+      if (p >= 1) { timer.remove(false); if (g.active) g.destroy(); }
+    }});
+    this.ring(x, y, radius, 'celestial', 720);
+    this.scene.time.delayedCall(95, () => this.ring(x, y, radius * 0.82, 'celestial', 620));
+    return { destroy: () => { timer.remove(false); if (g.active) g.destroy(); } };
+  }
+
+  sanctuaryFirstLightPulse(x, y, radius = 218, pulse = 0, final = false) {
+    const g = this.scene.add.graphics().setDepth(8595);
+    const ringRadius = radius * (0.76 + Math.min(0.20, pulse * 0.06));
+    g.fillStyle(0xfff7d0, final ? 0.21 : 0.13).fillCircle(x, y, radius * (final ? 0.34 : 0.24));
+    g.lineStyle(final ? 5 : 3, 0xffffff, final ? 0.88 : 0.70).strokeCircle(x, y, radius * 0.29);
+    g.lineStyle(final ? 4 : 2.5, 0xffe58b, 0.82).strokeCircle(x, y, ringRadius);
+    for (let i = 0; i < 8; i += 1) {
+      const a = i * Math.PI / 4 + pulse * 0.12;
+      const px = x + Math.cos(a) * radius * 0.66;
+      const py = y + Math.sin(a) * radius * 0.66;
+      const beam = radius * (0.36 + (i % 2) * 0.10);
+      g.lineStyle(final ? 7 : 4, 0xffffff, final ? 0.58 : 0.38).lineBetween(px, py - beam, px, py + 5);
+      g.lineStyle(2, i % 2 ? 0xdffcff : 0xffe58b, 0.88).strokeEllipse(px, py, final ? 32 : 25, final ? 11 : 8);
+    }
+    for (let i = 0; i < 12; i += 1) {
+      const a = i * Math.PI / 6 - pulse * 0.15;
+      const r = radius * (0.34 + (i % 3) * 0.18);
+      this.scene.time.delayedCall((i % 4) * 18, () => this.burst(
+        x + Math.cos(a) * r, y + Math.sin(a) * r - 5,
+        i % 4 === 0 ? 'heal' : 'celestial', final ? 0.92 : 0.70
+      ));
+    }
+    this.scene.tweens.add({ targets: g, alpha: 0, duration: final ? 520 : 390, ease: 'Quad.out', onComplete: () => g.destroy() });
+    this.ring(x, y, radius * 0.58, 'celestial', 390);
+    this.scene.time.delayedCall(55, () => this.ring(x, y, radius * 0.82, 'celestial', 470));
+    this.scene.time.delayedCall(115, () => this.ring(x, y, radius, final ? 'celestial' : 'heal', final ? 560 : 500));
+    this.burst(x, y - 10, 'celestial', final ? 2.15 : 1.55);
+  }
+
+  sanctuaryFirstLightBlessing(x, y, scale = 1) {
+    const g = this.scene.add.graphics().setDepth(8610);
+    g.lineStyle(2.5, 0xffffff, 0.88).strokeEllipse(x, y - 26, 27 * scale, 9 * scale);
+    g.lineStyle(2, 0xffe58b, 0.82).strokeCircle(x, y - 10, 13 * scale);
+    g.lineStyle(2, 0xdffcff, 0.74).lineBetween(x, y - 28, x, y + 5);
+    g.lineStyle(1.5, 0xffffff, 0.62).lineBetween(x - 9 * scale, y - 12, x + 9 * scale, y - 12);
+    this.scene.tweens.add({ targets: g, y: -10, alpha: 0, duration: 520, ease: 'Quad.out', onComplete: () => g.destroy() });
+    this.burst(x, y - 14, 'celestial', 0.92 * scale);
+    this.burst(x - 10 * scale, y - 4, 'heal', 0.52 * scale);
+    this.burst(x + 10 * scale, y - 4, 'heal', 0.52 * scale);
+  }
+
   heavenfallImpact(x, y, radius = 176) {
     const flash = this.scene.add.graphics().setDepth(8580);
     flash.fillStyle(0xfff7c8, 0.52).fillCircle(x, y, radius * 0.48);

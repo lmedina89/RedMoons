@@ -69,6 +69,13 @@ export const AZRAEL_DEF = Object.freeze({
       minCluster: 2, major: true, majorLockMs: 4000, pulseDelays: Object.freeze([0, 120, 250]),
       pulseScales: Object.freeze([0.24, 0.30, 0.46])
     }),
+    sanctuaryFirstLight: Object.freeze({
+      id: 'azrael_sanctuary_first_light', name: 'Sanctuary of the First Light', radius: 218,
+      cooldownMs: 8800, windupMs: 1180, triggerAt: 0.74, recoverMs: 620,
+      fieldDurationMs: 5600, pulseDelays: Object.freeze([0, 1650, 3300, 4950]),
+      selfHealPct: 0.025, celestialHealPct: 0.06, playerHealPct: 0.10,
+      castMissingThreshold: 0.18, major: true, majorLockMs: 4700
+    }),
     heavenfall: Object.freeze({
       id: 'azrael_heavenfall', name: 'Heavenfall', radius: 176, targetClusterRadius: 150,
       damageMultiplier: 1.34, knockback: 390, cooldownMs: 11600, windupMs: 1220, triggerAt: 0.78, recoverMs: 700,

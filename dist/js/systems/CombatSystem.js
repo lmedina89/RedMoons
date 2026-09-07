@@ -29,6 +29,12 @@ export class DamageNumberPool {
     this.scene.tweens.killTweensOf(item.text);
     this.scene.tweens.add({ targets: item.text, y: y - (critical ? 42 : 34), alpha: 0, duration: critical ? 760 : 620, ease: 'Quad.out', onComplete: () => item.text.setVisible(false) });
   }
+  showHealing(x, y, amount) {
+    const item = this.items[this.index++ % this.items.length];
+    item.text.setPosition(x, y).setText(`+${amount}`).setFontSize('15px').setColor('#e8fff0').setAlpha(1).setVisible(true);
+    this.scene.tweens.killTweensOf(item.text);
+    this.scene.tweens.add({ targets: item.text, y: y - 38, alpha: 0, duration: 720, ease: 'Quad.out', onComplete: () => item.text.setVisible(false) });
+  }
 }
 
 export class CombatSystem {
@@ -222,6 +228,12 @@ export class CombatSystem {
       this.fx.celestialSigil(node.x, node.y - 12, 48, ability.windupMs * 0.78);
       this.fx.burst(node.x, node.y - 30, 'celestial', 1.18);
       this.audio.play('seraphic_judgment', { volume: 0.085, throttleMs: 460 });
+    } else if (ability.id === 'azrael_sanctuary_first_light') {
+      actor.abilityTelegraph?.destroy?.();
+      actor.abilityTelegraph = this.fx.sanctuaryFirstLightSeal(node.x, node.y, ability.radius, ability.windupMs);
+      this.fx.celestialWingBurst(node.x, node.y, facing, 1.02);
+      this.fx.burst(node.x, node.y - 34, 'celestial', 1.34);
+      this.audio.play('sanctuary_first_light', { volume: 0.072, throttleMs: 520 });
     } else if (ability.id === 'azrael_judgment_blast') {
       this.fx.celestialSigil(node.x, node.y - 12, 42, ability.windupMs * 0.72);
       this.fx.burst(node.x, node.y - 24, 'celestial', 0.9);
@@ -287,6 +299,76 @@ export class CombatSystem {
     return hits;
   }
 
+
+  sanctuaryEligibleTarget(target) {
+    if (!actorAlive(target)) return false;
+    if (target === this.player || target.isPlayer) return true;
+    return (target.faction || target.def?.faction) === 'celestial';
+  }
+
+  sanctuaryVitals(target) {
+    if (!target) return null;
+    if (target === this.player || target.isPlayer) {
+      const maxHp = derivedStats(this.state).maxHp;
+      const hp = Number(this.state.player.hp);
+      if (!Number.isFinite(hp) || !Number.isFinite(maxHp) || maxHp <= 0) return null;
+      return { hp, maxHp, set: value => { this.state.player.hp = Math.max(0, Math.min(maxHp, value)); } };
+    }
+    const hp = Number(target.hp);
+    const maxHp = Number(target.def?.maxHp ?? target.maxHp);
+    if (!Number.isFinite(hp) || !Number.isFinite(maxHp) || maxHp <= 0) return null;
+    return { hp, maxHp, set: value => { target.hp = Math.max(0, Math.min(maxHp, value)); target.updateHealthBar?.(); } };
+  }
+
+  sanctuaryNeedScore(actor, ability) {
+    const center = actorNode(actor);
+    if (!center || !ability) return 0;
+    const radius = ability.radius || 200;
+    let score = 0;
+    for (const target of this.friendlyTargets()) {
+      if (!this.sanctuaryEligibleTarget(target)) continue;
+      const node = actorNode(target);
+      if (!node || Math.hypot(node.x - center.x, node.y - center.y) > radius) continue;
+      const vitals = this.sanctuaryVitals(target);
+      if (!vitals) continue;
+      score = Math.max(score, Math.max(0, vitals.maxHp - vitals.hp) / vitals.maxHp);
+    }
+    return score;
+  }
+
+  sanctuaryHealAmount(actor, target, ability) {
+    const vitals = this.sanctuaryVitals(target);
+    if (!vitals || vitals.hp >= vitals.maxHp) return 0;
+    const pct = (target === this.player || target.isPlayer)
+      ? ability.playerHealPct
+      : target === actor ? ability.selfHealPct : ability.celestialHealPct;
+    const configured = Math.max(0, Number(pct) || 0);
+    return Math.min(vitals.maxHp - vitals.hp, Math.max(1, Math.round(vitals.maxHp * configured)));
+  }
+
+  sanctuaryPulse(actor, ability, x, y, pulseIndex = 0) {
+    const radius = ability.radius || 200;
+    const delays = ability.pulseDelays || [0];
+    const final = pulseIndex >= delays.length - 1;
+    let healedTargets = 0;
+    for (const target of this.friendlyTargets()) {
+      if (!this.sanctuaryEligibleTarget(target)) continue;
+      const node = actorNode(target);
+      if (!node || Math.hypot(node.x - x, node.y - y) > radius) continue;
+      const amount = this.sanctuaryHealAmount(actor, target, ability);
+      if (!amount) continue;
+      const vitals = this.sanctuaryVitals(target);
+      vitals.set(vitals.hp + amount);
+      healedTargets += 1;
+      this.damageNumbers.showHealing(node.x, node.y - 32, amount);
+      this.fx.sanctuaryFirstLightBlessing(node.x, node.y, target === actor ? 1.1 : 0.88);
+    }
+    this.fx.sanctuaryFirstLightPulse(x, y, radius, pulseIndex, final);
+    this.audio.play('sanctuary_first_light', { volume: final ? 0.105 : 0.078, throttleMs: 900 });
+    if (final) this.shakeAt(x, y, 105, healedTargets ? 0.0024 : 0.0017, 560);
+    return healedTargets;
+  }
+
   triggerAllyAbility(actor, ability, target, targetX, targetY) {
     const node = actorNode(actor);
     if (!node) return;
@@ -334,6 +416,16 @@ export class CombatSystem {
           this.shakeAt(targetX, targetY, final ? (hits >= 3 ? 235 : 195) : 90, final ? (hits >= 3 ? 0.0074 : 0.0058) : 0.0026, final ? 590 : 440);
         });
       });
+      return;
+    }
+    if (ability.id === 'azrael_sanctuary_first_light') {
+      actor.abilityTelegraph?.destroy?.(); actor.abilityTelegraph = null;
+      const cx = node.x, cy = node.y;
+      this.fx.sanctuaryFirstLightField(cx, cy, ability.radius, ability.fieldDurationMs);
+      const delays = ability.pulseDelays || [0, 1650, 3300, 4950];
+      delays.forEach((delay, index) => this.scene.time.delayedCall(delay, () => this.sanctuaryPulse(actor, ability, cx, cy, index)));
+      this.audio.play('sanctuary_first_light', { volume: 0.11, throttleMs: 520 });
+      this.shakeAt(cx, cy, 92, 0.0018, 540);
       return;
     }
     if (ability.id === 'azrael_heavenfall') {

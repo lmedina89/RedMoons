@@ -1,6 +1,6 @@
-# Architecture — v0.1.3.2.3
+# Architecture — v0.1.3.2.4
 
-## v0.1.3.2.3 celestial special-actor boundary
+## v0.1.3.2.4 celestial special-actor boundary
 
 `data/factions.js` is now the shared relationship contract for actors. The player and celestial faction are friendly; monsters are hostile to both. `Enemy` receives a candidate target set and selects only faction-hostile live actors, while `CombatResolver.damageTarget()` routes resolved damage to player, ordinary enemy, or friendly/special actor paths. This keeps ArchAngel Azrael inside the real combat model instead of giving him a bespoke immunity exception.
 
@@ -15,7 +15,7 @@ Enemy reward contribution is tracked separately from damage resolution. Player d
 Azrael's visible `Lv. ???` is presentation only. His internal level and extreme stats are data values in `specialActors.js`; incoming attacks still pass through defense/resistance/status rules and reduce real HP.
 
 
-> v0.1.3.2.3 keeps save schema 2 while adding non-persistent faction-aware friendly combat and the temporary ArchAngel Azrael field-test actor. Azrael is map-scoped runtime simulation state; he is intentionally not serialized. His compact action crops load only with the Cinder Region. `Assassin.png` remains source-only.
+> v0.1.3.2.4 keeps save schema 2 while adding non-persistent faction-aware friendly combat and the temporary ArchAngel Azrael field-test actor. Azrael is map-scoped runtime simulation state; he is intentionally not serialized. His compact action crops load only with the Cinder Region. `Assassin.png` remains source-only.
 
 ## v0.1.3.2.2 faction-aware mythic actor foundation
 
@@ -141,3 +141,7 @@ The enemy renderer also now accepts definition-specific directional row maps for
 Schema 2 now normalizes `skills.ranks` alongside unlocks/slots. Missing rank values become Rank 1; values are clamped to each skill definition's `maxRank`. `resolvedSkillDef()` applies data-driven per-rank growth without requiring a new save schema. The spending/augmentation UI is intentionally separate future work.
 
 True run uses `LayeredCharacter.supportsAction('run')` as an all-visible-body-layer compatibility gate. Weapons/shields can use a safe held/walk fallback; incompatible body/armor prevents true run and keeps accelerated walk.
+
+## Sanctuary healing boundary
+
+`AZRAEL_DEF` owns sanctuary tuning, `Azrael` owns cast eligibility through a missing-health score, `CombatSystem` owns positional/faction healing and max-HP clamping, and `FxManager` owns presentation. The player and any future `celestial` actors returned by `WorldScene.friendlyCombatants()` are supported without save changes or a special angel-only registry.

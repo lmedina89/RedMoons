@@ -1,14 +1,14 @@
-# Mobile Performance — v0.1.3.2.3
+# Mobile Performance — v0.1.3.2.4
 
 ## Azrael field-test budget
 
 The full 832×3456 Azrael authoring sheet is never preloaded by gameplay. The Cinder package loads compact 64×64 action crops only (spellcast, thrust, slash, shoot, hurt, idle, jump, emote, run, combat-idle, backslash and halfslash). The full source stays under `source-assets/`.
 
-Azrael's frequent light/glide particles reuse the existing `FxManager` sprite pools. Sanctified Nova and Seraphic Judgment add only bounded, short-lived Graphics/tweens plus pooled spark bursts; Seraphic uses three scheduled pulses rather than persistent emitters. All three major AoEs share pacing and individual cooldowns. Judgment Blast uses the shared fixed projectile pool (44 entries in this build). Screen shake is distance-gated against the player's position, so distant autonomous fighting does not repeatedly shake the camera.
+Azrael's frequent light/glide particles reuse the existing `FxManager` sprite pools. Sanctified Nova and Seraphic Judgment add only bounded, short-lived Graphics/tweens plus pooled spark bursts; Seraphic uses three scheduled pulses rather than persistent emitters. Sanctuary of the First Light adds one bounded 5.6-second Graphics field plus four scheduled pulses. All four major invocations share pacing and individual cooldowns. Judgment Blast uses the shared fixed projectile pool (44 entries in this build). Screen shake is distance-gated against the player's position, so distant autonomous fighting does not repeatedly shake the camera.
 
 Enemy simulation remains player-distance-gated; Azrael's test home is intentionally inside the normal Scorched Outskirts activity area so the user can observe him without expanding the global AI budget. His visual glide crosses low terrain props instead of adding pathfinding or expensive obstacle avoidance. True aerial navigation is deferred.
 
-The release gate remains physical iPhone Safari. Stress the build around repeated Sanctified Nova/Seraphic Judgment cycles, clustered Heavenfall casts, repeated Judgment projectiles, several simultaneous enemies, camera shake on/off, Safari background/return and a 10–15 minute continuous fight. Watch for Graphics/tween accumulation, WebAudio loss, frame pacing changes and projectile/particle leftovers.
+The release gate remains physical iPhone Safari. Stress the build around repeated Sanctified Nova/Seraphic Judgment cycles, wounded-target Sanctuary casts, clustered Heavenfall casts, repeated Judgment projectiles, several simultaneous enemies, camera shake on/off, Safari background/return and a 10–15 minute continuous fight. Watch for Graphics/tween accumulation, WebAudio loss, frame pacing changes and projectile/particle leftovers.
 
 
 
@@ -98,3 +98,7 @@ The current Cinder package is still the heaviest because multiple layered NPC/Sk
 ## v0.1.3.1 polish notes
 
 True-run sheets are compact action crops and load only with the active player/equipment package. The Bone Spearman replaces one generic Skeleton spawn, so the Cinder-region population cap does not increase. Procedural Pulse FX remain short-lived and are not persistent particle emitters.
+
+## Sanctuary of the First Light budget
+
+The sanctuary adds no runtime image asset. Its 5.6-second field is one short-lived `Graphics` object redrawn at a bounded 50ms cadence; four healing pulses reuse the existing FX sprite pools and short-lived Graphics rings/beams. Only eligible actors already returned by `friendlyCombatants()` are checked, so healing work scales with the tiny friendly actor set rather than total world population.

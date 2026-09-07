@@ -1,5 +1,16 @@
 # Changelog
 
+## v0.1.3.2.4 — Sanctuary of the First Light
+
+- Built directly from the physically approved v0.1.3.2.3 Azrael Celestial Expansion; Sanctified Nova, Seraphic Judgment, Heavenfall, movement, faction behavior and existing combat presentation are preserved.
+- Added **Sanctuary of the First Light**, Azrael's seventh field-test ability and first dedicated support invocation: a very large ancient-holy circle blooms outward beneath him, persists for 5.6 seconds and delivers four timed healing pulses.
+- Added a distinct procedural sanctuary VFX language: layered gold/white/cyan law rings, rotating invented celestial glyphs, counter-rotating sacred geometry, a First-Light sun core, winged gate motifs, halo beams, expanding pulse rings and individual holy blessing effects on healed targets.
+- Sanctuary heals only valid living targets physically inside the field at each pulse: Azrael, the player, and celestial-faction allies. The pulse re-checks positions each time, so entering or leaving the field matters.
+- Balanced healing by target role: Azrael receives a conservative 2.5% max-HP self-heal per successful pulse, other celestial allies 6%, and the player 10%; healing is capped at each target's real max HP.
+- Azrael casts Sanctuary only when an eligible nearby target is meaningfully wounded (18%+ missing HP), and the ability participates in the existing major-celestial pacing lock so it cannot stack into unreadable major-skill spam.
+- Added dedicated procedural Sanctuary audio, green-white `+HP` float text, a focused healing smoke test and expanded structural validation.
+- Kept the field mobile-conscious: one bounded persistent Graphics field, four bounded pulse events, pooled burst particles, no new runtime texture downloads, and no save-schema change. Save schema remains 2.
+
 ## v0.1.3.2.3 — ArchAngel Azrael Celestial Expansion
 
 - Preserved the physically validated v0.1.3.2.2 Azrael controller/faction foundation and expanded his autonomous kit from four to six abilities.

@@ -1,6 +1,15 @@
-# Hell RPG v0.1.3.2.3 — ArchAngel Azrael Celestial Expansion
+# Hell RPG v0.1.3.2.4 — Sanctuary of the First Light
 
-Built directly from the physically tested **v0.1.3.2.2 ArchAngel Azrael Field Test**. Save schema remains **2** and the localStorage key remains `hellrpg.ashfall.save.v1`.
+Built directly from the physically approved **v0.1.3.2.3 ArchAngel Azrael Celestial Expansion**. Save schema remains **2** and the localStorage key remains `hellrpg.ashfall.save.v1`.
+
+
+## v0.1.3.2.4 Sanctuary of the First Light
+
+This focused Azrael polish build preserves the physically approved v0.1.3.2.3 combat feel and adds one final support spectacle: **Sanctuary of the First Light**. Azrael channels an enormous ancient-holy seal under himself, the seal blooms outward into a persistent 218px sanctuary, and four healing waves sweep the field over 5.6 seconds.
+
+The pulse is positional rather than a one-time snapshot. Azrael, the player, and any current/future friendly actor using the `celestial` faction are healed only while inside the circle when a pulse occurs. Azrael's self-heal is deliberately lower than ally/player healing so the spell supports the battlefield without repeatedly resetting his fight. The ability uses the existing major-skill pacing lock and only becomes AI-eligible when somebody inside the future field is at least 18% below max HP.
+
+The effect is procedural and mobile-bounded: gold/white/cyan concentric law rings, invented rotating glyphs, counter-rotating celestial geometry, First-Light sun core, winged gate motifs, halo beams, pooled particles and target blessing halos. Save schema remains **2**.
 
 ## v0.1.3.2.3 celestial combat expansion
 
@@ -22,7 +31,7 @@ Built directly from the physically tested **v0.1.3.2.2 ArchAngel Azrael Field Te
 - Enemy melee, telegraphed reach attacks, radial attacks and enemy projectiles can now resolve against faction-hostile friendly actors instead of assuming the player is the only legal target.
 - Azrael's AI is cluster-aware and range-aware rather than simple chase AI. It chooses targets, glides, repositions, uses ranged pressure, enters with wing bursts, and prioritizes **Heavenfall** when several enemies are grouped.
 - His ordinary locomotion uses the supplied **run** block as a wing-assisted glide with hover bob/light trail; **jump** drives Wing Burst startup. Celestial Strike rotates through halfslash, slash, thrust and backslash so most of the supplied combat moveset is actually exercised.
-- Initial celestial kit: **Celestial Strike**, **Wing Burst**, **Judgment Blast**, and **Heavenfall**. Effects use a consistent celestial language: radiant sigils, halo/ring geometry, wing-shaped energy, luminous trails, heavenly beams, layered impact bursts, radial knockback and distance-gated screen shake.
+- Original v0.1.3.2.2 celestial kit: **Celestial Strike**, **Wing Burst**, **Judgment Blast**, and **Heavenfall**. Effects use a consistent celestial language: radiant sigils, halo/ring geometry, wing-shaped energy, luminous trails, heavenly beams, layered impact bursts, radial knockback and distance-gated screen shake.
 - Judgment Blast uses a pooled celestial projectile with a distinct luminous projectile texture, trail, impact burst and knockback.
 - Pure Azrael kills grant **no player XP, ash, loot or quest credit**. A player who materially contributed recent damage can still receive normal rewards on a shared kill.
 - `?debug=1` adds **Near ArchAngel Azrael** and **Azrael AI Overlay** helpers. The overlay exposes AI state/action, target distance, HP and internal level only for development testing.
@@ -31,7 +40,7 @@ Built directly from the physically tested **v0.1.3.2.2 ArchAngel Azrael Field Te
 
 ## Physical-device focus
 
-Watch Azrael from close and medium range while several mob families engage him. Confirm that his movement reads as wing-assisted rather than ordinary walking, his four skills are visually distinct, Heavenfall feels dramatically stronger than ordinary attacks, monsters can chip his HP, none of his attacks hurt or knock the player, his solo kills do not award progression, and extended combat remains smooth on iPhone Safari.
+Watch Azrael from close and medium range while several mob families engage him. Confirm that his movement reads as wing-assisted rather than ordinary walking, all seven current abilities are visually distinct, Sanctuary clearly heals only valid targets inside its live circle, Heavenfall remains the strongest offensive signature, monsters can chip his HP, none of his attacks hurt or knock the player, his solo kills do not award progression, and extended combat remains smooth on iPhone Safari.
 
 ## v0.1.3.2.1.2 final phone-position pass
 

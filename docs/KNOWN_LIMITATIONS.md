@@ -1,14 +1,14 @@
-# Known Limitations — v0.1.3.2.3
+# Known Limitations — v0.1.3.2.4
 
-## v0.1.3.2.3 celestial-expansion limits
+## v0.1.3.2.4 celestial-expansion limits
 
 - Azrael's Scorched Outskirts placement is **temporary QA staging**, not final story canon. Dialogue, quest role and permanent location remain intentionally undefined.
 - His current halo/wing seal is a procedural nameplate motif/reserved emblem slot, not the final bespoke SVG celestial crest.
 - Azrael visually hovers/glides but does not use full aerial pathfinding. His compact proxy stays world-bounded and intentionally crosses low terrain props to avoid ground-walker snagging during this test.
-- The current six-skill kit is still field-test balance. Sanctified Nova and Seraphic Judgment are intentionally frequent, Heavenfall intentionally rare, and all timings remain subject to physical-device tuning. Selected concepts may later inspire player endgame holy-route skills, but Azrael's strongest signature presentation should remain uniquely mythic.
+- The current seven-skill kit is still field-test balance. Sanctified Nova and Seraphic Judgment are intentionally frequent, Heavenfall intentionally rare, and all timings remain subject to physical-device tuning. Selected concepts may later inspire player endgame holy-route skills, but Azrael's strongest signature presentation should remain uniquely mythic.
 - Enemy threat/aggro is still deliberately lightweight; there is no formal taunt/threat table yet. Monsters select the nearest valid faction-hostile candidate within their existing detect/leash rules.
 - Contribution-gated shared kills use a recent-damage window/threshold rather than a full multiplayer-style contribution ledger. It exists to prevent Azrael AFK farming, not to define final companion reward design.
-- `Assassin.png` is still source-only. The hostile Assassin archetype/AI is not spawned in v0.1.3.2.3 so Azrael can be evaluated against already-understood enemy behavior.
+- `Assassin.png` is still source-only. The hostile Assassin archetype/AI is not spawned in v0.1.3.2.4 so Azrael can be evaluated against already-understood enemy behavior.
 - Physical iPhone Safari validation is still required for live animation timing, screen-shake feel, effect density, WebAudio resume and autonomous AI behavior.
 
 
@@ -18,7 +18,7 @@
 - `Combat Ranges` is diagnostics-only and is available only under `?debug=1`; normal builds keep combat/collision overlays off.
 
 - Recovery balance is foundation tuning, not final economy balance. Flask prices, drop rates, cooldowns and passive regeneration should be adjusted after longer physical-device/dungeon playtests.
-- Cinder Rations are intentionally interrupted by combat and are not a combat-healing substitute. There is no antidote/cleanse consumable, resurrection item or dedicated healing skill yet.
+- Cinder Rations are intentionally interrupted by combat and are not a combat-healing substitute. There is no antidote/cleanse consumable, resurrection item or dedicated **player** healing skill yet.
 - Ilyan has a fixed three-item foundation stock; buyback, quantity selectors, rotating stock and richer shop UX are future work.
 - Quick recovery buttons currently target fixed HP/Essence item IDs rather than a configurable consumable hotbar.
 - Active food/cooldown timers are runtime state and are not persisted through a page reload; persistent inventory quantities are saved.
