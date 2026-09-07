@@ -1,4 +1,8 @@
-# Mobile Performance Considerations — v0.1.2.4
+## v0.1.2.4.1 transition memory policy
+
+For reliability, destination textures may briefly coexist with the source-map package during travel. This temporary overlap is intentional: destination assets are verified first, the destination Scene is created, and only then are stale source-map textures released. The short-lived overlap trades a small transition-time memory peak for a much safer Safari lifecycle.
+
+# Mobile Performance Considerations — v0.1.2.4.1
 
 Hell RPG remains designed first around iPhone-landscape constraints rather than treating mobile optimization as a final cleanup pass.
 

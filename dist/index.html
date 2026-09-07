@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <meta name="theme-color" content="#120907">
-  <meta name="description" content="Hell RPG v0.1.2.4 — World Streaming & Asset Hardening, a mobile-first pixel action RPG.">
+  <meta name="description" content="Hell RPG v0.1.2.4.1 — Map Streaming & Save Menu Hotfix, a mobile-first pixel action RPG.">
   <title>Hell RPG — Ashfall Foundation</title>
   <link rel="stylesheet" href="css/game.css">
 </head>
@@ -12,7 +12,42 @@
   <main id="game-shell" aria-label="Hell RPG game">
     <div id="game-canvas" aria-label="Ashfall game world"></div>
 
-    <section id="loading-screen" aria-live="polite">
+    <section id="start-screen" aria-label="Hell RPG start menu">
+      <div class="start-panel">
+        <div class="start-brand" aria-hidden="true">H</div>
+        <div class="start-copy">
+          <small>ASHFALL FOUNDATION</small>
+          <h1>HELL RPG</h1>
+          <p>Choose how to enter the Cinder Region.</p>
+        </div>
+        <div class="start-actions">
+          <button type="button" id="continue-game">Continue</button>
+          <button type="button" id="new-game">New Game</button>
+          <button type="button" id="load-game">Load Save</button>
+        </div>
+        <section id="load-slot-panel" class="start-subpanel hidden" aria-label="Saved game">
+          <div id="save-slot-empty"><strong>No save found</strong><small>Start a New Game to create one.</small></div>
+          <div id="save-slot-details" class="save-slot hidden">
+            <div><small>CHARACTER</small><strong id="slot-level">Level 1</strong></div>
+            <div><small>LOCATION</small><strong id="slot-location">Cinder Region</strong></div>
+            <div><small>CURRENCY</small><strong id="slot-ash">35 ash</strong></div>
+            <div><small>LAST SAVE</small><strong id="slot-time">Saved game</strong></div>
+          </div>
+          <button type="button" id="load-slot-button">Load This Save</button>
+        </section>
+        <section id="new-game-confirm" class="start-subpanel danger-panel hidden" aria-label="Confirm new game">
+          <strong>Replace the current save?</strong>
+          <p>New Game starts a fresh Level-1 character with the Wayfarer starter outfit. Your current single-slot save will be overwritten.</p>
+          <div class="confirm-actions">
+            <button type="button" id="cancel-new-game">Cancel</button>
+            <button type="button" id="confirm-new-game" class="danger-button">Overwrite & Start</button>
+          </div>
+        </section>
+        <small class="start-version">v0.1.2.4.1 • save schema 1</small>
+      </div>
+    </section>
+
+    <section id="loading-screen" class="hidden" aria-live="polite">
       <div class="brand-mark" aria-hidden="true">H</div>
       <h1>Hell RPG</h1>
       <p>Ashfall Foundation</p>
@@ -51,6 +86,14 @@
     </section>
 
     <div id="toast-stack" aria-live="polite" aria-atomic="false"></div>
+
+    <section id="map-loading-overlay" class="hidden" aria-live="polite" aria-label="Loading map">
+      <div>
+        <small>TRAVELING THROUGH ASH</small>
+        <strong id="map-loading-name">Preparing destination</strong>
+        <div class="map-loading-track"><span id="map-loading-fill"></span></div>
+      </div>
+    </section>
 
     <section id="dialogue-box" class="overlay-card hidden" role="dialog" aria-modal="false" aria-labelledby="dialogue-speaker">
       <header><strong id="dialogue-speaker">Warden Vesra</strong><small id="dialogue-role"></small></header>
@@ -96,7 +139,7 @@
       <button type="button" data-debug="wings">Unlock Wings</button>
       <button type="button" data-debug="fall">Fall</button>
     </aside>
-    <div id="build-label">v0.1.2.4 • save schema 1</div>
+    <div id="build-label">v0.1.2.4.1 • save schema 1</div>
   </main>
 
   <script src="vendor/phaser.min.js"></script>

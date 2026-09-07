@@ -1,4 +1,8 @@
-# Known limitations — v0.1.2.4
+## v0.1.2.4.1 hotfix validation note
+
+The v0.1.2.4 Safari blank-map transition was repaired by preparing/verifying destination textures before state commit and deferring source-texture release until destination creation. The available headless Chromium environment cannot navigate localhost because of an administrative policy, so repeated live transition validation must still be completed on physical iPhone Safari before promotion to the next baseline.
+
+# Known limitations — v0.1.2.4.1
 
 ## Current gameplay/system limits
 

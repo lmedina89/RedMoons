@@ -1,56 +1,63 @@
-# v0.1.2.4 QA report — World Streaming & Asset Hardening
+# v0.1.2.4.1 QA report — Map Streaming & Save Menu Hotfix
 
-Release focus: fix the issues found during physical iPhone testing and prove a scalable multi-map/asset-loading architecture without changing save schema 1 or destabilizing the v0.1.2.3 combat/content foundation.
+Release focus: repair the Safari live-map handoff found during physical iPhone testing and make new/continue/load behavior explicit without changing save schema 1 or widening gameplay scope.
 
-## Confirmed repairs/features
+## Physical-device issue that triggered this hotfix
 
-- **Debug overflow:** diagnostics tray is safe-area bounded, one-row, horizontally swipeable and uses fixed-width buttons so the entire tool set remains reachable in iPhone landscape.
-- **Goblin backwards presentation:** Ash Goblin Raider now declares its supplied sheet's real direction-row order instead of relying on the common LPC row convention.
-- **Starter clothing:** new characters equip Wayfarer Shirt, Ashcloth Trousers, Hide Handwraps and Road Boots at Level 1 alongside the Ashen Arming Sword. Existing saves do not have their equipment choices overwritten.
-- **Golem death:** shared optional death-animation support keeps a defeated enemy visible during its death frames; Ashstone Golem uses the supplied seven-frame death crop before hiding for respawn.
-- **Separate map:** Ashfall Hollow is a 1024×768 map reached from the existing Cinder Region and can return through a matching exit.
-- **Asset hardening:** map startup resolves a current-map asset package and item visuals can load on demand. Preserved source exports have been moved outside served `dist/` rather than deleted.
+On v0.1.2.4, the user could enter Ashfall Hollow and return to Cinder, but the world could appear blank until Safari was refreshed. The HUD remained alive, and a refresh then rendered the correct saved map. That strongly isolated the fault to the live Phaser texture/Scene handoff rather than map IDs, entry points or persisted map state.
+
+## Repair
+
+- The source map remains intact while the destination package is requested.
+- `prepareMapAssets(...)` dynamically loads every texture required by the destination map and verifies that each key exists in Phaser's TextureManager.
+- Only after successful preparation does WorldScene commit `mapId`, `entryPointId` and destination coordinates.
+- WorldScene then fades/restarts.
+- Registered textures no longer needed by the active map are released only after the destination Scene has created its own objects.
+- If destination preparation fails, no destination state is committed and the player remains safely on the source map.
+- A map-loading overlay makes the dynamic package handoff visible instead of presenting a silent frozen/blank interval.
+
+## Start/save menu
+
+- Page load now presents **Continue**, **New Game** and **Load Save** before Phaser boots.
+- Continue resumes the validated single save.
+- Load Save shows the saved Level, location, ash and timestamp, then loads that slot.
+- New Game immediately starts fresh when no save exists.
+- With an existing save, New Game requires an explicit **Overwrite & Start** confirmation.
+- Fresh starts use the current v0.1.2.4 Level-1 starter outfit.
+- Save schema remains 1; map-aware Hollow saves remain valid.
 
 ## Automated checks completed
 
-- `npm run check` validates v0.1.2.4 shell/version identity and save schema 1.
-- All runtime asset references resolve.
-- Map registry contains the unchanged 2560×1280 Cinder Region plus 1024×768 Ashfall Hollow.
-- Both transition directions resolve to valid destination maps and stable entry points.
-- Hollow static collision is derived from its visible wall data and preserves the southern return opening.
-- Enemy spawn regions are map-scoped; Mire Spider now has live Hollow placement.
-- Per-map population caps remain mobile-conscious.
-- Cinder's default asset package excludes Cave3; Hollow loads Cave3 and does not require Cinder town-building art.
-- Hollow's default package is substantially smaller than Cinder's.
-- New-character starter clothing references valid player-ready items in the correct slots.
-- Legacy/current schema-1 saves without map fields normalize into Cinder Region.
-- Existing saves with intentionally empty clothing slots remain empty after normalization.
-- Goblin direction-row metadata and Golem death-sheet geometry are validated.
-- Development source exports/workshop sheets are preserved outside `dist/` and are not silently deleted.
-- Previous player-safe loot, collision, inventory recovery, four-hit combat geometry and equipment reference checks continue to pass.
-- All JavaScript source files are checked with `node --check` before packaging.
+- `npm run check`
+- `node --check` across every JavaScript source file
+- Save/new-game smoke test with mocked localStorage:
+  - empty slot detection
+  - save/load
+  - Hollow map restoration
+  - reset/new-character state
+  - starter outfit preservation
+  - stored timestamp/build metadata preservation
+- Dynamic destination-package smoke test with a mocked Phaser loader/TextureManager.
+- Static validator asserts destination preparation occurs before map-state commit/restart and stale texture release is deferred until destination creation.
+- Direct static HTTP resource checks verify the hotfix shell and representative runtime assets are served successfully.
 
-## Environment limitation during automated browser launch
+## Browser automation limitation
 
-A local static server responds normally, but the available headless-browser environment blocks navigation to both localhost and file URLs with an administrative browser policy. Because of that environment restriction, this build does **not** claim a synthetic interactive browser playthrough. Static/resource validation and source-level lifecycle checks are complete; the physical iPhone pass remains authoritative for touch/Safari behavior.
+The available Chromium environment starts normally, but navigation to localhost is blocked by an administrative browser policy (`net::ERR_BLOCKED_BY_ADMINISTRATOR`). Therefore this package does not claim an automated interactive browser playthrough. Physical iPhone Safari remains the release gate for the specific lifecycle issue.
 
-## Physical iPhone regression checklist
+## Physical iPhone release gate
 
-1. Open the normal build and verify a **new game** visibly starts in shirt, trousers, handwraps and boots; confirm the sword still renders through all four combo attacks.
-2. Load an older v0.1.2.3 save and verify level, ash, inventory, quests, position and existing equipment choices are preserved.
-3. Open `?debug=1`; swipe the diagnostics tray horizontally from the first control to the last and confirm it does not push unreachable buttons beyond the safe area.
-4. Teleport near Ash Goblin Raider. Approach from all four directions and confirm the Goblin visually faces the player while walking/chasing and attacking.
-5. Kill Ashstone Golem and verify the collapse animation plays before the actor disappears; verify rewards/respawn still occur once.
-6. Use **Map: Hollow** or travel to the Scorched Outskirts cave entrance. Press **Use**, verify fade/transition, and confirm the player arrives safely inside Ashfall Hollow rather than directly on the return trigger.
-7. Fight Cave/Mire Spiders in Hollow and verify local movement, attack, loot and performance.
-8. Walk to the southern Hollow opening, press **Use**, and verify return to Scorched Outskirts at the matching entry point.
-9. Save while inside Hollow, refresh/reload the save and verify the game restores the Hollow map and a valid in-map player position.
-10. Save after returning to Cinder, reload, and verify the Cinder position/map restores correctly.
-11. In Hollow and Cinder, open Pack and equip gear that was not already visible nearby; confirm any lazy-loaded item art appears correctly rather than producing a missing texture.
-12. Repeat several Cinder↔Hollow transitions and watch for duplicated listeners, duplicated toasts, stuck input, black screen, missing player art or steadily degrading performance.
-13. Re-test Cinder Refuge collision and the east gate; no new invisible blockers should appear.
-14. Run a 10–15 minute Safari session with combat, menus, map transitions and app switching to catch lifecycle/memory regressions.
+1. Reload the deployed page and confirm the title menu appears.
+2. Continue the existing v0.1.2.4 save and confirm level, inventory, quests, equipment and current map are preserved.
+3. Reload, choose **Load Save**, verify the displayed slot details, and load it.
+4. Reload, choose **New Game**, cancel once, then confirm overwrite only when ready; verify the fresh Level-1 Wayfarer outfit.
+5. With `?debug=1`, repeatedly use **Map: Hollow → Map: Refuge → Map: Hollow** without refreshing Safari.
+6. Repeat the same route naturally through the Scorched Outskirts cave mouth and Hollow southern exit.
+7. Verify there is no blank world, missing ground, missing actors, stuck loading overlay or duplicated input/toasts.
+8. Save inside Hollow, reload, Continue, and verify Hollow renders immediately.
+9. Return to Cinder, save, reload, Continue, and verify Cinder renders immediately.
+10. Run several repeated transitions plus app switching to catch Safari texture/lifecycle regressions.
 
-## Release gate
+## Release decision
 
-v0.1.2.4 is ready to become the next baseline only after the physical-device checklist confirms the new transition, Goblin orientation, starter outfit, Golem death sequence and repeated Safari map switching behave correctly.
+v0.1.2.4.1 becomes the baseline only after the repeated no-refresh Cinder ↔ Hollow test passes on the user's physical iPhone.

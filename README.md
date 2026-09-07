@@ -1,10 +1,19 @@
-# Hell RPG v0.1.2.4 — World Streaming & Asset Hardening
+# Hell RPG v0.1.2.4.1 — Map Streaming & Save Menu Hotfix
 
 Ashfall Foundation is an original, mobile-first single-player pixel action RPG built with Phaser 3, JavaScript and HTML/CSS. Its progression/combat philosophy is inspired by the feel of classic grind-heavy MMORPGs while Hell RPG's names, world content and implementation remain original.
 
-v0.1.2.4 is a controlled architecture/hardening release built directly on v0.1.2.3. It keeps **save schema 1**, preserves the existing 2560×1280 Cinder Region, fixes the issues found in physical iPhone testing, and establishes separate data-driven maps with map-scoped asset loading before the project grows into larger combat/content milestones.
+v0.1.2.4.1 is a narrowly scoped hotfix built directly on v0.1.2.4. It keeps **save schema 1** and all v0.1.2.4 world/content work, while repairing the live Safari map-asset handoff found during physical iPhone testing and adding an explicit single-slot Continue / New Game / Load Save startup flow.
 
-## What is new in v0.1.2.4
+## What is new in v0.1.2.4.1
+
+- Destination map textures are now **prepared and verified before map state is committed or the Phaser Scene restarts**.
+- Old map textures are released only after the destination Scene has created its objects. If destination preparation fails, the transition is cancelled safely and the player remains on the current map.
+- A visible map-loading overlay reports the destination-package handoff instead of allowing a silent blank interval.
+- Page load now presents **Continue**, **New Game**, and **Load Save**. New Game requires confirmation before overwriting an existing single-slot save.
+- Load Save displays Level, current map, ash and the preserved last-save timestamp before loading the slot.
+- Save validation now preserves schema-1 `savedAt` and prior `gameVersion` metadata for accurate slot presentation.
+
+## Carried forward from v0.1.2.4
 
 - Added a **data-driven map registry** with stable map IDs, entry-point IDs and two-way transition records.
 - Preserved the original **2560×1280 Cinder Region** unchanged in physical size rather than extending it into a giant monolithic world.
@@ -12,7 +21,7 @@ v0.1.2.4 is a controlled architecture/hardening release built directly on v0.1.2
 - Ashfall Hollow has its own walls/collision, cave presentation and a small Cave Spider/Mire Spider population. Mire Spider is now naturally placed rather than debug-only.
 - Added **map-scoped asset resolution**. World startup loads the current map's world art, local actors and required equipment visuals instead of blindly preloading every registered texture.
 - Inventory equipment visuals can be **lazy-loaded when equipped**, allowing future equipment expansion without forcing every player-ready sheet into every map package.
-- On map transition, runtime assets that are no longer required are eligible for release before the destination map reloads its package.
+- On map transition, destination assets are prepared first; runtime assets no longer required are released only after the destination scene is safely alive.
 - Moved preserved source/export artwork out of shipping `dist/assets` into top-level `source-assets/`. **No source art was deleted.** Runtime `dist/` now contains only assets intended to be served by the game plus licenses/credits.
 - Fixed the iPhone `?debug=1` diagnostics tray so it is safe-area bounded and horizontally swipeable instead of disappearing beyond the viewport.
 - Corrected **Ash Goblin Raider facing** with a data-driven direction-row mapping; the AI movement itself was not reversed.

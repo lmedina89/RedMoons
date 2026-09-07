@@ -37,7 +37,20 @@ export class UIManager {
 
   bindEvents() {
     gameEvents.on('loading', ({ value }) => $('#loading-fill').style.width = `${Math.round(value * 100)}%`);
-    gameEvents.on('ready', () => { $('#loading-screen').classList.add('hidden'); $('#hud').classList.remove('hidden'); $('#touch-controls').classList.remove('hidden'); });
+    gameEvents.on('ready', () => {
+      $('#loading-screen').classList.add('hidden');
+      $('#map-loading-overlay').classList.add('hidden');
+      $('#hud').classList.remove('hidden');
+      $('#touch-controls').classList.remove('hidden');
+    });
+    gameEvents.on('map-loading', ({ active, name, value = 0 }) => {
+      const overlay = $('#map-loading-overlay');
+      $('#map-loading-name').textContent = name ? `Entering ${name}` : 'Preparing destination';
+      $('#map-loading-fill').style.width = `${Math.round(Math.max(0, Math.min(1, value)) * 100)}%`;
+      overlay.classList.toggle('hidden', !active);
+      window.__ashfallUiBlocked = Boolean(active) || Boolean(this.panel) || !$('#death-screen').classList.contains('hidden');
+      if (active) this.stopTouchMovement?.();
+    });
     gameEvents.on('state', snapshot => { this.snapshot = snapshot; this.renderHud(); });
     gameEvents.on('zone', zone => { $('#zone-name').textContent = zone.name; $('#zone-danger').textContent = zone.danger; });
     gameEvents.on('toast', data => this.toast(data));

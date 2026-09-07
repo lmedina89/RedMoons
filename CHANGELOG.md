@@ -1,5 +1,17 @@
 # Changelog
 
+## v0.1.2.4.1 — Map Streaming & Save Menu Hotfix
+
+- Repaired the physical-iPhone Safari blank-world transition found in v0.1.2.4 by explicitly preparing and verifying the destination map's texture package before committing destination state or restarting the Phaser scene.
+- Deferred stale source-map texture release until the destination scene has created its sprites, preventing live sprites from losing textures during the handoff.
+- Added fail-safe transition behavior: if destination assets cannot be prepared, map state is not committed and the player remains on the current map with an error toast.
+- Added a visible map-loading overlay and progress bar during dynamic destination-package preparation.
+- Added a startup menu with **Continue**, **New Game**, and **Load Save** while retaining the existing single-slot/save-schema-1 model.
+- Added explicit overwrite confirmation before New Game replaces an existing save. Fresh starts use the v0.1.2.4 Level-1 Wayfarer outfit and Ashen Arming Sword.
+- Added non-destructive save-slot summary data (level, location, ash and last-save timestamp) and preserved existing schema-1 `savedAt`/`gameVersion` metadata during validation.
+- Preserved all v0.1.2.4 map IDs, entry IDs, source artwork, runtime content, equipment choices and save compatibility.
+- Added/expanded validation for transition ordering, dynamic destination loading, startup menu structure and save metadata preservation.
+
 ## v0.1.2.4 — World Streaming & Asset Hardening
 
 - Added stable, data-driven map definitions, entry points and two-way transition records while keeping save schema 1.

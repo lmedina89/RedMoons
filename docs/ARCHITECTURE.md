@@ -1,3 +1,7 @@
+## Map-transition lifecycle invariant (v0.1.2.4.1)
+
+A live map switch must follow this order: **freeze input → prepare/verify destination assets → commit destination map/entry/coordinates → save → restart/fade into destination → release stale source-map textures after destination objects exist**. A failed package preparation must leave source-map state untouched. This ordering exists specifically to avoid WebKit/Safari blank-world races during Scene restart and texture release.
+
 # Architecture Summary
 
 ## Boundaries

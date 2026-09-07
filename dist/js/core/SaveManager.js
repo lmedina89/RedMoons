@@ -7,17 +7,40 @@ const plainObject = value => value && typeof value === 'object' && !Array.isArra
 const finite = value => Number.isFinite(value);
 
 export class SaveManager {
-  load() {
+  hasSave() {
+    return Boolean(localStorage.getItem(SAVE_KEY));
+  }
+
+  loadExisting() {
     const raw = localStorage.getItem(SAVE_KEY);
-    if (!raw) return createDefaultState();
+    if (!raw) return null;
     try {
       const parsed = JSON.parse(raw);
       return this.validate(parsed);
     } catch (error) {
-      try { localStorage.setItem(`${SAVE_KEY}.corrupt.${Date.now()}`, raw); } catch (_) { /* storage may be full */ }
-      console.warn('[Ashfall] Invalid save isolated; starting safely.', error);
-      return createDefaultState();
+      try {
+        localStorage.setItem(`${SAVE_KEY}.corrupt.${Date.now()}`, raw);
+        localStorage.removeItem(SAVE_KEY);
+      } catch (_) { /* storage may be full */ }
+      console.warn('[Ashfall] Invalid save isolated; no runnable slot remains.', error);
+      return null;
     }
+  }
+
+  load() {
+    return this.loadExisting() || createDefaultState();
+  }
+
+  summary(state) {
+    if (!state) return null;
+    const map = mapForId(state.player?.mapId);
+    return {
+      level: state.player?.level || 1,
+      currency: state.player?.currency || 0,
+      mapId: map.id,
+      mapName: map.name,
+      savedAt: state.savedAt || 0
+    };
   }
 
   validate(value) {
@@ -27,6 +50,10 @@ export class SaveManager {
     if (!Array.isArray(value.inventory) || !plainObject(value.equipment) || !plainObject(value.quests)) throw new Error('Invalid collections');
 
     const state = structuredClone(base);
+    // Preserve slot metadata for the title/load screen while keeping schema 1.
+    // Older saves that predate savedAt/gameVersion normalize safely.
+    state.savedAt = this.number(value.savedAt, 0, Number.MAX_SAFE_INTEGER, 0);
+    state.gameVersion = typeof value.gameVersion === 'string' ? value.gameVersion.slice(0, 32) : base.gameVersion;
     state.player.level = this.number(value.player.level, 1, 10, 1);
     const incomingMapId = typeof value.player.mapId === 'string' && MAP_DEFS[value.player.mapId] ? value.player.mapId : DEFAULT_MAP_ID;
     const map = mapForId(incomingMapId);

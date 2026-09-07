@@ -99,22 +99,41 @@ export function queueAssetDefs(scene, defs) {
   }
 }
 
-export async function ensureAssetDefs(scene, defs) {
+export async function ensureAssetDefs(scene, defs, onProgress = null) {
   const missing = defs.filter(asset => asset && !scene.textures.exists(asset.key));
-  if (!missing.length) return;
+  if (!missing.length) {
+    onProgress?.(1);
+    return;
+  }
   await new Promise((resolve, reject) => {
     const failures = [];
     const onError = file => failures.push(file?.key || file?.src || 'unknown');
-    const onComplete = () => {
+    const onProgressEvent = value => onProgress?.(value);
+    const cleanup = () => {
       scene.load.off('loaderror', onError);
-      if (failures.length) reject(new Error(`Could not load: ${failures.join(', ')}`));
+      scene.load.off('progress', onProgressEvent);
+    };
+    const onComplete = () => {
+      cleanup();
+      const stillMissing = missing.filter(asset => !scene.textures.exists(asset.key)).map(asset => asset.key);
+      const allFailures = [...new Set([...failures, ...stillMissing])];
+      if (allFailures.length) reject(new Error(`Could not load: ${allFailures.join(', ')}`));
       else resolve();
     };
     scene.load.on('loaderror', onError);
+    scene.load.on('progress', onProgressEvent);
     scene.load.once('complete', onComplete);
     queueAssetDefs(scene, missing);
     scene.load.start();
   });
+}
+
+export async function prepareMapAssets(scene, state, destinationMapId, onProgress = null) {
+  const defs = assetDefsForMap(state, destinationMapId);
+  await ensureAssetDefs(scene, defs, onProgress);
+  const missing = defs.filter(asset => !scene.textures.exists(asset.key));
+  if (missing.length) throw new Error(`Destination package incomplete: ${missing.map(asset => asset.key).join(', ')}`);
+  return defs;
 }
 
 export async function ensureItemVisualAssets(scene, itemId) {

@@ -9,7 +9,7 @@ import { CombatSystem } from '../systems/CombatSystem.js';
 import { DialogueSystem } from '../systems/DialogueSystem.js';
 import { InventorySystem, pickRarity } from '../systems/InventorySystem.js';
 import { QuestSystem } from '../systems/QuestSystem.js';
-import { assetDefsForMap, ensureItemVisualAssets, queueAssetDefs, releaseAssetsNotNeededForMap } from '../systems/AssetResolver.js';
+import { assetDefsForMap, ensureItemVisualAssets, prepareMapAssets, queueAssetDefs, releaseAssetsNotNeededForMap } from '../systems/AssetResolver.js';
 import { derivedStats, grantXp } from '../systems/StatsSystem.js';
 import { Enemy } from '../entities/Enemy.js';
 import { NPC } from '../entities/NPC.js';
@@ -75,6 +75,10 @@ export class WorldScene extends Phaser.Scene {
     this.emitState();
     this.cameras.main.fadeIn(150, 12, 6, 4);
     gameEvents.emit('ready', { version: GAME_VERSION });
+    // The previous map's sprites have now been destroyed and the destination
+    // objects are alive, so stale registered textures can be released safely.
+    // Never remove source-map textures while active sprites still reference them.
+    this.time.delayedCall(0, () => releaseAssetsNotNeededForMap(this, this.state, this.currentMap.id));
     if (!this.state.worldFlags.introToastShown && this.currentMap.id === DEFAULT_MAP_ID) {
       this.state.worldFlags.introToastShown = true;
       gameEvents.emit('toast', { text: 'Find Warden Vesra at Warden Hall in Cinder Refuge.', tone: 'quest' });
@@ -248,13 +252,31 @@ export class WorldScene extends Phaser.Scene {
     }
   }
 
-  transitionToMap(destinationMapId, destinationEntryId) {
+  async transitionToMap(destinationMapId, destinationEntryId) {
     const destination = mapForId(destinationMapId);
     const entry = destination.entryPoints?.[destinationEntryId] || Object.values(destination.entryPoints || {})[0];
     if (!entry || this.transitioning) return;
     this.transitioning = true;
     actionInput.resetTouchMovement();
     this.player.body.setVelocity(0);
+
+    // Safari/WebKit can restart a Phaser Scene before a newly requested map
+    // package has finished entering the global TextureManager. Explicitly
+    // prepare and verify the destination package while the source map is still
+    // alive. Only after success do we commit map state and restart the Scene.
+    gameEvents.emit('map-loading', { active: true, name: destination.name, value: 0 });
+    try {
+      await prepareMapAssets(this, this.state, destination.id, value => {
+        gameEvents.emit('map-loading', { active: true, name: destination.name, value });
+      });
+    } catch (error) {
+      console.warn('[Ashfall] Map package load failed; transition cancelled.', error);
+      this.transitioning = false;
+      gameEvents.emit('map-loading', { active: false, name: destination.name, value: 0 });
+      gameEvents.emit('toast', { text: `${destination.name} could not be loaded. You stayed on the current map.`, tone: 'danger' });
+      return;
+    }
+
     this.state.player.mapId = destination.id;
     this.state.player.entryPointId = destinationEntryId;
     this.state.player.x = entry.x;
@@ -262,7 +284,7 @@ export class WorldScene extends Phaser.Scene {
     this.safeSave();
     this.cameras.main.fadeOut(170, 10, 4, 3);
     this.time.delayedCall(185, () => {
-      releaseAssetsNotNeededForMap(this, this.state, destination.id);
+      gameEvents.emit('map-loading', { active: false, name: destination.name, value: 1 });
       this.scene.restart();
     });
   }
