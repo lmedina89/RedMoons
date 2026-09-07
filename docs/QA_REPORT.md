@@ -1,12 +1,25 @@
-# QA Report — v0.1.4.0 World Collision & Cinder Region Layout Foundation
+# QA Report — v0.1.4.1 Cinder Region Expansion & Refuge Rebuild
 
-Automated scope for this release adds `tests/world-navigation-smoke.mjs` to the inherited structural, Azrael and Sanctuary suites. The world test validates shared player/enemy solid metadata, future phase opt-out semantics, detour-vector behavior, exact local-area partitioning on both maps, Azrael's placement inside First-Light Scar, encounter family/group references, and every spawn's intended area/map relationship. Structural validation also verifies the real WorldScene enemy↔obstacle collider wiring and Enemy obstruction/disengage implementation.
+## v0.1.4.1 automated/static scope
+
+The structural validator now requires three active maps (Refuge, Wilds, Hollow), the 2048×1536 and 6400×2048 expansion dimensions, exact non-overlapping area partitions, map-scoped colliders/spawns/transitions, the nine Refuge buildings, curated workshop runtime assets and a schema-2 migration path from historical `map_cinder_region` saves. It also preserves every inherited collision/navigation/Azrael/Sanctuary invariant.
+
+`tests/world-navigation-smoke.mjs` validates active-map solid filtering and verifies spawn regions do not intersect authored world solids after the layout expansion. During development this check caught two Fallen Watch spawn rectangles overlapping the enlarged ruin geometry; the spawn pockets were moved rather than weakening collision.
+
+Artifact regression compares the v0.1.4.1 worktree against the exact v0.1.4.0 ZIP: all pre-existing runtime/source asset bytes remain unchanged, and only seven new curated workshop prop PNGs are added to runtime assets. Azrael controller, ability data, CombatSystem, FxManager, AudioManager and both Azrael/Sanctuary smoke tests remain byte-for-byte unchanged; `specialActors.js` differs only at Azrael's home map/coordinate line.
+
+Current automated validation is static/logic/HTTP/package validation only. No automated interactive browser or physical iPhone playthrough is claimed.
+
+
+### Historical v0.1.4.0 collision-suite note
+
+v0.1.4.0 added `tests/world-navigation-smoke.mjs` to the inherited structural, Azrael and Sanctuary suites. The world test validates shared player/enemy solid metadata, future phase opt-out semantics, detour-vector behavior, exact local-area partitioning on both maps, Azrael's placement inside First-Light Scar, encounter family/group references, and every spawn's intended area/map relationship. Structural validation also verifies the real WorldScene enemy↔obstacle collider wiring and Enemy obstruction/disengage implementation.
 
 Artifact regression separately compares Azrael controller/data/combat/VFX/audio files against the physically approved v0.1.3.2.4 baseline and hashes all runtime/source art. Physical iPhone Safari remains required to validate actual live Arcade collision and feel.
 
 ## Automated/static validation
 
-`npm run check` runs the full structural validator plus `tests/azrael-logic-smoke.mjs`, `tests/sanctuary-healing-smoke.mjs` and `tests/world-navigation-smoke.mjs`. The suite verifies the v0.1.4.0 shell/version, shared player/enemy static-solid metadata, obstruction steering/disengage hooks, melee line-of-sight blocking, non-overlapping local-area resolution, spawn-area/family/group references, and every inherited save/map/combat/recovery/Azrael invariant. All JS/MJS files must also pass `node --check`.
+`npm run check` runs the full structural validator plus `tests/azrael-logic-smoke.mjs`, `tests/sanctuary-healing-smoke.mjs` and `tests/world-navigation-smoke.mjs`. The suite verifies the v0.1.4.1 shell/version, three-map split, expanded map dimensions, shared player/enemy static-solid metadata, obstruction steering/disengage hooks, melee line-of-sight blocking, non-overlapping local-area resolution, spawn-area/family/group references, legacy monolith location migration, and every inherited save/map/combat/recovery/Azrael invariant. All JS/MJS files must also pass `node --check`.
 
 The logic smoke separately proves: celestial/player friendliness, monster↔celestial hostility, clustered target preference, the two offensive expansion AoEs cooling down faster than Heavenfall, all major invocations including Sanctuary participating in pacing, Seraphic pulse scaling totaling one cast budget, pure-celestial kills failing player reward eligibility, recent material player contribution qualifying a shared kill, and real HP loss against Azrael's extreme defense. The Sanctuary smoke separately verifies position gating, player healing, celestial-ally healing, out-of-range exclusion, non-celestial exclusion and reduced Azrael self-healing.
 

@@ -3,7 +3,7 @@ import { readFile } from 'node:fs/promises';
 
 globalThis.location = { search: '' };
 
-const { AREA_DEFS, BUILDING_DEFS, COLLIDERS, DEFAULT_MAP_ID, FALLEN_WATCH_WALLS, HOLLOW_COLLIDERS, MAP_DEFS, SPAWN_REGIONS } = await import('../dist/js/data/world.js');
+const { AREA_DEFS, BUILDING_DEFS, COLLIDERS, DEFAULT_MAP_ID, FALLEN_WATCH_WALLS, HOLLOW_COLLIDERS, MAP_DEFS, MAP_TRANSITIONS, SPAWN_REGIONS } = await import('../dist/js/data/world.js');
 const { MONSTER_FAMILY_DEFS, ENCOUNTER_GROUP_ARCHETYPES } = await import('../dist/js/data/encounters.js');
 const { ENEMY_DEFS } = await import('../dist/js/data/enemies.js');
 const { AZRAEL_DEF } = await import('../dist/js/data/specialActors.js');
@@ -38,6 +38,24 @@ for (const map of Object.values(MAP_DEFS)) {
   }
 }
 
+// Map entries and transition centers must remain free of static solids. A map
+// split is only useful if the prepared destination cannot immediately place the
+// player inside a wall/building footprint.
+const allSolids = [...COLLIDERS, ...HOLLOW_COLLIDERS];
+const pointHitsSolid = (mapId, x, y, margin = 18) => allSolids.some(collider => {
+  if (collider.mapId !== mapId) return false;
+  return Math.abs(x - collider.x) < collider.width / 2 + margin && Math.abs(y - collider.y) < collider.height / 2 + margin;
+});
+for (const map of Object.values(MAP_DEFS)) {
+  for (const [entryId, entry] of Object.entries(map.entryPoints || {})) {
+    assert.equal(pointHitsSolid(map.id, entry.x, entry.y), false, `${map.id}/${entryId} must not spawn the player inside a static solid`);
+  }
+}
+for (const transition of MAP_TRANSITIONS) {
+  assert.equal(pointHitsSolid(transition.mapId, transition.x, transition.y, 8), false, `${transition.id} interaction center must remain in a visible opening`);
+  assert.ok(MAP_DEFS[transition.destinationMapId]?.entryPoints?.[transition.destinationEntryId], `${transition.id} must target a real destination entry`);
+}
+
 const firstLight = AREA_DEFS.find(area => area.id === 'area_first_light_scar');
 assert.ok(firstLight && pointInRectArea(firstLight, AZRAEL_DEF.home.x, AZRAEL_DEF.home.y), 'Azrael must physically inhabit the First-Light Scar area');
 assert.ok(firstLight.encounter.families.some(entry => entry.id === 'celestial'), 'First-Light Scar must reserve future celestial family identity');
@@ -56,7 +74,7 @@ for (const spawn of SPAWN_REGIONS) {
   const centerX = spawn.x + spawn.width / 2;
   const centerY = spawn.y + spawn.height / 2;
   assert.equal(pointInRectArea(area, centerX, centerY), true, `${spawn.id} center should sit inside its intended area`);
-  const mapColliders = mapId === DEFAULT_MAP_ID ? COLLIDERS : HOLLOW_COLLIDERS;
+  const mapColliders = mapId === 'map_ashfall_hollow' ? HOLLOW_COLLIDERS : COLLIDERS.filter(collider => collider.mapId === mapId);
   const overlapsSolid = mapColliders.some(collider => {
     const left = collider.x - collider.width / 2, right = collider.x + collider.width / 2;
     const top = collider.y - collider.height / 2, bottom = collider.y + collider.height / 2;
@@ -69,6 +87,6 @@ const worldSource = await readFile(new URL('../dist/js/scenes/WorldScene.js', im
 const enemySource = await readFile(new URL('../dist/js/entities/Enemy.js', import.meta.url), 'utf8');
 assert.ok(worldSource.includes('this.physics.add.collider(\n      this.enemyGroup,\n      this.obstacles') && worldSource.includes('enemyObstacleProcess') && worldSource.includes('onEnemyObstacleCollision'), 'WorldScene must wire enemies to static world collision without enemy/player separation');
 assert.ok(enemySource.includes('onWorldCollision(obstacle, time)') && enemySource.includes("this.state = 'obstructed'") && enemySource.includes('detourVelocity') && enemySource.includes('hasWorldLineOfSight'), 'Enemy AI must steer around blockers, avoid melee through walls and disengage from unreachable targets instead of pushing through walls forever');
-assert.ok(BUILDING_DEFS.length >= 6, 'Refuge building collision should remain present while world navigation expands');
+assert.ok(BUILDING_DEFS.length >= 9, 'Rebuilt Refuge should preserve a substantial visible building/collision layout');
 
 console.log(`World navigation smoke passed: ${AREA_DEFS.length} areas, ${COLLIDERS.length + HOLLOW_COLLIDERS.length} ground-solid colliders, ${Object.keys(MONSTER_FAMILY_DEFS).length} family seeds.`);

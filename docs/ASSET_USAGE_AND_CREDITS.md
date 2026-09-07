@@ -8,6 +8,13 @@ v0.1.1.1 also includes user-supplied Universal LPC generator exports created on 
 
 This document separates assets with supplied attribution from assets whose matching generator credit export is still missing. An attribution hold means the file may be used in this private/development build as requested, but it should not be treated as cleared for a commercial/store release until its exact generator credits are captured and reviewed.
 
+
+## v0.1.4.1 workshop-derived environment props
+
+The preserved user-supplied source sheets `source-assets/world/workshops/lpc-revised-blacksmith.png`, `lpc-revised-woodshop.png` and `lpc-revised-tailor.png` are now used more effectively without shipping the full authoring sheets. Seven compact transparent crops are stored under `dist/assets/world/props/` for Refuge: forge, smith tools, smith racks, carpentry bench, wood toolboard, loom and textile display.
+
+No matching credit/license text for those three workshop source sheets is currently present in the project tree. Accordingly, these crops are **development-authorized / attribution hold** exactly like other user-supplied art with missing exact generator records. Before a commercial or store release, capture and preserve the matching source attribution/license records and verify that the chosen distribution license is compatible. The crop operation does not create a new authorship claim.
+
 ## Original core assets
 
 | Runtime use | Source family | Preserved record |

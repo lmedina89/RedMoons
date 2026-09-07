@@ -148,7 +148,20 @@ export const ASSET_DEFS = [
   // Workshop sheets remain staged until an enterable interior references them.
   { key: 'adobe-house-tower', path: `${W}buildings/adobe_house_tower.png`, image: true },
   { key: 'adobe-house-east', path: `${W}buildings/adobe_house_east.png`, image: true },
-  { key: 'adobe-workshop', path: `${W}buildings/adobe_workshop.png`, image: true }
+  { key: 'adobe-house-west', path: `${W}buildings/adobe_house_west.png`, image: true },
+  { key: 'adobe-workshop', path: `${W}buildings/adobe_workshop.png`, image: true },
+
+  // v0.1.4.1 curated workshop props. These are tiny transparent crops from
+  // the preserved source-only revised workshop sheets, not the full 512px-wide
+  // authoring atlases. This keeps the rebuilt Refuge visually rich without
+  // paying the mobile GPU cost of three large sheets.
+  { key: 'prop-smith-forge', path: `${W}props/smith-forge.png`, image: true },
+  { key: 'prop-smith-tools', path: `${W}props/smith-tools.png`, image: true },
+  { key: 'prop-smith-racks', path: `${W}props/smith-racks.png`, image: true },
+  { key: 'prop-wood-bench', path: `${W}props/wood-bench.png`, image: true },
+  { key: 'prop-wood-toolboard', path: `${W}props/wood-toolboard.png`, image: true },
+  { key: 'prop-tailor-loom', path: `${W}props/tailor-loom.png`, image: true },
+  { key: 'prop-tailor-display', path: `${W}props/tailor-display.png`, image: true }
 ];
 
 const range = (start, end) => Object.freeze(Array.from({ length: end - start + 1 }, (_, i) => start + i));

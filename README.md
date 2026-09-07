@@ -1,6 +1,23 @@
-# Hell RPG v0.1.4.0 — World Collision & Cinder Region Layout Foundation
+# Hell RPG v0.1.4.1 — Cinder Region Expansion & Refuge Rebuild
 
-Built directly from the physically approved **v0.1.3.2.4 Sanctuary of the First Light**. Save schema remains **2** and the localStorage key remains `hellrpg.ashfall.save.v1`.
+Built directly from the physically tested **v0.1.4.0 World Collision & Cinder Region Layout Foundation**. Save schema remains **2** and the localStorage key remains `hellrpg.ashfall.save.v1`.
+
+## v0.1.4.1 Cinder Region Expansion & Refuge Rebuild
+
+This is the first deliberate **world-quality and scale pass** after the collision/navigation foundation held up in field testing. It does not increase live monster counts or rewrite Azrael. Instead it gives the Cinder Region room to breathe, turns Refuge into a dedicated settlement map, and uses a much broader cross-section of the existing asset library to create stronger landmarks, sightline breaks and environmental storytelling.
+
+- **Cinder Refuge is now its own 2048×1536 map** rather than sharing one compressed canvas with the wilderness. It has a thicker old-stone perimeter, a broad east gate, gate towers, branching streets, a central gathering space, nine building footprints, service districts and considerably more lived-in clutter.
+- The exterior is now **Cinder Wilds, 6400×2048**, with Ashen Causeway, Emberfields, Cinderwood, First-Light Scar, Fallen Watch, Ashgrave Hollow and Bone Road spread across substantially larger territories. Major locations are separated by travel/transition space instead of being visible almost on top of one another.
+- Formal area names are no longer stamped repeatedly onto the ground. The HUD identifies the active area while terrain, ruins, roads, tree screens, rock shelves, abandoned homes and landmark composition carry the geography.
+- The world pass deliberately considers the **entire available asset palette**. Existing adobe, castle, dungeon, cave, terrain, rock, tree, vegetation and prop art can be recombined when it improves a location rather than being artificially locked to one theme.
+- Seven small runtime prop crops were curated from the already-preserved blacksmith, woodshop and tailor source sheets: forge, smith tools/racks, carpentry bench/toolboard, loom and textile display. The full authoring sheets remain source-only so mobile preload cost stays bounded.
+- A small **Burnt Hamlet** between larger territories reuses damaged/darkened settlement art as environmental storytelling rather than another formal named zone. Cinderwood tree masses and authored ruin/rock geometry are used as visual screens so the player discovers spaces progressively.
+- Refuge ↔ Wilds and Wilds ↔ Ashfall Hollow are now true map transitions. Existing v0.1.4.0 monolithic-map saves are translated to safe equivalent positions in the new map layout without changing save schema.
+- The v0.1.4.0 collision contract remains authoritative: ordinary ground enemies respect visible solids, player/enemy physical shoving remains disabled, melee cannot pass through solid walls, and lightweight obstruction steering remains in place.
+- Azrael moves only because his field-test territory moved: his home is now inside the expanded First-Light Scar. His controller, seven abilities, Sanctuary behavior, combat resolution, VFX, audio and smoke tests remain unchanged.
+- Monster-family/group definitions remain staged metadata. The larger geography is being approved before a later pass turns those identities into richer family-specific populations and encounter compositions.
+
+See `docs/WORLD_FOUNDATION.md` for the physical iPhone traversal/map-transition test route.
 
 
 ## v0.1.4.0 World Collision & Cinder Region Layout Foundation

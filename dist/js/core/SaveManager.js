@@ -7,6 +7,24 @@ import { normalizeSkillState } from '../data/skills.js';
 const plainObject = value => value && typeof value === 'object' && !Array.isArray(value);
 const finite = value => Number.isFinite(value);
 
+// v0.1.4.1 splits the former monolithic map_cinder_region into a dedicated
+// Refuge map and a much larger Wilds map. Old saves keep schema 2; this one-
+// time location translation moves them to a safe equivalent area rather than
+// stranding the player in obsolete coordinates.
+function migrateLegacyCinderLocation(player = {}) {
+  if (player.mapId !== 'map_cinder_region') return null;
+  const x = Number.isFinite(player.x) ? player.x : 330;
+  const y = Number.isFinite(player.y) ? player.y : 610;
+  if (x < 720) return { mapId: 'map_cinder_refuge', entryPointId: 'cinder_start', x: 1010, y: 790 };
+  if (x >= 1940) return { mapId: 'map_cinder_wilds', entryPointId: 'from_refuge', x: 5760, y: 1024 };
+  if (x >= 1440 && y < 640) return { mapId: 'map_cinder_wilds', entryPointId: 'from_refuge', x: 4350, y: 900 };
+  if (x >= 1440) return { mapId: 'map_cinder_wilds', entryPointId: 'from_refuge', x: 4380, y: 1200 };
+  if (x >= 1080 && y >= 390 && y < 830) return { mapId: 'map_cinder_wilds', entryPointId: 'first_light_test', x: 3380, y: 1040 };
+  if (y < 390) return { mapId: 'map_cinder_wilds', entryPointId: 'from_refuge', x: 1700, y: 620 };
+  if (y >= 830) return { mapId: 'map_cinder_wilds', entryPointId: 'from_refuge', x: 1800, y: 1450 };
+  return { mapId: 'map_cinder_wilds', entryPointId: 'from_refuge', x: 720, y: 1024 };
+}
+
 export class SaveManager {
   hasSave() {
     return Boolean(localStorage.getItem(SAVE_KEY));
@@ -56,14 +74,18 @@ export class SaveManager {
     state.savedAt = this.number(value.savedAt, 0, Number.MAX_SAFE_INTEGER, 0);
     state.gameVersion = typeof value.gameVersion === 'string' ? value.gameVersion.slice(0, 32) : base.gameVersion;
     state.player.level = this.number(value.player.level, 1, 10, 1);
-    const incomingMapId = typeof value.player.mapId === 'string' && MAP_DEFS[value.player.mapId] ? value.player.mapId : DEFAULT_MAP_ID;
+    const legacyLocation = migrateLegacyCinderLocation(value.player);
+    const incomingMapId = legacyLocation?.mapId || (typeof value.player.mapId === 'string' && MAP_DEFS[value.player.mapId] ? value.player.mapId : DEFAULT_MAP_ID);
     const map = mapForId(incomingMapId);
     state.player.mapId = map.id;
-    state.player.entryPointId = typeof value.player.entryPointId === 'string' && map.entryPoints?.[value.player.entryPointId]
-      ? value.player.entryPointId
-      : (base.player.entryPointId || Object.keys(map.entryPoints || {})[0] || null);
-    state.player.x = this.number(value.player.x, 48, map.width - 48, map.entryPoints?.[state.player.entryPointId]?.x ?? base.player.x);
-    state.player.y = this.number(value.player.y, 48, map.height - 48, map.entryPoints?.[state.player.entryPointId]?.y ?? base.player.y);
+    const requestedEntry = legacyLocation?.entryPointId || value.player.entryPointId;
+    state.player.entryPointId = typeof requestedEntry === 'string' && map.entryPoints?.[requestedEntry]
+      ? requestedEntry
+      : (base.player.entryPointId && map.entryPoints?.[base.player.entryPointId] ? base.player.entryPointId : Object.keys(map.entryPoints || {})[0] || null);
+    const incomingX = legacyLocation?.x ?? value.player.x;
+    const incomingY = legacyLocation?.y ?? value.player.y;
+    state.player.x = this.number(incomingX, 48, map.width - 48, map.entryPoints?.[state.player.entryPointId]?.x ?? base.player.x);
+    state.player.y = this.number(incomingY, 48, map.height - 48, map.entryPoints?.[state.player.entryPointId]?.y ?? base.player.y);
     state.player.xp = this.number(value.player.xp, 0, 1000000, 0);
     state.player.hp = this.number(value.player.hp, 0, 100000, base.player.hp);
     state.player.essence = this.number(value.player.essence, 0, 100000, base.player.essence);

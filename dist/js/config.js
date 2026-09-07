@@ -1,10 +1,10 @@
-export const GAME_VERSION = '0.1.4.0';
+export const GAME_VERSION = '0.1.4.1';
 export const SAVE_VERSION = 2;
 export const SAVE_KEY = 'hellrpg.ashfall.save.v1';
 export const TILE_SIZE = 32;
-export const WORLD_WIDTH = 2560;
-export const WORLD_HEIGHT = 1280;
-export const PLAYER_START = Object.freeze({ x: 330, y: 610 });
+export const WORLD_WIDTH = 2048;
+export const WORLD_HEIGHT = 1536;
+export const PLAYER_START = Object.freeze({ x: 1010, y: 790 });
 export const DEBUG = new URLSearchParams(location.search).get('debug') === '1';
 
 export const RARITY = Object.freeze({

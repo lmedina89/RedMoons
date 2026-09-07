@@ -1,4 +1,19 @@
-# Architecture — v0.1.4.0
+# Architecture — v0.1.4.1
+
+
+## v0.1.4.1 map split, regional scale and asset-palette boundary
+
+The former `map_cinder_region` monolith has been retired from live content. `map_cinder_refuge` is a dedicated 2048×1536 safe settlement; `map_cinder_wilds` is a 6400×2048 exterior containing the Causeway through Bone Road; `map_ashfall_hollow` remains a separate compact cavern. Map definitions own dimensions, renderer IDs, entries, zone IDs and asset packages. `WorldScene` dispatches renderers by map metadata rather than by hard-coded player coordinate bands.
+
+Refuge ↔ Wilds and Wilds ↔ Hollow use the existing prepare-before-commit `MapTransitionSystem` lifecycle. `SaveManager` keeps schema 2 but contains an explicit one-time compatibility translation for historical `map_cinder_region` positions. The translation maps old town/wilderness coordinate bands to safe new map/entry locations before normal map validation, so an older save cannot be stranded on a deleted live map ID.
+
+`AREA_DEFS` remain local rectangular identity records layered under broad `ZONES`. The Wilds deliberately allocate roughly 1200–1600 pixels of horizontal territory to major areas rather than placing several labels/landmarks within one camera view. Formal identity is shown by the HUD; terrain, prop composition and sightline screens communicate the geography in-world.
+
+`WORLD_ASSET_PACKAGES` are intentionally map-scoped but theme-flexible. The Wilds package can draw from terrain, adobe, castle, dungeon, cave, rock and vegetation families when they improve composition. Refuge additionally loads seven compact workshop-derived prop crops rather than their multi-megapixel authoring sheets. This allows cross-theme reuse without turning “use every asset” into “preload every source sheet.”
+
+Static collision remains authored from visible geometry and filtered by `mapId`. Refuge perimeter/buildings, Fallen Watch ruins and selected Wilds structures share the v0.1.4.0 actor-blocking contract. Decorative clutter is still nonblocking unless a visible footprint has an explicit collider. Enemy/player physical separation remains disabled.
+
+Azrael's only required mechanical data change in this release is his home coordinate/map ID, because First-Light Scar moved onto `map_cinder_wilds`. His controller, seven abilities, CombatSystem hooks, FxManager/AudioManager behavior and Sanctuary smoke contract are unchanged.
 
 
 ## v0.1.4.0 world traversal and area boundary

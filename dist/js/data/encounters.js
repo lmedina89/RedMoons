@@ -1,4 +1,4 @@
-// v0.1.4.0 seeds the vocabulary for habitat-driven encounter design without
+// v0.1.4.1 seeds the vocabulary for habitat-driven encounter design without
 // replacing the current proven spawn runtime yet. Existing enemies keep their
 // individual definitions; areas can now describe which families and group
 // shapes belong there so later population passes stay data-driven.

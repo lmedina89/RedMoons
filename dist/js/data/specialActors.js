@@ -26,7 +26,7 @@ export const AZRAEL_DEF = Object.freeze({
   senseRange: 520,
   leashRange: 610,
   preferredRange: 92,
-  home: Object.freeze({ mapId: 'map_cinder_region', x: 1190, y: 590 }),
+  home: Object.freeze({ mapId: 'map_cinder_wilds', x: 3500, y: 1040 }),
   respawnMs: 12000,
 
   assets: Object.freeze({

@@ -1,4 +1,15 @@
-# Mobile Performance — v0.1.4.0
+# Mobile Performance — v0.1.4.1
+
+## v0.1.4.1 larger-map and asset-reuse budget
+
+The Wilds canvas increases to 6400×2048 and Refuge becomes 2048×1536, but the renderer still uses inexpensive repeated/tinted sprites and bounded static geometry rather than allocating one giant bitmap. The update intentionally keeps live enemy population counts at their inherited level while map scale is field-tested. Local-area identity remains rectangle metadata.
+
+The source workshop sheets are intentionally **not** added to runtime preload. Seven small transparent crops provide the forge/tool/woodworking/textile details needed by Refuge. Existing runtime terrain/castle/dungeon/cave/building/vegetation textures are reused across compositions instead of duplicating recolored sheets for every biome. Map-scoped asset packages ensure Refuge does not preload cave art merely because the project owns it, while the Wilds can reuse the broader world palette where useful.
+
+World decorations are predominantly static Images/Sprites; only traversal-relevant geometry receives Arcade static bodies. Cinderwood screening uses bounded sprite clusters rather than dynamic emitters. First-Light environmental geometry is static; Azrael's existing bounded FX budget is unchanged.
+
+Session-retained texture caching remains deliberate for Safari transition stability. Because visiting more maps can retain more textures in-session, physical testing after Refuge → Wilds → Hollow → Wilds → Refuge remains the memory/performance release gate. Future texture eviction should only be reconsidered with explicit WebKit transition tests.
+
 
 ## v0.1.4.0 navigation cost policy
 

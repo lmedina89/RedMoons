@@ -1,5 +1,21 @@
 # Changelog
 
+## v0.1.4.1 — Cinder Region Expansion & Refuge Rebuild
+
+- Built directly from v0.1.4.0; save schema remains 2 and the existing localStorage identity is preserved.
+- Split Cinder Refuge out of the former monolithic Cinder map into a dedicated 2048×1536 settlement map.
+- Expanded the exterior into a 6400×2048 Cinder Wilds map so major locations have meaningful travel distance, transition space and sightline separation.
+- Rebuilt Refuge with thicker castle-stone perimeter presentation, gate towers, branching streets, central plaza composition, nine building footprints and denser district-specific clutter.
+- Reused the broad existing world palette across terrain, adobe, castle, dungeon, cave, rock, vegetation and structure families instead of restricting each location to one narrow asset subset.
+- Added seven compact runtime prop crops from preserved blacksmith/woodshop/tailor authoring sheets while keeping the large source sheets out of runtime preload.
+- Added an abandoned Burnt Hamlet, denser Cinderwood sightline screens, First-Light landmark geometry, larger Fallen Watch ruins, grave treatment and road/terrain breakup between formal areas.
+- Removed the old tightly packed ground-stamped area-name presentation; the HUD now carries formal area identity while the environment does the spatial storytelling.
+- Added Refuge↔Wilds map transitions while retaining Wilds↔Ashfall Hollow streaming and the prepare-before-commit transition lifecycle.
+- Added schema-preserving location migration for older `map_cinder_region` saves so old Refuge/wilderness/Azrael/Fallen Watch/Ashgrave positions map to safe equivalents.
+- Preserved v0.1.4.0 player/enemy world-solid collision, obstruction steering, melee line-of-sight blocking and no-shove enemy/player separation policy.
+- Moved only Azrael's home placement into expanded First-Light Scar; his controller, ability definitions, combat/VFX/audio implementation and inherited smoke tests are unchanged.
+- Kept live monster counts bounded and encounter-family/group logic staged for the next population pass after physical map-scale approval.
+
 ## v0.1.4.0 — World Collision & Cinder Region Layout Foundation
 
 - Built directly from physically approved v0.1.3.2.4 Sanctuary of the First Light; save schema remains 2.

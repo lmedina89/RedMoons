@@ -1,4 +1,17 @@
-# Known Limitations — v0.1.4.0
+# Known Limitations — v0.1.4.1
+
+
+## v0.1.4.1 expansion/rebuild limits
+
+- This is the first large composition pass, **not** a claim that every Cinder location is final art. The purpose is to approve scale, separation, map transitions and a stronger Refuge before deeper POI/encounter population.
+- The nine Refuge buildings are exterior structures only. Interior source art is being preserved/considered, but full enterable shop/home/interior maps are deliberately deferred until the exterior map split is physically stable.
+- The 6400×2048 Wilds are larger, but not intended to be the project's eventual giant holy-vs-demonic warfront. That future map can be separate and substantially more faction-driven once world streaming and encounter families mature.
+- Monster-family weights/group archetypes remain metadata. Current live populations are intentionally bounded; coordinated patrol/guard/ritual/ambush group AI is still future work.
+- Sightline screens are authored with vegetation/ruins/rock shelves, but only explicit visible solids block actors. Some decorative tree/rock sprites can therefore be walked through by design.
+- Navigation remains the lightweight v0.1.4.0 obstruction steering layer, not a navmesh/A*. The larger open map is designed around that constraint.
+- The newly curated blacksmith/woodshop/tailor runtime crops come from preserved user-supplied workshop source sheets whose exact matching attribution records are not currently present in the project. They are acceptable for this user-authorized development build but remain on attribution hold for commercial/store release.
+- Azrael's combat is frozen; only his home placement moved with First-Light Scar.
+- Physical iPhone Safari remains the release gate for the subjective scale/readability goal and for real transition/memory/frame-pacing behavior.
 
 
 ## v0.1.4.0 world-foundation limits

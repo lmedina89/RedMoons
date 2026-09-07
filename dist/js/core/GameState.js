@@ -16,7 +16,7 @@ export function createDefaultState() {
       unspentStatPoints: 0,
       unspentSkillPoints: 0,
       currency: 35,
-      mapId: 'map_cinder_region',
+      mapId: 'map_cinder_refuge',
       entryPointId: 'cinder_start'
     },
     inventory: [

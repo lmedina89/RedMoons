@@ -1,4 +1,40 @@
-# v0.1.4.0 World Foundation — Physical Test Route
+# v0.1.4.1 Cinder Region Expansion — Physical Test Route
+
+This release is the scale/map-split/art-composition gate before deeper monster-family population work. Save schema remains 2. No automated interactive iPhone/browser playthrough is claimed.
+
+## What changed
+
+Cinder Refuge is now a dedicated **2048×1536** map. The exterior is a separate **6400×2048 Cinder Wilds** map, and Ashfall Hollow remains separate. Refuge and the wilderness therefore no longer need to share one compressed camera space. The Wilds spread the Causeway, Emberfields, Cinderwood, First-Light Scar, Fallen Watch, Ashgrave Hollow and Bone Road over much larger territories, with trees, rocks, ruins, abandoned homes and road bends used to screen adjacent locations.
+
+Refuge now uses a stronger stone perimeter/gate presentation, nine building footprints, more streets and district clutter, plus compact forge/woodworking/tailor props curated from preserved source sheets. The formal area name remains in the HUD rather than being repeated on nearby ground labels.
+
+Older v0.1.4.0 saves that still reference `map_cinder_region` are translated to safe new Refuge/Wilds positions on load. The collision/navigation behavior from v0.1.4.0 remains active.
+
+## iPhone Safari test route
+
+1. **First launch with your existing v0.1.4.0 save.** Confirm the player appears in a sensible equivalent location rather than at a blank/obsolete coordinate.
+2. Walk around the entire **Cinder Refuge**. Confirm the town has room to breathe, the perimeter reads as a real wall rather than a flat line, buildings/props do not visibly float, and there are no invisible blockers across normal streets.
+3. Test several town wall/building edges. The player must stop at visible solids and pass naturally through the broad east gate.
+4. Walk through the east gate and trigger **Refuge → Cinder Wilds**. The destination should render before control resumes; the player sprite/HUD/audio must remain alive.
+5. Immediately turn around and test **Wilds → Refuge**. Repeat the handoff several times, including after moving/attacking/opening a panel. No blank world, invisible player or frozen simulation.
+6. Travel east through **Ashen Causeway → Emberfields/Cinderwood → First-Light Scar**. Judge the thing this release is specifically trying to fix: major places should feel separated by actual travel and should not present three formal locations in one camera view.
+7. In the **Burnt Hamlet/Cinderwood** transition, confirm tree/ruin/rock screens make the environment feel layered without creating frustrating invisible walls.
+8. Reach **First-Light Scar** and re-test Azrael. He should still feel mechanically identical to the approved build: seven abilities, Sanctuary healing, faction behavior and spectacle unchanged.
+9. At **Fallen Watch**, lure ordinary ground enemies around the enlarged visible ruin walls. They must not phase through stone or basic-melee through it. Watch for excessive jitter at corners/gaps.
+10. Continue into **Ashgrave Hollow/Bone Road** and look for accidental spawn-inside-geometry, unreachable enemies or scenery that blocks movement without an obvious visual reason.
+11. Enter **Ashfall Hollow**, then return to the Wilds. Verify the return location is sensible and all current-map art/player layers restore correctly.
+12. Save while in Refuge, Wilds and Hollow (separate saves/iterations if practical), reload/refresh Safari, and confirm `mapId`/position persistence on each map.
+13. Background Safari during or immediately after a map transition, return, and verify joystick/buttons/audio/world simulation recover normally.
+14. Spend 10–15 minutes traversing the larger Wilds and fighting. Watch for rising stutter, missing textures or unusual memory pressure after visiting all three maps.
+
+## Approval question for this gate
+
+The key subjective test is not “is every area finished?” It is: **does the Cinder Region now feel spacious and deliberately composed enough that the next pass can safely populate monster families, groups, secrets and smaller POIs without another structural rescale?**
+
+---
+
+## Historical v0.1.4.0 collision/layout gate
+
 
 This build is the collision/layout gate before deeper Cinder Region beautification and monster-family population work. Save schema remains 2.
 

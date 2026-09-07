@@ -1,0 +1,10 @@
+Hell RPG v0.1.4.1 — Workshop-derived environment props
+
+Runtime files under dist/assets/world/props/ were cropped from user-supplied source sheets preserved at:
+- source-assets/world/workshops/lpc-revised-blacksmith.png
+- source-assets/world/workshops/lpc-revised-woodshop.png
+- source-assets/world/workshops/lpc-revised-tailor.png
+
+The exact matching source credit/license text is not present in the supplied project tree. These crops are therefore included only for the user-authorized development/test build and remain on attribution hold for any commercial/store release. Capture and review the exact upstream attribution/license records before distribution.
+
+The runtime crop/reorganization is not a new authorship claim.

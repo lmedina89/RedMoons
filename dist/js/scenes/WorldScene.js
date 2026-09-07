@@ -141,109 +141,37 @@ export class WorldScene extends Phaser.Scene {
   }
 
   buildWorld() {
-    if (this.currentMap.renderer === 'ashfall_hollow') return this.buildAshfallHollow();
-    return this.buildCinderRegion();
+    if (this.currentMap.renderer === 'cinder_refuge') return this.buildCinderRefuge();
+    if (this.currentMap.renderer === 'cinder_wilds') return this.buildCinderWilds();
+    return this.buildAshfallHollow();
   }
 
-  buildCinderRegion() {
-    const cols = WORLD_WIDTH / TILE_SIZE;
-    const rows = WORLD_HEIGHT / TILE_SIZE;
+  makeGroundLayer(textureKey = 'terrain-dirt') {
+    const cols = Math.ceil(this.currentMap.width / TILE_SIZE);
+    const rows = Math.ceil(this.currentMap.height / TILE_SIZE);
     const data = Array.from({ length: rows }, (_, y) => Array.from({ length: cols }, (_, x) => (x * 7 + y * 11 + (x * y) % 5) % 6));
     const map = this.make.tilemap({ data, tileWidth: TILE_SIZE, tileHeight: TILE_SIZE });
-    const tiles = map.addTilesetImage('dirt', 'terrain-dirt', 32, 32, 0, 0);
+    const tiles = map.addTilesetImage(`ground-${this.currentMap.id}`, textureKey, 32, 32, 0, 0);
     this.groundLayer = map.createLayer(0, tiles, 0, 0).setDepth(-1000);
+  }
 
-    const worldArt = this.add.graphics().setDepth(-700);
-    worldArt.fillStyle(0x261713, 0.38).fillRect(0, 0, 720, WORLD_HEIGHT);
-    worldArt.fillStyle(0x4c261c, 0.58).fillRect(1940, 0, 620, WORLD_HEIGHT);
-    worldArt.fillStyle(0x160c0b, 0.86).fillRect(1930, 0, 18, WORLD_HEIGHT);
+  addPlacedProp(prop) {
+    const object = prop.frame === undefined || prop.frame === null
+      ? this.add.image(prop.x, prop.y, prop.texture)
+      : this.add.sprite(prop.x, prop.y, prop.texture, prop.frame);
+    object.setScale(prop.scale || 1).setDepth(prop.y + (prop.depthOffset ?? -2)).setAlpha(prop.alpha ?? 1);
+    if (prop.tint) object.setTint(prop.tint);
+    if (prop.flipX) object.setFlipX(true);
+    return object;
+  }
 
-    // v0.1.4.0 area identity pass. These are intentionally restrained ground
-    // cues rather than a full art overhaul: enough to make the region legible
-    // while the collision/navigation foundation is being field-tested.
-    worldArt.fillStyle(0x6f321d, 0.12).fillRect(720, 0, 720, 390);      // Emberfields
-    worldArt.fillStyle(0x211a16, 0.20).fillRect(720, 830, 720, 450);    // Cinderwood
-    worldArt.fillStyle(0xd8b85e, 0.075).fillRect(1080, 390, 360, 440); // First-Light Scar
-    worldArt.fillStyle(0x40352d, 0.18).fillRect(1440, 0, 500, 640);     // Fallen Watch
-    worldArt.fillStyle(0x24171a, 0.24).fillRect(1440, 640, 500, 640);   // Ashgrave Hollow
-    for (let i = 0; i < 12; i += 1) {
-      const x = 790 + ((i * 137) % 570), y = 80 + ((i * 83) % 245);
-      worldArt.fillStyle(0x7f2b15, 0.11 + (i % 3) * 0.025).fillEllipse(x, y, 70 + (i % 4) * 18, 38 + (i % 3) * 12);
-    }
-    worldArt.lineStyle(3, 0xffdc8a, 0.16).strokeCircle(1200, 610, 150);
-    worldArt.lineStyle(1, 0xfff2ba, 0.13).strokeCircle(1200, 610, 112);
+  activeMapColliders() {
+    return COLLIDERS.filter(collider => collider.mapId === this.currentMap.id);
+  }
 
-    // Cinder Refuge streets: broad readable paths connect the east gate to
-    // every important structure without hard-coding movement logic.
-    const roads = this.add.graphics().setDepth(-760);
-    roads.lineStyle(56, 0x6f4a32, 0.43).lineBetween(690, 610, 1080, 610);
-    roads.lineStyle(18, 0xa56f42, 0.16).lineBetween(720, 610, 1080, 610);
-    roads.lineStyle(48, 0x6f4a32, 0.48).lineBetween(690, 610, 340, 610);
-    roads.lineStyle(34, 0x6f4a32, 0.42).lineBetween(340, 610, 250, 430);
-    roads.lineStyle(34, 0x6f4a32, 0.42).lineBetween(340, 610, 525, 485);
-    roads.lineStyle(34, 0x6f4a32, 0.42).lineBetween(340, 610, 180, 790);
-    roads.lineStyle(34, 0x6f4a32, 0.42).lineBetween(340, 610, 505, 790);
-    roads.lineStyle(28, 0x6f4a32, 0.38).lineBetween(340, 610, 340, 170);
-    roads.fillStyle(0x76513a, 0.4).fillCircle(340, 610, 96);
-
-    // Draw refuge walls from the exact same data used to build collision.
-    // This prevents visible art and physics from drifting apart over time.
-    worldArt.lineStyle(10, 0x493127, 0.95);
-    for (const wall of REFUGE_WALLS) worldArt.lineBetween(wall.x1, wall.y1, wall.x2, wall.y2);
-    worldArt.lineStyle(14, 0x55483c, 0.96);
-    for (const wall of FALLEN_WATCH_WALLS) worldArt.lineBetween(wall.x1, wall.y1, wall.x2, wall.y2);
-    worldArt.lineStyle(3, 0x8d765d, 0.54);
-    for (const wall of FALLEN_WATCH_WALLS) worldArt.lineBetween(wall.x1, wall.y1, wall.x2, wall.y2);
-
-    // Ashgrave's first landmarks are deliberately cheap procedural markers.
-    // Later art passes can replace them without touching area or collision data.
-    for (let i = 0; i < 9; i += 1) {
-      const gx = 1500 + (i % 3) * 120 + (i % 2) * 18;
-      const gy = 770 + Math.floor(i / 3) * 125;
-      worldArt.fillStyle(0x66594f, 0.72).fillRoundedRect(gx - 7, gy - 16, 14, 24, 3);
-      worldArt.fillStyle(0x1a1011, 0.30).fillEllipse(gx, gy + 10, 34, 13);
-    }
-
-    for (let i = 0; i < 95; i += 1) {
-      const x = 720 + ((i * 193) % 1810);
-      const y = 50 + ((i * 107) % 1160);
-      const frame = [0, 3, 6, 9, 12, 15, 18][i % 7];
-      this.add.sprite(x, y, 'grass-dirt', frame).setAlpha(0.34).setDepth(-850).setScale(1 + (i % 3) * 0.35);
-    }
-
-    for (const building of BUILDING_DEFS) {
-      const image = this.add.image(building.x, building.y, building.texture)
-        .setOrigin(0.5, 0.82)
-        .setScale(building.scale || 1)
-        .setFlipX(Boolean(building.flipX))
-        .setDepth(building.y + (building.depthOffset || -20));
-      image.buildingId = building.id;
-      if (['refuge_forge', 'refuge_warden_hall', 'refuge_inn', 'refuge_storehouse'].includes(building.id)) {
-        this.add.text(building.x, building.y + 18, building.name, {
-          fontFamily: 'Georgia, serif', fontSize: '10px', color: '#e7c58f', stroke: '#170c0a', strokeThickness: 3
-        }).setOrigin(0.5).setDepth(building.y + 120);
-      }
-    }
-
-    for (const prop of PROP_DEFS) this.add.sprite(prop.x, prop.y, prop.texture, prop.frame).setScale(prop.scale || 1).setDepth(prop.y - 2).setAlpha(prop.x < 720 ? 0.9 : 1);
-    for (const prop of TOWN_PROP_DEFS) this.add.sprite(prop.x, prop.y, prop.texture, prop.frame).setScale(prop.scale || 1).setDepth(prop.y + 2);
-    this.add.image(710, 610, 'bridge').setScale(0.64).setDepth(600).setAlpha(0.9);
-
-    this.add.text(350, 72, 'CINDER REFUGE', { fontFamily: 'Georgia, serif', fontSize: '21px', color: '#f3c77b', stroke: '#170c0a', strokeThickness: 5, letterSpacing: 3 }).setOrigin(0.5).setDepth(1000);
-    this.add.text(1270, 105, 'SCORCHED OUTSKIRTS', { fontFamily: 'Georgia, serif', fontSize: '18px', color: '#d89a62', stroke: '#170c0a', strokeThickness: 5, letterSpacing: 2 }).setOrigin(0.5).setDepth(1000);
-    this.add.text(2200, 330, 'BONE ROAD', { fontFamily: 'Georgia, serif', fontSize: '20px', color: '#d4c1ad', stroke: '#170c0a', strokeThickness: 5, letterSpacing: 4 }).setOrigin(0.5).setDepth(1000);
-    const areaLabel = (x, y, text, color = '#bda487') => this.add.text(x, y, text, {
-      fontFamily: 'Georgia, serif', fontSize: '10px', color, stroke: '#170c0a', strokeThickness: 3, letterSpacing: 1
-    }).setOrigin(0.5).setAlpha(0.82).setDepth(980);
-    areaLabel(900, 420, 'ASHEN CAUSEWAY');
-    areaLabel(1080, 62, 'EMBERFIELDS', '#dca071');
-    areaLabel(1080, 1215, 'CINDERWOOD', '#a98f77');
-    areaLabel(1200, 430, 'FIRST-LIGHT SCAR', '#f0d58a');
-    areaLabel(1700, 80, 'THE FALLEN WATCH', '#c0ad99');
-    areaLabel(1690, 700, 'ASHGRAVE HOLLOW', '#b99a9e');
-
+  createStaticObstacles(colliders) {
     this.obstacles = this.physics.add.staticGroup();
-    for (const collider of COLLIDERS) {
+    for (const collider of colliders) {
       const body = this.obstacles.create(collider.x, collider.y, 'solid').setDisplaySize(collider.width, collider.height).setAlpha(0.001).refreshBody();
       body.colliderId = collider.id;
       body.colliderSource = collider.source;
@@ -252,12 +180,222 @@ export class WorldScene extends Phaser.Scene {
       body.colliderHeight = collider.height;
     }
     if (DEBUG) {
-      // Static blockers are green. Phaser's all-body debug renderer stays off so
-      // diagnostics show only collision surfaces that matter to traversal.
       const collisionDebug = this.add.graphics().setDepth(15000).lineStyle(2, 0x38ff76, 0.82);
-      for (const collider of COLLIDERS) collisionDebug.strokeRect(collider.x - collider.width / 2, collider.y - collider.height / 2, collider.width, collider.height);
+      for (const collider of colliders) collisionDebug.strokeRect(collider.x - collider.width / 2, collider.y - collider.height / 2, collider.width, collider.height);
     }
     this.enemyGroup = this.physics.add.group({ allowGravity: false, immovable: false });
+  }
+
+  renderStoneWallSegments(walls, { ruined = false } = {}) {
+    const shadow = this.add.graphics().setDepth(-590);
+    for (const wall of walls) {
+      shadow.lineStyle((wall.thickness || 24) + 20, 0x110a08, ruined ? 0.34 : 0.48).lineBetween(wall.x1 + 7, wall.y1 + 11, wall.x2 + 7, wall.y2 + 11);
+      const horizontal = wall.y1 === wall.y2;
+      const length = horizontal ? Math.abs(wall.x2 - wall.x1) : Math.abs(wall.y2 - wall.y1);
+      const steps = Math.max(1, Math.floor(length / 30));
+      for (let i = 0; i <= steps; i += 1) {
+        if (ruined && i % 11 === 6) continue;
+        const t = steps ? i / steps : 0;
+        const x = Phaser.Math.Linear(wall.x1, wall.x2, t);
+        const y = Phaser.Math.Linear(wall.y1, wall.y2, t);
+        const frame = ruined ? [48, 49, 52, 55, 60, 61][i % 6] : [48, 52, 56, 60][i % 4];
+        this.add.sprite(x, y, 'castle2-set', frame)
+          .setScale(1.08)
+          .setDepth(y - (horizontal ? 8 : 0))
+          .setAlpha(ruined ? 0.9 : 1)
+          .setTint(ruined ? 0xb39a86 : 0xc6a98c);
+        if (!ruined && i > 0 && i < steps && i % 5 === 0) {
+          this.add.sprite(x, y + 4, 'castle2-set', 16).setScale(1.05).setDepth(y + 3).setTint(0xa98b71);
+        }
+      }
+    }
+  }
+
+  buildCinderRefuge() {
+    this.makeGroundLayer();
+
+    const ground = this.add.graphics().setDepth(-920);
+    ground.fillStyle(0x2e211b, 0.26).fillRect(0, 0, this.currentMap.width, this.currentMap.height);
+    ground.fillStyle(0x72503b, 0.18).fillEllipse(1020, 790, 720, 510);
+    ground.fillStyle(0x241715, 0.26).fillRect(0, 0, 150, this.currentMap.height);
+    ground.fillStyle(0x241715, 0.22).fillRect(1900, 0, 148, this.currentMap.height);
+
+    // Refuge streets form districts instead of every building facing one tiny
+    // central point. The east road ends at the dedicated Wilds transition.
+    const roads = this.add.graphics().setDepth(-840);
+    const road = (x1, y1, x2, y2, width = 56) => {
+      roads.lineStyle(width + 12, 0x35251f, 0.20).lineBetween(x1 + 3, y1 + 7, x2 + 3, y2 + 7);
+      roads.lineStyle(width, 0x76523b, 0.49).lineBetween(x1, y1, x2, y2);
+      roads.lineStyle(Math.max(5, width * 0.18), 0xb17b4d, 0.10).lineBetween(x1, y1, x2, y2);
+    };
+    road(1900, 768, 1030, 768, 72);
+    road(1030, 768, 500, 520, 54);
+    road(1030, 768, 820, 445, 46);
+    road(1030, 768, 1510, 590, 52);
+    road(1030, 768, 760, 1080, 50);
+    road(1030, 768, 1180, 1080, 50);
+    road(760, 1080, 420, 1160, 38);
+    road(1180, 1080, 1450, 1030, 38);
+    roads.fillStyle(0x79563e, 0.52).fillEllipse(1030, 770, 310, 225);
+    roads.lineStyle(5, 0x3d2b25, 0.22).strokeEllipse(1030, 770, 318, 233);
+
+    // The old single flat line is gone. Refuge uses chunky stone art, deep
+    // shadow and periodic buttresses while collision still comes from the same
+    // REFUGE_WALLS records.
+    this.renderStoneWallSegments(REFUGE_WALLS);
+
+    // Gate towers visually terminate the two east wall sections and make the
+    // exit read as a real defended entrance rather than a missing line.
+    for (const [x, y, flip] of [[1885, 548, false], [1885, 988, true]]) {
+      this.add.image(x, y, 'adobe-house-tower').setScale(0.62).setFlipX(flip).setTint(0xb18d75).setDepth(y + 20);
+      this.add.sprite(x + 22, y + 24, 'castle2-set', 120).setScale(0.85).setDepth(y + 54);
+    }
+    const gate = this.add.graphics().setDepth(930);
+    // Open gate leaves sit against the wall/towers instead of drawing a
+    // fake closed barrier through a passable transition opening.
+    gate.lineStyle(7, 0x5a3826, 0.92).lineBetween(1912, 590, 1912, 676);
+    gate.lineStyle(7, 0x5a3826, 0.92).lineBetween(1912, 860, 1912, 946);
+    for (const y of [604, 630, 656, 878, 904, 930]) gate.fillStyle(0x3d271d, 0.96).fillRect(1889, y, 43, 8);
+
+    for (const building of BUILDING_DEFS.filter(entry => entry.mapId === this.currentMap.id)) {
+      const image = this.add.image(building.x, building.y, building.texture)
+        .setOrigin(0.5, 0.82)
+        .setScale(building.scale || 1)
+        .setFlipX(Boolean(building.flipX))
+        .setDepth(building.y + (building.depthOffset || -20));
+      image.buildingId = building.id;
+      if (['refuge_forge', 'refuge_warden_hall', 'refuge_inn', 'refuge_storehouse', 'refuge_tailor'].includes(building.id)) {
+        this.add.text(building.x, building.y + 24, building.name, {
+          fontFamily: 'Georgia, serif', fontSize: '10px', color: '#e7c58f', stroke: '#170c0a', strokeThickness: 3
+        }).setOrigin(0.5).setDepth(building.y + 130);
+      }
+    }
+
+    for (const prop of PROP_DEFS.filter(entry => entry.mapId === this.currentMap.id)) this.addPlacedProp(prop);
+    for (const prop of TOWN_PROP_DEFS.filter(entry => entry.mapId === this.currentMap.id)) this.addPlacedProp(prop);
+
+    // Additional lightweight district clutter from existing sheets. It gives
+    // empty corners purpose without turning the whole town into collision soup.
+    const districtProps = [
+      ['castle2-set', 160, 910, 700, 1.05], ['castle2-set', 161, 1140, 700, 1.05],
+      ['castle2-set', 232, 350, 590, 1], ['castle2-set', 249, 390, 590, 1],
+      ['castle2-set', 250, 1310, 1160, 1], ['castle2-set', 248, 1350, 1160, 1],
+      ['adobe2-set', 67, 695, 410, 0.95], ['adobe2-set', 68, 895, 410, 0.95],
+      ['castle2-set', 136, 1575, 690, 0.92], ['castle2-set', 138, 1620, 690, 0.92]
+    ];
+    for (const [texture, frame, x, y, scale] of districtProps) this.add.sprite(x, y, texture, frame).setScale(scale).setDepth(y + 2);
+
+    // Sparse ground-detail patches make the large town feel authored without
+    // obscuring mobile combat/readability.
+    for (let i = 0; i < 70; i += 1) {
+      const x = 150 + ((i * 227) % 1720);
+      const y = 140 + ((i * 139) % 1240);
+      if (x > 820 && x < 1230 && y > 640 && y < 900) continue;
+      const frame = [0, 3, 6, 9, 12, 15, 18][i % 7];
+      this.add.sprite(x, y, 'grass-dirt', frame).setAlpha(0.22).setDepth(-870).setScale(1 + (i % 3) * 0.28);
+    }
+
+    this.add.text(1030, 170, 'CINDER REFUGE', {
+      fontFamily: 'Georgia, serif', fontSize: '25px', color: '#f0c77f', stroke: '#170c0a', strokeThickness: 6, letterSpacing: 4
+    }).setOrigin(0.5).setAlpha(0.82).setDepth(1000);
+    this.add.text(1030, 201, 'A survivor sanctuary rebuilt from older wars', {
+      fontFamily: 'Georgia, serif', fontSize: '11px', color: '#bca184', stroke: '#170c0a', strokeThickness: 3
+    }).setOrigin(0.5).setAlpha(0.78).setDepth(1000);
+
+    this.createStaticObstacles(this.activeMapColliders());
+  }
+
+  buildCinderWilds() {
+    this.makeGroundLayer();
+
+    const art = this.add.graphics().setDepth(-910);
+    // Broad biome tone, with soft visual boundaries rather than colored boxes.
+    art.fillStyle(0x6c2b17, 0.11).fillRect(1200, 0, 1600, 1024);
+    art.fillStyle(0x171413, 0.29).fillRect(1200, 1024, 1600, 1024);
+    art.fillStyle(0xd7b95f, 0.065).fillRect(2800, 0, 1400, 2048);
+    art.fillStyle(0x40352d, 0.17).fillRect(4200, 0, 1400, 1024);
+    art.fillStyle(0x24171a, 0.25).fillRect(4200, 1024, 1400, 1024);
+    art.fillStyle(0x4a251e, 0.58).fillRect(5600, 0, 800, 2048);
+    art.fillStyle(0x110a09, 0.70).fillRect(5586, 0, 18, 2048);
+
+    // Long approach road. The first named wilderness no longer starts five
+    // steps outside the town wall.
+    const roads = this.add.graphics().setDepth(-850);
+    const path = [[0, 1024], [520, 1010], [1040, 980], [1460, 880], [1960, 820], [2460, 920], [3000, 1040]];
+    for (let i = 1; i < path.length; i += 1) {
+      const [x1, y1] = path[i - 1], [x2, y2] = path[i];
+      roads.lineStyle(72, 0x35231d, 0.25).lineBetween(x1 + 5, y1 + 9, x2 + 5, y2 + 9);
+      roads.lineStyle(58, 0x76503a, 0.48).lineBetween(x1, y1, x2, y2);
+      roads.lineStyle(8, 0xaf7447, 0.09).lineBetween(x1, y1, x2, y2);
+    }
+    // Bone Road reads like a hardened military track.
+    roads.lineStyle(78, 0x291915, 0.42).lineBetween(5480, 1030, 6400, 1030);
+    roads.lineStyle(48, 0x765445, 0.30).lineBetween(5480, 1030, 6400, 1030);
+
+    // Scorched open-field patches.
+    for (let i = 0; i < 24; i += 1) {
+      const x = 1320 + ((i * 271) % 1380), y = 120 + ((i * 157) % 760);
+      art.fillStyle(0x8b3119, 0.08 + (i % 3) * 0.02).fillEllipse(x, y, 110 + (i % 4) * 34, 55 + (i % 3) * 16);
+    }
+
+    // First-Light Scar: ancient holy geometry is concentrated well inside the
+    // area so neighboring regions are not visible as a stack of labels.
+    const scarX = 3500, scarY = 1040;
+    art.lineStyle(6, 0xf8dc8d, 0.13).strokeCircle(scarX, scarY, 300);
+    art.lineStyle(2, 0xfff2bd, 0.15).strokeCircle(scarX, scarY, 238);
+    art.lineStyle(2, 0xf7cd73, 0.10).strokeCircle(scarX, scarY, 380);
+    for (let i = 0; i < 8; i += 1) {
+      const angle = i * Math.PI / 4;
+      art.lineStyle(2, 0xf5d985, 0.10).lineBetween(
+        scarX + Math.cos(angle) * 140, scarY + Math.sin(angle) * 140,
+        scarX + Math.cos(angle) * 355, scarY + Math.sin(angle) * 355
+      );
+    }
+    for (let i = 0; i < 11; i += 1) {
+      const angle = (i / 11) * Math.PI * 2;
+      art.fillStyle(0xffe49b, 0.07).fillEllipse(scarX + Math.cos(angle) * 460, scarY + Math.sin(angle) * 420, 160, 70);
+    }
+
+    // Fallen Watch uses the same wall records for visible stone and collision.
+    this.renderStoneWallSegments(FALLEN_WATCH_WALLS, { ruined: true });
+
+    // Grave basin silhouettes and a ruined shrine axis.
+    for (let i = 0; i < 18; i += 1) {
+      const gx = 4380 + (i % 6) * 180 + (i % 2) * 26;
+      const gy = 1240 + Math.floor(i / 6) * 260 + (i % 3) * 18;
+      art.fillStyle(0x695c54, 0.77).fillRoundedRect(gx - 9, gy - 22, 18, 32, 4);
+      art.fillStyle(0x160f10, 0.38).fillEllipse(gx, gy + 14, 44, 15);
+      if (i % 4 === 0) art.lineStyle(3, 0x8d7769, 0.55).lineBetween(gx, gy - 38, gx, gy + 2);
+    }
+
+    // Large dirt/grass breakup remains cheap and helps the 6.4k map avoid a
+    // repeated carpet look.
+    for (let i = 0; i < 210; i += 1) {
+      const x = 80 + ((i * 293) % 6240);
+      const y = 60 + ((i * 179) % 1920);
+      const frame = [0, 3, 6, 9, 12, 15, 18][i % 7];
+      const alpha = x > 1200 && x < 2800 && y > 1024 ? 0.22 : 0.30;
+      this.add.sprite(x, y, 'grass-dirt', frame).setAlpha(alpha).setDepth(-875).setScale(1 + (i % 4) * 0.26);
+    }
+
+    // Dense Cinderwood edge clusters block the eye before they block movement.
+    // They intentionally sit away from the main travel lane and cave entrance.
+    for (let i = 0; i < 14; i += 1) {
+      const x = 1280 + (i % 7) * 225;
+      const y = i < 7 ? 1085 + (i % 3) * 34 : 1935 - (i % 4) * 35;
+      this.add.image(x, y, i % 2 ? 'pine-tree-large' : 'pine-tree-cluster')
+        .setScale(i % 2 ? 1.03 : 0.78).setAlpha(0.92).setDepth(y - 10).setTint(0x7f766a);
+    }
+
+    for (const prop of PROP_DEFS.filter(entry => entry.mapId === this.currentMap.id)) this.addPlacedProp(prop);
+
+    // Burnt Hamlet is intentionally unnamed: a real place between formal area
+    // boundaries, not another giant HUD label.
+    this.add.text(2260, 865, 'burnt homes • abandoned', {
+      fontFamily: 'Georgia, serif', fontSize: '9px', color: '#92776c', stroke: '#170c0a', strokeThickness: 3
+    }).setOrigin(0.5).setAlpha(0.48).setDepth(900);
+
+    this.createStaticObstacles(this.activeMapColliders());
   }
 
   buildAshfallHollow() {
@@ -336,18 +474,28 @@ export class WorldScene extends Phaser.Scene {
     this.mapTransitions = MAP_TRANSITIONS.filter(transition => transition.mapId === this.currentMap.id);
     for (const transition of this.mapTransitions) {
       const marker = this.add.graphics().setDepth(transition.y - 20);
-      if (this.currentMap.id === DEFAULT_MAP_ID) {
-        marker.fillStyle(0x090504, 0.94).fillEllipse(transition.x, transition.y + 7, 100, 56);
-        marker.lineStyle(7, 0x654026, 0.95).strokeEllipse(transition.x, transition.y + 7, 108, 62);
-        for (const offset of [-48, -24, 24, 48]) marker.fillStyle(0x7a5330, 0.92).fillCircle(transition.x + offset, transition.y - 13 + Math.abs(offset) * 0.12, 11);
+      if (this.currentMap.renderer === 'cinder_refuge') {
+        // The visible wall/gate already does the heavy lifting. A restrained
+        // threshold glow makes the travel interaction readable without looking
+        // like a portal inside town.
+        marker.fillStyle(0xdca45e, 0.10).fillRect(transition.x - 24, transition.y - 94, 48, 188);
+        marker.lineStyle(3, 0xd5a05c, 0.45).lineBetween(transition.x - 18, transition.y - 92, transition.x - 18, transition.y + 92);
+        marker.lineStyle(3, 0xd5a05c, 0.45).lineBetween(transition.x + 18, transition.y - 92, transition.x + 18, transition.y + 92);
+      } else if (this.currentMap.renderer === 'cinder_wilds' && transition.destinationMapId === 'map_cinder_refuge') {
+        marker.fillStyle(0x2c1a13, 0.72).fillRect(transition.x - 10, transition.y - 50, 20, 100);
+        marker.lineStyle(4, 0x8a6748, 0.82).strokeRect(transition.x - 10, transition.y - 50, 20, 100);
+      } else if (this.currentMap.renderer === 'cinder_wilds') {
+        marker.fillStyle(0x090504, 0.94).fillEllipse(transition.x, transition.y + 7, 108, 60);
+        marker.lineStyle(7, 0x654026, 0.95).strokeEllipse(transition.x, transition.y + 7, 116, 66);
+        for (const offset of [-50, -25, 25, 50]) marker.fillStyle(0x7a5330, 0.92).fillCircle(transition.x + offset, transition.y - 13 + Math.abs(offset) * 0.12, 11);
       } else {
         marker.fillStyle(0x080504, 0.88).fillRect(transition.x - 62, transition.y - 12, 124, 34);
         marker.lineStyle(4, 0x7b522e, 0.95).strokeRect(transition.x - 62, transition.y - 12, 124, 34);
       }
-      this.add.text(transition.x, transition.y - 54, transition.label, {
+      this.add.text(transition.x, transition.y - 58, transition.label, {
         fontFamily: 'Georgia, serif', fontSize: '11px', color: '#f0cc8c', align: 'center', stroke: '#130907', strokeThickness: 4
       }).setOrigin(0.5).setDepth(transition.y + 30);
-      this.add.text(transition.x, transition.y - 36, 'Use', {
+      this.add.text(transition.x, transition.y - 38, 'Use', {
         fontFamily: 'Arial, sans-serif', fontSize: '9px', color: '#c8a67e', stroke: '#130907', strokeThickness: 3
       }).setOrigin(0.5).setDepth(transition.y + 30);
     }
@@ -678,11 +826,16 @@ ${point.label || 'Use'}`, {
   respawnAtRefuge() {
     this.deathAnnounced = false;
     gameEvents.emit('death-cleared');
-    this.player.respawn(PLAYER_START.x, PLAYER_START.y);
     if (this.currentMap.id !== DEFAULT_MAP_ID) {
+      // Restore the live actor before the prepared map handoff, but keep the
+      // temporary respawn position inside the current map. transitionToMap()
+      // then commits the actual Refuge entry coordinates. This avoids both the
+      // old wrong-map PLAYER_START jump and carrying zero HP into the restart.
+      this.player.respawn(this.player.body.x, this.player.body.y);
       this.transitionToMap(DEFAULT_MAP_ID, 'cinder_start');
       return;
     }
+    this.player.respawn(PLAYER_START.x, PLAYER_START.y);
     this.state.player.mapId = DEFAULT_MAP_ID;
     this.state.player.entryPointId = 'cinder_start';
     this.emitState();
