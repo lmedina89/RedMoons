@@ -1,6 +1,12 @@
-# v0.1.1.2 QA report
+# v0.1.1.3 QA report
 
 ## Automated checks completed
+
+- The build shell and package identify v0.1.1.3 while save schema stays at 1.
+- Source guards verify immediate camera follow (`1,1` lerp), the centralized touch-vector reset path, joystick deadzone, and global pointer/background reset hooks.
+- Source guards verify one-toast replacement/deduplication and the 1.6-second attack-miss limiter.
+- Every enemy loot-table entry is validated through the shared player-loot eligibility rule; NPC-only/legacy incompatible equipment fails the build if reintroduced as a normal drop.
+- Equipment quest rewards are also validated as player-compatible.
 
 - `npm run check` validates all referenced runtime assets, stable content relationships, combat profiles, equipment stacking, wing gating, Character-sheet stat math, save normalization and animation geometry.
 - Animation geometry now validates explicit frame `sequence` values rather than assuming a simple frame count.
@@ -52,13 +58,16 @@ Automated/source checks cannot establish final iPhone feel or pixel-layer alignm
 6. Save, reload and verify all equipped slots/stat totals persist.
 7. Load an existing v0.1.1 browser save if available and verify it opens normally, keeps the rest of its previous equipment intact, and upgrades the equipped Rustblade to the Ashen Arming Sword.
 
-Any visual alignment or touch/combo timing defects found in that pass should be repaired as v0.1.1.1.x before beginning the v0.1.2 town/enemy-loadout milestone.
+Any remaining visual alignment or touch/combo timing defects found on-device should be repaired in another v0.1.1.x hotfix before beginning the v0.1.2 town/enemy-loadout milestone.
 
 
-## v0.1.1.2 targeted regression checks
+## v0.1.1.3 targeted regression checks
 
-- Run all four attacks in all four directions and watch the planted position for sideways visual drift.
-- Confirm NPC/legacy gear cannot be equipped by the player and remains in inventory after loading an older save.
-- Confirm full-combo helmet/chest/gloves/wings stay registered through revised attacks.
-- Kill several enemies quickly; XP/coin feedback should aggregate instead of producing one popup per kill.
-- Confirm no more than three toast messages are visible simultaneously.
+- Walk continuously from Cinder Refuge far enough east for the camera to begin following. Release the joystick: the player should stop immediately and should not appear to drift/slide left while the camera catches up.
+- Drag the joystick right/left/up/down, release outside the ring, cancel a touch, open a menu while moving, background Safari, return, and rotate away/back. Every path should neutralize movement.
+- Hold movement with one finger while tapping Attack/Use with another; the secondary pointer must not steal or cancel joystick ownership.
+- Spam Attack in empty space. At most one compact “Your blade cuts only ash.” notice should be visible, with repeated taps suppressed for roughly 1.6 seconds.
+- Trigger several different messages quickly. Only one toast should occupy the playfield; high-priority quest/level/danger feedback may replace lower-priority combat/muted feedback.
+- Kill Cinder Imps, Ash Skeletons and Captain Ossivar repeatedly. No NPC-only/legacy equipment should drop. Living Ember Heart remains allowed because it is an explicit quest item.
+- Complete the equipment-rewarding quests and confirm the rewarded gear is player-compatible.
+- Load an older schema-1 save containing legacy gear and confirm those inventory items are preserved even though they are not eligible for new normal drops.

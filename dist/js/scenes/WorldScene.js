@@ -1,6 +1,6 @@
 import { ASSET_DEFS } from '../data/assets.js';
 import { ENEMY_DEFS } from '../data/enemies.js';
-import { ITEM_DEFS } from '../data/items.js';
+import { ITEM_DEFS, isPlayerLootEligible } from '../data/items.js';
 import { NPC_DEFS } from '../data/npcs.js';
 import { COLLIDERS, PROP_DEFS, SPAWN_REGIONS, ZONES } from '../data/world.js';
 import { DEBUG, GAME_VERSION, PLAYER_START, RARITY, TILE_SIZE, WORLD_HEIGHT, WORLD_WIDTH } from '../config.js';
@@ -41,7 +41,7 @@ export class WorldScene extends Phaser.Scene {
     this.player = new Player(this, this.state, actionInput, attack => this.combat.playerAttack(attack));
     this.physics.add.collider(this.player.body, this.obstacles);
     this.physics.add.collider(this.player.body, this.enemyGroup);
-    this.cameras.main.startFollow(this.player.body, true, 0.12, 0.12);
+    this.cameras.main.startFollow(this.player.body, true, 1, 1);
 
     this.createEnemies();
     this.createNPCs();
@@ -161,6 +161,8 @@ export class WorldScene extends Phaser.Scene {
     this.state.player.currency += coins;
     if (def.family === 'imp') this.state.worldFlags.impKillsSinceHeart = (this.state.worldFlags.impKillsSinceHeart || 0) + 1;
     for (const entry of def.loot) {
+      const dropDef = ITEM_DEFS[entry.itemId];
+      if (!isPlayerLootEligible(dropDef)) continue;
       const pityHeart = entry.itemId === 'quest_ember_heart' && this.state.worldFlags.impKillsSinceHeart >= 6 && !this.inventory.countItem('quest_ember_heart');
       if (Math.random() <= entry.chance || pityHeart) {
         const item = this.inventory.createItem(entry.itemId, pickRarity(entry.rarityWeights));
@@ -258,7 +260,7 @@ export class WorldScene extends Phaser.Scene {
     if (!command) return;
     if (command.type === 'attack') actionInput.attackQueued = true;
     if (command.type === 'interact') actionInput.interactQueued = true;
-    if (command.type === 'move') { actionInput.moveX = command.x; actionInput.moveY = command.y; window.__ashfallTouchMoving = command.active; }
+    if (command.type === 'move') actionInput.setTouchMove(command.x, command.y, command.active);
     if (command.type === 'equip') {
       const result = this.inventory.equip(command.instanceId);
       gameEvents.emit('toast', { text: result.ok ? 'Equipment changed.' : result.reason, tone: result.ok ? 'normal' : 'danger', short: true });

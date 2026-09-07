@@ -17,3 +17,5 @@
 - Audio is not included in this asset archive, so the build ships silently rather than using unrelated placeholder sound.
 - Controller actions can plug into the input abstraction, but no gamepad mapping UI ships yet.
 - Matching generator credits are still missing for the supplied Boots, Gloves, Legion chest, Red Bat Wings, Iron helmet and Shoulders exports. They are on an attribution hold and should not be considered production/store-release cleared yet.
+
+- Legacy/NPC-only equipment is intentionally excluded from normal enemy loot in v0.1.1.3. Those definitions/assets remain available for future humanoid enemy loadouts and old-save preservation; the current compatible player gear library is therefore narrower until matching full-combat exports are added.

@@ -19,6 +19,10 @@ export class UIManager {
     this.pendingStats = { str: 0, dex: 0, vit: 0, spr: 0 };
     this.confirmingStats = false;
     this.dialogueOpenAt = 0;
+    this.toastTimer = null;
+    this.toastCooldowns = new Map();
+    this.activeToastPriority = -1;
+    this.resetTouchMovement = () => {};
     this.bindEvents();
     this.bindTouchControls();
     if (DEBUG) {
@@ -34,7 +38,7 @@ export class UIManager {
     gameEvents.on('zone', zone => { $('#zone-name').textContent = zone.name; $('#zone-danger').textContent = zone.danger; });
     gameEvents.on('toast', data => this.toast(data));
     gameEvents.on('dialogue', data => this.showDialogue(data));
-    gameEvents.on('death', data => { window.__ashfallUiBlocked = true; $('#death-text').textContent = data.text; $('#death-screen').classList.remove('hidden'); });
+    gameEvents.on('death', data => { this.resetTouchMovement(); window.__ashfallUiBlocked = true; $('#death-text').textContent = data.text; $('#death-screen').classList.remove('hidden'); });
     gameEvents.on('death-cleared', () => { $('#death-screen').classList.add('hidden'); window.__ashfallUiBlocked = false; });
 
     document.querySelectorAll('[data-panel]').forEach(button => button.addEventListener('click', () => this.openPanel(button.dataset.panel)));
@@ -50,24 +54,53 @@ export class UIManager {
   bindTouchControls() {
     const joystick = $('#joystick');
     const knob = $('#joystick-knob');
-    const update = event => {
-      const rect = joystick.getBoundingClientRect();
-      const cx = rect.left + rect.width / 2, cy = rect.top + rect.height / 2;
-      let dx = event.clientX - cx, dy = event.clientY - cy;
-      const max = rect.width * 0.34;
-      const len = Math.hypot(dx, dy);
-      if (len > max) { dx = dx / len * max; dy = dy / len * max; }
-      knob.style.transform = `translate(${dx}px, ${dy}px)`;
-      gameEvents.emit('command', { type: 'move', x: dx / max, y: dy / max, active: true });
-    };
-    const stop = event => {
-      if (event && joystick.hasPointerCapture?.(event.pointerId)) joystick.releasePointerCapture(event.pointerId);
+    let activePointerId = null;
+
+    const stop = (event = null, force = false) => {
+      if (!force && activePointerId !== null && event?.pointerId !== activePointerId) return;
+      const pointerId = activePointerId;
+      activePointerId = null;
+      if (pointerId !== null && joystick.hasPointerCapture?.(pointerId)) {
+        try { joystick.releasePointerCapture(pointerId); } catch (_) { /* Safari may already have released it. */ }
+      }
       knob.style.transform = 'translate(0, 0)';
       gameEvents.emit('command', { type: 'move', x: 0, y: 0, active: false });
     };
-    joystick.addEventListener('pointerdown', event => { joystick.setPointerCapture(event.pointerId); update(event); });
-    joystick.addEventListener('pointermove', event => { if (joystick.hasPointerCapture(event.pointerId)) update(event); });
-    joystick.addEventListener('pointerup', stop); joystick.addEventListener('pointercancel', stop);
+
+    const update = event => {
+      if (activePointerId !== event.pointerId) return;
+      event.preventDefault();
+      const rect = joystick.getBoundingClientRect();
+      const cx = rect.left + rect.width / 2;
+      const cy = rect.top + rect.height / 2;
+      let dx = event.clientX - cx;
+      let dy = event.clientY - cy;
+      const max = Math.max(1, Math.min(rect.width, rect.height) * 0.34);
+      const len = Math.hypot(dx, dy);
+      if (len > max) { dx = dx / len * max; dy = dy / len * max; }
+      knob.style.transform = `translate(${dx}px, ${dy}px)`;
+      gameEvents.emit('command', { type: 'move', x: dx / max, y: dy / max, active: len >= max * 0.08 });
+    };
+
+    joystick.addEventListener('pointerdown', event => {
+      if (activePointerId !== null) return;
+      event.preventDefault();
+      activePointerId = event.pointerId;
+      try { joystick.setPointerCapture(event.pointerId); } catch (_) { /* Global release listeners remain as a fallback. */ }
+      update(event);
+    });
+    joystick.addEventListener('pointermove', update);
+    joystick.addEventListener('pointerup', event => stop(event));
+    joystick.addEventListener('pointercancel', event => stop(event));
+    joystick.addEventListener('lostpointercapture', event => stop(event));
+    window.addEventListener('pointerup', event => stop(event), true);
+    window.addEventListener('pointercancel', event => stop(event), true);
+    window.addEventListener('blur', () => stop(null, true));
+    window.addEventListener('pagehide', () => stop(null, true));
+    window.addEventListener('orientationchange', () => stop(null, true));
+    document.addEventListener('visibilitychange', () => { if (document.hidden) stop(null, true); });
+    this.resetTouchMovement = () => stop(null, true);
+
     $('#attack-button').addEventListener('pointerdown', event => { event.preventDefault(); gameEvents.emit('command', { type: 'attack' }); });
     $('#interact-button').addEventListener('pointerup', event => { event.preventDefault(); gameEvents.emit('command', { type: 'interact' }); });
   }
@@ -91,6 +124,7 @@ export class UIManager {
   }
 
   openPanel(requestedPanel) {
+    this.resetTouchMovement();
     const panel = requestedPanel === 'stats' ? 'character' : requestedPanel;
     if (!this.snapshot || !['inventory', 'character', 'quests'].includes(panel)) return;
     this.panel = panel;
@@ -242,6 +276,7 @@ export class UIManager {
   }
 
   showDialogue(data) {
+    this.resetTouchMovement();
     if (DEBUG) console.info('[Ashfall diagnostics] dialogue received', data.speaker);
     window.__ashfallUiBlocked = true;
     this.dialogueOpenAt = performance.now();
@@ -252,13 +287,39 @@ export class UIManager {
     $('#dialogue-close').focus();
   }
 
-  toast({ text, tone = 'normal', short = false }) {
+  toast({ text, tone = 'normal', short = false, key = text, cooldownMs = null }) {
+    const now = performance.now();
+    const cooldown = cooldownMs ?? (tone === 'muted' || tone === 'combat' ? 1400 : 350);
+    const lastShown = this.toastCooldowns.get(key) ?? -Infinity;
+    const stack = $('#toast-stack');
+    const existing = stack.firstElementChild;
+    const priorities = { muted: 0, combat: 0, normal: 1, magic: 1, noble: 2, quest: 3, level: 3, danger: 4 };
+    const priority = priorities[tone] ?? 1;
+
+    if (now - lastShown < cooldown) {
+      if (existing?.dataset.toastKey === key) {
+        clearTimeout(this.toastTimer);
+        this.toastTimer = setTimeout(() => this.clearToast(existing), short ? 1200 : 2100);
+      }
+      return;
+    }
+    if (existing && priority < this.activeToastPriority) return;
+
+    this.toastCooldowns.set(key, now);
+    clearTimeout(this.toastTimer);
+    stack.replaceChildren();
     const element = document.createElement('div');
     element.className = `toast ${tone}`;
+    element.dataset.toastKey = key;
     element.textContent = text;
-    const stack = $('#toast-stack');
     stack.append(element);
-    while (stack.children.length > 3) stack.firstElementChild?.remove();
-    setTimeout(() => element.remove(), short ? 1150 : 2600);
+    this.activeToastPriority = priority;
+    this.toastTimer = setTimeout(() => this.clearToast(element), short ? 1200 : 2100);
+  }
+
+  clearToast(element) {
+    if (element?.isConnected) element.remove();
+    if (!$('#toast-stack').firstElementChild) this.activeToastPriority = -1;
+    this.toastTimer = null;
   }
 }

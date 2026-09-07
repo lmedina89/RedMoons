@@ -41,3 +41,14 @@ export const MODIFIER_POOL = Object.freeze([
   { id: 'strong', label: 'Strong', stat: 'str', min: 1, max: 2 },
   { id: 'nimble', label: 'Nimble', stat: 'dex', min: 1, max: 2 }
 ]);
+
+
+export function isPlayerLootEligible(definition) {
+  const def = typeof definition === 'string' ? ITEM_DEFS[definition] : definition;
+  if (!def) return false;
+  if (def.questItem) return true;
+  if (!def.slot) return true;
+  if (def.npcOnly || def.playerEquipReady === false) return false;
+  if (def.slot === 'weapon' && def.playerCombatReady === false) return false;
+  return true;
+}

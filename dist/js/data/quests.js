@@ -7,12 +7,12 @@ export const QUEST_DEFS = Object.freeze({
   quest_ember_heart: {
     id: 'quest_ember_heart', name: 'A Heart Still Burning', giver: 'npc_vesra', summary: 'Recover a Living Ember Heart from the hunting grounds.',
     objectives: [{ id: 'collect_heart', type: 'collectItem', targetId: 'quest_ember_heart', required: 1 }],
-    rewards: { xp: 120, currency: 38, item: { itemId: 'chest_cinderhide', rarity: 'magic' } }, nextQuest: 'quest_bone_captain', completionFlag: 'ember_heart_delivered'
+    rewards: { xp: 120, currency: 38, item: { itemId: 'hands_legion', rarity: 'magic' } }, nextQuest: 'quest_bone_captain', completionFlag: 'ember_heart_delivered'
   },
   quest_bone_captain: {
     id: 'quest_bone_captain', name: 'The Bone Road Warden', giver: 'npc_vesra', summary: 'Defeat Captain Ossivar at the edge of Bone Road.',
     objectives: [{ id: 'kill_captain', type: 'killEnemy', targetId: 'enemy_bone_captain', required: 1 }],
-    rewards: { xp: 260, currency: 75, item: { itemId: 'head_warden', rarity: 'noble' } }, completionFlag: 'bone_road_open'
+    rewards: { xp: 260, currency: 75, item: { itemId: 'head_iron_revised', rarity: 'noble' } }, completionFlag: 'bone_road_open'
   }
 });
 

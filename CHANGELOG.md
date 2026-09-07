@@ -1,5 +1,17 @@
 # Changelog
 
+## v0.1.1.3 — Mobile Control & Loot UX Hotfix
+
+- Removed camera catch-up lerp so travelling east no longer makes the player appear to slide back left as the camera recenters.
+- Hardened the virtual joystick around a single active pointer, finite/clamped vectors, an 8% deadzone, and forced neutral resets on pointer cancel/loss, blur, page hide, visibility loss and orientation change.
+- Movement resets immediately when a blocking menu, dialogue, death screen or equivalent UI transition takes control.
+- Replaced the three-message toast stack with one compact priority-aware notification. Duplicate low-value feedback is deduplicated/rate-limited instead of covering the combat field.
+- Rate-limited the repeated “Your blade cuts only ash.” attack-miss notice at the combat-system source.
+- Added a reusable player-loot eligibility rule: quest items remain valid, but NPC-only/legacy equipment that cannot use the player moveset is blocked from normal enemy drops.
+- Cleaned Cinder Imp, Ash Skeleton and Captain Ossivar loot tables so normal equipment drops are player-compatible.
+- Replaced incompatible equipment quest rewards with current player-compatible revised gear.
+- Preserved legacy gear definitions/assets and existing save inventory for future humanoid enemy loadouts; save schema remains version 1.
+
 ## v0.1.1.2 — Combat Visual Stability Hotfix
 
 - Enforced full-combo animation compatibility for player equipment; limited/fallback assets remain preserved as NPC/legacy content.

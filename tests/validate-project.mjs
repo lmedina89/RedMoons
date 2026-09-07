@@ -11,7 +11,7 @@ const { GAME_VERSION } = await import('../dist/js/config.js');
 const { ANIMATION_GEOMETRIES, ASSET_DEFS, LAYER_ASSETS } = await import('../dist/js/data/assets.js');
 const { WEAPON_COMBAT_PROFILES } = await import('../dist/js/data/combat.js');
 const { ENEMY_DEFS } = await import('../dist/js/data/enemies.js');
-const { ITEM_DEFS } = await import('../dist/js/data/items.js');
+const { ITEM_DEFS, isPlayerLootEligible } = await import('../dist/js/data/items.js');
 const { NPC_DEFS } = await import('../dist/js/data/npcs.js');
 const { QUEST_DEFS } = await import('../dist/js/data/quests.js');
 const { createDefaultState } = await import('../dist/js/core/GameState.js');
@@ -30,19 +30,31 @@ const html = await readFile(path.join(dist, 'index.html'), 'utf8');
 const uiSource = await readFile(path.join(dist, 'js/ui.js'), 'utf8');
 const worldSource = await readFile(path.join(dist, 'js/scenes/WorldScene.js'), 'utf8');
 const layeredSource = await readFile(path.join(dist, 'js/entities/LayeredCharacter.js'), 'utf8');
+const actionInputSource = await readFile(path.join(dist, 'js/systems/ActionInput.js'), 'utf8');
+const combatSource = await readFile(path.join(dist, 'js/systems/CombatSystem.js'), 'utf8');
 for (const required of ['vendor/phaser.min.js', 'js/main.js', 'css/game.css', 'viewport-fit=cover']) assert.ok(html.includes(required), `index.html missing ${required}`);
 assert.ok(html.includes('data-panel="character"'), 'HUD must expose the Character sheet');
 assert.ok(uiSource.includes('Equipment Buffs') && uiSource.includes('Active Effects'), 'Character overview must expose gear buffs and effect status');
-assert.ok(uiSource.includes('NPC / legacy only') && uiSource.includes('stack.children.length > 3'), 'UI must label incompatible gear and bound toast stacking');
+assert.ok(uiSource.includes('NPC / legacy only') && uiSource.includes('stack.replaceChildren()') && uiSource.includes('toastCooldowns'), 'UI must label incompatible gear and keep combat notifications to one deduplicated toast');
 assert.ok(worldSource.includes('queueKillReward') && worldSource.includes('delayedCall(320'), 'Horde kill rewards must be batched');
+assert.ok(worldSource.includes('startFollow(this.player.body, true, 1, 1)') && worldSource.includes('actionInput.setTouchMove'), 'Camera follow and touch movement must not preserve leftward drift');
+assert.ok(actionInputSource.includes('resetTouchMovement') && actionInputSource.includes('length < 0.08'), 'Touch input must have a deadzone and explicit neutral reset');
+assert.ok(uiSource.includes("window.addEventListener('blur'") && uiSource.includes("window.addEventListener('pointercancel'"), 'Touch movement must clear on global pointer loss/backgrounding');
+assert.ok(combatSource.includes('lastMissToastAt') && combatSource.includes('>= 1600'), 'Repeated attack-miss feedback must be rate limited at source');
 assert.ok(layeredSource.includes('ROOT_X') && layeredSource.includes("this.setAsset('hair', null)"), 'Renderer must stabilize revised root motion and suppress incompatible hair');
 assert.ok(!html.includes('90_user_generated'), 'Prototype-only generator assets must not ship');
-assert.ok(html.includes('v0.1.1.2'), 'Build shell must identify v0.1.1.2');
+assert.ok(html.includes('v0.1.1.3'), 'Build shell must identify v0.1.1.3');
 
 const ids = groups => Object.values(groups).map(value => value.id);
 for (const registry of [ITEM_DEFS, ENEMY_DEFS, NPC_DEFS, QUEST_DEFS]) assert.equal(new Set(ids(registry)).size, ids(registry).length, 'Stable content IDs must be unique');
-for (const enemy of Object.values(ENEMY_DEFS)) for (const drop of enemy.loot) assert.ok(ITEM_DEFS[drop.itemId], `Enemy loot references unknown item ${drop.itemId}`);
-for (const quest of Object.values(QUEST_DEFS)) assert.ok(NPC_DEFS[quest.giver], `Quest references unknown giver ${quest.giver}`);
+for (const enemy of Object.values(ENEMY_DEFS)) for (const drop of enemy.loot) {
+  assert.ok(ITEM_DEFS[drop.itemId], `Enemy loot references unknown item ${drop.itemId}`);
+  assert.ok(isPlayerLootEligible(ITEM_DEFS[drop.itemId]), `Enemy ${enemy.id} exposes incompatible legacy gear as normal loot: ${drop.itemId}`);
+}
+for (const quest of Object.values(QUEST_DEFS)) {
+  assert.ok(NPC_DEFS[quest.giver], `Quest references unknown giver ${quest.giver}`);
+  if (quest.rewards?.item) assert.ok(isPlayerLootEligible(ITEM_DEFS[quest.rewards.item.itemId]), `Quest ${quest.id} rewards incompatible legacy gear`);
+}
 
 for (const def of Object.values(ITEM_DEFS)) {
   if (!def.visual) continue;
@@ -158,7 +170,7 @@ for (const action of ['walk', 'slash']) {
   }
 }
 
-// v0.1.1.2 combat coverage: the player-ready body, core revised armor, wings
+// v0.1.1.3 combat coverage: the player-ready body, core revised armor, wings
 // and arming sword must contain real pixels for every source frame used by the
 // four-hit profile. Limited armor is explicitly allowed to fall back to slash.
 assert.deepEqual(WEAPON_COMBAT_PROFILES.sword_four_hit.attacks.map(attack => attack.action), ['slash', 'slash1h', 'backslash1h', 'halfslash1h']);
@@ -309,4 +321,4 @@ const normalizedWrongSlot = saveManager.validate(wrongSlotSave);
 assert.equal(normalizedWrongSlot.equipment.head, null, 'Wrong-slot saved equipment must be discarded');
 assert.equal(normalizedWrongSlot.equipment.weapon, 'i_000001', 'Valid weapon reference must survive normalization');
 
-console.log(`Validated ${ASSET_DEFS.length} assets, ${Object.keys(ITEM_DEFS).length} items, ${Object.keys(ENEMY_DEFS).length} enemies, ${Object.keys(NPC_DEFS).length} NPCs, ${Object.keys(QUEST_DEFS).length} quests, four-hit combat geometry, strict player/NPC animation compatibility, root stabilization, batched horde rewards, 12-slot equipment, wing gating, stat aggregation, and save schema 1.`);
+console.log(`Validated ${ASSET_DEFS.length} assets, ${Object.keys(ITEM_DEFS).length} items, ${Object.keys(ENEMY_DEFS).length} enemies, ${Object.keys(NPC_DEFS).length} NPCs, ${Object.keys(QUEST_DEFS).length} quests, four-hit combat geometry, strict player/NPC animation compatibility, drift-safe touch/camera controls, singleton toast feedback, player-compatible loot policy, batched horde rewards, 12-slot equipment, wing gating, stat aggregation, and save schema 1.`);
