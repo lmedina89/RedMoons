@@ -328,13 +328,18 @@ export class WorldScene extends Phaser.Scene {
     this.recoveryPoints = RECOVERY_POINTS.filter(point => point.mapId === this.currentMap.id);
     for (const point of this.recoveryPoints) {
       const marker = this.add.graphics().setDepth(point.y - 4);
-      marker.fillStyle(0x4f2b1c, 0.42).fillCircle(point.x, point.y, 20);
-      marker.lineStyle(2, 0xe3b667, 0.82).strokeCircle(point.x, point.y, 20);
-      marker.fillStyle(0xffb65e, 0.86).fillCircle(point.x, point.y - 2, 5);
-      marker.fillStyle(0xffdf8a, 0.62).fillCircle(point.x, point.y - 9, 3);
-      this.add.text(point.x, point.y + 29, `${point.name}
+      marker.fillStyle(0x244227, 0.42).fillCircle(point.x, point.y, 24);
+      marker.lineStyle(3, 0x9fe58d, 0.92).strokeCircle(point.x, point.y, 24);
+      marker.lineStyle(1, 0xffdf8a, 0.72).strokeCircle(point.x, point.y, 17);
+      marker.fillStyle(0xffc968, 0.94).fillCircle(point.x, point.y - 2, 6);
+      marker.fillStyle(0xfff0a6, 0.74).fillCircle(point.x, point.y - 11, 3);
+      const healTag = this.add.text(point.x, point.y - 42, '✦ HEAL ✦', {
+        fontFamily: 'Georgia, serif', fontSize: '11px', fontStyle: 'bold', color: '#c9f5b8', stroke: '#10220f', strokeThickness: 4
+      }).setOrigin(0.5).setDepth(point.y + 36);
+      this.tweens.add({ targets: [marker, healTag], alpha: { from: 0.72, to: 1 }, duration: 850, yoyo: true, repeat: -1, ease: 'Sine.easeInOut' });
+      this.add.text(point.x, point.y + 31, `${point.name}
 ${point.label || 'Use'}`, {
-        fontFamily: 'Georgia, serif', fontSize: '10px', align: 'center', color: '#efcf95', stroke: '#170c0a', strokeThickness: 3
+        fontFamily: 'Georgia, serif', fontSize: '10px', align: 'center', color: '#e5f5c8', stroke: '#170c0a', strokeThickness: 3
       }).setOrigin(0.5, 0).setDepth(point.y + 36);
     }
   }

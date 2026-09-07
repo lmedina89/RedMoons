@@ -29,7 +29,7 @@ export const BUILDING_DEFS = Object.freeze([
 ]);
 
 export const RECOVERY_POINTS = Object.freeze([
-  Object.freeze({ id: 'recovery_ashen_rest', name: 'Ashen Rest Hearth', mapId: 'map_cinder_region', x: 180, y: 805, radius: 72, label: 'Rest & Recover' })
+  Object.freeze({ id: 'recovery_ashen_rest', name: 'Ashen Rest Hearth', mapId: 'map_cinder_region', x: 180, y: 805, radius: 78, label: 'FULL HEAL • HP + ESSENCE' })
 ]);
 
 export const TOWN_PROP_DEFS = Object.freeze([

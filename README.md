@@ -1,6 +1,15 @@
-# Hell RPG v0.1.3.2.1 — Combat UX & Feel Hotfix
+# Hell RPG v0.1.3.2.1.1 — HUD Position & Hearth Visibility Hotfix
 
 Built directly from **v0.1.3.2 Recovery & Consumables**. Save schema remains **2** and the localStorage key remains unchanged.
+
+## v0.1.3.2.1.1 phone-layout correction
+
+- Shifted the entire right-side combat cluster closer to the iPhone safe-right edge without shrinking touch targets.
+- Moved `Use` roughly one control-width toward Attack and moved the HP/ES pair up and right so they no longer sit across the center combat lane.
+- Tightened Skill II/III around the upper Attack arc while preserving separation from Attack and utility controls.
+- Made **Ashen Rest Hearth** much easier to find: it is directly south/below the **Ashen Rest** inn in Cinder Refuge and now has a pulsing green/gold `HEAL` marker. Interacting there fully restores HP + Essence, clears statuses and resets recovery cooldowns.
+- Save schema remains 2. No progression or item state is reset.
+
 
 This focused hotfix fixes the physical-iPhone combat-UI problems found after v0.1.3.2 and retunes Ember Cleave so it has a clear skill identity before the ArchAngel Azrael field-test build.
 

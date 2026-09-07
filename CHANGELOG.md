@@ -1,5 +1,13 @@
 # Changelog
 
+## v0.1.3.2.1.1 — HUD Position & Hearth Visibility Hotfix
+
+- Shifted the right-side combat HUD toward the iPhone safe-right edge while preserving the existing Attack anchor and touch-target sizes.
+- Re-anchored `Use` closer to Attack, moved HP/ES recovery controls up/right, and tightened Skill II/III around Attack's upper arc to reclaim the center playfield.
+- Increased Ashen Rest Hearth interaction radius slightly and replaced its subtle marker with a pulsing `HEAL` marker plus explicit `FULL HEAL • HP + ESSENCE` world label.
+- The hearth remains directly south of the Ashen Rest inn in Cinder Refuge and still fully restores HP/Essence, clears statuses and resets recovery cooldowns.
+- Save schema remains 2; no combat/recovery tuning from v0.1.3.2.1 was changed.
+
 ## v0.1.3.2.1 — Combat UX & Feel Hotfix
 
 - Rebuilt the iPhone combat HUD around a fixed Attack anchor with three radial/fan skill positions; `Use` and recovery controls no longer participate in a horizontal flex row and therefore cannot be pushed out by unlocked skills.
