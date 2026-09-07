@@ -1,6 +1,14 @@
-# Hell RPG v0.1.1.1 — Equipment & Combat Expansion
+# Hell RPG v0.1.1.2 — Combat Visual Stability Hotfix
 
 Ashfall Foundation is a production-minded vertical slice for a mobile-first, single-player pixel action RPG. It is an original dark-fantasy game built with Phaser 3, plain JavaScript and HTML/CSS. It does not use copyrighted Dekaron/2Moons content.
+
+## v0.1.1.2 hotfix
+
+On-device testing exposed two visual/UX problems: revised one-handed poses appear to slide inside their sprite cells, and older slash-only layers cannot stay registered to those poses. v0.1.1.2 stabilizes the player root position and restricts player equipment to assets with the complete revised combat set. Older assets remain in the project for humanoid/NPC use. Classic hair is temporarily disabled until a revised-combat hair export is supplied.
+
+Rapid horde kills now aggregate XP/coin feedback into a single burst notification, and the toast stack is capped at three.
+
+**Still needed for a fully dressed four-hit player:** revised-combat hair, legs, boots, shoulders, and any offhand/shield intended for player use. Iron War Helm, Legion Cuirass, Legion Gloves, Crimson Bat Wings, and the Ashen Arming Sword are full-combo compatible now.
 
 ## What changed in v0.1.1.1
 
@@ -48,7 +56,7 @@ For JavaScript syntax checks:
 find dist/js -name '*.js' -print0 | xargs -0 -n1 node --check
 ```
 
-Append `?debug=1` to the local/deployed URL to enable development diagnostics. v0.1.1.1 adds **Add 0.1.1.1 Gear** and **Unlock Wings** helpers specifically so the new equipment/animation coverage can be tested without grinding drops.
+Append `?debug=1` to the local/deployed URL to enable development diagnostics. v0.1.1.2 exposes **Add 0.1.1.2 Gear** and **Unlock Wings** helpers specifically so the new equipment/animation coverage can be tested without grinding drops.
 
 ## GitHub Pages
 

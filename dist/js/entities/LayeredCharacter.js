@@ -1,6 +1,18 @@
 import { ANIMATION_GEOMETRIES, LAYER_ASSETS } from '../data/assets.js';
 import { ITEM_DEFS } from '../data/items.js';
 
+// LPC Revised one-handed attacks translate the drawn feet inside the 64px
+// source cell even though the player's physics body is stationary. These
+// measured integer offsets keep the planted position visually stable while
+// preserving the actual attack pose. Every equipped layer receives the same
+// correction so compatible gear remains registered to the body.
+const ROOT_X = Object.freeze({
+  slash: Object.freeze([[0,0,0,0,-1,-1],[0,2,1,1,1,1],[0,0,1,-1,-1,-1],[0,-2,-1,-1,-1,-1]]),
+  slash1h: Object.freeze([[-1,0,1,1,1,1,0],[-2,1,3,3,3,3,1],[0,0,-3,-3,-3,-3,0],[2,-1,-3,-3,-3,-3,-1]]),
+  backslash1h: Object.freeze([[-1,0,1,1,1,1,1,0,0,-1,-1,-1],[-2,1,3,3,3,3,3,2,-1,-1,-1,-1],[0,0,-3,-3,-3,-3,-3,-3,0,0,0,0],[2,-1,-3,-3,-3,-3,-3,-2,1,1,1,1]]),
+  halfslash1h: Object.freeze([[-1,0,0,0,0,0],[-2,1,5,6,6,1],[0,0,-1,-1,-1,0],[2,-1,-5,-6,-6,-1]])
+});
+
 export class LayeredCharacter {
   constructor(scene, x, y, state, scale = 1.45) {
     this.scene = scene;
@@ -24,7 +36,8 @@ export class LayeredCharacter {
     const byId = new Map(this.state.inventory.map(item => [item.instanceId, item]));
     const visual = slot => {
       const item = byId.get(this.state.equipment[slot]);
-      return item ? ITEM_DEFS[item.itemId]?.visual : null;
+      const def = item ? ITEM_DEFS[item.itemId] : null;
+      return def && def.playerEquipReady !== false && !def.npcOnly ? def.visual : null;
     };
     this.setAsset('body', 'body');
     this.setAsset('wings', visual('wings'));
@@ -35,7 +48,9 @@ export class LayeredCharacter {
     this.setAsset('hands', visual('hands'));
     const head = visual('head');
     this.setAsset('head', head);
-    this.setAsset('hair', head ? null : 'hair');
+    // Classic hair has no revised 1H combo frames; keep it off the player
+    // until a matching full-combat hair export is supplied.
+    this.setAsset('hair', null);
     const weapon = visual('weapon');
     this.setAsset('weaponBg', weapon ? `${weapon}_bg` : null);
     this.setAsset('weaponFg', weapon ? `${weapon}_fg` : null);
@@ -70,6 +85,8 @@ export class LayeredCharacter {
     this.x = x;
     this.y = y;
     const requestedAction = stateName || 'idle';
+    const rootFrames = ROOT_X[requestedAction]?.[this.direction];
+    const rootX = rootFrames ? (rootFrames[Math.max(0, Math.min(rootFrames.length - 1, frameStep || 0))] || 0) * this.scale : 0;
     for (const layer of this.layers.values()) {
       if (!layer.asset) continue;
       const asset = layer.asset;
@@ -92,7 +109,7 @@ export class LayeredCharacter {
       const frameIndex = row * animation.stride + sourceFrame;
       const mirrored = Boolean(animation.mirror?.[this.direction]);
       layer.sprite.setVisible(true).setTexture(texture).setFrame(frameIndex).setFlipX(mirrored);
-      layer.sprite.setPosition(x, y).setDepth(baseDepth + layer.order * 0.001);
+      layer.sprite.setPosition(x + rootX, y).setDepth(baseDepth + layer.order * 0.001);
       const oversized = asset.oversizedSources?.includes(animation.source) || asset.geometry === 'dcssSword128';
       if (oversized) layer.sprite.setOrigin(0.5, 0.595).setScale(this.scale);
       else layer.sprite.setOrigin(0.5, 0.69).setScale(this.scale);

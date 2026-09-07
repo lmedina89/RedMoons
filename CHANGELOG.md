@@ -1,5 +1,14 @@
 # Changelog
 
+## v0.1.1.2 — Combat Visual Stability Hotfix
+
+- Enforced full-combo animation compatibility for player equipment; limited/fallback assets remain preserved as NPC/legacy content.
+- Existing saves preserve incompatible gear in inventory but remove it from player slots.
+- Temporarily disabled classic hair on the revised player until a full revised-combat hair export exists.
+- Added measured horizontal root-motion compensation to reduce apparent sideways drift during the four-hit combo.
+- Batched rapid-kill XP/coin notifications and capped simultaneous toast messages at three.
+- Save schema remains version 1.
+
 ## v0.1.1.1 — Equipment & Combat Expansion
 
 - Added a data-driven four-hit sword combo: standard slash → one-handed slash → backslash → halfslash, with per-hit duration, impact timing, damage and range multipliers.

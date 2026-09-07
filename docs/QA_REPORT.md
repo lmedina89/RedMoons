@@ -1,4 +1,4 @@
-# v0.1.1.1 QA report
+# v0.1.1.2 QA report
 
 ## Automated checks completed
 
@@ -53,3 +53,12 @@ Automated/source checks cannot establish final iPhone feel or pixel-layer alignm
 7. Load an existing v0.1.1 browser save if available and verify it opens normally, keeps the rest of its previous equipment intact, and upgrades the equipped Rustblade to the Ashen Arming Sword.
 
 Any visual alignment or touch/combo timing defects found in that pass should be repaired as v0.1.1.1.x before beginning the v0.1.2 town/enemy-loadout milestone.
+
+
+## v0.1.1.2 targeted regression checks
+
+- Run all four attacks in all four directions and watch the planted position for sideways visual drift.
+- Confirm NPC/legacy gear cannot be equipped by the player and remains in inventory after loading an older save.
+- Confirm full-combo helmet/chest/gloves/wings stay registered through revised attacks.
+- Kill several enemies quickly; XP/coin feedback should aggregate instead of producing one popup per kill.
+- Confirm no more than three toast messages are visible simultaneously.

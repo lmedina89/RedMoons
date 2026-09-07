@@ -51,6 +51,8 @@ export class WorldScene extends Phaser.Scene {
     this.lastHudUpdate = 0;
     this.lastSave = 0;
     this.deathAnnounced = false;
+    this.killRewardBatch = { kills: 0, xp: 0, coins: 0, noble: false };
+    this.killRewardTimer = null;
 
     this.offUiCommand = gameEvents.on('command', command => this.handleCommand(command));
     this.events.once(Phaser.Scenes.Events.SHUTDOWN, () => this.offUiCommand?.());
@@ -166,10 +168,25 @@ export class WorldScene extends Phaser.Scene {
         if (entry.itemId === 'quest_ember_heart') this.state.worldFlags.impKillsSinceHeart = 0;
       }
     }
-    gameEvents.emit('toast', { text: `+${def.xp} XP  •  +${coins} ash coin`, tone: def.named ? 'noble' : 'combat', short: true });
+    this.queueKillReward(def, coins);
     if (xpResult.levels) gameEvents.emit('toast', { text: `Level ${this.state.player.level}! +5 stat points, +1 skill point`, tone: 'level' });
     this.emitState();
     this.safeSave();
+  }
+
+  queueKillReward(def, coins) {
+    this.killRewardBatch.kills += 1;
+    this.killRewardBatch.xp += def.xp;
+    this.killRewardBatch.coins += coins;
+    this.killRewardBatch.noble ||= Boolean(def.named);
+    this.killRewardTimer?.remove(false);
+    this.killRewardTimer = this.time.delayedCall(320, () => {
+      const batch = this.killRewardBatch;
+      const prefix = batch.kills > 1 ? `${batch.kills} kills  •  ` : '';
+      gameEvents.emit('toast', { text: `${prefix}+${batch.xp} XP  •  +${batch.coins} ash coin`, tone: batch.noble ? 'noble' : 'combat', short: true });
+      this.killRewardBatch = { kills: 0, xp: 0, coins: 0, noble: false };
+      this.killRewardTimer = null;
+    });
   }
 
   hitPlayer(amount) {
@@ -275,7 +292,7 @@ export class WorldScene extends Phaser.Scene {
       this.state.player.stats.str = Math.max(this.state.player.stats.str, 12);
       this.state.player.stats.dex = Math.max(this.state.player.stats.dex, 8);
       this.state.player.stats.vit = Math.max(this.state.player.stats.vit, 7);
-      const ids = ['weapon_arming_sword', 'head_iron_revised', 'shoulders_legion', 'chest_legion', 'hands_legion', 'feet_revised'];
+      const ids = ['weapon_arming_sword', 'head_iron_revised', 'chest_legion', 'hands_legion'];
       for (const itemId of ids) if (!this.state.inventory.some(item => item.itemId === itemId)) this.inventory.add(this.inventory.createItem(itemId, 'normal'));
     }
     if (action === 'wings') {

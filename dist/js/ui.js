@@ -153,11 +153,12 @@ export class UIManager {
     const stats = Object.entries(this.itemTotalStats(item)).map(([key, value]) => `<li>+${value} ${this.statLabel(key)}</li>`).join('') || '<li>No combat bonuses</li>';
     const requirements = [`Level ${def.levelReq || 1}`, ...Object.entries(def.requirements || {}).map(([key, value]) => `${key.toUpperCase()} ${value}`)].join(' • ');
     const gate = def.equipGate && !this.snapshot.state.worldFlags?.[def.equipGate] ? `<p class="requirements">Locked: ${def.gateLabel || 'advanced progression'}.</p>` : '';
-    const animation = def.slot === 'weapon' ? `<p>Combat set: ${def.playerCombatReady === false ? 'Humanoid/NPC only' : def.combatProfile === 'sword_four_hit' ? 'Full 4-hit sword combo' : 'Basic attack'}</p>` : '';
+    const playerReady = def.playerEquipReady !== false && !def.npcOnly && !(def.slot === 'weapon' && def.playerCombatReady === false);
+    const animation = def.slot ? `<p>Player animation: ${playerReady ? (def.combatProfile === 'sword_four_hit' ? 'Full 4-hit sword combo' : def.animationClass === 'full_combo' ? 'Full combo compatible' : 'Player compatible') : 'NPC / legacy only'}</p>` : '';
     const equippedItemId = this.snapshot.state.equipment[def.slot];
     const equippedItem = this.snapshot.state.inventory.find(candidate => candidate.instanceId === equippedItemId);
     const compare = equippedItem && equippedItem.instanceId !== item.instanceId ? this.comparisonText(item, equippedItem) : '';
-    return `<h3 style="color:${rarity.color}">${def.name}</h3><span class="rarity-label" style="color:${rarity.color}">${rarity.label}</span><p>${def.slot ? this.slotLabel(def.slot).toUpperCase() : 'QUEST ITEM'} • Enhancement +${item.enhancement || 0} • Value ${def.value}</p><ul>${stats}</ul><p class="requirements">Base requirements: ${requirements}</p>${gate}${animation}${compare}<footer>${def.slot ? equipped ? `<button type="button" data-unequip="${def.slot}">Unequip</button>` : `<button type="button" data-equip="${item.instanceId}">Equip to ${this.slotLabel(def.slot)}</button>` : ''}</footer>`;
+    return `<h3 style="color:${rarity.color}">${def.name}</h3><span class="rarity-label" style="color:${rarity.color}">${rarity.label}</span><p>${def.slot ? this.slotLabel(def.slot).toUpperCase() : 'QUEST ITEM'} • Enhancement +${item.enhancement || 0} • Value ${def.value}</p><ul>${stats}</ul><p class="requirements">Base requirements: ${requirements}</p>${gate}${animation}${compare}<footer>${def.slot ? equipped ? `<button type="button" data-unequip="${def.slot}">Unequip</button>` : playerReady ? `<button type="button" data-equip="${item.instanceId}">Equip to ${this.slotLabel(def.slot)}</button>` : `<span class="requirements">Reserved for humanoid/NPC loadouts until a full animation export exists.</span>` : ''}</footer>`;
   }
 
   comparisonText(item, equippedItem) {
@@ -255,7 +256,9 @@ export class UIManager {
     const element = document.createElement('div');
     element.className = `toast ${tone}`;
     element.textContent = text;
-    $('#toast-stack').append(element);
+    const stack = $('#toast-stack');
+    stack.append(element);
+    while (stack.children.length > 3) stack.firstElementChild?.remove();
     setTimeout(() => element.remove(), short ? 1150 : 2600);
   }
 }

@@ -28,11 +28,16 @@ assert.ok((await stat(path.join(dist, 'vendor/phaser.min.js'))).size > 900_000, 
 
 const html = await readFile(path.join(dist, 'index.html'), 'utf8');
 const uiSource = await readFile(path.join(dist, 'js/ui.js'), 'utf8');
+const worldSource = await readFile(path.join(dist, 'js/scenes/WorldScene.js'), 'utf8');
+const layeredSource = await readFile(path.join(dist, 'js/entities/LayeredCharacter.js'), 'utf8');
 for (const required of ['vendor/phaser.min.js', 'js/main.js', 'css/game.css', 'viewport-fit=cover']) assert.ok(html.includes(required), `index.html missing ${required}`);
 assert.ok(html.includes('data-panel="character"'), 'HUD must expose the Character sheet');
 assert.ok(uiSource.includes('Equipment Buffs') && uiSource.includes('Active Effects'), 'Character overview must expose gear buffs and effect status');
+assert.ok(uiSource.includes('NPC / legacy only') && uiSource.includes('stack.children.length > 3'), 'UI must label incompatible gear and bound toast stacking');
+assert.ok(worldSource.includes('queueKillReward') && worldSource.includes('delayedCall(320'), 'Horde kill rewards must be batched');
+assert.ok(layeredSource.includes('ROOT_X') && layeredSource.includes("this.setAsset('hair', null)"), 'Renderer must stabilize revised root motion and suppress incompatible hair');
 assert.ok(!html.includes('90_user_generated'), 'Prototype-only generator assets must not ship');
-assert.ok(html.includes('v0.1.1.1'), 'Build shell must identify v0.1.1.1');
+assert.ok(html.includes('v0.1.1.2'), 'Build shell must identify v0.1.1.2');
 
 const ids = groups => Object.values(groups).map(value => value.id);
 for (const registry of [ITEM_DEFS, ENEMY_DEFS, NPC_DEFS, QUEST_DEFS]) assert.equal(new Set(ids(registry)).size, ids(registry).length, 'Stable content IDs must be unique');
@@ -153,7 +158,7 @@ for (const action of ['walk', 'slash']) {
   }
 }
 
-// v0.1.1.1 combat coverage: the player-ready body, core revised armor, wings
+// v0.1.1.2 combat coverage: the player-ready body, core revised armor, wings
 // and arming sword must contain real pixels for every source frame used by the
 // four-hit profile. Limited armor is explicitly allowed to fall back to slash.
 assert.deepEqual(WEAPON_COMBAT_PROFILES.sword_four_hit.attacks.map(attack => attack.action), ['slash', 'slash1h', 'backslash1h', 'halfslash1h']);
@@ -217,36 +222,31 @@ const unknownItem = createDefaultState();
 unknownItem.inventory.push({ instanceId: 'bad', itemId: 'missing_item', rarity: 'normal', modifiers: {} });
 assert.ok(!saveManager.validate(unknownItem).inventory.some(item => item.instanceId === 'bad'), 'Unknown content must be removed safely');
 
-// Multi-slot equipment is a real state invariant, not just UI decoration.
+// Multi-slot equipment remains a real state invariant, but only full-combo
+// player-ready visual gear may be equipped.
 const gearState = createDefaultState();
 gearState.player.level = 5;
 gearState.player.stats = { str: 12, dex: 8, vit: 10, spr: 7 };
 gearState.inventory.push(
-  { instanceId: 'i_head_test', itemId: 'head_warden', rarity: 'magic', enhancement: 0, modifiers: { str: 2 } },
-  { instanceId: 'i_offhand_test', itemId: 'offhand_wood_guard', rarity: 'normal', enhancement: 0, modifiers: {} },
-  { instanceId: 'i_chest_test', itemId: 'chest_ash_plate', rarity: 'normal', enhancement: 0, modifiers: {} }
+  { instanceId: 'i_head_test', itemId: 'head_iron_revised', rarity: 'magic', enhancement: 0, modifiers: { str: 2 } },
+  { instanceId: 'i_chest_test', itemId: 'chest_legion', rarity: 'normal', enhancement: 0, modifiers: {} },
+  { instanceId: 'i_hands_test', itemId: 'hands_legion', rarity: 'normal', enhancement: 0, modifiers: {} }
 );
 const inventory = new InventorySystem(gearState);
 assert.equal(inventory.equip('i_head_test').ok, true);
-assert.equal(inventory.equip('i_offhand_test').ok, true);
-assert.equal(Object.values(gearState.equipment).filter(Boolean).length, 7, 'Starter armor + head + offhand should equip simultaneously');
-assert.equal(gearState.equipment.weapon, 'i_000001', 'Equipping armor/offhand must not replace the weapon');
-assert.equal(gearState.equipment.chest, 'i_000002', 'Equipping another armor slot must not replace chest armor');
-const starterGear = equipmentBonuses(gearState);
-assert.equal(starterGear.attack, 4);
-assert.equal(starterGear.defense, 10);
-assert.equal(starterGear.str, 2);
-const beforeChestSwap = { ...gearState.equipment };
 assert.equal(inventory.equip('i_chest_test').ok, true);
-assert.equal(gearState.equipment.chest, 'i_chest_test');
-for (const slot of ['head', 'hands', 'legs', 'feet', 'weapon', 'offhand']) assert.equal(gearState.equipment[slot], beforeChestSwap[slot], `Chest swap unexpectedly changed ${slot}`);
-assert.equal(equipmentBonuses(gearState).defense, 16, 'All equipped armor defense must aggregate');
-
+assert.equal(inventory.equip('i_hands_test').ok, true);
+assert.equal(Object.values(gearState.equipment).filter(Boolean).length, 4);
+assert.equal(gearState.equipment.weapon, 'i_000001');
+const readyGear = equipmentBonuses(gearState);
+assert.equal(readyGear.attack, 5);
+assert.equal(readyGear.defense, 14);
+assert.equal(readyGear.str, 2);
 const breakdown = statBreakdown(gearState);
-assert.equal(breakdown.totalPrimary.str, gearState.player.stats.str + 2, 'Primary gear buffs must be separated and included in totals');
-assert.ok(breakdown.gearImpact.attack > equipmentBonuses(gearState).attack, 'STR gear should also contribute derived attack beyond direct attack bonuses');
+assert.equal(breakdown.totalPrimary.str, gearState.player.stats.str + 2);
+assert.ok(breakdown.gearImpact.attack > equipmentBonuses(gearState).attack);
 const preview = previewDerivedStats(gearState, { vit: 1 });
-assert.equal(preview.maxHp, breakdown.totalDerived.maxHp + 9, 'Growth preview must use the same final-stat formula as gameplay');
+assert.equal(preview.maxHp, breakdown.totalDerived.maxHp + 9);
 
 // New slots are part of the save model even before their progression unlocks.
 assert.deepEqual(Object.keys(createDefaultState().equipment), ['head', 'shoulders', 'chest', 'legs', 'hands', 'feet', 'weapon', 'offhand', 'necklace', 'ring1', 'ring2', 'wings']);
@@ -262,6 +262,8 @@ limitedWeaponState.inventory.push(
 const limitedInventory = new InventorySystem(limitedWeaponState);
 assert.equal(limitedInventory.equip('i_rust_test').ok, false);
 assert.equal(limitedInventory.equip('i_katana_test').ok, false);
+limitedWeaponState.inventory.push({ instanceId: 'i_old_boots', itemId: 'feet_revised', rarity: 'normal', enhancement: 0, modifiers: {} });
+assert.equal(limitedInventory.equip('i_old_boots').ok, false);
 assert.equal(ITEM_DEFS.weapon_katana_npc.visual, 'weapon_katana_npc');
 assert.equal(limitedWeaponState.equipment.weapon, 'i_000001', 'Rejected NPC weapons must not disturb the equipped player weapon');
 
@@ -277,7 +279,7 @@ wingState.worldFlags.wingsUnlocked = true;
 assert.equal(wingInventory.equip('i_wings_test').ok, true);
 assert.equal(wingState.equipment.wings, 'i_wings_test');
 const wingGear = equipmentBonuses(wingState);
-assert.equal(wingGear.defense, 7, 'Starter armor plus wings defense should aggregate');
+assert.equal(wingGear.defense, 3, 'Wings defense should aggregate without legacy starter armor');
 assert.equal(wingGear.maxHp, 25, 'Wing Max HP buff must aggregate');
 assert.equal(wingGear.moveSpeed, 6, 'Wing movement bonus must aggregate');
 assert.equal(statBreakdown(wingState).totalDerived.moveSpeed, 160, 'Wing movement bonus must participate in final movement speed');
@@ -292,6 +294,14 @@ const normalizedOldWeapon = saveManager.validate(oldWeaponSave);
 assert.equal(normalizedOldWeapon.inventory[0].itemId, 'weapon_arming_sword');
 assert.equal(normalizedOldWeapon.equipment.weapon, 'i_000001');
 assert.equal(normalizedOldWeapon.inventory.find(item => item.instanceId === 'i_old_spare').itemId, 'weapon_rustblade');
+const oldArmorSave = createDefaultState();
+oldArmorSave.equipment.chest = 'i_000002';
+oldArmorSave.equipment.legs = 'i_000003';
+oldArmorSave.equipment.hands = 'i_000004';
+oldArmorSave.equipment.feet = 'i_000005';
+const normalizedOldArmor = saveManager.validate(oldArmorSave);
+for (const slot of ['chest', 'legs', 'hands', 'feet']) assert.equal(normalizedOldArmor.equipment[slot], null);
+assert.ok(normalizedOldArmor.inventory.some(item => item.instanceId === 'i_000002'));
 
 const wrongSlotSave = createDefaultState();
 wrongSlotSave.equipment.head = 'i_000001'; // Arming Sword cannot occupy Head.
@@ -299,4 +309,4 @@ const normalizedWrongSlot = saveManager.validate(wrongSlotSave);
 assert.equal(normalizedWrongSlot.equipment.head, null, 'Wrong-slot saved equipment must be discarded');
 assert.equal(normalizedWrongSlot.equipment.weapon, 'i_000001', 'Valid weapon reference must survive normalization');
 
-console.log(`Validated ${ASSET_DEFS.length} assets, ${Object.keys(ITEM_DEFS).length} items, ${Object.keys(ENEMY_DEFS).length} enemies, ${Object.keys(NPC_DEFS).length} NPCs, ${Object.keys(QUEST_DEFS).length} quests, four-hit combat geometry, 12-slot equipment, wing gating, stat aggregation, and save schema 1.`);
+console.log(`Validated ${ASSET_DEFS.length} assets, ${Object.keys(ITEM_DEFS).length} items, ${Object.keys(ENEMY_DEFS).length} enemies, ${Object.keys(NPC_DEFS).length} NPCs, ${Object.keys(QUEST_DEFS).length} quests, four-hit combat geometry, strict player/NPC animation compatibility, root stabilization, batched horde rewards, 12-slot equipment, wing gating, stat aggregation, and save schema 1.`);

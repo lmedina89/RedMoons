@@ -50,7 +50,7 @@ export class SaveManager {
       const id = value.equipment[slot];
       const item = typeof id === 'string' ? itemsById.get(id) : null;
       const def = item && ITEM_DEFS[item.itemId];
-      const validForSlot = Boolean(item && def?.slot === slot && !equippedIds.has(id));
+      const validForSlot = Boolean(item && def?.slot === slot && def.playerEquipReady !== false && !def.npcOnly && !equippedIds.has(id));
       state.equipment[slot] = validForSlot ? id : null;
       if (validForSlot) equippedIds.add(id);
     }
