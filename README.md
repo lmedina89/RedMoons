@@ -1,6 +1,15 @@
-# Hell RPG v0.1.3.2.1.1 — HUD Position & Hearth Visibility Hotfix
+# Hell RPG v0.1.3.2.1.2 — Final Combat HUD Tightening
 
-Built directly from **v0.1.3.2 Recovery & Consumables**. Save schema remains **2** and the localStorage key remains unchanged.
+Built directly from **v0.1.3.2.1.1 HUD Position & Hearth Visibility Hotfix**. Save schema remains **2** and the localStorage key remains unchanged.
+
+
+## v0.1.3.2.1.2 final phone-position pass
+
+- Shifted the complete right-side combat wheel slightly farther **right and down** while retaining the same touch-target sizes and safe-area anchoring.
+- Pulled `Use` another step toward Attack and moved the HP/ES quick-use pair right/down so more of the central playfield stays visible.
+- Tightened Skill I/II slightly and pulled **Skill III substantially inward/downward** to complete the upper Attack arc instead of floating above the wheel.
+- Preserved the v0.1.3.2.1.1 Ashen Rest Hearth visibility/recovery changes and all Cleave/recovery tuning.
+- Save schema remains 2; no progression state is reset.
 
 ## v0.1.3.2.1.1 phone-layout correction
 

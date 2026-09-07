@@ -1,5 +1,13 @@
 # Changelog
 
+## v0.1.3.2.1.2 — Final Combat HUD Tightening
+
+- Shifted the complete combat-control wheel slightly farther right and down within the iPhone landscape safe area.
+- Re-anchored `Use` and HP/ES recovery shortcuts closer to Attack to reclaim additional center playfield.
+- Tightened Skill I/II slightly and moved Skill III notably right/down into a closer upper arc around Attack.
+- Preserved button sizes, combat/recovery behavior, Cleave tuning and the Ashen Rest Hearth visibility/full-heal changes from v0.1.3.2.1.1.
+- Save schema remains 2.
+
 ## v0.1.3.2.1.1 — HUD Position & Hearth Visibility Hotfix
 
 - Shifted the right-side combat HUD toward the iPhone safe-right edge while preserving the existing Attack anchor and touch-target sizes.

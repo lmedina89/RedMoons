@@ -106,21 +106,21 @@ button:active { transform: translateY(1px); filter: brightness(1.25); }
 .joystick { position: absolute; pointer-events: auto; user-select: none; -webkit-user-select: none; -webkit-touch-callout: none; left: calc(var(--safe-left) + 24px); bottom: calc(var(--safe-bottom) + 20px); width: 126px; height: 126px; touch-action: none; }
 .joystick-ring { position: absolute; inset: 0; border: 2px solid #d7a35d88; border-radius: 50%; background: radial-gradient(circle, #50312642 0 34%, #120a088c 35% 66%, #79462d5c 67%); box-shadow: 0 5px 18px #0008, inset 0 0 18px #000a; }
 #joystick-knob { position: absolute; width: 54px; height: 54px; left: 36px; top: 36px; border-radius: 50%; border: 2px solid #c4814e; background: radial-gradient(circle at 38% 35%, #8c5740, #351c16 70%); box-shadow: 0 5px 10px #0009; }
-/* v0.1.3.2.1: compact radial combat cluster. Attack owns the anchor; skills orbit it and Use/recovery keep fixed utility positions. */
-.combat-controls { position: absolute; pointer-events: none; user-select: none; -webkit-user-select: none; -webkit-touch-callout: none; right: calc(var(--safe-right) + 10px); bottom: calc(var(--safe-bottom) + 18px); width: 338px; height: 205px; }
+/* v0.1.3.2.1.2: final compact radial combat cluster. Attack owns the anchor; the full wheel is safe-edge biased and utilities stay tucked around it. */
+.combat-controls { position: absolute; pointer-events: none; user-select: none; -webkit-user-select: none; -webkit-touch-callout: none; right: calc(var(--safe-right) + 2px); bottom: calc(var(--safe-bottom) + 6px); width: 338px; height: 205px; }
 .combat-controls button { pointer-events: auto; }
 .round-button { border-radius: 50%; padding: 0; width: 72px; height: 72px; touch-action: manipulation; }
 #attack-button { position: absolute; right: 0; bottom: 0; }
 .round-button.attack { width: 98px; height: 98px; border: 3px solid #b54b2d; background: radial-gradient(circle at 40% 32%, #a9432a, #4c1d15 70%); box-shadow: 0 0 0 5px #1b0b087d, 0 7px 18px #0009; color: #ffe0a3; text-transform: uppercase; }
-#interact-button { position: absolute; right: 170px; bottom: 0; transition: opacity .12s ease, filter .12s ease, box-shadow .12s ease; }
+#interact-button { position: absolute; right: 158px; bottom: 0; transition: opacity .12s ease, filter .12s ease, box-shadow .12s ease; }
 .round-button.secondary { background: radial-gradient(circle at 40% 32%, #66513e, #2c1d18 70%); border: 2px solid #927156; }
 #interact-button.inactive { opacity: .46; filter: saturate(.65); }
 #interact-button.available { opacity: 1; border-color: #d7a35d; box-shadow: 0 0 0 3px #1b0b0860, 0 0 16px #d99d4a55; }
 .skill-cluster { position: absolute; inset: 0; pointer-events: none; }
 .skill-button { position: absolute; width: 56px; height: 56px; min-height: 56px; padding: 3px 2px 2px; overflow: hidden; border-radius: 50%; border-color: #8d5537; background: radial-gradient(circle at 45% 30%, #693321, #25130f 72%); touch-action: manipulation; pointer-events: auto; box-shadow: 0 3px 10px #0008; }
-#skill-button-0 { right: 106px; bottom: 10px; }
-#skill-button-1 { right: 112px; bottom: 72px; }
-#skill-button-2 { right: 44px; bottom: 124px; }
+#skill-button-0 { right: 100px; bottom: 8px; }
+#skill-button-1 { right: 100px; bottom: 68px; }
+#skill-button-2 { right: 30px; bottom: 104px; }
 .skill-button span { display: block; color: #f3c46e; font-size: .78rem; line-height: 1; }
 .skill-button small { display: block; margin-top: 4px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: #f1dac0; font: 700 .52rem Arial, sans-serif; }
 .skill-button b { position: absolute; inset: 0; display: grid; place-items: center; color: #fff0cf; background: rgba(9,4,3,.62); font: 800 .74rem Arial, sans-serif; text-shadow: 0 1px 3px #000; pointer-events: none; }
@@ -250,7 +250,7 @@ button:active { transform: translateY(1px); filter: brightness(1.25); }
 .discard-warning { margin: 8px 0 0; padding: 7px 8px; border-left: 3px solid #d6634d; background: #351611; color: #f0c6b8 !important; }
 
 /* v0.1.3.2 recovery + consumables */
-.recovery-cluster { position: absolute; right: 164px; bottom: 136px; display: grid; grid-template-columns: repeat(2, 50px); gap: 6px; align-items: end; pointer-events: none; }
+.recovery-cluster { position: absolute; right: 120px; bottom: 126px; display: grid; grid-template-columns: repeat(2, 50px); gap: 6px; align-items: end; pointer-events: none; }
 .recovery-button { position: relative; width: 50px; height: 50px; min-height: 50px; padding: 2px; overflow: hidden; border-radius: 14px; touch-action: manipulation; pointer-events: auto; box-shadow: 0 3px 10px #0008; }
 .recovery-button.health { border-color: #c35d4d; background: radial-gradient(circle at 42% 28%, #9e4537, #28120f 72%); }
 .recovery-button.essence { border-color: #8065b4; background: radial-gradient(circle at 42% 28%, #68499a, #1e152d 72%); }
