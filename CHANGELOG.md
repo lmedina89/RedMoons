@@ -1,5 +1,17 @@
 # Changelog
 
+## v0.1.3.1 — Combat Polish & Skill Feel
+
+- Built directly on the physical-iPhone-validated v0.1.3 Combat Systems Foundation.
+- Increased Ember Cleave range to 132 px and arc width to 126° for more reliable landscape-touch targeting; Rank-1 damage remains controlled.
+- Increased Ruin Pulse Rank-1 damage/knockback and upgraded it with layered rings, impact bursts and stronger hit-confirming screen shake without turning it into a screen-wide AOE.
+- Added persistent Rank 1–5 metadata/growth hooks for all three current player skills while keeping save schema 2; existing v0.1.3 saves without `skills.ranks` normalize to Rank 1.
+- Added Rank badges, clearer cooldown visualization and compact active-status chips to the combat HUD; Character → Growth now displays stored skill ranks and reserved Skill Points without exposing the later spending UI.
+- Added true 8-frame run crops for the red-haired player, starter chest/trousers/wraps/boots, plus a compatibility gate: true run is used only when visible body/armor layers support it; incompatible equipment safely keeps the old accelerated walk cycle.
+- Added Bone Spearman to Bone Road with preserved LPC long-spear art and a telegraphed, direction-locked Bone Lunge reach/thrust ability. Replaced one generic Skeleton spawn so total Cinder actor population remains mobile-conscious.
+- Added `Near Spearman` debug travel and validation for true-run cold loading, spear geometry/asset preservation, skill-rank normalization/scaling, status/cooldown HUD, and combat tuning.
+- Combat-stance-specific player art remains deferred until a complete compatible stance/equipment set is verified; no unverified source rows are guessed.
+
 ## v0.1.3 — Combat Systems Foundation
 
 - Built directly on physical-iPhone-validated v0.1.2.4.3; preserves the recovered map-transition lifecycle and visual/cache fixes.

@@ -281,7 +281,9 @@ export class Enemy {
         this.renderVisual(action, Math.min(frames - 1, Math.floor(progress * frames)), progress);
       } else if (attacking) {
         const progress = Math.max(0, Math.min(0.999999, 1 - Math.max(0, this.stateUntil - time) / this.def.attackCooldown));
-        this.renderVisual('slash', Math.min(5, Math.floor(progress * 6)), progress);
+        const action = this.def.meleeAnimation || 'slash';
+        const frames = ACTION_FRAMES[action] || 6;
+        this.renderVisual(action, Math.min(frames - 1, Math.floor(progress * frames)), progress);
       } else if (time < this.hurtUntil) {
         const progress = Math.max(0, Math.min(0.999999, 1 - (this.hurtUntil - time) / 180));
         this.renderVisual('hurt', Math.min(5, Math.floor(progress * 6)), progress);

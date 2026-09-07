@@ -19,6 +19,11 @@ export const ENEMY_ABILITY_DEFS = Object.freeze({
     range: 340, minRange: 90, cooldownMs: 3400, windupMs: 760, triggerAt: 0.62, recoverMs: 420,
     damageMultiplier: 0.86, status: Object.freeze({ id: 'slow', chance: 1 }), telegraph: 'shadow'
   }),
+  bone_lunge: Object.freeze({
+    id: 'bone_lunge', name: 'Bone Lunge', type: 'melee_reach', animation: 'thrust',
+    range: 126, minRange: 42, arcDegrees: 42, cooldownMs: 2450, windupMs: 700, triggerAt: 0.70, recoverMs: 430,
+    damageMultiplier: 1.08, knockback: 86, telegraph: 'physical'
+  }),
   earthshatter: Object.freeze({
     id: 'earthshatter', name: 'Earthshatter', type: 'radial_aoe', animation: 'attack',
     range: 122, minRange: 0, radius: 118, cooldownMs: 5200, windupMs: 820, triggerAt: 0.88, recoverMs: 720,

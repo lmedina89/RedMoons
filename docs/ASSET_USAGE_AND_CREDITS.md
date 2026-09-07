@@ -147,7 +147,7 @@ This layout is intentional: future harvesting can continue from the preserved so
 
 ## 2026-09-07 user-created Demon / Heavenly / transformation concepts
 
-The following user-supplied full 832×3456 RGBA LPC-style sheets are preserved under `source-assets/character-concepts/2026-09-07/` and are **not runtime assets in v0.1.3**:
+The following user-supplied full 832×3456 RGBA LPC-style sheets are preserved under `source-assets/character-concepts/2026-09-07/` and are **not runtime assets in v0.1.3.1**:
 
 - `player-transformation/Transformation.png` — authoritative future player transformation source.
 - `demon-castle/DemonBase.png`
@@ -175,3 +175,9 @@ v0.1.3 adds compact `spellcast`, `thrust`, `shoot` and `hurt` runtime crops for 
 The starter trouser and handwrap visual treatments are extended onto the matching expanded poses using the same v0.1.2.4.2 derivative policy: trouser appearance follows the verified player pose geometry and handwraps preserve verified glove alpha/geometry while remapping the visible palette. No external asset license is introduced by those deterministic derivatives.
 
 Bone Archer now uses a verified compact bow+arrow shoot overlay harvested from the preserved LPC Medieval Fantasy (`lpc_entry`) modular source. The exact `WEAPON_bow.png` and `WEAPON_arrow.png` sources plus the preserved LPC README are kept under `source-assets/combat-v013/classic-bow/`; the runtime composite is `dist/assets/enemies/skeleton-bow-shoot.png`. The project uses the OGA-BY 3.0 source option already documented for `lpc_entry`. Gravecaller intentionally uses its real Skeleton spellcast body action plus procedural shadow FX without inventing an unverified staff spellcast layer.
+
+## v0.1.3.1 run + spear crops
+
+The player/starter true-run runtime sheets are compact crops/derivatives from the preserved Expanded LPC source exports already retained outside `dist/`. `starter-wraps-run.png` uses the same verified brown-wrap presentation as the existing starter hand layers; the source glove export has no rear-facing run pixels, so the rear row is deterministically reconstructed from the verified player's rear-run hand pixels using the existing brown wrap palette rather than leaving the handwraps to vanish.
+
+The Bone Spearman uses `dist/assets/enemies/skeleton-spear-thrust.png`, harvested from the preserved LPC Medieval Fantasy / `lpc_entry` long-spear source. The exact source spear, source readme/credit text and hashes are retained under `source-assets/combat-v0131/classic-spear/`.

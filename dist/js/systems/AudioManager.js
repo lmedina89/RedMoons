@@ -41,7 +41,7 @@ export class AudioManager {
       hit: [110, 72, 0.055, 'square'],
       ember_cleave: [250, 95, 0.15, 'sawtooth'],
       guard: [330, 520, 0.18, 'sine'],
-      ruin_pulse: [155, 55, 0.22, 'triangle'],
+      ruin_pulse: [138, 42, 0.26, 'triangle'],
       fire: [300, 145, 0.14, 'sawtooth'],
       poison: [210, 135, 0.15, 'triangle'],
       arrow: [520, 265, 0.08, 'triangle'],

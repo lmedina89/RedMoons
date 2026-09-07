@@ -119,6 +119,11 @@ button:active { transform: translateY(1px); filter: brightness(1.25); }
 .skill-button.unavailable:not(:disabled) { filter: saturate(.62) brightness(.72); }
 .skill-button.cooling { border-color: #553b30; }
 .skill-button:disabled { opacity: .38; filter: grayscale(.5); cursor: default; }
+.skill-button::before { content: attr(data-rank); position: absolute; right: 3px; top: 2px; z-index: 2; color: #ffe0a3; font: 800 .43rem Arial, sans-serif; opacity: .78; pointer-events: none; }
+.skill-button.cooling b { background: conic-gradient(from 0deg, rgba(7,3,3,.80) 0deg var(--cooldown-angle, 0deg), rgba(9,4,3,.38) var(--cooldown-angle, 0deg) 360deg); }
+.status-strip { position: absolute; right: 105px; bottom: 108px; max-width: 220px; display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 4px; pointer-events: none; }
+.status-chip { display: inline-flex; align-items: center; gap: 4px; padding: 3px 6px; border: 1px solid #75503b; border-radius: 10px; background: rgba(18,9,7,.86); color: #ead7bd; font: 700 .52rem Arial, sans-serif; box-shadow: 0 2px 8px #0008; }
+.status-chip b { color: #fff0ca; font-size: .48rem; }
 .status-buff { border-color: #a97b3c; color: #f4d392; }
 .status-debuff, .status-control { border-color: #864945; color: #efb1a7; }
 
@@ -147,6 +152,11 @@ button:active { transform: translateY(1px); filter: brightness(1.25); }
 .stats-layout { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; }.stats-panel { border: 1px solid #543324; background: #190f0c; padding: 12px; }.stats-panel h3 { margin: 0 0 10px; color: #dba95d; font-size: .92rem; }
 .stat-row { display: grid; grid-template-columns: 1fr auto auto; gap: 10px; align-items: center; min-height: 48px; border-bottom: 1px solid #3a251c; }.stat-row strong { color: #fff1d4; }.stat-row small { display: block; color: var(--muted); font: .7rem Arial, sans-serif; }.stat-controls { display: flex; align-items: center; gap: 5px; }.stat-controls button { min-width: 38px; padding: 0; }.stat-controls b { min-width: 30px; text-align: center; font-family: Arial, sans-serif; }
 .derived-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }.derived-card { padding: 10px; background: #241611; border-left: 3px solid #74503a; }.derived-card small { color: var(--muted); display: block; font: .68rem Arial, sans-serif; }.derived-card strong { color: #f0d29a; font: 700 1.05rem Arial, sans-serif; }.stats-footer { margin-top: 14px; display: flex; align-items: center; justify-content: space-between; gap: 10px; }.stats-footer p { margin: 0; color: #d8c2ab; font: .8rem Arial, sans-serif; }
+.skill-rank-grid { display: grid; gap: 6px; margin-top: 7px; }
+.skill-rank-card { display: grid; grid-template-columns: 1fr auto; gap: 2px 8px; padding: 7px 9px; border: 1px solid #503326; background: #21130f; }
+.skill-rank-card strong { color: #f0c879; font: 700 .72rem Arial, sans-serif; }
+.skill-rank-card span { color: #dfb85f; font: 800 .62rem Arial, sans-serif; }
+.skill-rank-card small { grid-column: 1 / -1; color: #a98f7c; font: .56rem/1.25 Arial, sans-serif; }
 .quest-list { display: grid; gap: 10px; }.quest-entry { padding: 12px; background: #1a0f0c; border: 1px solid #4f3126; border-left: 4px solid #725246; }.quest-entry.active { border-left-color: #be79df; }.quest-entry.ready { border-left-color: #f0c45c; }.quest-entry.complete { border-left-color: #6fa56d; }.quest-entry h3 { margin: 0 0 4px; font-size: .92rem; color: #edd3a0; }.quest-entry p { margin: 0; color: #cdbdaf; font: .8rem/1.35 Arial, sans-serif; }.quest-entry small { color: #a98e78; font: .7rem Arial, sans-serif; }
 .death-screen { position: absolute; z-index: 120; inset: 0; display: grid; place-items: center; background: radial-gradient(circle, #571e16b8, #080302eb 62%); text-align: center; }.death-screen > div { width: min(480px, 80vw); padding: 28px; border: 1px solid #713b2f; background: #160b09e8; box-shadow: 0 12px 50px #000; }.death-screen small { color: #b6634c; letter-spacing: .18em; }.death-screen h2 { margin: 8px 0; font-size: 1.8rem; color: #e5c6ad; }.death-screen p { color: #bca89a; font: .9rem Arial, sans-serif; }.death-screen button { margin-top: 12px; min-height: 50px; background: linear-gradient(#6e2d20, #35140f); }
 #rotate-advisory { display: none; position: absolute; z-index: 150; inset: 0; place-content: center; justify-items: center; text-align: center; background: radial-gradient(circle, #3e1b13, #0b0403 70%); }.rotate-advisory span { font-size: 3rem; }

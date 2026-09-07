@@ -15,7 +15,7 @@ const { EQUIPMENT_SET_DEFS, ITEM_DEFS } = await import('../dist/js/data/items.js
 const { NPC_DEFS, NPC_GUILD_SEEDS } = await import('../dist/js/data/npcs.js');
 const { BUILDING_DEFS, COLLIDERS, DEFAULT_MAP_ID, HOLLOW_COLLIDERS, HOLLOW_WALLS, MAP_DEFS, MAP_TRANSITIONS, REFUGE_WALLS, SPAWN_REGIONS, ZONES } = await import('../dist/js/data/world.js');
 const { QUEST_DEFS } = await import('../dist/js/data/quests.js');
-const { SKILL_DEFS, DEFAULT_SKILL_SLOTS, normalizeSkillState } = await import('../dist/js/data/skills.js');
+const { SKILL_DEFS, DEFAULT_SKILL_SLOTS, normalizeSkillState, resolvedSkillDef } = await import('../dist/js/data/skills.js');
 const { STATUS_DEFS } = await import('../dist/js/data/statuses.js');
 const { PROJECTILE_DEFS } = await import('../dist/js/data/projectiles.js');
 const { ENEMY_ABILITY_DEFS } = await import('../dist/js/data/abilities.js');
@@ -61,14 +61,14 @@ assert.ok(combatSource.includes('cooldownMs: 2400'), 'Empty-swing combat feedbac
 assert.ok(worldSource.includes('queueKillReward') && worldSource.includes('delayedCall(320'), 'Horde kill rewards must be batched');
 assert.ok(layeredSource.includes('ROOT_X') && layeredSource.includes('baseAsset') && layeredSource.includes("equipmentPolicy === 'player'"), 'Renderer must stabilize revised root motion and support actor-specific bases/equipment policies');
 assert.ok(!html.includes('90_user_generated'), 'Prototype-only generator assets must not ship');
-assert.ok(html.includes('v0.1.3'), 'Build shell must identify v0.1.3');
+assert.ok(html.includes('v0.1.3.1'), 'Build shell must identify v0.1.3.1');
 assert.ok(html.includes('id="start-screen"') && html.includes('id="continue-game"') && html.includes('id="new-game"') && html.includes('id="load-game"'), 'Start menu must expose Continue, New Game and Load Save');
 assert.ok(html.includes('id="map-loading-overlay"') && uiSource.includes("gameEvents.on('map-loading'"), 'Map transitions must expose a visible loading state');
 assert.ok(mainSource.includes('loadExisting()') && mainSource.includes('saveManager.reset()') && mainSource.includes('confirm-new-game'), 'Main boot flow must preserve Continue/Load and require explicit overwrite confirmation for an existing single-slot save');
 assert.ok(saveSource.includes('loadExisting()') && saveSource.includes('summary(state)'), 'Save manager must expose non-destructive slot inspection for the title menu');
 assert.ok(cssSource.includes('overflow-x: auto') && cssSource.includes('left: calc(var(--safe-left)') && cssSource.includes('flex: 0 0 auto'), 'Debug tray must stay inside safe-area bounds and scroll horizontally on iPhone');
 assert.ok(worldSource.includes('transitionToMap') && worldSource.includes('buildAshfallHollow'), 'WorldScene must support separate map transitions');
-assert.ok(!worldSource.includes('releaseAssetsNotNeededForMap('), 'v0.1.3 must not eagerly evict textures during the WebKit-sensitive Scene handoff');
+assert.ok(!worldSource.includes('releaseAssetsNotNeededForMap('), 'v0.1.3.1 must not eagerly evict textures during the WebKit-sensitive Scene handoff');
 assert.ok(!assetResolverSource.includes('releaseAssetsNotNeededForMap'), 'Unsafe eager texture-eviction helper must not remain exposed in the hotfix resolver API');
 assert.ok(worldSource.includes('recoverPlayerVisual') && worldSource.includes('this.player.restoreVisual()'), 'WorldScene must explicitly reconstruct and verify the layered player after map handoff');
 assert.ok(playerSource.includes('restoreVisual()') && layeredSource.includes('missingTextureKeys') && layeredSource.includes('restore('), 'Player renderer must expose deterministic visual restoration/integrity checks');
@@ -113,6 +113,8 @@ for (const [name, source] of [
 ]) assert.ok(source.length > 300, `${name} must ship as a concrete reusable combat module`);
 assert.ok(combatSource.includes('new SkillController') && combatSource.includes('new ProjectileManager') && combatSource.includes('new StatusController') && combatSource.includes('new CombatResolver'), 'CombatSystem must compose the reusable combat modules rather than hard-code all abilities in WorldScene');
 assert.ok(cssSource.includes('.skill-cluster') && cssSource.includes('.skill-button'), 'Landscape HUD must include compact iPhone skill-button styling');
+assert.ok(html.includes('id="status-strip"') && cssSource.includes('.status-chip') && uiSource.includes('--cooldown-angle') && uiSource.includes('button.dataset.rank'), 'Combat polish must expose readable active-status chips, rank badges and cooldown progress');
+assert.ok(uiSource.includes('Skill Ranks') && uiSource.includes('Future upgrades will spend Skill Points here.'), 'Growth UI must surface persisted skill ranks without enabling the later spending interface yet');
 assert.ok(animationResolverSource.indexOf('SPECIAL_ACTIONS.has(requestedAction)') < animationResolverSource.indexOf('asset.attackFallback'), 'Special casts/hurt must hide unsupported weapons or hold old armor static before generic slash fallback is considered');
 assert.ok(worldSource.includes("if (action === 'level') {") && worldSource.includes('skills.syncUnlocks(true)'), 'Debug XP grants must exercise normal skill-unlock synchronization');
 
@@ -150,16 +152,27 @@ assert.equal(ENEMY_DEFS.enemy_ashstone_golem.deathFrames, 7, 'Ashstone Golem dea
 assert.deepEqual(Object.keys(SKILL_DEFS), ['skill_ember_cleave', 'skill_ashen_guard', 'skill_ruin_pulse'], 'Combat foundation should prove the player framework with exactly three initial skills');
 assert.deepEqual(Object.values(SKILL_DEFS).map(skill => skill.unlockLevel), [1, 3, 5], 'Initial player skills must unlock at levels 1/3/5');
 assert.deepEqual(DEFAULT_SKILL_SLOTS, ['skill_ember_cleave', null, null]);
+assert.ok(SKILL_DEFS.skill_ember_cleave.range >= 130 && SKILL_DEFS.skill_ember_cleave.arcDegrees >= 125, 'Ember Cleave polish must materially widen and extend the touch-friendly cone');
+assert.ok(SKILL_DEFS.skill_ruin_pulse.damageMultiplier >= 1.15 && SKILL_DEFS.skill_ruin_pulse.knockback >= 250, 'Ruin Pulse polish must add meaningful impact without becoming a giant-radius screen clear');
+assert.equal(SKILL_DEFS.skill_ashen_guard.durationMs, 5000, 'Ashen Guard rank hook must start from the live five-second duration');
+assert.ok(fxManagerSource.includes('g.arc(x, y, 108') && fxManagerSource.includes('this.ring(x, y, 114'), 'Cleave and Ruin Pulse polish FX must visually match the expanded hit feel');
+assert.ok(combatSource.includes("ability.type === 'melee_reach'") && fxManagerSource.includes('lineTelegraph'), 'Bone Spearman must use shared telegraphed reach combat rather than bespoke collision code');
+for (const skill of Object.values(SKILL_DEFS)) assert.equal(skill.maxRank, 5, `${skill.id} must expose five future progression ranks`);
 for (const id of ['burn', 'poison', 'slow', 'guard', 'stagger']) assert.ok(STATUS_DEFS[id], `Missing initial status ${id}`);
 for (const id of ['toxic_spit', 'blueflame_bolt', 'bone_arrow', 'grave_hex']) assert.ok(PROJECTILE_DEFS[id], `Missing projectile definition ${id}`);
-for (const id of ['toxic_spit', 'blueflame_bolt', 'bone_arrow', 'grave_hex', 'earthshatter']) assert.ok(ENEMY_ABILITY_DEFS[id], `Missing enemy ability ${id}`);
+for (const id of ['toxic_spit', 'blueflame_bolt', 'bone_arrow', 'grave_hex', 'bone_lunge', 'earthshatter']) assert.ok(ENEMY_ABILITY_DEFS[id], `Missing enemy ability ${id}`);
 assert.equal(ENEMY_DEFS.enemy_skeleton_archer.fixedLoadout?.weapon, 'weapon_bone_bow_npc', 'Bone Archer must visibly carry the verified shoot-pose bow layer');
 assert.ok(LAYER_ASSETS.weapon_bone_bow_fg?.shoot === 'skeleton-bow-shoot', 'Bone Archer bow layer must map to the compact shoot sheet');
 assert.ok(enemySource.includes('knockbackUntil') && enemySource.includes('knockbackVX') && enemySource.includes('knockbackVY'), 'Enemy knockback must persist across frames instead of being overwritten immediately by AI velocity');
 assert.ok(ENEMY_DEFS.enemy_blight_imp.abilities?.includes('toxic_spit'), 'Blight Imp must use Toxic Spit');
 assert.ok(ENEMY_DEFS.enemy_blueflame_imp.abilities?.includes('blueflame_bolt'), 'Blueflame Imp must use Blueflame Bolt');
 assert.ok(ENEMY_DEFS.enemy_ashstone_golem.abilities?.includes('earthshatter'), 'Ashstone Golem must use Earthshatter');
-for (const id of ['enemy_skeleton_archer', 'enemy_skeleton_mage']) assert.ok(ENEMY_DEFS[id], `Missing specialized enemy ${id}`);
+for (const id of ['enemy_skeleton_spearman', 'enemy_skeleton_archer', 'enemy_skeleton_mage']) assert.ok(ENEMY_DEFS[id], `Missing specialized enemy ${id}`);
+assert.equal(ENEMY_DEFS.enemy_skeleton_spearman.fixedLoadout?.weapon, 'weapon_bone_spear_npc', 'Bone Spearman must visibly carry the verified long-spear thrust layer');
+assert.ok(LAYER_ASSETS.weapon_bone_spear_fg?.texture === 'skeleton-spear-thrust', 'Bone Spearman spear layer must map to the 192px thrust sheet');
+assert.ok(ENEMY_DEFS.enemy_skeleton_spearman.abilities?.includes('bone_lunge'), 'Bone Spearman must use the telegraphed reach/thrust ability');
+assert.equal(ENEMY_DEFS.enemy_skeleton_spearman.meleeAnimation, 'thrust', 'Bone Spearman basic melee must keep the spear/body in the thrust action instead of falling back to a sword slash');
+assert.ok(enemySource.includes("this.def.meleeAnimation || 'slash'"), 'Layered enemies must support data-driven basic melee animation selection');
 assert.ok(ENEMY_DEFS.enemy_skeleton_archer.abilities?.includes('bone_arrow'), 'Bone Archer must use the pooled arrow projectile ability');
 assert.ok(ENEMY_DEFS.enemy_skeleton_mage.abilities?.includes('grave_hex'), 'Gravecaller must use the spellcast/slow projectile ability');
 assert.ok(NPC_DEFS.npc_bone_hunter && NPC_DEFS.npc_road_seeker, 'Asset variety pass must add additional persistent adventurer NPC seeds');
@@ -176,7 +189,7 @@ assert.ok(NPC_DEFS.npc_wanderer.recruitable && NPC_DEFS.npc_wanderer.baseVisual 
 assert.equal(LAYER_ASSETS.player_red_base.geometry, 'revised64Expanded', 'Red-haired protagonist must use expanded LPC combat actions');
 assert.ok(Object.keys(EQUIPMENT_SET_DEFS).length >= 3 && EQUIPMENT_SET_DEFS.set_legion_remnant?.name, 'Named equipment-set metadata must exist without activating bonuses yet');
 assert.ok(SPAWN_REGIONS.some(spawn => spawn.enemyId === 'enemy_carrion_beast') && SPAWN_REGIONS.some(spawn => spawn.enemyId === 'enemy_bloodbone'), 'New enemy families must actually be spawned in the world');
-for (const id of ['enemy_blight_imp', 'enemy_blueflame_imp', 'enemy_ash_goblin', 'enemy_cave_spider', 'enemy_ember_spider', 'enemy_frost_spider', 'enemy_ashstone_golem', 'enemy_skeleton_archer', 'enemy_skeleton_mage']) assert.ok(SPAWN_REGIONS.some(spawn => spawn.enemyId === id), `${id} must appear in a real spawn region`);
+for (const id of ['enemy_blight_imp', 'enemy_blueflame_imp', 'enemy_ash_goblin', 'enemy_cave_spider', 'enemy_ember_spider', 'enemy_frost_spider', 'enemy_ashstone_golem', 'enemy_skeleton_spearman', 'enemy_skeleton_archer', 'enemy_skeleton_mage']) assert.ok(SPAWN_REGIONS.some(spawn => spawn.enemyId === id), `${id} must appear in a real spawn region`);
 for (const mapId of Object.keys(MAP_DEFS)) {
   const population = SPAWN_REGIONS.filter(spawn => (spawn.mapId || DEFAULT_MAP_ID) === mapId).reduce((sum, spawn) => sum + spawn.count, 0);
   assert.ok(population <= 35, `${mapId} population must remain mobile-conscious`);
@@ -233,12 +246,16 @@ assert.deepEqual(
   'NPC/shared starter item IDs must retain classic visual mappings instead of receiving player-only revised geometry'
 );
 
-assert.deepEqual(defaultState.skills, { unlocked: ['skill_ember_cleave'], slots: ['skill_ember_cleave', null, null] }, 'Fresh Level-1 state must start with Ember Cleave equipped');
+assert.deepEqual(defaultState.skills, { unlocked: ['skill_ember_cleave'], slots: ['skill_ember_cleave', null, null], ranks: { skill_ember_cleave: 1 } }, 'Fresh Level-1 state must start with Ember Cleave equipped at Rank 1');
 const levelFiveSkillState = createDefaultState();
 levelFiveSkillState.player.level = 5;
 normalizeSkillState(levelFiveSkillState);
 assert.deepEqual(levelFiveSkillState.skills.unlocked, ['skill_ember_cleave', 'skill_ashen_guard', 'skill_ruin_pulse'], 'Level 5 normalization must unlock all three foundation skills');
 assert.deepEqual(levelFiveSkillState.skills.slots, ['skill_ember_cleave', 'skill_ashen_guard', 'skill_ruin_pulse'], 'Unlocked foundation skills should fill open slots deterministically');
+assert.deepEqual(levelFiveSkillState.skills.ranks, { skill_ember_cleave: 1, skill_ashen_guard: 1, skill_ruin_pulse: 1 }, 'Unlocked skills must normalize persistent Rank-1 defaults');
+levelFiveSkillState.skills.ranks.skill_ember_cleave = 3;
+const rankThreeCleave = resolvedSkillDef(levelFiveSkillState, 'skill_ember_cleave');
+assert.ok(rankThreeCleave.damageMultiplier > SKILL_DEFS.skill_ember_cleave.damageMultiplier && rankThreeCleave.range > SKILL_DEFS.skill_ember_cleave.range, 'Stored skill ranks must already resolve through data-driven future scaling hooks');
 
 for (const def of Object.values(ITEM_DEFS)) {
   if (!def.visual) continue;
@@ -276,7 +293,9 @@ for (const [key, expected] of Object.entries({
   'leather-boots-spellcast': [448, 256], 'leather-boots-thrust': [512, 256], 'leather-boots-shoot': [832, 256], 'leather-boots-hurt': [384, 64],
   'skeleton-spellcast': [448, 256], 'skeleton-thrust': [512, 256], 'skeleton-shoot': [832, 256], 'skeleton-hurt': [384, 64],
   'slate-skeleton-spellcast': [448, 256], 'slate-skeleton-thrust': [512, 256], 'slate-skeleton-shoot': [832, 256], 'slate-skeleton-hurt': [384, 64],
-  'skeleton-bow-shoot': [832, 256]
+  'skeleton-bow-shoot': [832, 256],
+  'protagonist-red-run': [512, 256], 'legion-chest-run': [512, 256], 'starter-trousers-run': [512, 256],
+  'starter-wraps-run': [512, 256], 'leather-boots-run': [512, 256], 'skeleton-spear-thrust': [1536, 768]
 })) {
   const def = assetByKey.get(key);
   assert.ok(def, `Missing runtime asset definition ${key}`);
@@ -318,6 +337,7 @@ for (const file of await recursiveNames(conceptRoot)) {
   assert.deepEqual([size.width, size.height], [832, 3456], `${file} must preserve the full LPC source sheet`);
 }
 assert.ok(!(await recursiveNames(path.join(dist, 'assets'))).some(file => file.includes('Transformation.png') || file.includes('Truetrans.png')), 'Future full character concept sheets must not ship in runtime dist/assets');
+for (const file of ['WEAPON_long_spear.png', 'README.md', 'lpc_entry_README.txt', 'SHA256SUMS.txt']) await access(path.join(root, 'source-assets/combat-v0131/classic-spear', file));
 const cinderAssetKeys = new Set(assetDefsForMap(createDefaultState(), DEFAULT_MAP_ID).map(asset => asset.key));
 const hollowAssetKeys = new Set(assetDefsForMap(createDefaultState(), 'map_ashfall_hollow').map(asset => asset.key));
 assert.ok(cinderAssetKeys.has('adobe-workshop') && !cinderAssetKeys.has('cave3-set'), 'Cinder map package must not preload cave-only world art');
@@ -414,6 +434,8 @@ for (const geometryId of ['revised64Expanded', 'classicExpanded']) {
   for (const action of ['spellcast', 'thrust', 'shoot', 'hurt']) assert.ok(geometry[action], `${geometryId} must expose ${action}`);
   assert.deepEqual(geometry.hurt.rows, [0, 0, 0, 0], `${geometryId} hurt crop is direction-neutral and must safely resolve every facing`);
 }
+assert.ok(ANIMATION_GEOMETRIES.revised64Expanded.run && ANIMATION_GEOMETRIES.revised64Expanded.run.sequence.length === 8, 'Revised player geometry must expose a true eight-frame run cycle');
+assert.equal(ANIMATION_GEOMETRIES.classicSpear192?.thrust?.sequence?.length, 8, 'Classic spear geometry must expose the full eight-frame thrust');
 for (const layerKey of ['player_red_base', 'chest_starter_revised', 'legs_starter_revised', 'hands_starter_revised', 'feet_starter_revised', 'enemy_skeleton_base', 'enemy_slate_skeleton_base']) {
   const layer = LAYER_ASSETS[layerKey];
   const geometry = ANIMATION_GEOMETRIES[layer.geometry];
@@ -429,6 +451,20 @@ for (const layerKey of ['player_red_base', 'chest_starter_revised', 'legs_starte
     }
   }
 }
+
+for (const layerKey of ['player_red_base', 'chest_starter_revised', 'legs_starter_revised', 'hands_starter_revised', 'feet_starter_revised']) {
+  const layer = LAYER_ASSETS[layerKey];
+  const animation = ANIMATION_GEOMETRIES[layer.geometry].run;
+  const textureKey = layer[animation.source];
+  assert.ok(textureKey, `${layerKey} must supply true run art`);
+  for (let direction = 0; direction < 4; direction += 1) {
+    let populated = 0;
+    for (const frame of animation.sequence) populated += Number(await frameHasAlpha(textureKey, animation.rows[direction], frame));
+    assert.ok(populated >= 1, `${layerKey}/run direction ${direction} must contain visible run artwork`);
+  }
+}
+assert.ok(playerSource.includes("supportsAction('run')") && layeredSource.includes('supportsAction(requestedAction)'), 'Player true run must activate only when visible non-held layers support run, with safe fallback for incompatible gear');
+assert.ok(assetResolverSource.includes("'run'"), 'Map packages must include true-run textures after a cold load/transition');
 
 for (const action of ['walk', 'slash']) {
   const animation = ANIMATION_GEOMETRIES.dcssSword128[action];
@@ -517,7 +553,7 @@ for (const action of ['walk', 'slash']) {
 const saveManager = new SaveManager();
 const valid = saveManager.validate(createDefaultState());
 assert.equal(valid.saveVersion, SAVE_VERSION);
-assert.equal(SAVE_VERSION, 2, 'Combat foundation must advance persistent skill state to save schema 2');
+assert.equal(SAVE_VERSION, 2, 'Combat line must retain persistent skill state on save schema 2');
 assert.equal(valid.gameVersion, GAME_VERSION);
 assert.equal(valid.player.level, 1);
 const timestampedSave = createDefaultState();
@@ -539,6 +575,13 @@ const migratedCombatSave = saveManager.validate(legacyCombatSave);
 assert.equal(migratedCombatSave.saveVersion, SAVE_VERSION, 'Legacy schema-1 state must normalize to schema 2');
 assert.deepEqual(migratedCombatSave.skills.unlocked, ['skill_ember_cleave', 'skill_ashen_guard', 'skill_ruin_pulse'], 'Legacy Level-5 saves must gain the skills earned by their existing level');
 assert.deepEqual(migratedCombatSave.skills.slots, ['skill_ember_cleave', 'skill_ashen_guard', 'skill_ruin_pulse'], 'Legacy skill migration must produce a playable three-slot loadout');
+assert.deepEqual(migratedCombatSave.skills.ranks, { skill_ember_cleave: 1, skill_ashen_guard: 1, skill_ruin_pulse: 1 }, 'Legacy schema-1 skill migration must establish Rank-1 defaults');
+const v013SaveWithoutRanks = createDefaultState();
+v013SaveWithoutRanks.gameVersion = '0.1.3';
+v013SaveWithoutRanks.player.level = 5;
+v013SaveWithoutRanks.skills = { unlocked: ['skill_ember_cleave', 'skill_ashen_guard', 'skill_ruin_pulse'], slots: ['skill_ember_cleave', 'skill_ashen_guard', 'skill_ruin_pulse'] };
+const normalizedV013Save = saveManager.validate(v013SaveWithoutRanks);
+assert.deepEqual(normalizedV013Save.skills.ranks, { skill_ember_cleave: 1, skill_ashen_guard: 1, skill_ruin_pulse: 1 }, 'Existing schema-2 v0.1.3 saves without rank metadata must normalize safely to Rank 1');
 assert.equal(valid.player.mapId, DEFAULT_MAP_ID);
 const caveSave = createDefaultState();
 caveSave.player.mapId = 'map_ashfall_hollow';
@@ -694,4 +737,4 @@ const normalizedWrongSlot = saveManager.validate(wrongSlotSave);
 assert.equal(normalizedWrongSlot.equipment.head, null, 'Wrong-slot saved equipment must be discarded');
 assert.equal(normalizedWrongSlot.equipment.weapon, 'i_000001', 'Valid weapon reference must survive normalization');
 
-console.log(`Validated ${ASSET_DEFS.length} assets, ${Object.keys(ITEM_DEFS).length} items, ${Object.keys(ENEMY_DEFS).length} enemies, ${Object.keys(NPC_DEFS).length} NPCs, ${BUILDING_DEFS.length} refuge buildings, ${COLLIDERS.length} visible-source colliders, ${Object.keys(QUEST_DEFS).length} quests, ${Object.keys(SKILL_DEFS).length} player skills, ${Object.keys(ENEMY_ABILITY_DEFS).length} enemy abilities, v0.1.3 combat systems, expanded LPC actions, pooled projectiles, statuses/FX/audio, stable Cinder/Hollow streaming, combo-safe starter clothes, and save schema ${SAVE_VERSION}.`);
+console.log(`Validated ${ASSET_DEFS.length} assets, ${Object.keys(ITEM_DEFS).length} items, ${Object.keys(ENEMY_DEFS).length} enemies, ${Object.keys(NPC_DEFS).length} NPCs, ${BUILDING_DEFS.length} refuge buildings, ${COLLIDERS.length} visible-source colliders, ${Object.keys(QUEST_DEFS).length} quests, ${Object.keys(SKILL_DEFS).length} player skills, ${Object.keys(ENEMY_ABILITY_DEFS).length} enemy abilities, v0.1.3.1 combat polish, true run/spear thrust, skill-rank hooks, expanded LPC actions, pooled projectiles, statuses/FX/audio, stable Cinder/Hollow streaming, combo-safe starter clothes, and save schema ${SAVE_VERSION}.`);

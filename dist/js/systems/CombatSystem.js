@@ -105,16 +105,17 @@ export class CombatSystem {
         if (def.status && Math.random() <= (def.status.chance ?? 1)) this.statuses.apply(enemy, def.status.id, { power: derived.attack, x: this.player.body.x, y: this.player.body.y });
       }
     }
-    if (hits >= 2 && this.state.settings.screenShake) this.scene.cameras.main.shake(90, 0.0025);
+    if (hits && this.state.settings.screenShake) this.scene.cameras.main.shake(hits >= 2 ? 135 : 105, hits >= 2 ? 0.0042 : 0.0032);
   }
 
   enemyMelee(amount, x, y, enemy = null) {
     return this.resolver.damagePlayer(this.player, amount, { type: 'physical', sourceX: x, sourceY: y, impact: 'physical', enemy });
   }
 
-  beginEnemyAbility(enemy, ability) {
+  beginEnemyAbility(enemy, ability, targetX = this.player.body.x, targetY = this.player.body.y) {
     const x = enemy.sprite.x, y = enemy.sprite.y;
     if (ability.type === 'radial_aoe') enemy.abilityTelegraph = this.fx.telegraph(x, y, ability.radius, ability.telegraph || 'earth', ability.windupMs);
+    else if (ability.type === 'melee_reach') enemy.abilityTelegraph = this.fx.lineTelegraph(x, y, targetX, targetY, ability.range, ability.telegraph || 'physical', ability.windupMs);
     else this.fx.burst(x, y - 18, ability.telegraph === 'fire' ? 'blueflame' : ability.telegraph || 'physical', 0.72);
   }
 
@@ -126,6 +127,23 @@ export class CombatSystem {
         damage: enemy.def.attack * ability.damageMultiplier, sourcePower: enemy.def.attack,
         status: ability.status || null, sourceId: enemy.def.id
       });
+      return;
+    }
+    if (ability.type === 'melee_reach') {
+      enemy.abilityTelegraph?.destroy?.(); enemy.abilityTelegraph = null;
+      const aimAngle = Phaser.Math.Angle.Between(x, y, targetX, targetY);
+      const currentDx = this.player.body.x - x, currentDy = this.player.body.y - y;
+      const distance = Math.hypot(currentDx, currentDy);
+      const currentAngle = Phaser.Math.Angle.Between(x, y, this.player.body.x, this.player.body.y);
+      const angleDelta = Math.abs(Phaser.Math.Angle.Wrap(currentAngle - aimAngle));
+      const halfArc = (ability.arcDegrees || 40) * Math.PI / 360;
+      this.fx.burst(x + Math.cos(aimAngle) * Math.min(ability.range * 0.62, 72), y + Math.sin(aimAngle) * Math.min(ability.range * 0.62, 72), 'physical', 0.9);
+      if (distance <= ability.range && angleDelta <= halfArc) {
+        this.resolver.damagePlayer(this.player, enemy.def.attack * ability.damageMultiplier, {
+          type: 'physical', sourceX: x, sourceY: y, knockback: ability.knockback || 0, impact: 'physical', enemy
+        });
+      }
+      this.audio.play('sword', { throttleMs: 90 });
       return;
     }
     if (ability.type === 'radial_aoe') {

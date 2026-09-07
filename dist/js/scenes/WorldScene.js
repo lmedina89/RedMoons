@@ -324,7 +324,7 @@ export class WorldScene extends Phaser.Scene {
     this.enemies = [];
     const callbacks = {
       hitPlayer: (amount, x, y, enemy) => this.hitPlayer(amount, x, y, enemy),
-      beginAbility: (enemy, ability) => this.combat?.beginEnemyAbility(enemy, ability),
+      beginAbility: (enemy, ability) => this.combat?.beginEnemyAbility(enemy, ability, enemy.abilityTargetX, enemy.abilityTargetY),
       triggerAbility: (enemy, ability, targetX, targetY) => this.combat?.triggerEnemyAbility(enemy, ability, targetX, targetY),
       damageNumber: (x, y, amount, hostile) => this.combat?.damageNumbers.show(x, y, amount, hostile),
       died: enemy => this.onEnemyDied(enemy)
@@ -575,6 +575,7 @@ export class WorldScene extends Phaser.Scene {
     if (action === 'carrion') moveNear(this.enemies.find(enemy => enemy.sprite.active && enemy.def.id === 'enemy_carrion_beast')?.sprite);
     if (action === 'rotwing') moveNear(this.enemies.find(enemy => enemy.sprite.active && enemy.def.id === 'enemy_rotwing_ravager')?.sprite);
     if (action === 'slate') moveNear(this.enemies.find(enemy => enemy.sprite.active && enemy.def.id === 'enemy_slate_revenant')?.sprite);
+    if (action === 'spearman') moveNear(this.enemies.find(enemy => enemy.sprite.active && enemy.def.id === 'enemy_skeleton_spearman')?.sprite);
     if (action === 'archer') moveNear(this.enemies.find(enemy => enemy.sprite.active && enemy.def.id === 'enemy_skeleton_archer')?.sprite);
     if (action === 'mage') moveNear(this.enemies.find(enemy => enemy.sprite.active && enemy.def.id === 'enemy_skeleton_mage')?.sprite);
     if (action === 'bloodbone') moveNear(this.enemies.find(enemy => enemy.sprite.active && enemy.def.id === 'enemy_bloodbone')?.sprite);

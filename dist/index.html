@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <meta name="theme-color" content="#120907">
-  <meta name="description" content="Hell RPG v0.1.3 — Combat Systems Foundation, a mobile-first pixel action RPG.">
+  <meta name="description" content="Hell RPG v0.1.3.1 — Combat Polish & Skill Feel, a mobile-first pixel action RPG.">
   <title>Hell RPG — Ashfall Foundation</title>
   <link rel="stylesheet" href="css/game.css">
 </head>
@@ -43,7 +43,7 @@
             <button type="button" id="confirm-new-game" class="danger-button">Overwrite & Start</button>
           </div>
         </section>
-        <small class="start-version">v0.1.3 • save schema 2</small>
+        <small class="start-version">v0.1.3.1 • save schema 2</small>
       </div>
     </section>
 
@@ -80,6 +80,7 @@
         <div class="joystick-ring"></div><div id="joystick-knob"></div>
       </div>
       <div class="combat-controls">
+        <div id="status-strip" class="status-strip" aria-live="polite" aria-label="Active combat effects"></div>
         <button type="button" id="interact-button" class="round-button secondary" aria-label="Interact or pick up item">Use</button>
         <div class="skill-cluster" aria-label="Combat skills">
           <button type="button" id="skill-button-0" class="skill-button" data-skill-slot="0" aria-label="Skill 1"><span>I</span><small>Cleave</small><b></b></button>
@@ -135,6 +136,7 @@
       <button type="button" data-debug="carrion">Near Carrion</button>
       <button type="button" data-debug="rotwing">Near Rotwing</button>
       <button type="button" data-debug="slate">Near Slate</button>
+      <button type="button" data-debug="spearman">Near Spearman</button>
       <button type="button" data-debug="archer">Near Archer</button>
       <button type="button" data-debug="mage">Near Mage</button>
       <button type="button" data-debug="bloodbone">Near Bloodbone</button>
@@ -147,7 +149,7 @@
       <button type="button" data-debug="wings">Unlock Wings</button>
       <button type="button" data-debug="fall">Fall</button>
     </aside>
-    <div id="build-label">v0.1.3 • save schema 2</div>
+    <div id="build-label">v0.1.3.1 • save schema 2</div>
   </main>
 
   <script src="vendor/phaser.min.js"></script>

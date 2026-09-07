@@ -1,4 +1,4 @@
-# Mobile Performance Considerations — v0.1.3
+# Mobile Performance Considerations — v0.1.3.1
 
 ## v0.1.2.4.3 transition memory/lifecycle policy
 
@@ -6,11 +6,11 @@ Map assets remain **lazy by first visit**, but textures already loaded during th
 
 Hell RPG remains designed first around iPhone-landscape constraints rather than treating mobile optimization as a final cleanup pass.
 
-## v0.1.3 combat/runtime policy
+## v0.1.3.1 combat/runtime policy
 
 Combat growth is bounded rather than allocation-heavy. `ProjectileManager` owns a fixed **40-sprite projectile pool**; `DamageNumberPool` reuses 28 text objects; `FxManager` preallocates small reusable impact/trail sprite pools and only uses short-lived Graphics objects for larger rings/telegraphs. Enemy decision work remains throttled and distance-gated. Temporary statuses and cooldowns are runtime-only and are not written into every save checkpoint.
 
-The new spellcast/thrust/shoot/hurt art is stored as compact 64×64 action crops instead of preloading the original 832×3456 LPC authoring sheets. Only the player/current gear and actors available on the active map enter its asset package. This keeps the new animation vocabulary compatible with the map-scoped loading rule.
+The run/spellcast/thrust/shoot/hurt art is stored as compact action crops instead of preloading the original 832×3456 LPC authoring sheets; the Spearman's oversized 192px thrust sheet is loaded only with the Cinder package that can spawn him. Only the player/current gear and actors available on the active map enter its asset package. This keeps the new animation vocabulary compatible with the map-scoped loading rule.
 
 `AudioManager` currently synthesizes short SFX with WebAudio rather than decoding a large sound library. It is gesture-unlocked and throttles repeated sound IDs. Physical iPhone testing still needs to confirm Safari background/resume behavior before this foundation is considered polished.
 
@@ -79,3 +79,6 @@ The current Cinder package is still the heaviest because multiple layered NPC/Sk
 - continue profiling the fixed projectile/FX pools as encounter density grows;
 - add recorded-audio decode/voice caps when curated sound assets replace/augment procedural SFX;
 - physical-device Safari memory profiling after major asset milestones.
+## v0.1.3.1 polish notes
+
+True-run sheets are compact action crops and load only with the active player/equipment package. The Bone Spearman replaces one generic Skeleton spawn, so the Cinder-region population cap does not increase. Procedural Pulse FX remain short-lived and are not persistent particle emitters.

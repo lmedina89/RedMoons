@@ -40,6 +40,10 @@ export const ASSET_DEFS = [
     { key: `${key}-shoot`, path: `${R}${key}-shoot.png`, frameWidth: 64, frameHeight: 64 },
     { key: `${key}-hurt`, path: `${R}${key}-hurt.png`, frameWidth: 64, frameHeight: 64 }
   ]),
+  // v0.1.3.1 true-run crops from the verified Expanded ULPC run block.
+  ...['protagonist-red', 'legion-chest', 'leather-boots', 'starter-trousers', 'starter-wraps'].map(key =>
+    ({ key: `${key}-run`, path: `${R}${key}-run.png`, frameWidth: 64, frameHeight: 64 })
+  ),
   // v0.1.2.4.3 combo-safe starter trouser overlay. It is derived from the
   // exact revised player poses, so beginner clothing no longer shifts when the
   // sword combo changes from slash to one-handed/backslash/halfslash actions.
@@ -98,6 +102,7 @@ export const ASSET_DEFS = [
   { key: 'skeleton-walk', path: `${E}skeleton-walk.png`, frameWidth: 64, frameHeight: 64 },
   { key: 'skeleton-slash', path: `${E}skeleton-slash.png`, frameWidth: 64, frameHeight: 64 },
   { key: 'skeleton-bow-shoot', path: `${E}skeleton-bow-shoot.png`, frameWidth: 64, frameHeight: 64 },
+  { key: 'skeleton-spear-thrust', path: `${E}skeleton-spear-thrust.png`, frameWidth: 192, frameHeight: 192, oversized: true },
   ...['skeleton', 'slate-skeleton'].flatMap(key => [
     { key: `${key}-spellcast`, path: `${E}${key}-spellcast.png`, frameWidth: 64, frameHeight: 64 },
     { key: `${key}-thrust`, path: `${E}${key}-thrust.png`, frameWidth: 64, frameHeight: 64 },
@@ -169,6 +174,7 @@ export const ANIMATION_GEOMETRIES = Object.freeze({
     slash1h: Object.freeze({ source: 'backslash', rows: dirs, stride: 13, sequence: range(0, 6) }),
     backslash1h: Object.freeze({ source: 'backslash', rows: dirs, stride: 13, sequence: Object.freeze([0, 1, 2, 3, 4, 5, 7, 8, 9, 10, 11, 12]) }),
     halfslash1h: Object.freeze({ source: 'halfslash', rows: dirs, stride: 6, sequence: range(0, 5) }),
+    run: Object.freeze({ source: 'run', rows: dirs, stride: 8, sequence: range(0, 7) }),
     spellcast: Object.freeze({ source: 'spellcast', rows: dirs, stride: 7, sequence: range(0, 6) }),
     thrust: Object.freeze({ source: 'thrust', rows: dirs, stride: 8, sequence: range(0, 7) }),
     shoot: Object.freeze({ source: 'shoot', rows: dirs, stride: 13, sequence: range(0, 12) }),
@@ -183,6 +189,11 @@ export const ANIMATION_GEOMETRIES = Object.freeze({
     idle: Object.freeze({ source: 'texture', rows: [8, 9, 10, 11], stride: 13, sequence: Object.freeze([0]) }),
     walk: Object.freeze({ source: 'texture', rows: [8, 9, 10, 11], stride: 13, sequence: range(1, 8) }),
     slash: Object.freeze({ source: 'texture', rows: [12, 13, 14, 15], stride: 13, sequence: range(0, 5) })
+  }),
+  classicSpear192: Object.freeze({
+    idle: Object.freeze({ source: 'texture', rows: dirs, stride: 8, sequence: Object.freeze([0]) }),
+    walk: Object.freeze({ source: 'texture', rows: dirs, stride: 8, sequence: Object.freeze([0]) }),
+    thrust: Object.freeze({ source: 'texture', rows: dirs, stride: 8, sequence: range(0, 7) })
   }),
   dcssSword128: Object.freeze({
     // The older DCSS source stores up / left / down and mirrors left for right.
@@ -210,7 +221,7 @@ export const LAYER_ASSETS = Object.freeze({
   // export as one synchronized base layer (body + face + hair). NPC/enemy
   // bases remain selectable so the same layered renderer can power future
   // adventurers and equipment-bearing skeletons.
-  player_red_base: { walk: 'protagonist-red-walk', slash: 'protagonist-red-slash', backslash: 'protagonist-red-backslash', halfslash: 'protagonist-red-halfslash', spellcast: 'protagonist-red-spellcast', thrust: 'protagonist-red-thrust', shoot: 'protagonist-red-shoot', hurt: 'protagonist-red-hurt', geometry: 'revised64Expanded' },
+  player_red_base: { walk: 'protagonist-red-walk', run: 'protagonist-red-run', slash: 'protagonist-red-slash', backslash: 'protagonist-red-backslash', halfslash: 'protagonist-red-halfslash', spellcast: 'protagonist-red-spellcast', thrust: 'protagonist-red-thrust', shoot: 'protagonist-red-shoot', hurt: 'protagonist-red-hurt', geometry: 'revised64Expanded' },
   npc_olive_base: { walk: 'npc-olive-walk', slash: 'npc-olive-slash', backslash: 'npc-olive-backslash', halfslash: 'npc-olive-halfslash', geometry: 'revised64' },
   npc_classic_body: { walk: 'body-walk', slash: 'body-slash', geometry: 'classic', attackFallback: 'slash' },
   npc_classic_hair: { walk: 'hair-walk', slash: 'hair-slash', geometry: 'classic', attackFallback: 'slash' },
@@ -227,10 +238,10 @@ export const LAYER_ASSETS = Object.freeze({
   // Beginner presentation aliases intentionally reuse verified revised-combat
   // layers. The item IDs/names stay low-level and save-compatible while the
   // visuals remain synchronized through the full four-hit sword chain.
-  chest_starter_revised: { walk: 'legion-chest-walk', slash: 'legion-chest-slash', backslash: 'legion-chest-backslash', halfslash: 'legion-chest-halfslash', spellcast: 'legion-chest-spellcast', thrust: 'legion-chest-thrust', shoot: 'legion-chest-shoot', hurt: 'legion-chest-hurt', geometry: 'revised64Expanded' },
-  legs_starter_revised: { walk: 'starter-trousers-walk', slash: 'starter-trousers-slash', backslash: 'starter-trousers-backslash', halfslash: 'starter-trousers-halfslash', spellcast: 'starter-trousers-spellcast', thrust: 'starter-trousers-thrust', shoot: 'starter-trousers-shoot', hurt: 'starter-trousers-hurt', geometry: 'revised64Expanded' },
-  hands_starter_revised: { walk: 'starter-wraps-walk', slash: 'starter-wraps-slash', backslash: 'starter-wraps-backslash', halfslash: 'starter-wraps-halfslash', spellcast: 'starter-wraps-spellcast', thrust: 'starter-wraps-thrust', shoot: 'starter-wraps-shoot', hurt: 'starter-wraps-hurt', geometry: 'revised64Expanded' },
-  feet_starter_revised: { walk: 'leather-boots-walk', slash: 'leather-boots-slash', backslash: 'leather-boots-backslash', halfslash: 'leather-boots-halfslash', spellcast: 'leather-boots-spellcast', thrust: 'leather-boots-thrust', shoot: 'leather-boots-shoot', hurt: 'leather-boots-hurt', geometry: 'revised64Expanded' },
+  chest_starter_revised: { walk: 'legion-chest-walk', run: 'legion-chest-run', slash: 'legion-chest-slash', backslash: 'legion-chest-backslash', halfslash: 'legion-chest-halfslash', spellcast: 'legion-chest-spellcast', thrust: 'legion-chest-thrust', shoot: 'legion-chest-shoot', hurt: 'legion-chest-hurt', geometry: 'revised64Expanded' },
+  legs_starter_revised: { walk: 'starter-trousers-walk', run: 'starter-trousers-run', slash: 'starter-trousers-slash', backslash: 'starter-trousers-backslash', halfslash: 'starter-trousers-halfslash', spellcast: 'starter-trousers-spellcast', thrust: 'starter-trousers-thrust', shoot: 'starter-trousers-shoot', hurt: 'starter-trousers-hurt', geometry: 'revised64Expanded' },
+  hands_starter_revised: { walk: 'starter-wraps-walk', run: 'starter-wraps-run', slash: 'starter-wraps-slash', backslash: 'starter-wraps-backslash', halfslash: 'starter-wraps-halfslash', spellcast: 'starter-wraps-spellcast', thrust: 'starter-wraps-thrust', shoot: 'starter-wraps-shoot', hurt: 'starter-wraps-hurt', geometry: 'revised64Expanded' },
+  feet_starter_revised: { walk: 'leather-boots-walk', run: 'leather-boots-run', slash: 'leather-boots-slash', backslash: 'leather-boots-backslash', halfslash: 'leather-boots-halfslash', spellcast: 'leather-boots-spellcast', thrust: 'leather-boots-thrust', shoot: 'leather-boots-shoot', hurt: 'leather-boots-hurt', geometry: 'revised64Expanded' },
 
   // Legacy classic-animation layers are retained for NPCs/source compatibility,
   // but player starter items no longer point at them.
@@ -270,6 +281,7 @@ export const LAYER_ASSETS = Object.freeze({
   weapon_ceramic_arming_sword_fg: { walk: 'ceramic-arming-sword-walk', slash: 'ceramic-arming-sword-slash', backslash: 'ceramic-arming-sword-backslash', halfslash: 'ceramic-arming-sword-halfslash', geometry: 'armingSword', oversizedSources: ['slash', 'backslash', 'halfslash'] },
   weapon_katana_npc_fg: { walk: 'katana-walk', slash: 'katana-slash', geometry: 'katanaNpc128', oversizedSources: ['walk', 'slash'], attackFallback: 'slash' },
   weapon_bone_bow_fg: { shoot: 'skeleton-bow-shoot', geometry: 'classicExpanded', specialOnly: true },
+  weapon_bone_spear_fg: { texture: 'skeleton-spear-thrust', geometry: 'classicSpear192', oversizedSources: ['texture'] },
   shield_wood_bg: { texture: 'wood-shield-bg', geometry: 'expanded64', attackFallback: 'slash' },
   shield_wood_fg: { texture: 'wood-shield-fg', geometry: 'expanded64', attackFallback: 'slash' }
 });

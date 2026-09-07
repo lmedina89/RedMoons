@@ -1,18 +1,18 @@
-# Known limitations — v0.1.3
+# Known limitations — v0.1.3.1
 
-## v0.1.3 validation note
+## v0.1.3.1 validation note
 
-v0.1.3 is built from the physical-iPhone-validated v0.1.2.4.3 map/save baseline. Automated checks validate content references, expanded LPC crop geometry/alpha, schema-1→2 normalization, combat-system wiring, projectile/status registries and the existing world/collision invariants. The new combat behavior still requires physical iPhone Safari validation; a static validator cannot prove touch timing, live Phaser collisions, WebAudio resume behavior or combat readability.
+v0.1.3.1 is built from the physical-iPhone-validated v0.1.3 combat baseline. Automated checks validate content references, expanded LPC crop geometry/alpha, schema-1→2 normalization, combat-system wiring, projectile/status registries and the existing world/collision invariants. The new combat behavior still requires physical iPhone Safari validation; a static validator cannot prove touch timing, live Phaser collisions, WebAudio resume behavior or combat readability.
 
 ## Current combat limits
 
-- The first player skill set is intentionally only **Ember Cleave, Ashen Guard and Ruin Pulse**. There is no skill tree, respec, trainer, skill-level progression or configurable skill library yet; level gates simply prove persistence and slot UI.
-- Bone Archer and Gravecaller use real LPC Skeleton **shoot/spellcast body actions** plus real world projectiles/FX, but dedicated bow/quiver/staff equipment layers are not yet harvested into the runtime. We intentionally did not fake an invisible weapon or load the full source library.
-- Skeleton Spearman-specific thrust AI is deferred to v0.1.3.1 even though shared thrust animation support now exists.
+- The first player skill set is intentionally only **Ember Cleave, Ashen Guard and Ruin Pulse**. Rank 1–5 storage/scaling hooks now exist, but there is still no player-facing upgrade/spending UI, respec, trainer or larger configurable skill library; level gates continue to prove unlock persistence and slot UI.
+- Bone Archer uses a real compact LPC bow+arrow shoot overlay. Gravecaller uses the real Skeleton **spellcast body action** plus procedural shadow FX, but a verified staff spellcast overlay is still deferred rather than faked.
+- Bone Spearman thrust AI is active in v0.1.3.1 with a visible preserved long-spear overlay, data-driven thrust melee, and telegraphed Bone Lunge. Player combat-stance art remains deferred until a complete compatible stance/equipment set is verified rather than guessing at source rows.
 - Burn, Poison, Slow, Guard and Stagger are the only live statuses. Bleed/freeze/curse/holy vulnerability and richer stacking/resistance rules are future content.
 - Combat SFX are a lightweight procedural WebAudio foundation. Curated recorded sword/impact/UI packs and music are not part of this milestone.
 - Hurt reactions are short and do not make every hit a hard interrupt. Stagger is the explicit control effect, with an immunity window to prevent permanent stun-lock.
-- Existing Carrion/Rotwing, Goblin and Spider families still mostly use shared melee behavior; v0.1.3 specializes only the five proof enemies needed to exercise projectile/caster/AOE systems.
+- Existing Carrion/Rotwing, Goblin and Spider families still mostly use shared melee behavior; v0.1.3.1 retains the five original proof enemies and adds the Bone Spearman needed to exercise projectile/caster/AOE systems.
 - Set bonuses remain inactive. Guild systems remain scaffolding only. NPC adventurers do not yet fight/level independently.
 
 ## World/content limits
@@ -24,7 +24,7 @@ v0.1.3 is built from the physical-iPhone-validated v0.1.2.4.3 map/save baseline.
 
 ## Animation/art limits
 
-- Player base and the Level-1 starter outfit have verified compact spellcast/thrust/shoot/hurt crops. Most older equipment does **not** yet have those expanded actions; safe fallback keeps unsupported armor static and hides unsupported weapon/shield layers during special actions. Selected legacy gear can be migrated later using the starter-gear pipeline.
+- Player base and the Level-1 starter outfit have verified compact run/spellcast/thrust/shoot/hurt crops. Most older equipment does **not** yet have those expanded actions; safe fallback keeps unsupported armor static and hides unsupported weapon/shield layers during special actions. Selected legacy gear can be migrated later using the starter-gear pipeline.
 - Ashstone Golem uses its supplied seven-frame death sheet mapped to the single verified collapse row for every facing.
 - The supplied Wolf source PSD remains inactive until its irregular atlas receives a verified export/crop pass.
 - Several user-supplied/source assets still require final attribution/license verification before store/commercial distribution. Development authorization does not replace upstream obligations.

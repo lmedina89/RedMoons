@@ -54,9 +54,10 @@ export const SPAWN_REGIONS = Object.freeze([
   { id: 'spawn_rotwing_south', enemyId: 'enemy_rotwing_ravager', x: 1430, y: 730, width: 330, height: 330, count: 2, respawnMs: 9200 },
   { id: 'spawn_blueflame_edge', enemyId: 'enemy_blueflame_imp', x: 1650, y: 500, width: 250, height: 330, count: 2, respawnMs: 9800 },
   { id: 'spawn_ember_spider_edge', enemyId: 'enemy_ember_spider', x: 1690, y: 155, width: 205, height: 285, count: 2, respawnMs: 9800 },
-  { id: 'spawn_skeleton_edge', enemyId: 'enemy_ash_skeleton', x: 1770, y: 800, width: 160, height: 300, count: 3, respawnMs: 9400 },
+  { id: 'spawn_skeleton_edge', enemyId: 'enemy_ash_skeleton', x: 1770, y: 800, width: 160, height: 300, count: 2, respawnMs: 9400 },
 
   // Bone Road: fewer but more dangerous encounters.
+  { id: 'spawn_skeleton_spearman', enemyId: 'enemy_skeleton_spearman', x: 1930, y: 850, width: 210, height: 235, count: 1, respawnMs: 11800 },
   { id: 'spawn_skeleton_archer', enemyId: 'enemy_skeleton_archer', x: 1965, y: 460, width: 210, height: 260, count: 1, respawnMs: 11200 },
   { id: 'spawn_skeleton_mage', enemyId: 'enemy_skeleton_mage', x: 2160, y: 260, width: 190, height: 260, count: 1, respawnMs: 13200 },
   { id: 'spawn_slate_road', enemyId: 'enemy_slate_revenant', x: 1980, y: 150, width: 240, height: 410, count: 2, respawnMs: 10800 },

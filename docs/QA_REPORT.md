@@ -1,18 +1,18 @@
-# v0.1.3 QA report — Combat Systems Foundation
+# v0.1.3.1 QA report — Combat Polish & Skill Feel
 
 ## Scope
 
-v0.1.3 is built directly from the physical-iPhone-validated **v0.1.2.4.3** baseline. It intentionally preserves the two-map layout and transition lifecycle while adding the first reusable skill/status/projectile/FX/audio/expanded-animation architecture. Save schema advances from 1 to 2 only for persistent skill unlocks and three skill-slot IDs.
+v0.1.3.1 is built directly from the physical-iPhone-validated **v0.1.3 Combat Systems Foundation** baseline. It preserves the two-map/transition lifecycle and the shared combat architecture while polishing skill feel, adding true run, the Bone Spearman thrust proof, status/cooldown readability, and future skill-rank storage/scaling hooks. Save schema remains **2**; existing v0.1.3 schema-2 saves without `skills.ranks` normalize to Rank 1.
 
 ## Automated validation completed before packaging
 
 - All registered runtime asset paths exist and all JavaScript passes `node --check`.
-- Expanded player/starter/Skeleton spellcast, thrust, shoot and hurt crop dimensions and non-empty source frames are validated against the actual PNG alpha data.
+- Expanded player/starter true-run plus spellcast/thrust/shoot/hurt crop dimensions and non-empty source frames are validated against the actual PNG alpha data; the 192px Bone Spearman thrust sheet is also geometry/alpha checked.
 - The original four-hit sword geometry, starter gear compatibility, map transition ordering/lifecycle reset, collision model, loot eligibility and source/runtime separation remain regression checks.
-- Skill definitions are limited to the planned Level 1/3/5 foundation set.
-- Burn, Poison, Slow, Guard and Stagger definitions are present; all four projectile records and five enemy ability records resolve.
-- Blight Imp, Blueflame Imp, Bone Archer, Gravecaller and Ashstone Golem reference the intended abilities and the new Skeleton specialists have real world spawns.
-- Schema-1 state is normalized to schema 2, retains old build metadata until next write, preserves existing map/equipment data, and gains skill unlocks appropriate to its saved level.
+- Skill definitions remain limited to the planned Level 1/3/5 foundation set; Cleave/Pulse tuning and Rank 1–5 normalization/scaling hooks are validated.
+- Burn, Poison, Slow, Guard and Stagger definitions are present; all four projectile records and six enemy ability records resolve.
+- Blight Imp, Blueflame Imp, Bone Archer, Gravecaller, Bone Spearman and Ashstone Golem reference the intended abilities and the Skeleton specialists have real world spawns.
+- Schema-1 state is normalized to schema 2, retains old build metadata until next write, preserves existing map/equipment data, and gains skill unlocks appropriate to its saved level; schema-2 v0.1.3 saves gain safe Rank-1 defaults without another schema bump.
 - Mobile skill buttons, keyboard 1/2/3 input and Combat Test Kit wiring are statically verified.
 
 ## Physical iPhone release gate
@@ -35,4 +35,13 @@ v0.1.3 is built directly from the physical-iPhone-validated **v0.1.2.4.3** basel
 
 ## Release decision
 
-Automated checks can establish structural correctness but cannot substitute for the physical-device gate above. v0.1.3 should not become the next stable checkpoint until player skills, the five enemy ability proofs, schema migration and the existing map-transition regression all pass on iPhone Safari.
+Automated checks can establish structural correctness but cannot substitute for the physical-device gate above. v0.1.3.1 should not become the next stable checkpoint until the tuned player skills, Bone Spearman/true-run additions, existing enemy ability proofs, rank normalization and map-transition regression all pass on iPhone Safari.
+
+## v0.1.3.1 physical-device additions
+
+- Confirm Ember Cleave feels wider/longer without hitting clearly rearward targets.
+- Confirm Ruin Pulse has stronger feedback/knockback and does not destabilize movement.
+- Sprint in all four directions in the starter outfit; equip an incompatible legacy/revised layer and verify safe accelerated-walk fallback instead of frame drift.
+- Use `Near Spearman`; verify visible spear, line telegraph, thrust animation, sidestep avoidance and recovery in all facings.
+- Verify status chips, cooldown sweep and rank badges remain readable without obstructing Attack/Use.
+- Continue a v0.1.3 schema-2 save with no `skills.ranks`; all unlocked skills should appear at Rank 1.

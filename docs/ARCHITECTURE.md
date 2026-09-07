@@ -1,4 +1,4 @@
-# Architecture — v0.1.3
+# Architecture — v0.1.3.1
 
 ## Map-transition lifecycle invariant (v0.1.2.4.3)
 
@@ -54,7 +54,7 @@ Randomized visible enemy weapon loadouts are **not** part of v0.1.1.1. Limited w
 
 ## Persistent state
 
-All persistent content uses stable IDs. Save schema 2 stores progression, map/entry identity and position, primary stats, unspent points, item instances, equipment slot references, quests, NPC/world flags, settings, unlocked skills and the three equipped skill-slot IDs. Schema-1 saves migrate in place based on the character's existing level.
+All persistent content uses stable IDs. Save schema 2 stores progression, map/entry identity and position, primary stats, unspent points, item instances, equipment slot references, quests, NPC/world flags, settings, unlocked skills, the three equipped skill-slot IDs, and per-skill rank values. Schema-1 saves migrate in place based on the character's existing level.
 
 Equipment has 12 named references: Head, Shoulders, Chest, Legs, Hands, Feet, Weapon, Offhand, Necklace, Ring 1, Ring 2 and Wings. Inventory owns item instances; equipment only references them. The Wings slot exists even while its progression gate is locked.
 
@@ -79,13 +79,13 @@ Equipment set definitions live beside items as data-only metadata. `setId`/`gear
 
 `CombatSystem` is now the scene-level coordinator rather than the place where every ability is hard-coded. It composes focused systems: `SkillController` for unlocks/slots/cooldowns/Essence, `CombatResolver` for shared typed damage math, `StatusController` for timed effects and DOT/control, `ProjectileManager` for a fixed pool of physical world projectiles, `FxManager` for reusable procedural telegraphs/impacts/trails, `AudioManager` for mobile-unlocked/throttled SFX, and `AnimationResolver` for safe action selection across uneven LPC layer coverage.
 
-Player skill content lives in `data/skills.js`; statuses, projectiles and enemy abilities live in their own immutable registries. The first proof set is Ember Cleave, Ashen Guard and Ruin Pulse plus Toxic Spit, Blueflame Bolt, Bone Arrow, Grave Hex and Earthshatter. Damage carries extensible tags (`physical`, `fire`, `poison`, `holy`, `shadow`) so later transformations, bosses and resistances do not need a parallel damage path.
+Player skill content lives in `data/skills.js`; statuses, projectiles and enemy abilities live in their own immutable registries. The initial proof set is Ember Cleave, Ashen Guard and Ruin Pulse plus Toxic Spit, Blueflame Bolt, Bone Arrow, Grave Hex and Earthshatter. v0.1.3.1 adds Bone Lunge as the first reusable `melee_reach` enemy ability and lets layered enemy definitions select a basic melee animation such as thrust instead of assuming every humanoid slashes. Damage carries extensible tags (`physical`, `fire`, `poison`, `holy`, `shadow`) so later transformations, bosses and resistances do not need a parallel damage path.
 
 Projectile actors are pooled and have speed, lifetime, radius, collision, trail/impact and payload definitions. Enemy abilities capture their target position at windup so arrows/spells remain dodgeable instead of homing. Earthshatter uses a visible ground telegraph before its radial hit. Statuses are target-owned timed records; Burn/Poison tick through the same resolver, Slow modifies movement, Guard modifies incoming damage/stagger chance and Stagger temporarily locks actions with an immunity window.
 
-The player and base Skeleton families now have compact `spellcast`, `thrust`, `shoot` and `hurt` runtime crops harvested from preserved full LPC sources. `AnimationResolver` only uses an expanded action when the visual layer really supplies it. During unsupported special actions, old armor holds a safe idle pose and unsupported weapons/shields hide temporarily rather than sampling nonexistent frames or falling back to an unrelated slash. This is the same selective-migration model planned for future legacy gear.
+The player and base Skeleton families have compact `spellcast`, `thrust`, `shoot` and `hurt` runtime crops harvested from preserved full LPC sources. v0.1.3.1 additionally harvests a true 8-frame player/starter run cycle and a preserved oversized long-spear thrust overlay for the Bone Spearman. `AnimationResolver` only uses an expanded action when the visual layer really supplies it. During unsupported special actions, old armor holds a safe idle pose and unsupported weapons/shields hide temporarily rather than sampling nonexistent frames or falling back to an unrelated slash. This is the same selective-migration model planned for future legacy gear.
 
-Three compact mobile skill buttons share the same commands as keyboard keys 1/2/3. Normal Attack remains independent and keeps the existing four-hit weapon profile. Save schema 2 persists unlocked skill IDs and slot assignments; cooldowns and temporary statuses are deliberately runtime-only.
+Three compact mobile skill buttons share the same commands as keyboard keys 1/2/3. Normal Attack remains independent and keeps the existing four-hit weapon profile. Save schema 2 persists unlocked skill IDs, slot assignments and per-skill ranks; cooldowns and temporary statuses are deliberately runtime-only.
 
 ## v0.1.2.4 map and asset architecture
 
@@ -100,3 +100,9 @@ Save schema is 2 in v0.1.3. `SaveManager` still accepts schema 1, treats missing
 Development/source artwork is no longer stored under served `dist/assets/source-exports`. It is preserved under top-level `source-assets/`; only curated runtime assets and distribution license records belong under `dist/assets`.
 
 The enemy renderer also now accepts definition-specific directional row maps for non-LPC sheets. This fixes assets such as the supplied Goblin without contaminating AI direction logic. Optional non-layered death metadata (`deathTexture`, frame geometry/timing and row mapping) allows an enemy to enter a short `dying` presentation state before becoming inactive; Ashstone Golem is the first live use.
+
+## v0.1.3.1 Skill-rank extension
+
+Schema 2 now normalizes `skills.ranks` alongside unlocks/slots. Missing rank values become Rank 1; values are clamped to each skill definition's `maxRank`. `resolvedSkillDef()` applies data-driven per-rank growth without requiring a new save schema. The spending/augmentation UI is intentionally separate future work.
+
+True run uses `LayeredCharacter.supportsAction('run')` as an all-visible-body-layer compatibility gate. Weapons/shields can use a safe held/walk fallback; incompatible body/armor prevents true run and keeps accelerated walk.

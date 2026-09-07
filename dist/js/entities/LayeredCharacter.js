@@ -34,6 +34,7 @@ export class LayeredCharacter {
     this.hairAsset = options.hairAsset || null;
     this.equipmentPolicy = options.equipmentPolicy || 'player';
     this.layers = new Map();
+    this.actionSupportCache = new Map();
     this.layerOrder = ['wings', 'weaponBg', 'shieldBg', 'body', 'feet', 'legs', 'chest', 'shoulders', 'hands', 'head', 'hair', 'shieldFg', 'weaponFg'];
     for (let i = 0; i < this.layerOrder.length; i += 1) {
       const key = this.layerOrder[i];
@@ -46,6 +47,7 @@ export class LayeredCharacter {
 
   refreshEquipment(nextState = null) {
     if (nextState) this.state = nextState;
+    this.actionSupportCache.clear();
     const byId = new Map((this.state?.inventory || []).map(item => [item.instanceId, item]));
     const visual = slot => {
       const item = byId.get(this.state?.equipment?.[slot]);
@@ -93,6 +95,20 @@ export class LayeredCharacter {
   resolveAnimation(asset, requestedAction, layerKey = '') {
     const geometry = ANIMATION_GEOMETRIES[asset.geometry];
     return AnimationResolver.resolve(asset, geometry, requestedAction, layerKey);
+  }
+
+
+  supportsAction(requestedAction) {
+    if (this.actionSupportCache.has(requestedAction)) return this.actionSupportCache.get(requestedAction);
+    let supported = true;
+    for (const [layerKey, layer] of this.layers.entries()) {
+      if (!layer.asset || /weapon|shield/.test(layerKey)) continue;
+      const geometry = ANIMATION_GEOMETRIES[layer.asset.geometry];
+      const resolved = AnimationResolver.resolve(layer.asset, geometry, requestedAction, layerKey);
+      if (!resolved || resolved.action !== requestedAction) { supported = false; break; }
+    }
+    this.actionSupportCache.set(requestedAction, supported);
+    return supported;
   }
 
   render(x, y, stateName, frameStep, baseDepth, frameProgress = null) {

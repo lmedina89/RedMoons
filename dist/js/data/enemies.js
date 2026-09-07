@@ -164,6 +164,18 @@ export const ENEMY_DEFS = Object.freeze({
     ]
   },
 
+  enemy_skeleton_spearman: {
+    id: 'enemy_skeleton_spearman', name: 'Bone Spearman', family: 'skeleton', variant: 'spearman', level: 4, maxHp: 82, attack: 14, defense: 4,
+    speed: 64, detectRange: 340, attackRange: 76, leashRange: 455, attackCooldown: 1280, recoverMs: 450, abilities: ['bone_lunge'], meleeAnimation: 'thrust',
+    xp: 64, currency: [5, 10], layered: true, baseVisual: 'enemy_skeleton_base', walkFrames: 9, attackFrames: 6, scale: 1.04,
+    fixedLoadout: { weapon: 'weapon_bone_spear_npc' },
+    loot: [
+      { itemId: 'head_bronze_revised', chance: 0.035, rarityWeights: basicLoot },
+      { itemId: 'hands_legion', chance: 0.032, rarityWeights: basicLoot },
+      { itemId: 'weapon_bronze_arming_sword', chance: 0.020, rarityWeights: basicLoot }
+    ]
+  },
+
   enemy_skeleton_archer: {
     id: 'enemy_skeleton_archer', name: 'Bone Archer', family: 'skeleton', variant: 'archer', level: 4, maxHp: 72, attack: 13, defense: 3,
     speed: 66, detectRange: 420, attackRange: 42, leashRange: 470, attackCooldown: 1320, recoverMs: 430, abilities: ['bone_arrow'],

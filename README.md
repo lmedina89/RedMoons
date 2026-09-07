@@ -1,63 +1,44 @@
-# Hell RPG v0.1.3 — Combat Systems Foundation
+# Hell RPG v0.1.3.1 — Combat Polish & Skill Feel
 
-Built directly from the physical-iPhone-validated **v0.1.2.4.3 Transition Lifecycle Recovery** baseline. v0.1.3 moves the project from one shared melee loop into a reusable, data-driven combat architecture while preserving the separate-map system, combo-safe starter gear, single-slot start/load flow, and staged Demon/Heavenly/transformation source art.
+Built directly from the physical-iPhone-validated **v0.1.3 Combat Systems Foundation** baseline. This is a focused feel/animation pass: it does not redesign the maps or add a large progression tree.
 
-## Combat foundation
+## Combat feel changes
 
-- Data-driven player skills, statuses, enemy abilities and projectiles.
-- Shared combat resolver for physical, fire, poison, holy and shadow damage tags.
-- Pooled projectiles for mobile-conscious arrows, poison spit, blueflame bolts and grave hexes.
-- Reusable FX and audio-manager foundations rather than bespoke one-off skill code.
-- Expanded action resolution for spellcast, shoot/bow, thrust and hurt reactions, with safe animation fallback.
-- Initial status framework: Burn, Poison, Slow, Guard and Stagger.
+- **Ember Cleave** is more touch-friendly: range increases to **132 px** and the cone to **126°**, while keeping the same Rank-1 damage multiplier.
+- **Ruin Pulse** keeps a controlled radius but gains **1.18× damage**, **260 knockback**, stronger screen shake and layered procedural ring/impact FX.
+- **Ashen Guard** stays at its validated Rank-1 balance.
+- Skill buttons now expose clearer cooldown progress, Rank badges and active status chips near the combat controls.
 
-## Player skills
+## True run + safe animation policy
 
-Three initial skill slots sit above the main Attack control and unlock by level for this foundation build:
+The active starter body/outfit now has a genuine **8-frame LPC run cycle** instead of only accelerating the walk cycle. True run is used only when every visible non-held body/armor layer explicitly supports it. Incompatible future/legacy equipment automatically falls back to the proven fast-walk presentation rather than drifting or exposing mismatched frames. Held weapons/shields may reuse a safe walk pose while sprinting.
 
-- **Ember Cleave** — Level 1 fire-infused cone melee attack with Burn chance.
-- **Ashen Guard** — Level 3 temporary damage-reduction / stagger-resistance buff.
-- **Ruin Pulse** — Level 5 radial shadow AOE with knockback and Stagger.
+Combat-stance-specific art is intentionally deferred until a complete compatible player/equipment stance set is verified; this build does not guess at unverified LPC rows.
 
-Keyboard testing uses **1 / 2 / 3** for the three skill slots. The ordinary Attack button and four-hit sword chain remain intact.
+## Bone Spearman
 
-## Enemy ability proofs
+Bone Road now contains a **Bone Spearman** using the preserved LPC long-spear thrust artwork. Its **Bone Lunge** has a visible line telegraph, locked aim direction, extended melee reach and a real thrust animation, so sidestepping the warned line can avoid the hit. One generic Ash Skeleton spawn was replaced so the Cinder-region actor cap does not increase.
 
-The shared framework is exercised by existing enemies instead of adding a giant new roster:
+## Skill-rank foundation
 
-- Blight Imp — Toxic Spit / Poison.
-- Blueflame Imp — Blueflame Bolt / Burn.
-- Skeleton Archer — Bone Arrow using real shoot/bow action support plus a verified compact bow+arrow overlay.
-- Skeleton Mage — Grave Hex using spellcast support and Slow.
-- Ashstone Golem — telegraphed Earthshatter radial slam with knockback/Stagger.
+Save schema remains **2**. Skill state now persists a `ranks` map and all three current skills expose **Rank 1–5** data-driven growth hooks. Existing v0.1.3 saves without rank data normalize safely to Rank 1. Rank scaling is already resolvable by the combat controller, but the actual Skill Point spending/upgrade-choice UI remains deliberately deferred to a later progression milestone.
 
-## Save migration
+## Existing v0.1.3 systems preserved
 
-Save schema advances from **1 → 2** only to persist skill unlocks and the three equipped skill slots. Existing schema-1 saves migrate in place, retaining character, inventory, equipment, quests, map/location and prior build metadata. Skills appropriate to the saved character level are unlocked during normalization. The browser storage key is intentionally unchanged so existing players are migrated rather than stranded.
-
-## Existing foundations preserved
-
+- Ember Cleave, Ashen Guard and Ruin Pulse.
+- Burn, Poison, Slow, Guard and Stagger.
+- Blight Imp Toxic Spit, Blueflame Bolt, Bone Archer, Gravecaller and Golem Earthshatter.
+- Pooled projectiles, procedural combat FX and mobile-conscious WebAudio SFX foundation.
 - Cinder Region ↔ Ashfall Hollow no-refresh map travel.
-- Transition lifecycle recovery from v0.1.2.4.3.
-- Continue / New Game / Load Save single-slot flow.
-- Combo-safe Level-1 starter clothing and four-hit Arming Sword support.
-- Corrected Goblin facing and Ashstone Golem death animation.
-- Source/runtime art separation and map-scoped/lazy asset preparation.
-- `Transformation.png` remains staged source-only for a later transformation milestone; Demon Castle / Heavenly sheets remain staged for future NPCs/mobs.
+- Continue / New Game / Load Save and schema-1→2 migration.
+- Combo-safe Level-1 starter gear and the existing four-hit sword chain.
+- Staged `Transformation.png`, Demon Castle and Heavenly/unique source sheets remain source-only.
 
-## Debug
+## Debug / physical iPhone gate
 
-Append `?debug=1`. The diagnostics tray includes **Combat Test Kit**, which raises the test character to at least Level 5, unlocks the three v0.1.3 skills, refills HP/Essence and resets cooldowns. Direct teleports are available for the Archer, Mage, Blight Imp, Blueflame Imp and Golem.
+Append `?debug=1`. **Combat Test Kit** still unlocks/refills the v0.1.3 combat kit, and **Near Spearman** jumps to the new thrust test enemy.
 
-## Physical iPhone release gate
-
-1. Verify normal Attack still executes the four-hit sword chain and starter clothing remains aligned.
-2. Test all three player skill buttons repeatedly, including cooldown and insufficient-Essence states.
-3. Verify Blight/Blueflame projectiles, Archer arrows, Mage Grave Hex and Golem Earthshatter can be avoided by movement and apply expected statuses when they hit.
-4. Confirm Hurt/Stagger do not permanently lock input and status effects expire.
-5. Cinder → Hollow → Cinder several times after using skills; immediately move/attack/use skills after every transition.
-6. Save a Level 3+ or Level 5 character, reload/Continue, and verify unlocked/equipped skill slots survive.
-7. Test Safari background/foreground and a 10–15 minute combat session for duplicate input, audio spam, projectiles that never despawn, or performance degradation.
+Test Cleave reach/width, Pulse impact, Guard regression, true run in all four directions, true-run fallback after equipping incompatible gear, Spearman telegraph/thrust from all facings, status/cooldown readability, Cinder↔Hollow travel after combat, save/Continue rank normalization, Safari background/return, and a 10–15 minute stress session.
 
 ## Run locally
 
@@ -73,3 +54,5 @@ Then open `http://localhost:8080/`. Phaser 3.90.0 remains vendored under `dist/v
 npm run check
 find dist/js tests -type f \( -name '*.js' -o -name '*.mjs' \) -print0 | xargs -0 -n1 node --check
 ```
+
+The ZIP is intended to remain repo-root ready for GitHub Pages.

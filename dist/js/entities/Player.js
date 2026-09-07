@@ -195,12 +195,14 @@ export class Player {
 
     const derived = derivedStats(this.state);
     const statusMove = this.combat?.statuses.moveMultiplier(this) ?? 1;
-    const speed = derived.moveSpeed * statusMove * (this.input.run ? 1.42 : 1);
+    const wantsRun = Boolean(this.input.run && length > 0.05);
+    const trueRun = wantsRun && this.visual.supportsAction('run');
+    const speed = derived.moveSpeed * statusMove * (wantsRun ? 1.42 : 1);
     this.body.setVelocity(dx * speed, dy * speed);
     this.visual.setFacing(dx, dy);
-    if (length > 0.05) this.walkClock += delta * (this.input.run ? 1.5 : 1);
-    const frameStep = length > 0.05 ? Math.floor(this.walkClock / 92) % 8 : 0;
-    this.visual.render(this.body.x, this.body.y, length > 0.05 ? 'walk' : 'idle', frameStep, this.body.y);
+    if (length > 0.05) this.walkClock += delta;
+    const frameStep = length > 0.05 ? Math.floor(this.walkClock / (trueRun ? 82 : 92)) % 8 : 0;
+    this.visual.render(this.body.x, this.body.y, length > 0.05 ? (trueRun ? 'run' : 'walk') : 'idle', frameStep, this.body.y);
     this.updateStoredPosition();
   }
 

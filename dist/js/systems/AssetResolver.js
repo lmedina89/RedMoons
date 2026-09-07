@@ -5,7 +5,7 @@ import { NPC_DEFS } from '../data/npcs.js';
 import { DEFAULT_MAP_ID, MAP_DEFS, SPAWN_REGIONS, mapForId } from '../data/world.js';
 
 const ASSET_BY_KEY = new Map(ASSET_DEFS.map(asset => [asset.key, asset]));
-const LAYER_TEXTURE_FIELDS = Object.freeze(['texture', 'walk', 'slash', 'backslash', 'halfslash', 'spellcast', 'thrust', 'shoot', 'hurt']);
+const LAYER_TEXTURE_FIELDS = Object.freeze(['texture', 'walk', 'run', 'slash', 'backslash', 'halfslash', 'spellcast', 'thrust', 'shoot', 'hurt']);
 
 function addAssetKey(keys, key) {
   if (key && ASSET_BY_KEY.has(key)) keys.add(key);

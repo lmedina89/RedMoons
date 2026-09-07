@@ -81,20 +81,48 @@ export class FxManager {
     return { destroy: () => { timer.remove(false); g.destroy(); } };
   }
 
+  lineTelegraph(x, y, targetX, targetY, length, kind = 'physical', duration = 650) {
+    const color = FX_COLORS[kind] || FX_COLORS.physical;
+    const angle = Phaser.Math.Angle.Between(x, y, targetX, targetY);
+    const ex = x + Math.cos(angle) * length;
+    const ey = y + Math.sin(angle) * length;
+    const g = this.scene.add.graphics().setDepth(8200);
+    const started = this.scene.time.now;
+    const timer = this.scene.time.addEvent({ delay: 35, loop: true, callback: () => {
+      if (!g.active) return;
+      const p = Math.min(1, (this.scene.time.now - started) / Math.max(1, duration));
+      g.clear();
+      g.lineStyle(6, color, 0.08 + p * 0.10).lineBetween(x, y, ex, ey);
+      g.lineStyle(2 + p * 2, color, 0.42 + p * 0.45).lineBetween(x, y, ex, ey);
+      g.fillStyle(color, 0.35 + p * 0.35).fillCircle(ex, ey, 4 + p * 3);
+      if (p >= 1) { timer.remove(false); g.destroy(); }
+    }});
+    return { destroy: () => { timer.remove(false); if (g.active) g.destroy(); } };
+  }
+
   trail(x, y, kind = 'physical') { this.burst(x, y, kind, 0.45); }
 
   skill(skillId, x, y, facing = [0, 1]) {
     if (skillId === 'skill_ember_cleave') {
       const g = this.scene.add.graphics().setDepth(8500);
       const angle = Math.atan2(facing[1], facing[0]);
-      g.lineStyle(8, FX_COLORS.fire, 0.72);
+      g.lineStyle(10, FX_COLORS.fire, 0.78);
       g.beginPath();
-      g.arc(x, y, 72, angle - 0.8, angle + 0.8, false); g.strokePath();
-      this.scene.tweens.add({ targets: g, alpha: 0, duration: 260, onComplete: () => g.destroy() });
+      g.arc(x, y, 108, angle - 1.10, angle + 1.10, false); g.strokePath();
+      g.lineStyle(3, 0xffc879, 0.82);
+      g.beginPath();
+      g.arc(x, y, 91, angle - 1.05, angle + 1.05, false); g.strokePath();
+      this.scene.tweens.add({ targets: g, alpha: 0, duration: 300, onComplete: () => g.destroy() });
     } else if (skillId === 'skill_ashen_guard') {
       this.ring(x, y, 56, 'guard', 420); this.burst(x, y - 18, 'guard', 1.2);
     } else if (skillId === 'skill_ruin_pulse') {
-      this.ring(x, y, 106, 'shadow', 420); this.burst(x, y, 'shadow', 1.4);
+      this.ring(x, y, 114, 'shadow', 500);
+      this.scene.time.delayedCall(70, () => this.ring(x, y, 88, 'shadow', 390));
+      this.burst(x, y, 'shadow', 1.75);
+      for (let i = 0; i < 6; i += 1) {
+        const angle = i * Math.PI / 3;
+        this.scene.time.delayedCall(i * 16, () => this.burst(x + Math.cos(angle) * 48, y + Math.sin(angle) * 48, 'earth', 0.72));
+      }
     }
   }
 

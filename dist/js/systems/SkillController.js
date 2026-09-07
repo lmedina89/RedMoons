@@ -1,4 +1,4 @@
-import { SKILL_DEFS, normalizeSkillState } from '../data/skills.js';
+import { SKILL_DEFS, normalizeSkillState, skillRank, resolvedSkillDef } from '../data/skills.js';
 import { derivedStats } from './StatsSystem.js';
 
 export class SkillController {
@@ -24,7 +24,7 @@ export class SkillController {
   }
 
   canUse(id, time = this.scene.time.now) {
-    const def = SKILL_DEFS[id];
+    const def = resolvedSkillDef(this.state, id);
     if (!def || !this.state.skills.unlocked.includes(id)) return { ok: false, reason: 'Locked' };
     if (this.player.dead) return { ok: false, reason: 'Fallen' };
     if (typeof window !== 'undefined' && window.__ashfallUiBlocked) return { ok: false, reason: 'Unavailable' };
@@ -45,7 +45,7 @@ export class SkillController {
   use(id) {
     const time = this.scene.time.now;
     const check = this.canUse(id, time);
-    const def = SKILL_DEFS[id];
+    const def = resolvedSkillDef(this.state, id);
     if (!check.ok) {
       this.audio.play('denied', { throttleMs: 180 });
       this.events.emit('toast', { text: `${def?.name || 'Skill'}: ${check.reason}.`, tone: 'muted', short: true, cooldownMs: 750 });
@@ -66,7 +66,7 @@ export class SkillController {
     if (def.type === 'cone_melee') {
       this.combat.playerCone(def, facing);
     } else if (def.type === 'self_buff') {
-      if (def.status) this.statuses.apply(this.player, def.status.id, { power: derivedStats(this.state).attack, x: p.x, y: p.y });
+      if (def.status) this.statuses.apply(this.player, def.status.id, { power: derivedStats(this.state).attack, x: p.x, y: p.y }, { durationMs: def.durationMs });
     } else if (def.type === 'radial_aoe') {
       this.combat.playerRadial(def);
     }
@@ -75,11 +75,12 @@ export class SkillController {
   snapshot(time = this.scene.time.now) {
     normalizeSkillState(this.state);
     return this.state.skills.slots.map((id, slot) => {
-      const def = id ? SKILL_DEFS[id] : null;
+      const def = id ? resolvedSkillDef(this.state, id) : null;
       const readyAt = id ? (this.cooldowns.get(id) || 0) : 0;
       return {
         slot, id, name: def?.name || 'Empty', shortName: def?.shortName || 'Empty', icon: def?.icon || String(slot + 1),
         unlocked: Boolean(def && this.state.skills.unlocked.includes(id)), essenceCost: def?.essenceCost || 0,
+        rank: id ? skillRank(this.state, id) : 0, maxRank: def?.maxRank || 0,
         cooldownMs: def?.cooldownMs || 0, remainingMs: Math.max(0, readyAt - time), ready: Boolean(def && time >= readyAt && this.state.player.essence >= def.essenceCost)
       };
     });
