@@ -1,5 +1,16 @@
 # Changelog
 
+## v0.1.1.5 — Player Gear Pool Expansion
+
+- Added seven newly verified, full-combo player gear definitions: Bronze War Helm, Ashhide Shoulders, Ashrunner Leather Boots, Silver Legion Cuirass, Steel Bastion Plate, Brass Arming Sword and Iron Arming Sword.
+- Added lossless runtime crops for walk, standard slash, revised one-handed/backslash source and halfslash animations; both new arming swords use the same proven 64px walk / 128px combat geometry as the existing Ashen Arming Sword.
+- Added the new gear to level-appropriate Cinder Imp, Ash Skeleton and Captain Ossivar loot tables while preserving the runtime block on NPC/legacy-only gear.
+- Added future-facing item presentation metadata for rarity-colored borders/world glow and later enhancement glow/trail/aura effects without adding a new FX runtime yet.
+- Expanded deterministic validation so every new armor layer and sword palette must contain real pixels across all four current combo actions and facings.
+- Added a v0.1.1.5 diagnostic gear helper for rapid physical-device regression testing.
+- Preserved save schema 1 and all v0.1.1.4 movement, toast and Drop/Destroy hardening.
+- Preserved the newly supplied full PNG exports. Several armor exports remain on attribution hold until their exact generator credit text is supplied; the known Arming Sword family credit remains preserved.
+
 ## v0.1.1.4 — Inventory Recovery & Movement Hardening
 
 - Removed dynamic player/enemy body separation so chasing enemies can no longer physically shove the player after movement input stops. Combat contact remains range-driven, which also better supports future large enemy pulls.

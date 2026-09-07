@@ -1,9 +1,19 @@
-# Hell RPG v0.1.1.4 — Inventory Recovery & Movement Hardening
+# Hell RPG v0.1.1.5 — Player Gear Pool Expansion
 
 Ashfall Foundation is a production-minded vertical slice for a mobile-first, single-player pixel action RPG. It is an original dark-fantasy game built with Phaser 3, plain JavaScript and HTML/CSS. It does not use copyrighted Dekaron/2Moons content.
 
 
-Inventory recovery: every normal inventory item can now be dropped back into the world or destroyed from its detail pane after a two-tap confirmation. Quest-critical items remain protected. Mobile movement also avoids enemy-body shove and has additional iOS pointer-release fallbacks.
+v0.1.1.5 expands the real player-compatible loot pool without changing save schema 1. Seven newly verified full-combo gear variants are integrated as level-appropriate drops while incomplete/legacy sheets remain blocked from normal player loot. The v0.1.1.4 movement and inventory-recovery hardening remains intact.
+
+## v0.1.1.5 gear expansion
+
+- Added Brass Arming Sword and Iron Arming Sword as full four-hit player weapons.
+- Added Bronze War Helm, Ashhide Shoulders, Ashrunner Leather Boots, Silver Legion Cuirass and Steel Bastion Plate as full-combo visible armor.
+- Distributed the new gear across Cinder Imp, Ash Skeleton and Captain Ossivar loot tables with level-appropriate rarity weights.
+- Preserved the strict runtime loot gate: NPC-only/legacy gear still cannot enter normal player drops, while quest items remain exempt.
+- Added item-presentation metadata hooks for rarity borders/world glow and later enhancement glow/trail/aura effects; the expensive FX layer is intentionally deferred.
+- Preserved full source exports and lossless runtime crops. Exact generator credits are still missing for several armor exports, so those pieces remain on attribution hold for store/commercial release until the matching credit exports are captured.
+- Save schema remains version 1. Existing v0.1.1.x saves load unchanged.
 
 ## v0.1.1.4 hotfix
 
@@ -23,7 +33,7 @@ This release extends the v0.1.1 Character & Combat Foundation without changing s
 - Added the combat-ready Ashen Arming Sword and made it the new starter player weapon.
 - Existing schema-1 saves with the old equipped starter Rustblade migrate that equipped instance to the Ashen Arming Sword so returning players immediately receive the four-hit combat set. Unequipped Rustblades remain intact for future humanoid enemy loadouts.
 - Added Shoulders and Wings as persistent equipment slots, bringing the Character sheet to 12 named slots.
-- Added Iron War Helm, Legion Pauldrons, Legion Cuirass, Legion Gloves and Legion Boots as equippable content using the supplied LPC exports.
+- Added Iron War Helm, Legion Cuirass and Legion Gloves as full-combo player gear, while partial Legion Pauldrons/Boots exports were preserved for staged NPC/future use until complete player animation coverage became available.
 - Added Crimson Bat Wings as a real layered equipment item with Defense, Max HP and Movement Speed buffs. The slot is progression-gated and locked during normal v0.1.1.1 play; the final advanced unlock milestone is intentionally not authored yet.
 - Added explicit per-layer animation compatibility and safe slash fallback for equipment that does not contain the newer one-handed rows.
 - Added the supplied Katana as processed limited-animation/NPC weapon content for the upcoming humanoid enemy-loadout system; it is not newly player-equippable.
@@ -61,7 +71,7 @@ For JavaScript syntax checks:
 find dist/js -name '*.js' -print0 | xargs -0 -n1 node --check
 ```
 
-Append `?debug=1` to the local/deployed URL to enable development diagnostics. v0.1.1.4 exposes **Add 0.1.1.4 Gear** and **Unlock Wings** helpers specifically so the new equipment/animation coverage can be tested without grinding drops.
+Append `?debug=1` to the local/deployed URL to enable development diagnostics. v0.1.1.5 exposes **Add 0.1.1.5 Gear** and **Unlock Wings** helpers so the complete verified equipment pool can be tested without grinding drops.
 
 ## GitHub Pages
 
@@ -117,7 +127,7 @@ The supplied credit files cover the revised body/head/face + Katana export and t
 - `dist/js/entities/` — player, layered LPC renderer, enemies and NPCs
 - `dist/js/systems/` — action input, combat pools, stats, inventory, quests and dialogue conditions
 - `dist/js/scenes/` — Phaser world scene and continuous map assembly
-- `dist/assets/player/revised/` — runtime animation crops for v0.1.1.1 gear/combat
+- `dist/assets/player/revised/` — runtime animation crops for revised-combat gear and weapons
 - `dist/assets/source-exports/` — preserved full user-provided source exports/credits; not preloaded by gameplay
 - `dist/assets/licenses/` — preserved attribution records from the original core archive
 - `docs/` — architecture, credits, performance notes, limitations and QA

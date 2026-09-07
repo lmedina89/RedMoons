@@ -42,12 +42,13 @@ assert.ok(combatSource.includes('cooldownMs: 1800'), 'Empty-swing combat feedbac
 assert.ok(worldSource.includes('queueKillReward') && worldSource.includes('delayedCall(320'), 'Horde kill rewards must be batched');
 assert.ok(layeredSource.includes('ROOT_X') && layeredSource.includes("this.setAsset('hair', null)"), 'Renderer must stabilize revised root motion and suppress incompatible hair');
 assert.ok(!html.includes('90_user_generated'), 'Prototype-only generator assets must not ship');
-assert.ok(html.includes('v0.1.1.4'), 'Build shell must identify v0.1.1.4');
+assert.ok(html.includes('v0.1.1.5'), 'Build shell must identify v0.1.1.5');
 assert.ok(worldSource.includes('playerLootEligible') && worldSource.includes('actionInput.setTouchMovement'), 'WorldScene must enforce player-loot eligibility and route touch vectors through ActionInput');
 assert.ok(worldSource.includes('startFollow(this.player.body, true, 1, 1)'), 'Camera must track the player without delayed catch-up that looks like reverse sliding');
 assert.ok(!worldSource.includes('this.physics.add.collider(this.player.body, this.enemyGroup)'), 'Enemies must not physically shove the player through dynamic body separation');
 assert.ok(worldSource.includes("command.type === 'dropItem' || command.type === 'destroyItem'"), 'WorldScene must handle inventory drop/destroy commands');
 assert.ok(uiSource.includes('touchend') && uiSource.includes('capture: true') && uiSource.includes('Confirm Destroy'), 'Mobile input and discard confirmation must be hardened in the UI');
+assert.ok(worldSource.includes("action === 'gear115'") && html.includes('Add 0.1.1.5 Gear'), 'Debug build must expose the v0.1.1.5 gear regression helper');
 
 const ids = groups => Object.values(groups).map(value => value.id);
 for (const registry of [ITEM_DEFS, ENEMY_DEFS, NPC_DEFS, QUEST_DEFS]) assert.equal(new Set(ids(registry)).size, ids(registry).length, 'Stable content IDs must be unique');
@@ -58,6 +59,13 @@ for (const enemy of Object.values(ENEMY_DEFS)) for (const drop of enemy.loot) {
   assert.equal(playerLootEligible, true, `Enemy loot must not expose NPC/legacy-only gear: ${drop.itemId}`);
 }
 assert.ok(ENEMY_DEFS.enemy_cinder_imp.loot.some(drop => drop.itemId === 'quest_ember_heart'), 'Quest loot must remain eligible even when normal legacy gear is blocked');
+for (const itemId of ['feet_leather_revised', 'shoulders_leather_revised', 'weapon_brass_arming_sword', 'head_bronze_revised', 'chest_silver_legion', 'weapon_iron_arming_sword', 'chest_steel_plate']) assert.ok(Object.values(ENEMY_DEFS).some(enemy => enemy.loot.some(drop => drop.itemId === itemId)), `New player gear must be reachable from a loot table: ${itemId}`);
+for (const itemId of ['weapon_brass_arming_sword', 'weapon_iron_arming_sword', 'head_bronze_revised', 'shoulders_leather_revised', 'chest_silver_legion', 'chest_steel_plate', 'feet_leather_revised']) {
+  const item = ITEM_DEFS[itemId];
+  assert.equal(item.playerEquipReady, true, `${itemId} must be player-ready`);
+  assert.equal(item.animationClass, 'full_combo', `${itemId} must declare full combo coverage`);
+  assert.equal(item.presentation?.worldGlow, 'rarity', `${itemId} must carry future rarity glow metadata`);
+}
 for (const quest of Object.values(QUEST_DEFS)) assert.ok(NPC_DEFS[quest.giver], `Quest references unknown giver ${quest.giver}`);
 
 for (const def of Object.values(ITEM_DEFS)) {
@@ -181,7 +189,7 @@ assert.deepEqual(WEAPON_COMBAT_PROFILES.sword_four_hit.attacks.map(attack => att
 assert.deepEqual(WEAPON_COMBAT_PROFILES.sword_four_hit.attacks.map(attack => attack.frames), [6, 7, 12, 6]);
 assert.ok(WEAPON_COMBAT_PROFILES.sword_four_hit.comboWindowMs >= 500, 'Four-hit combo needs a usable continuation window');
 
-const fullComboLayers = ['body', 'head_iron_revised', 'chest_legion', 'hands_legion', 'wings_red_bat'];
+const fullComboLayers = ['body', 'head_iron_revised', 'head_bronze_revised', 'shoulders_leather_revised', 'chest_legion', 'chest_silver_legion', 'chest_steel_plate', 'hands_legion', 'feet_leather_revised', 'wings_red_bat'];
 for (const layerKey of fullComboLayers) {
   const layer = LAYER_ASSETS[layerKey];
   const geometry = ANIMATION_GEOMETRIES[layer.geometry];
@@ -206,14 +214,16 @@ for (const layerKey of ['shoulders_legion', 'feet_revised']) {
   assert.equal(layer.attackFallback, 'slash', `${layerKey} must explicitly declare its revised-attack fallback`);
   assert.equal(ANIMATION_GEOMETRIES[layer.geometry].slash1h, undefined, `${layerKey} must not pretend to contain unsupported revised attacks`);
 }
-const armingLayer = LAYER_ASSETS.weapon_arming_sword_fg;
-const armingGeometry = ANIMATION_GEOMETRIES[armingLayer.geometry];
-for (const action of ['walk', 'slash', 'slash1h', 'backslash1h', 'halfslash1h']) {
-  const animation = armingGeometry[action];
-  const textureKey = armingLayer[animation.source];
-  for (let direction = 0; direction < 4; direction += 1) {
-    const row = animation.rows[direction];
-    for (const frame of animation.sequence) assert.ok(await frameHasAlpha(textureKey, row, frame), `Arming sword ${action} direction ${direction} frame ${frame} maps to empty artwork`);
+for (const layerKey of ['weapon_arming_sword_fg', 'weapon_brass_arming_sword_fg', 'weapon_iron_arming_sword_fg']) {
+  const armingLayer = LAYER_ASSETS[layerKey];
+  const armingGeometry = ANIMATION_GEOMETRIES[armingLayer.geometry];
+  for (const action of ['walk', 'slash', 'slash1h', 'backslash1h', 'halfslash1h']) {
+    const animation = armingGeometry[action];
+    const textureKey = armingLayer[animation.source];
+    for (let direction = 0; direction < 4; direction += 1) {
+      const row = animation.rows[direction];
+      for (const frame of animation.sequence) assert.ok(await frameHasAlpha(textureKey, row, frame), `${layerKey} ${action} direction ${direction} frame ${frame} maps to empty artwork`);
+    }
   }
 }
 const katanaLayer = LAYER_ASSETS.weapon_katana_npc_fg;
@@ -297,6 +307,22 @@ assert.equal(limitedInventory.equip('i_old_boots').ok, false);
 assert.equal(ITEM_DEFS.weapon_katana_npc.visual, 'weapon_katana_npc');
 assert.equal(limitedWeaponState.equipment.weapon, 'i_000001', 'Rejected NPC weapons must not disturb the equipped player weapon');
 
+// v0.1.1.5 verified equipment can all be newly equipped when its requirements are met.
+const expansionState = createDefaultState();
+expansionState.player.level = 6;
+expansionState.player.stats = { str: 14, dex: 10, vit: 10, spr: 7 };
+const expansionInventory = new InventorySystem(expansionState);
+for (const [index, itemId] of ['weapon_iron_arming_sword', 'head_bronze_revised', 'shoulders_leather_revised', 'chest_steel_plate', 'feet_leather_revised'].entries()) {
+  const instanceId = `i_exp_${index}`;
+  expansionState.inventory.push({ instanceId, itemId, rarity: 'normal', enhancement: 0, modifiers: {} });
+  assert.equal(expansionInventory.equip(instanceId).ok, true, `${itemId} should equip after requirements are met`);
+}
+assert.equal(expansionState.equipment.weapon, 'i_exp_0');
+assert.equal(expansionState.equipment.head, 'i_exp_1');
+assert.equal(expansionState.equipment.shoulders, 'i_exp_2');
+assert.equal(expansionState.equipment.chest, 'i_exp_3');
+assert.equal(expansionState.equipment.feet, 'i_exp_4');
+
 // Wings exist now but are deliberately progression-gated. Unlocking the flag
 // makes the same item equippable and its buffs feed normal derived-stat math.
 const wingState = createDefaultState();
@@ -339,4 +365,4 @@ const normalizedWrongSlot = saveManager.validate(wrongSlotSave);
 assert.equal(normalizedWrongSlot.equipment.head, null, 'Wrong-slot saved equipment must be discarded');
 assert.equal(normalizedWrongSlot.equipment.weapon, 'i_000001', 'Valid weapon reference must survive normalization');
 
-console.log(`Validated ${ASSET_DEFS.length} assets, ${Object.keys(ITEM_DEFS).length} items, ${Object.keys(ENEMY_DEFS).length} enemies, ${Object.keys(NPC_DEFS).length} NPCs, ${Object.keys(QUEST_DEFS).length} quests, four-hit combat geometry, strict player/NPC animation compatibility, hardened touch movement, no enemy body shove, singleton/rate-limited toasts, player-safe loot tables, drop/destroy inventory recovery, root stabilization, batched horde rewards, 12-slot equipment, wing gating, stat aggregation, and save schema 1.`);
+console.log(`Validated ${ASSET_DEFS.length} assets, ${Object.keys(ITEM_DEFS).length} items, ${Object.keys(ENEMY_DEFS).length} enemies, ${Object.keys(NPC_DEFS).length} NPCs, ${Object.keys(QUEST_DEFS).length} quests, v0.1.1.5 full-combo gear expansion, three arming-sword palettes, future rarity/glow metadata, four-hit combat geometry, strict player/NPC animation compatibility, hardened touch movement, no enemy body shove, singleton/rate-limited toasts, player-safe loot tables, drop/destroy inventory recovery, root stabilization, batched horde rewards, 12-slot equipment, wing gating, stat aggregation, and save schema 1.`);

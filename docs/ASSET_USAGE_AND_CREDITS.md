@@ -61,6 +61,24 @@ Runtime use:
 - Iron War Helm — full revised-combat player equipment;
 - Legion Pauldrons — Shoulder equipment with standard-slash fallback on unsupported revised attacks.
 
+## v0.1.1.5 gear-expansion exports
+
+The following full generator PNGs supplied for the v0.1.1.5 gear pass are preserved under `dist/assets/source-exports/2026-09-06/gear-expansion-v0115/`:
+
+- `Bronze helm.png`
+- `Leather shoulders.png`
+- `Leather boots.png`
+- `Silver legion.png`
+- `Steel plate.png`
+- `Iron arming.png`
+- `Brass arming.png`
+
+All seven were verified against the actual populated source pixels used by the current walk + four-hit revised-combat profile before being admitted to normal player loot. Runtime crops are lossless rectangular extracts only.
+
+The supplied `credits-silver-arming.txt` confirms the LPC Arming Sword family (`weapon/sword/arming/universal/fg/...`) under OGA-BY 3.0, crediting ElizaWy with walk/down work by JaidynReiman. The Iron and Brass uploads are palette variants with the same verified arming-sword geometry, but their exact variant-specific generator credit export was not supplied in this batch. Preserve the known family credit, and capture the exact variant exports before commercial/store release.
+
+Matching generator credit text was also not supplied for Bronze Helm, Leather Shoulders, Leather Boots, Silver Legion or Steel Plate. Those five pieces are therefore integrated for development/testing but remain on the same attribution hold used for earlier user generator exports. Two additional supplied TXT files in this batch reference the Katana/body export rather than these armor pieces and are preserved as received instead of being misattributed.
+
 ## Runtime crops
 
 Runtime crops are lossless rectangular extracts/reorganizations of the user-supplied generator sheets for the specific animation bands used by gameplay. They are not intended as new authorship claims. Full source exports remain preserved beside the supplied credit files.

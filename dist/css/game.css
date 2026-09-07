@@ -166,7 +166,7 @@ button:active { transform: translateY(1px); filter: brightness(1.25); }
 }
 
 
-/* v0.1.1.4 inventory recovery */
+/* v0.1.1.5 gear expansion / v0.1.1.4 inventory recovery */
 .item-main-actions:empty { display: none; }
 .item-discard-actions { display: flex; flex-wrap: wrap; gap: 7px; margin-top: 10px; padding-top: 10px; border-top: 1px solid #4b2d22; }
 .item-discard-actions button { min-height: 38px; flex: 1 1 88px; }

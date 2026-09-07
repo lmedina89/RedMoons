@@ -309,14 +309,14 @@ export class WorldScene extends Phaser.Scene {
     if (action === 'boss') moveNear(this.enemies.find(enemy => enemy.sprite.active && enemy.def.named)?.sprite);
     if (action === 'heart') this.dropLoot(this.player.body.x + 28, this.player.body.y, this.inventory.createItem('quest_ember_heart', 'normal'));
     if (action === 'noble') this.inventory.add(this.inventory.createItem('head_warden', 'noble'));
-    if (action === 'gear111') {
+    if (action === 'gear115') {
       // Make the development gear immediately testable without requiring a
       // full progression grind. This helper exists only when ?debug=1.
-      this.state.player.level = Math.max(this.state.player.level, 5);
-      this.state.player.stats.str = Math.max(this.state.player.stats.str, 12);
+      this.state.player.level = Math.max(this.state.player.level, 6);
+      this.state.player.stats.str = Math.max(this.state.player.stats.str, 13);
       this.state.player.stats.dex = Math.max(this.state.player.stats.dex, 8);
       this.state.player.stats.vit = Math.max(this.state.player.stats.vit, 7);
-      const ids = ['weapon_arming_sword', 'head_iron_revised', 'chest_legion', 'hands_legion'];
+      const ids = ['weapon_brass_arming_sword', 'weapon_iron_arming_sword', 'head_bronze_revised', 'head_iron_revised', 'shoulders_leather_revised', 'chest_silver_legion', 'chest_legion', 'chest_steel_plate', 'hands_legion', 'feet_leather_revised'];
       for (const itemId of ids) if (!this.state.inventory.some(item => item.itemId === itemId)) this.inventory.add(this.inventory.createItem(itemId, 'normal'));
     }
     if (action === 'wings') {

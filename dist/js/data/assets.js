@@ -25,7 +25,7 @@ export const ASSET_DEFS = [
   { key: 'revised-body-slash', path: `${R}body-slash.png`, frameWidth: 64, frameHeight: 64 },
   { key: 'revised-body-backslash', path: `${R}body-backslash.png`, frameWidth: 64, frameHeight: 64 },
   { key: 'revised-body-halfslash', path: `${R}body-halfslash.png`, frameWidth: 64, frameHeight: 64 },
-  ...['legion-chest', 'legion-gloves', 'iron-helmet', 'red-bat-wings'].flatMap(key => [
+  ...['legion-chest', 'legion-gloves', 'iron-helmet', 'red-bat-wings', 'bronze-helmet', 'leather-shoulders', 'leather-boots', 'silver-legion', 'steel-plate'].flatMap(key => [
     { key: `${key}-walk`, path: `${R}${key}-walk.png`, frameWidth: 64, frameHeight: 64 },
     { key: `${key}-slash`, path: `${R}${key}-slash.png`, frameWidth: 64, frameHeight: 64 },
     { key: `${key}-backslash`, path: `${R}${key}-backslash.png`, frameWidth: 64, frameHeight: 64 },
@@ -39,6 +39,12 @@ export const ASSET_DEFS = [
   { key: 'arming-sword-slash', path: `${R}arming-sword-slash.png`, frameWidth: 128, frameHeight: 128, oversized: true },
   { key: 'arming-sword-backslash', path: `${R}arming-sword-backslash.png`, frameWidth: 128, frameHeight: 128, oversized: true },
   { key: 'arming-sword-halfslash', path: `${R}arming-sword-halfslash.png`, frameWidth: 128, frameHeight: 128, oversized: true },
+  ...['iron-arming-sword', 'brass-arming-sword'].flatMap(key => [
+    { key: `${key}-walk`, path: `${R}${key}-walk.png`, frameWidth: 64, frameHeight: 64 },
+    { key: `${key}-slash`, path: `${R}${key}-slash.png`, frameWidth: 128, frameHeight: 128, oversized: true },
+    { key: `${key}-backslash`, path: `${R}${key}-backslash.png`, frameWidth: 128, frameHeight: 128, oversized: true },
+    { key: `${key}-halfslash`, path: `${R}${key}-halfslash.png`, frameWidth: 128, frameHeight: 128, oversized: true }
+  ]),
   { key: 'katana-walk', path: `${R}katana-walk.png`, frameWidth: 128, frameHeight: 128, oversized: true },
   { key: 'katana-slash', path: `${R}katana-slash.png`, frameWidth: 128, frameHeight: 128, oversized: true },
 
@@ -127,15 +133,22 @@ export const LAYER_ASSETS = Object.freeze({
   head_plate: { walk: 'plate-head-walk', slash: 'plate-head-slash', geometry: 'classic', attackFallback: 'slash' },
 
   head_iron_revised: { walk: 'iron-helmet-walk', slash: 'iron-helmet-slash', backslash: 'iron-helmet-backslash', halfslash: 'iron-helmet-halfslash', geometry: 'revised64' },
+  head_bronze_revised: { walk: 'bronze-helmet-walk', slash: 'bronze-helmet-slash', backslash: 'bronze-helmet-backslash', halfslash: 'bronze-helmet-halfslash', geometry: 'revised64' },
   shoulders_legion: { walk: 'shoulders-walk', slash: 'shoulders-slash', geometry: 'revised64Basic', attackFallback: 'slash' },
+  shoulders_leather_revised: { walk: 'leather-shoulders-walk', slash: 'leather-shoulders-slash', backslash: 'leather-shoulders-backslash', halfslash: 'leather-shoulders-halfslash', geometry: 'revised64' },
   chest_legion: { walk: 'legion-chest-walk', slash: 'legion-chest-slash', backslash: 'legion-chest-backslash', halfslash: 'legion-chest-halfslash', geometry: 'revised64' },
+  chest_silver_legion: { walk: 'silver-legion-walk', slash: 'silver-legion-slash', backslash: 'silver-legion-backslash', halfslash: 'silver-legion-halfslash', geometry: 'revised64' },
+  chest_steel_plate: { walk: 'steel-plate-walk', slash: 'steel-plate-slash', backslash: 'steel-plate-backslash', halfslash: 'steel-plate-halfslash', geometry: 'revised64' },
   hands_legion: { walk: 'legion-gloves-walk', slash: 'legion-gloves-slash', backslash: 'legion-gloves-backslash', halfslash: 'legion-gloves-halfslash', geometry: 'revised64' },
   feet_revised: { walk: 'boots-walk', slash: 'boots-slash', geometry: 'revised64Basic', attackFallback: 'slash' },
+  feet_leather_revised: { walk: 'leather-boots-walk', slash: 'leather-boots-slash', backslash: 'leather-boots-backslash', halfslash: 'leather-boots-halfslash', geometry: 'revised64' },
   wings_red_bat: { walk: 'red-bat-wings-walk', slash: 'red-bat-wings-slash', backslash: 'red-bat-wings-backslash', halfslash: 'red-bat-wings-halfslash', geometry: 'revised64' },
 
   weapon_long_sword_bg: { texture: 'long-sword-bg', geometry: 'dcssSword128', attackFallback: 'slash' },
   weapon_long_sword_fg: { texture: 'long-sword-fg', geometry: 'dcssSword128', attackFallback: 'slash' },
   weapon_arming_sword_fg: { walk: 'arming-sword-walk', slash: 'arming-sword-slash', backslash: 'arming-sword-backslash', halfslash: 'arming-sword-halfslash', geometry: 'armingSword', oversizedSources: ['slash', 'backslash', 'halfslash'] },
+  weapon_iron_arming_sword_fg: { walk: 'iron-arming-sword-walk', slash: 'iron-arming-sword-slash', backslash: 'iron-arming-sword-backslash', halfslash: 'iron-arming-sword-halfslash', geometry: 'armingSword', oversizedSources: ['slash', 'backslash', 'halfslash'] },
+  weapon_brass_arming_sword_fg: { walk: 'brass-arming-sword-walk', slash: 'brass-arming-sword-slash', backslash: 'brass-arming-sword-backslash', halfslash: 'brass-arming-sword-halfslash', geometry: 'armingSword', oversizedSources: ['slash', 'backslash', 'halfslash'] },
   weapon_katana_npc_fg: { walk: 'katana-walk', slash: 'katana-slash', geometry: 'katanaNpc128', oversizedSources: ['walk', 'slash'], attackFallback: 'slash' },
   shield_wood_bg: { texture: 'wood-shield-bg', geometry: 'expanded64', attackFallback: 'slash' },
   shield_wood_fg: { texture: 'wood-shield-fg', geometry: 'expanded64', attackFallback: 'slash' }

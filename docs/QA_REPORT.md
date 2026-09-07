@@ -1,3 +1,33 @@
+# v0.1.1.5 QA report — Player Gear Pool Expansion
+
+## Automated/source checks completed
+
+- Project validator passes with 102 runtime assets, 29 item definitions, 3 enemies, 4 NPCs, 3 quests and save schema 1.
+- Every newly integrated armor layer is validated against real RGBA alpha content for walk, standard slash, one-handed slash, backslash and halfslash across all four facings.
+- Brass and Iron Arming Swords are validated with the same proven 64px walk / 128px combat geometry as the Ashen Arming Sword, with populated source pixels across every frame used by the four-hit profile.
+- New player-ready gear is verified as reachable through normal loot tables, while the existing runtime eligibility gate continues to reject NPC/legacy-only equipment.
+- New item presentation metadata is validated for future rarity-based world glow without activating a new particle/FX runtime in this release.
+- A level-6 test state successfully equips the Iron Arming Sword, Bronze War Helm, Ashhide Shoulders, Steel Bastion Plate and Ashrunner Leather Boots together.
+- Existing movement hardening, enemy no-shove behavior, singleton/rate-limited toasts, Drop/Destroy recovery, quest-item discard protection and schema-1 save normalization remain under the same regression suite.
+- All JavaScript/MJS files pass `node --check`.
+- Static-server smoke checks confirm the v0.1.1.5 shell, updated item module and new runtime sprite crops are served correctly.
+
+## Physical iPhone regression pass required
+
+1. Use `?debug=1` → **Add 0.1.1.5 Gear** and equip each newly added piece one at a time.
+2. For each equipped armor piece, walk and attack up/left/down/right through all four combo hits; no layer should disappear, lag behind the body or jump to the wrong anchor.
+3. Equip Brass Arming Sword, then Iron Arming Sword, and repeat the complete four-hit combo in all facings. Both should track identically to the existing Ashen Arming Sword apart from palette.
+4. Kill Cinder Imps, Ash Skeletons and Captain Ossivar repeatedly; verify the new gear can drop and no staged/NPC-only Rapier/Katana/Scimitar/legacy armor enters normal loot.
+5. Fill the inventory and verify Drop/Destroy still works on every new item, including currently equipped new gear.
+6. Save/reload with a mixed v0.1.1.5 equipment set and confirm visuals, stats, inventory instances and rarity/modifier data persist.
+7. Re-run the long-rightward-travel joystick stress test from v0.1.1.4 to ensure the asset expansion introduced no movement regression.
+
+## Licensing note
+
+The full new source PNGs are preserved. Exact generator credit exports are still missing for several new armor pieces and for the exact Iron/Brass sword variants; these remain explicitly on attribution hold rather than being silently marked production-cleared.
+
+---
+
 # v0.1.1.4 QA report — Inventory Recovery & Movement Hardening
 
 ## v0.1.1.4 automated/source checks

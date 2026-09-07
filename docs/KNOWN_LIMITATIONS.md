@@ -19,3 +19,6 @@
 - Matching generator credits are still missing for the supplied Boots, Gloves, Legion chest, Red Bat Wings, Iron helmet and Shoulders exports. They are on an attribution hold and should not be considered production/store-release cleared yet.
 
 - v0.1.1.4 removes player/enemy physics shoving and adds extra iOS touch-release fallbacks. Continue stress-testing long rightward travel and app-switch/release edge cases on physical iPhone hardware.
+
+- v0.1.1.5 adds seven full-combo player gear variants, but several newly supplied armor sheets still lack their exact Universal LPC generator credit export. They are development-approved but remain on attribution hold for a store/commercial release.
+- The new item `presentation` metadata reserves rarity/world-glow/enhancement visual hooks only. The actual pooled glow/sparkle/trail FX runtime is intentionally deferred to the later shared FX/skills milestone.
