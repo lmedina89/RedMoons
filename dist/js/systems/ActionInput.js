@@ -12,14 +12,35 @@ export class ActionInput {
   }
 
   bind(scene) {
-    this.keys = scene.input.keyboard.addKeys({
+    // Scene restarts are now normal map transitions. Explicitly detach the
+    // previous keyboard handlers so repeated Cinder↔Hollow travel cannot
+    // stack I/C/Q callbacks on the shared input plugin.
+    this.unbind();
+    this.keyboard = scene.input.keyboard;
+    this.keys = this.keyboard.addKeys({
       up: 'W', down: 'S', left: 'A', right: 'D',
       up2: 'UP', down2: 'DOWN', left2: 'LEFT', right2: 'RIGHT',
       attack: 'SPACE', interact: 'E', run: 'SHIFT', inventory: 'I', character: 'C', quests: 'Q'
     });
-    scene.input.keyboard.on('keydown-I', () => window.dispatchEvent(new CustomEvent('ashfall-ui', { detail: { action: 'inventory' } })));
-    scene.input.keyboard.on('keydown-C', () => window.dispatchEvent(new CustomEvent('ashfall-ui', { detail: { action: 'character' } })));
-    scene.input.keyboard.on('keydown-Q', () => window.dispatchEvent(new CustomEvent('ashfall-ui', { detail: { action: 'quests' } })));
+    this.keyboardHandlers = {
+      inventory: () => window.dispatchEvent(new CustomEvent('ashfall-ui', { detail: { action: 'inventory' } })),
+      character: () => window.dispatchEvent(new CustomEvent('ashfall-ui', { detail: { action: 'character' } })),
+      quests: () => window.dispatchEvent(new CustomEvent('ashfall-ui', { detail: { action: 'quests' } }))
+    };
+    this.keyboard.on('keydown-I', this.keyboardHandlers.inventory);
+    this.keyboard.on('keydown-C', this.keyboardHandlers.character);
+    this.keyboard.on('keydown-Q', this.keyboardHandlers.quests);
+  }
+
+  unbind() {
+    if (this.keyboard && this.keyboardHandlers) {
+      this.keyboard.off('keydown-I', this.keyboardHandlers.inventory);
+      this.keyboard.off('keydown-C', this.keyboardHandlers.character);
+      this.keyboard.off('keydown-Q', this.keyboardHandlers.quests);
+    }
+    this.keyboardHandlers = null;
+    this.keyboard = null;
+    this.keys = null;
   }
 
   setTouchMovement(x, y, active = true) {

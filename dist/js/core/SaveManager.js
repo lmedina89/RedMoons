@@ -1,4 +1,5 @@
-import { SAVE_KEY, SAVE_VERSION, WORLD_HEIGHT, WORLD_WIDTH } from '../config.js';
+import { SAVE_KEY, SAVE_VERSION } from '../config.js';
+import { DEFAULT_MAP_ID, MAP_DEFS, mapForId } from '../data/world.js';
 import { createDefaultState } from './GameState.js';
 import { ITEM_DEFS } from '../data/items.js';
 
@@ -27,8 +28,14 @@ export class SaveManager {
 
     const state = structuredClone(base);
     state.player.level = this.number(value.player.level, 1, 10, 1);
-    state.player.x = this.number(value.player.x, 48, WORLD_WIDTH - 48, base.player.x);
-    state.player.y = this.number(value.player.y, 48, WORLD_HEIGHT - 48, base.player.y);
+    const incomingMapId = typeof value.player.mapId === 'string' && MAP_DEFS[value.player.mapId] ? value.player.mapId : DEFAULT_MAP_ID;
+    const map = mapForId(incomingMapId);
+    state.player.mapId = map.id;
+    state.player.entryPointId = typeof value.player.entryPointId === 'string' && map.entryPoints?.[value.player.entryPointId]
+      ? value.player.entryPointId
+      : (base.player.entryPointId || Object.keys(map.entryPoints || {})[0] || null);
+    state.player.x = this.number(value.player.x, 48, map.width - 48, map.entryPoints?.[state.player.entryPointId]?.x ?? base.player.x);
+    state.player.y = this.number(value.player.y, 48, map.height - 48, map.entryPoints?.[state.player.entryPointId]?.y ?? base.player.y);
     state.player.xp = this.number(value.player.xp, 0, 1000000, 0);
     state.player.hp = this.number(value.player.hp, 0, 100000, base.player.hp);
     state.player.essence = this.number(value.player.essence, 0, 100000, base.player.essence);

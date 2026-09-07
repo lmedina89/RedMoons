@@ -36,7 +36,7 @@ export class LayeredCharacter {
     this.layerOrder = ['wings', 'weaponBg', 'shieldBg', 'body', 'feet', 'legs', 'chest', 'shoulders', 'hands', 'head', 'hair', 'shieldFg', 'weaponFg'];
     for (let i = 0; i < this.layerOrder.length; i += 1) {
       const key = this.layerOrder[i];
-      const sprite = scene.add.sprite(x, y, 'revised-body-walk', 18).setScale(scale).setOrigin(0.5, 0.69);
+      const sprite = scene.add.sprite(x, y, 'solid').setScale(scale).setOrigin(0.5, 0.69);
       sprite.setVisible(false);
       this.layers.set(key, { sprite, asset: null, order: i });
     }

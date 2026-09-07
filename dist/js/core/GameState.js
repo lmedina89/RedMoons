@@ -15,7 +15,9 @@ export function createDefaultState() {
       stats: { str: 5, dex: 5, vit: 5, spr: 5 },
       unspentStatPoints: 0,
       unspentSkillPoints: 0,
-      currency: 35
+      currency: 35,
+      mapId: 'map_cinder_region',
+      entryPointId: 'cinder_start'
     },
     inventory: [
       { instanceId: 'i_000001', itemId: 'weapon_arming_sword', rarity: 'normal', enhancement: 0, modifiers: {} },
@@ -27,10 +29,10 @@ export function createDefaultState() {
     equipment: {
       head: null,
       shoulders: null,
-      chest: null,
-      legs: null,
-      hands: null,
-      feet: null,
+      chest: 'i_000002',
+      legs: 'i_000003',
+      hands: 'i_000004',
+      feet: 'i_000005',
       weapon: 'i_000001',
       offhand: null,
       necklace: null,

@@ -100,9 +100,9 @@ button:active { transform: translateY(1px); filter: brightness(1.25); }
 #rotate-advisory { display: none; position: absolute; z-index: 150; inset: 0; place-content: center; justify-items: center; text-align: center; background: radial-gradient(circle, #3e1b13, #0b0403 70%); }.rotate-advisory span { font-size: 3rem; }
 #rotate-advisory span { font: 3rem Arial, sans-serif; color: var(--ember); }#rotate-advisory strong { margin-top: 12px; color: var(--gold); font-size: 1.3rem; }#rotate-advisory small { margin-top: 8px; color: var(--muted); font: .86rem Arial, sans-serif; }
 #build-label { position: absolute; z-index: 25; right: calc(var(--safe-right) + 10px); bottom: calc(var(--safe-bottom) + 5px); color: #a986705e; font: .58rem Arial, sans-serif; pointer-events: none; }
-#debug-panel { position: absolute; z-index: 200; left: 50%; top: calc(var(--safe-top) + 56px); transform: translateX(-50%); display: flex; gap: 4px; align-items: center; padding: 5px; background: #050505dc; border: 1px solid #e86837; }
-#debug-panel strong { color: #ff8e5c; font: 700 .68rem Arial, sans-serif; margin: 0 4px; }
-#debug-panel button { min-height: 30px; padding: 0 7px; font-size: .66rem; }
+#debug-panel { position: absolute; z-index: 200; left: calc(var(--safe-left) + 4px); right: calc(var(--safe-right) + 4px); top: calc(var(--safe-top) + 56px); display: flex; flex-wrap: nowrap; gap: 4px; align-items: center; max-width: calc(100vw - var(--safe-left) - var(--safe-right) - 8px); padding: 5px; overflow-x: auto; overflow-y: hidden; overscroll-behavior-x: contain; -webkit-overflow-scrolling: touch; scrollbar-width: thin; touch-action: pan-x; background: #050505dc; border: 1px solid #e86837; }
+#debug-panel strong { flex: 0 0 auto; position: sticky; left: 0; z-index: 2; padding: 7px 8px; color: #ff8e5c; background: #050505f2; font: 700 .68rem Arial, sans-serif; }
+#debug-panel button { flex: 0 0 auto; min-height: 30px; padding: 0 7px; font-size: .66rem; }
 
 @media (orientation: portrait) and (max-width: 760px) { #rotate-advisory { display: grid; } }
 @media (max-height: 430px) {

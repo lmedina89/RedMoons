@@ -66,6 +66,8 @@ export class Enemy {
     this.stateUntil = 0;
     this.attackApplied = false;
     this.respawnAt = 0;
+    this.deathStartedAt = 0;
+    this.deathEndsAt = 0;
     this.animClock = Math.random() * 500;
     this.loadout = {};
     this.respawn(0);
@@ -99,6 +101,8 @@ export class Enemy {
     this.sprite.setPosition(this.homeX, this.homeY).setActive(true).setVisible(!this.layered).clearTint();
     this.sprite.body.enable = true;
     this.hp = this.def.maxHp;
+    this.deathStartedAt = 0;
+    this.deathEndsAt = 0;
     this.state = 'idle';
     this.stateUntil = time + 450 + Math.random() * 800;
     this.sprite.setVelocity(0);
@@ -121,6 +125,7 @@ export class Enemy {
   }
 
   update(time, delta, player) {
+    if (this.state === 'dying') { this.updateDeath(time); return; }
     if (!this.sprite.active) {
       if (this.respawnAt && time >= this.respawnAt) this.respawn(time);
       return;
@@ -190,15 +195,17 @@ export class Enemy {
       ? Math.min(columns - 1, Math.floor((1 - Math.max(0, this.stateUntil - time) / this.def.attackCooldown) * columns))
       : Math.floor(this.animClock / (spec.frameMs || 130)) % columns;
     const texture = attacking ? spec.attackTexture : spec.walkTexture;
+    const directionRows = attacking ? (spec.attackDirectionRows || spec.directionRows) : (spec.walkDirectionRows || spec.directionRows);
+    const sourceRow = directionRows?.[this.direction] ?? this.direction;
     this.sprite
       .setTexture(texture)
-      .setFrame(this.direction * columns + frameInRow)
+      .setFrame(sourceRow * columns + frameInRow)
       .setOrigin(0.5, attacking ? (spec.attackOriginY || this.def.attackOriginY || this.def.originY || 0.7) : (spec.originY || this.def.originY || 0.7))
       .setDepth(this.sprite.y);
   }
 
   takeDamage(amount, sourceX, sourceY, time) {
-    if (!this.sprite.active) return false;
+    if (!this.sprite.active || this.state === 'dying') return false;
     const damage = Math.max(1, Math.floor(amount - this.def.defense * 0.45 + Math.random() * 4));
     this.hp -= damage;
     this.state = 'recover';
@@ -218,10 +225,37 @@ export class Enemy {
   }
 
   die(time) {
+    if (this.state === 'dying') return;
     this.callbacks.died(this);
+    this.sprite.setVelocity(0);
+    this.sprite.body.enable = false;
+    this.respawnAt = time + this.spawn.respawnMs;
+    const spec = this.visualSpec || this.def;
+    if (!this.layered && spec.deathTexture && spec.deathFrames > 0) {
+      this.state = 'dying';
+      this.deathStartedAt = time;
+      this.deathEndsAt = time + spec.deathFrames * (spec.deathFrameMs || 110);
+      this.sprite.clearTint().setActive(true).setVisible(true).setTexture(spec.deathTexture).setFrame(0)
+        .setOrigin(0.5, spec.deathOriginY || spec.originY || this.def.originY || 0.7).setDepth(this.sprite.y);
+      return;
+    }
+    this.finishDeath();
+  }
+
+  updateDeath(time) {
+    const spec = this.visualSpec || this.def;
+    if (!spec.deathTexture || time >= this.deathEndsAt) { this.finishDeath(); return; }
+    const frameMs = spec.deathFrameMs || 110;
+    const frame = Math.min(spec.deathFrames - 1, Math.floor((time - this.deathStartedAt) / frameMs));
+    const rows = spec.deathDirectionRows || spec.directionRows;
+    const row = rows?.[this.direction] ?? 0;
+    this.sprite.setTexture(spec.deathTexture).setFrame(row * spec.deathFrames + frame).setDepth(this.sprite.y);
+  }
+
+  finishDeath() {
+    this.state = 'dead';
     this.sprite.setVelocity(0).setActive(false).setVisible(false);
     this.sprite.body.enable = false;
     this.visual?.setVisible(false);
-    this.respawnAt = time + this.spawn.respawnMs;
   }
 }

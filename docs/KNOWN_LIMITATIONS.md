@@ -1,22 +1,29 @@
-# Known limitations — v0.1.2.3
+# Known limitations — v0.1.2.4
 
-- Set definitions/names exist, but **set bonuses are not active yet**. They are reserved for the later loot/progression milestone.
+## Current gameplay/system limits
+
+- Set definitions/names exist, but **set bonuses are not active yet**. They remain reserved for the later loot/progression milestone.
 - Guild IDs and recruitable/adventurer NPC metadata are scaffolding only. Guild creation/joining, ranks, contribution, alliances, guild wars and sieges are not active yet.
 - NPC adventurers do not yet fight, level independently or leave town; the shared skill/status framework planned for v0.1.3 is needed before that becomes meaningful.
-- Skeletons can visually use legacy equipment whose animation coverage is sufficient for their current walk/single-slash behavior. This does not make those pieces player-compatible.
-- Carrion/Rotwing enemies currently share the existing melee AI state machine; unique family skills/status effects are deferred to v0.1.3.
-- Building interiors are not enterable yet. The refuge buildings are exterior world structures with collision footprints.
-- The supplied v0.1.2 enemy/humanoid/castle art does not yet have complete final attribution records in the project. It is authorized by the user for development/testing but remains a release-readiness item before store/commercial distribution.
-- The player starter clothing pool still lacks a complete full-combo low-level clothing set, so visible equipment progression remains more convincing after the first compatible armor drops.
+- Skeletons can visually use legacy equipment whose animation coverage is sufficient for their current walk/single-slash behavior. This does not make every legacy item player-compatible.
+- Carrion/Rotwing, Goblin, Spider and Golem families still use the shared basic melee AI. Distinct projectiles, charges, caster logic and status effects wait for the v0.1.3 shared skill/status framework.
+- Building interiors are not enterable yet. v0.1.2.4 proves the separate-map architecture with Ashfall Hollow; later interiors can reuse the same system.
+- Ashfall Hollow is intentionally a **small architecture/content proof**, not a finished dungeon. It has a cave presentation, walls, a return transition and a small Spider population but no dungeon quest/boss/unique loot loop yet.
+- The first transition system is intentionally explicit **Use-to-enter** rather than automatic edge streaming.
 
+## Animation/art limits
 
-## v0.1.2.2 collision note
+- Ashstone Golem uses its supplied seven-frame death sheet, currently mapped to the sheet's single verified collapse row for every facing.
+- Starter Wayfarer/Ashcloth/Hide/Road clothing is player-ready for the current renderer and uses existing slash-fallback behavior when the player performs newer extended sword-combo actions that do not have dedicated clothing art.
+- The supplied Wolf source PSD remains inactive; its animation atlas needs a verified export/crop pass.
+- Several user-supplied enemy/humanoid/building assets still require complete final attribution collection before store/commercial distribution. Development authorization does not replace upstream license obligations.
 
-Actor collision proxies now use unscaled 2x2 helper sprites with compact foot-area Arcade bodies. Do not reintroduce `setDisplaySize()` on `solid` actor proxies before `body.setSize()`, because Arcade body dimensions inherit GameObject scale.
+## Asset-loading limits
 
-## v0.1.2.3
+- v0.1.2.4 introduces map-scoped asset packages but the Cinder Region remains relatively heavy because it can display many layered NPC/Skeleton equipment combinations.
+- Lazy equipment loading occurs when an unresident player item is equipped. A future loading-indicator polish pass may be useful if much larger files are introduced.
+- Source art is preserved under `source-assets/` and intentionally excluded from the served `dist/`. It should not be deleted merely to reduce production package size.
 
-- The Wolf source PSD is intentionally not active yet; its animation atlas needs a verified export/crop pass.
-- Mire Spider is defined and runtime-ready but not placed in the current three-zone map; it is reserved for a later wet/cave biome rather than overcrowding Bone Road.
-- Cave and workshop sheets are staged assets, not enterable interiors/dungeons yet.
-- Goblin, Spider and Golem currently use the existing simple melee AI. Distinct ranged/caster/charge/status behaviors wait for the shared v0.1.3 skill/status framework.
+## Collision note
+
+The v0.1.2.2 visible-source collision rule remains authoritative. Do not reintroduce invisible decorative blockers. Actor collision proxies also must not use `setDisplaySize()` on the tiny `solid` helper before body sizing, because Arcade bodies inherit GameObject scale.

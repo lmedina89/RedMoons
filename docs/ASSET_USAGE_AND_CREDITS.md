@@ -4,7 +4,7 @@
 
 Ashfall uses legally reusable LPC-family assets and preserves the attribution records supplied with the project. No Dekaron/2Moons artwork, names, maps, UI, monsters or story content is included.
 
-v0.1.1.1 also includes user-supplied Universal LPC generator exports created on 2026-09-06. The complete supplied PNGs and the credit files that accompanied them are preserved under `dist/assets/source-exports/2026-09-06/`. Gameplay does **not** preload those complete generator sheets; it loads only the smaller runtime crops under `dist/assets/player/revised/`.
+v0.1.1.1 also includes user-supplied Universal LPC generator exports created on 2026-09-06. The complete supplied PNGs and the credit files that accompanied them are preserved under `source-assets/source-exports/2026-09-06/`. Gameplay does **not** preload those complete generator sheets; it loads only the smaller runtime crops under `dist/assets/player/revised/`.
 
 This document separates assets with supplied attribution from assets whose matching generator credit export is still missing. An attribution hold means the file may be used in this private/development build as requested, but it should not be treated as cleared for a commercial/store release until its exact generator credits are captured and reviewed.
 
@@ -63,7 +63,7 @@ Runtime use:
 
 ## v0.1.1.5 gear-expansion exports
 
-The following full generator PNGs supplied for the v0.1.1.5 gear pass are preserved under `dist/assets/source-exports/2026-09-06/gear-expansion-v0115/`:
+The following full generator PNGs supplied for the v0.1.1.5 gear pass are preserved under `source-assets/source-exports/2026-09-06/gear-expansion-v0115/`:
 
 - `Bronze helm.png`
 - `Leather shoulders.png`
@@ -102,7 +102,7 @@ This organization note is not legal advice.
 
 ## v0.1.2 world/enemy/humanoid development assets
 
-The following user-supplied source files are preserved under `dist/assets/source-exports/2026-09-06/world-enemy-v012/` and processed into compact runtime crops where appropriate:
+The following user-supplied source files are preserved under `source-assets/source-exports/2026-09-06/world-enemy-v012/` and processed into compact runtime crops where appropriate:
 
 - Red haired guy.png — active player base.
 - Olive skinned NPC mustache.png — Sable/future adventurer base.
@@ -120,7 +120,7 @@ The user authorized use during development before final credit collection. Missi
 
 - Runtime enemy crops were added for selected supplied Goblin, Spider and Golem art plus red/green/blue LPC Imp variants harvested from the pre-existing Core archive.
 - `adobe2-set.png`, evergreen/seasonal bushes and mushrooms are used as non-colliding runtime scenery.
-- `world/staged/cave3.png` and the revised blacksmith/tailor/woodshop sheets are preserved for later map/interior work but are intentionally absent from the current preload registry.
+- `cave3.png` is now a curated runtime world asset for Ashfall Hollow. The revised blacksmith/tailor/woodshop source sheets remain preserved under `source-assets/world/workshops/` and are not served/preloaded until a mapped interior needs a curated runtime form.
 - Source-authoring PSDs (including the supplied Wolf/Goblin source PSDs) are **not shipped in `dist/assets`**. The Goblin was converted to compact runtime PNGs; the Wolf remains deferred until its animation layout is verified rather than guessed.
 - Development use was explicitly authorized by the user before final credit collection. Missing/unknown attribution remains a release-readiness task and must be resolved before any commercial/store release.
 
@@ -132,6 +132,15 @@ Development/runtime additions in this pass come from two places:
 - Existing organized LPC sources already preserved by the project: Imp color/loadout variants, 4-season vegetation/pines and additional Expanded Arming Sword material palettes.
 - User-supplied LPC/OpenGameArt-derived Goblin, Spider, Golem, Adobe-2, Cave3 and revised Workshop source assets.
 
-Only compact PNG runtime sheets/crops are preloaded. Cave/workshop full tilesheets are staged for future mapped interiors, and the supplied Wolf PSD is deliberately not shipped in runtime assets until a verified export is produced.
+Only compact/map-required PNG runtime sheets/crops are loaded. Cave3 is now used by Ashfall Hollow; workshop full tilesheets remain source-only for future mapped interiors, and the supplied Wolf PSD is deliberately not shipped in runtime assets until a verified export is produced.
 
 The user explicitly authorized development use without completing the final attribution pass now. Exact attribution/license verification remains a release-readiness checklist item before App Store/Play Store/commercial distribution; this development decision does not erase upstream license obligations.
+
+## v0.1.2.4 source/runtime separation
+
+No development art was discarded during the asset-hardening pass. Previous source exports were moved intact from the served `dist/assets/source-exports/` tree to top-level `source-assets/source-exports/`. Staged workshop authoring sheets likewise live under `source-assets/world/workshops/`.
+
+The supplied Cave3 sheet has two roles that are kept explicit: a preserved development/source copy under `source-assets/world/` and the curated runtime copy under `dist/assets/world/` used by the new Ashfall Hollow map. The supplied Golem death PNG is now a live runtime dependency for Ashstone Golem's death presentation.
+
+This layout is intentional: future harvesting can continue from the preserved source library while GitHub Pages serves only the assets the game is allowed/intended to request. Existing attribution caveats and upstream license obligations remain unchanged.
+

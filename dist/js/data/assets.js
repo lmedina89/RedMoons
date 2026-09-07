@@ -77,6 +77,7 @@ export const ASSET_DEFS = [
   ]),
   { key: 'golem-walk', path: `${E}golem-walk.png`, frameWidth: 64, frameHeight: 64 },
   { key: 'golem-attack', path: `${E}golem-attack.png`, frameWidth: 64, frameHeight: 96 },
+  { key: 'golem-death', path: `${E}golem-death.png`, frameWidth: 64, frameHeight: 64 },
 
   { key: 'skeleton-walk', path: `${E}skeleton-walk.png`, frameWidth: 64, frameHeight: 64 },
   { key: 'skeleton-slash', path: `${E}skeleton-slash.png`, frameWidth: 64, frameHeight: 64 },
@@ -100,8 +101,10 @@ export const ASSET_DEFS = [
   { key: 'bush-seasonal', path: `${W}bush-seasonal.png`, frameWidth: 32, frameHeight: 32 },
   { key: 'pine-tree-large', path: `${W}pine-tree-large.png`, image: true },
   { key: 'pine-tree-cluster', path: `${W}pine-tree-cluster.png`, image: true },
-  // Cave/workshop sheets are staged in the repo but intentionally not preloaded
-  // until an enterable cave/interior actually references them.
+  // Map-specific assets are resolved by the asset loader. Cave3 is now a
+  // runtime tilesheet because Ashfall Hollow is the first separately loaded map.
+  { key: 'cave3-set', path: `${W}cave3.png`, frameWidth: 32, frameHeight: 32 },
+  // Workshop sheets remain staged until an enterable interior references them.
   { key: 'adobe-house-tower', path: `${W}buildings/adobe_house_tower.png`, image: true },
   { key: 'adobe-house-east', path: `${W}buildings/adobe_house_east.png`, image: true },
   { key: 'adobe-workshop', path: `${W}buildings/adobe_workshop.png`, image: true }

@@ -10,6 +10,10 @@ export const ZONES = Object.freeze([
   {
     id: 'zone_bone_road', name: 'Bone Road', x: 1940, y: 0, width: 620, height: 1280, danger: 'Dead March',
     levelRange: [4, 8], safe: false, hostile: true, biome: 'bone_march', eventTags: ['elite_hunt', 'guild_conflict_future'], dungeonHooks: ['ossuary_future']
+  },
+  {
+    id: 'zone_ashfall_hollow', name: 'Ashfall Hollow', x: 0, y: 0, width: 1024, height: 768, danger: 'Cavern',
+    levelRange: [2, 5], safe: false, hostile: true, biome: 'ash_cavern', eventTags: ['cave_hunt'], dungeonHooks: [], mapId: 'map_ashfall_hollow'
   }
 ]);
 
@@ -58,7 +62,12 @@ export const SPAWN_REGIONS = Object.freeze([
   { id: 'spawn_gilded_guard', enemyId: 'enemy_gilded_guard', x: 2290, y: 165, width: 190, height: 300, count: 1, respawnMs: 15500 },
   { id: 'spawn_paleweb_road', enemyId: 'enemy_frost_spider', x: 1985, y: 780, width: 190, height: 270, count: 1, respawnMs: 13000 },
   { id: 'spawn_ashstone_golem', enemyId: 'enemy_ashstone_golem', x: 2290, y: 820, width: 190, height: 220, count: 1, respawnMs: 22000 },
-  { id: 'spawn_captain', enemyId: 'enemy_bone_captain', x: 2390, y: 545, width: 90, height: 120, count: 1, respawnMs: 24000 }
+  { id: 'spawn_captain', enemyId: 'enemy_bone_captain', x: 2390, y: 545, width: 90, height: 120, count: 1, respawnMs: 24000 },
+
+  // First separately loaded map. These actors do not exist while the Cinder
+  // Region scene package is active, proving that map population is scoped.
+  { id: 'spawn_hollow_cave_spider', enemyId: 'enemy_cave_spider', x: 120, y: 100, width: 420, height: 430, count: 3, respawnMs: 7600, mapId: 'map_ashfall_hollow' },
+  { id: 'spawn_hollow_mire_spider', enemyId: 'enemy_mire_spider', x: 515, y: 120, width: 390, height: 390, count: 2, respawnMs: 9800, mapId: 'map_ashfall_hollow' }
 ]);
 
 export const REFUGE_WALLS = Object.freeze([
@@ -128,3 +137,77 @@ export const PROP_DEFS = Object.freeze([
   { texture: 'dungeon-elements', frame: 64, x: 2010, y: 555, scale: 1.5 },
   { texture: 'dungeon-elements', frame: 65, x: 2055, y: 555, scale: 1.5 }
 ]);
+
+// v0.1.2.4 map registry. The original 2560x1280 world remains one coherent
+// region; interiors, caves and future distant regions can now be separate maps
+// with their own bounds, population and world-art asset package.
+export const DEFAULT_MAP_ID = 'map_cinder_region';
+
+export const MAP_DEFS = Object.freeze({
+  map_cinder_region: Object.freeze({
+    id: 'map_cinder_region',
+    name: 'Cinder Region',
+    width: 2560,
+    height: 1280,
+    renderer: 'cinder_region',
+    entryPoints: Object.freeze({
+      cinder_start: Object.freeze({ x: 330, y: 610 }),
+      from_hollow: Object.freeze({ x: 1215, y: 1040 })
+    }),
+    zoneIds: Object.freeze(['zone_cinder_refuge', 'zone_scorched_outskirts', 'zone_bone_road']),
+    worldAssetKeys: Object.freeze([
+      'terrain-dirt', 'grass-dirt', 'rocks-cliffs', 'rocks-grass', 'tree-trunks',
+      'bridge', 'dungeon-elements', 'castle2-set', 'adobe2-set', 'mushrooms',
+      'bush-evergreen', 'bush-seasonal', 'pine-tree-large', 'pine-tree-cluster',
+      'adobe-house-tower', 'adobe-house-east', 'adobe-workshop'
+    ])
+  }),
+  map_ashfall_hollow: Object.freeze({
+    id: 'map_ashfall_hollow',
+    name: 'Ashfall Hollow',
+    width: 1024,
+    height: 768,
+    renderer: 'ashfall_hollow',
+    entryPoints: Object.freeze({
+      from_cinder: Object.freeze({ x: 512, y: 620 }),
+      hollow_center: Object.freeze({ x: 512, y: 600 })
+    }),
+    zoneIds: Object.freeze(['zone_ashfall_hollow']),
+    worldAssetKeys: Object.freeze(['cave3-set'])
+  })
+});
+
+// Transition records use stable map/entry IDs so saves never depend on scene
+// implementation details. `Use` activates a nearby transition.
+export const MAP_TRANSITIONS = Object.freeze([
+  Object.freeze({
+    id: 'transition_outskirts_hollow', mapId: 'map_cinder_region', x: 1215, y: 1120, radius: 82,
+    label: 'Ashfall Hollow', destinationMapId: 'map_ashfall_hollow', destinationEntryId: 'from_cinder'
+  }),
+  Object.freeze({
+    id: 'transition_hollow_outskirts', mapId: 'map_ashfall_hollow', x: 512, y: 715, radius: 78,
+    label: 'Return to Scorched Outskirts', destinationMapId: 'map_cinder_region', destinationEntryId: 'from_hollow'
+  })
+]);
+
+// Hollow walls are visible rock borders. The southern opening aligns with the
+// return transition; there are no invisible arbitrary blockers.
+export const HOLLOW_WALLS = Object.freeze([
+  { id: 'hollow-north', x1: 36, y1: 36, x2: 988, y2: 36, thickness: 22 },
+  { id: 'hollow-west', x1: 36, y1: 36, x2: 36, y2: 732, thickness: 22 },
+  { id: 'hollow-east', x1: 988, y1: 36, x2: 988, y2: 732, thickness: 22 },
+  { id: 'hollow-south-west', x1: 36, y1: 732, x2: 438, y2: 732, thickness: 22 },
+  { id: 'hollow-south-east', x1: 586, y1: 732, x2: 988, y2: 732, thickness: 22 }
+]);
+
+export const HOLLOW_COLLIDERS = Object.freeze(HOLLOW_WALLS.map(wallCollider));
+
+export function mapIdForZone(zoneId) {
+  if (zoneId === 'zone_ashfall_hollow') return 'map_ashfall_hollow';
+  return DEFAULT_MAP_ID;
+}
+
+export function mapForId(mapId) {
+  return MAP_DEFS[mapId] || MAP_DEFS[DEFAULT_MAP_ID];
+}
+

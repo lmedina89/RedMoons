@@ -1,8 +1,7 @@
-import { ASSET_DEFS } from '../data/assets.js';
 import { ENEMY_DEFS } from '../data/enemies.js';
 import { ITEM_DEFS } from '../data/items.js';
 import { NPC_DEFS } from '../data/npcs.js';
-import { BUILDING_DEFS, COLLIDERS, PROP_DEFS, REFUGE_WALLS, SPAWN_REGIONS, TOWN_PROP_DEFS, ZONES } from '../data/world.js';
+import { BUILDING_DEFS, COLLIDERS, DEFAULT_MAP_ID, HOLLOW_COLLIDERS, HOLLOW_WALLS, MAP_TRANSITIONS, PROP_DEFS, REFUGE_WALLS, SPAWN_REGIONS, TOWN_PROP_DEFS, ZONES, mapForId } from '../data/world.js';
 import { DEBUG, GAME_VERSION, PLAYER_START, RARITY, TILE_SIZE, WORLD_HEIGHT, WORLD_WIDTH } from '../config.js';
 import { gameEvents } from '../core/EventBus.js';
 import { actionInput } from '../systems/ActionInput.js';
@@ -10,6 +9,7 @@ import { CombatSystem } from '../systems/CombatSystem.js';
 import { DialogueSystem } from '../systems/DialogueSystem.js';
 import { InventorySystem, pickRarity } from '../systems/InventorySystem.js';
 import { QuestSystem } from '../systems/QuestSystem.js';
+import { assetDefsForMap, ensureItemVisualAssets, queueAssetDefs, releaseAssetsNotNeededForMap } from '../systems/AssetResolver.js';
 import { derivedStats, grantXp } from '../systems/StatsSystem.js';
 import { Enemy } from '../entities/Enemy.js';
 import { NPC } from '../entities/NPC.js';
@@ -19,20 +19,22 @@ export class WorldScene extends Phaser.Scene {
   constructor() { super('WorldScene'); }
 
   preload() {
-    for (const asset of ASSET_DEFS) {
-      if (asset.image) this.load.image(asset.key, asset.path);
-      else this.load.spritesheet(asset.key, asset.path, { frameWidth: asset.frameWidth, frameHeight: asset.frameHeight });
-    }
+    this.state = this.registry.get('state');
+    this.currentMap = mapForId(this.state?.player?.mapId);
+    queueAssetDefs(this, assetDefsForMap(this.state, this.currentMap.id));
     this.load.on('progress', value => gameEvents.emit('loading', { value }));
   }
 
   create() {
     this.state = this.registry.get('state');
     this.saveManager = this.registry.get('saveManager');
+    this.currentMap = mapForId(this.state.player.mapId);
+    this.state.player.mapId = this.currentMap.id;
     this.makeRuntimeTextures();
-    this.physics.world.setBounds(0, 0, WORLD_WIDTH, WORLD_HEIGHT);
-    this.cameras.main.setBounds(0, 0, WORLD_WIDTH, WORLD_HEIGHT).setRoundPixels(true).setZoom(1);
+    this.physics.world.setBounds(0, 0, this.currentMap.width, this.currentMap.height);
+    this.cameras.main.setBounds(0, 0, this.currentMap.width, this.currentMap.height).setRoundPixels(true).setZoom(1);
     this.buildWorld();
+    this.createTransitionMarkers();
 
     this.inventory = new InventorySystem(this.state);
     this.questSystem = new QuestSystem(this.state, this.inventory, (rewards, name) => this.grantRewards(rewards, name));
@@ -58,27 +60,54 @@ export class WorldScene extends Phaser.Scene {
     this.killRewardTimer = null;
 
     this.offUiCommand = gameEvents.on('command', command => this.handleCommand(command));
-    this.events.once(Phaser.Scenes.Events.SHUTDOWN, () => { this.offUiCommand?.(); actionInput.resetTouchMovement(); });
-    window.addEventListener('pagehide', () => this.safeSave(), { passive: true });
-    document.addEventListener('visibilitychange', () => { if (document.hidden) this.safeSave(); });
+    this.onPageHide = () => this.safeSave();
+    this.onVisibilityChange = () => { if (document.hidden) this.safeSave(); };
+    window.addEventListener('pagehide', this.onPageHide, { passive: true });
+    document.addEventListener('visibilitychange', this.onVisibilityChange);
+    this.events.once(Phaser.Scenes.Events.SHUTDOWN, () => {
+      this.offUiCommand?.();
+      actionInput.resetTouchMovement();
+      actionInput.unbind();
+      window.removeEventListener('pagehide', this.onPageHide);
+      document.removeEventListener('visibilitychange', this.onVisibilityChange);
+    });
     this.updateZone();
     this.emitState();
+    this.cameras.main.fadeIn(150, 12, 6, 4);
     gameEvents.emit('ready', { version: GAME_VERSION });
-    gameEvents.emit('toast', { text: 'Find Warden Vesra at Warden Hall in Cinder Refuge.', tone: 'quest' });
+    if (!this.state.worldFlags.introToastShown && this.currentMap.id === DEFAULT_MAP_ID) {
+      this.state.worldFlags.introToastShown = true;
+      gameEvents.emit('toast', { text: 'Find Warden Vesra at Warden Hall in Cinder Refuge.', tone: 'quest' });
+    } else if (this.currentMap.id !== DEFAULT_MAP_ID) {
+      gameEvents.emit('toast', { text: `Entered ${this.currentMap.name}.`, tone: 'muted', short: true });
+    }
   }
 
   makeRuntimeTextures() {
-    const pixel = this.add.graphics().fillStyle(0xffffff).fillRect(0, 0, 2, 2);
-    pixel.generateTexture('solid', 2, 2).destroy();
-    const spark = this.add.graphics().fillStyle(0xffdc7a, 0.9).fillCircle(10, 10, 4).lineStyle(2, 0xff6b35, 0.9).strokeCircle(10, 10, 8);
-    spark.generateTexture('hit-spark', 20, 20).destroy();
+    // Generated helper textures live in Phaser's global TextureManager, so a
+    // map-driven Scene restart can encounter keys created by the previous map.
+    // Reuse them rather than trying to generate duplicate texture keys.
+    if (!this.textures.exists('solid')) {
+      const pixel = this.add.graphics().fillStyle(0xffffff).fillRect(0, 0, 2, 2);
+      pixel.generateTexture('solid', 2, 2).destroy();
+    }
+    if (!this.textures.exists('hit-spark')) {
+      const spark = this.add.graphics().fillStyle(0xffdc7a, 0.9).fillCircle(10, 10, 4).lineStyle(2, 0xff6b35, 0.9).strokeCircle(10, 10, 8);
+      spark.generateTexture('hit-spark', 20, 20).destroy();
+    }
     for (const [key, color] of [['loot-normal', 0xded7c7], ['loot-magic', 0x65a7ff], ['loot-noble', 0xd98cff], ['loot-quest', 0xff6b35]]) {
+      if (this.textures.exists(key)) continue;
       const graphic = this.add.graphics().fillStyle(color, 0.22).fillCircle(10, 10, 10).fillStyle(color, 1).fillRect(7, 7, 6, 6).lineStyle(1, 0x1b0c09, 1).strokeRect(7, 7, 6, 6);
       graphic.generateTexture(key, 20, 20).destroy();
     }
   }
 
   buildWorld() {
+    if (this.currentMap.renderer === 'ashfall_hollow') return this.buildAshfallHollow();
+    return this.buildCinderRegion();
+  }
+
+  buildCinderRegion() {
     const cols = WORLD_WIDTH / TILE_SIZE;
     const rows = WORLD_HEIGHT / TILE_SIZE;
     const data = Array.from({ length: rows }, (_, y) => Array.from({ length: cols }, (_, x) => (x * 7 + y * 11 + (x * y) % 5) % 6));
@@ -151,6 +180,93 @@ export class WorldScene extends Phaser.Scene {
     this.enemyGroup = this.physics.add.group({ allowGravity: false, immovable: false });
   }
 
+  buildAshfallHollow() {
+    const cols = this.currentMap.width / TILE_SIZE;
+    const rows = this.currentMap.height / TILE_SIZE;
+    const data = Array.from({ length: rows }, () => Array.from({ length: cols }, () => 192));
+    const map = this.make.tilemap({ data, tileWidth: TILE_SIZE, tileHeight: TILE_SIZE });
+    const tiles = map.addTilesetImage('ashfall-hollow', 'cave3-set', 32, 32, 0, 0);
+    this.groundLayer = map.createLayer(0, tiles, 0, 0).setDepth(-1000);
+
+    const shade = this.add.graphics().setDepth(-900);
+    shade.fillStyle(0x090605, 0.28).fillRect(0, 0, this.currentMap.width, this.currentMap.height);
+    shade.fillStyle(0x321c0f, 0.30).fillEllipse(300, 300, 430, 270);
+    shade.fillStyle(0x1c100b, 0.34).fillEllipse(720, 340, 360, 300);
+
+    // The collision border is drawn from the exact same wall records used by
+    // Arcade bodies. The south gap is a visible exit, never an invisible wall.
+    const wallArt = this.add.graphics().setDepth(-650).lineStyle(24, 0x6c4825, 0.98);
+    for (const wall of HOLLOW_WALLS) wallArt.lineBetween(wall.x1, wall.y1, wall.x2, wall.y2);
+    wallArt.lineStyle(5, 0xa06d36, 0.8);
+    for (const wall of HOLLOW_WALLS) wallArt.lineBetween(wall.x1, wall.y1, wall.x2, wall.y2);
+
+    const caveProps = [
+      [122, 184, 182, 1.25], [147, 294, 128, 1.15], [148, 774, 172, 1.2],
+      [123, 830, 520, 1.1], [150, 220, 560, 1.15], [124, 705, 585, 1.25],
+      [291, 450, 285, 1.05], [292, 578, 280, 1.05]
+    ];
+    for (const [frame, x, y, scale] of caveProps) this.add.sprite(x, y, 'cave3-set', frame).setScale(scale).setDepth(y - 10).setAlpha(0.9);
+
+    this.add.text(this.currentMap.width / 2, 68, 'ASHFALL HOLLOW', {
+      fontFamily: 'Georgia, serif', fontSize: '20px', color: '#d8ad72', stroke: '#120907', strokeThickness: 5, letterSpacing: 3
+    }).setOrigin(0.5).setDepth(1000);
+    this.add.text(this.currentMap.width / 2, 94, 'A separate cavern map', {
+      fontFamily: 'Arial, sans-serif', fontSize: '10px', color: '#9f866c', stroke: '#120907', strokeThickness: 3
+    }).setOrigin(0.5).setDepth(1000);
+
+    this.obstacles = this.physics.add.staticGroup();
+    for (const collider of HOLLOW_COLLIDERS) {
+      const body = this.obstacles.create(collider.x, collider.y, 'solid').setDisplaySize(collider.width, collider.height).setAlpha(0.001).refreshBody();
+      body.colliderId = collider.id;
+      body.colliderSource = collider.source;
+    }
+    if (DEBUG) {
+      const collisionDebug = this.add.graphics().setDepth(15000).lineStyle(2, 0x38ff76, 0.82);
+      for (const collider of HOLLOW_COLLIDERS) collisionDebug.strokeRect(collider.x - collider.width / 2, collider.y - collider.height / 2, collider.width, collider.height);
+    }
+    this.enemyGroup = this.physics.add.group({ allowGravity: false, immovable: false });
+  }
+
+  createTransitionMarkers() {
+    this.mapTransitions = MAP_TRANSITIONS.filter(transition => transition.mapId === this.currentMap.id);
+    for (const transition of this.mapTransitions) {
+      const marker = this.add.graphics().setDepth(transition.y - 20);
+      if (this.currentMap.id === DEFAULT_MAP_ID) {
+        marker.fillStyle(0x090504, 0.94).fillEllipse(transition.x, transition.y + 7, 100, 56);
+        marker.lineStyle(7, 0x654026, 0.95).strokeEllipse(transition.x, transition.y + 7, 108, 62);
+        for (const offset of [-48, -24, 24, 48]) marker.fillStyle(0x7a5330, 0.92).fillCircle(transition.x + offset, transition.y - 13 + Math.abs(offset) * 0.12, 11);
+      } else {
+        marker.fillStyle(0x080504, 0.88).fillRect(transition.x - 62, transition.y - 12, 124, 34);
+        marker.lineStyle(4, 0x7b522e, 0.95).strokeRect(transition.x - 62, transition.y - 12, 124, 34);
+      }
+      this.add.text(transition.x, transition.y - 54, transition.label, {
+        fontFamily: 'Georgia, serif', fontSize: '11px', color: '#f0cc8c', align: 'center', stroke: '#130907', strokeThickness: 4
+      }).setOrigin(0.5).setDepth(transition.y + 30);
+      this.add.text(transition.x, transition.y - 36, 'Use', {
+        fontFamily: 'Arial, sans-serif', fontSize: '9px', color: '#c8a67e', stroke: '#130907', strokeThickness: 3
+      }).setOrigin(0.5).setDepth(transition.y + 30);
+    }
+  }
+
+  transitionToMap(destinationMapId, destinationEntryId) {
+    const destination = mapForId(destinationMapId);
+    const entry = destination.entryPoints?.[destinationEntryId] || Object.values(destination.entryPoints || {})[0];
+    if (!entry || this.transitioning) return;
+    this.transitioning = true;
+    actionInput.resetTouchMovement();
+    this.player.body.setVelocity(0);
+    this.state.player.mapId = destination.id;
+    this.state.player.entryPointId = destinationEntryId;
+    this.state.player.x = entry.x;
+    this.state.player.y = entry.y;
+    this.safeSave();
+    this.cameras.main.fadeOut(170, 10, 4, 3);
+    this.time.delayedCall(185, () => {
+      releaseAssetsNotNeededForMap(this, this.state, destination.id);
+      this.scene.restart();
+    });
+  }
+
   createEnemies() {
     this.enemies = [];
     const callbacks = {
@@ -159,12 +275,16 @@ export class WorldScene extends Phaser.Scene {
       died: enemy => this.onEnemyDied(enemy)
     };
     for (const spawn of SPAWN_REGIONS) {
+      if ((spawn.mapId || DEFAULT_MAP_ID) !== this.currentMap.id) continue;
       const def = ENEMY_DEFS[spawn.enemyId];
       for (let i = 0; i < spawn.count; i += 1) this.enemies.push(new Enemy(this, this.enemyGroup, def, spawn, i, callbacks));
     }
   }
 
-  createNPCs() { this.npcs = Object.values(NPC_DEFS).map(def => new NPC(this, def)); }
+  createNPCs() {
+    const zoneIds = new Set(this.currentMap.zoneIds || []);
+    this.npcs = Object.values(NPC_DEFS).filter(def => zoneIds.has(def.homeZone)).map(def => new NPC(this, def));
+  }
 
   createLootPool() {
     this.lootPool = Array.from({ length: 30 }, () => {
@@ -239,8 +359,19 @@ export class WorldScene extends Phaser.Scene {
   }
 
   interact() {
+    let nearestTransition = null;
+    let nearestDistance = Infinity;
+    for (const transition of this.mapTransitions || []) {
+      const distance = Phaser.Math.Distance.Between(this.player.body.x, this.player.body.y, transition.x, transition.y);
+      if (distance <= transition.radius && distance < nearestDistance) { nearestTransition = transition; nearestDistance = distance; }
+    }
+    if (nearestTransition) {
+      this.transitionToMap(nearestTransition.destinationMapId, nearestTransition.destinationEntryId);
+      return;
+    }
+
     let nearestNpc = null;
-    let nearestDistance = 92;
+    nearestDistance = 92;
     for (const npc of this.npcs) {
       const distance = Phaser.Math.Distance.Between(this.player.body.x, this.player.body.y, npc.x, npc.y);
       if (distance < nearestDistance) { nearestNpc = npc; nearestDistance = distance; }
@@ -291,17 +422,47 @@ export class WorldScene extends Phaser.Scene {
     if (result.levels) gameEvents.emit('toast', { text: `Level ${this.state.player.level}! Stat points are ready.`, tone: 'level' });
   }
 
+  async equipItem(instanceId) {
+    const instance = this.inventory.get(instanceId);
+    const check = this.inventory.canEquip(instance);
+    if (!check.ok) {
+      gameEvents.emit('toast', { text: check.reason, tone: 'danger', short: true });
+      return;
+    }
+    try {
+      await ensureItemVisualAssets(this, instance.itemId);
+    } catch (error) {
+      console.warn('[Ashfall] Equipment asset load failed', error);
+      gameEvents.emit('toast', { text: 'That equipment art could not be loaded.', tone: 'danger' });
+      return;
+    }
+    const result = this.inventory.equip(instanceId);
+    gameEvents.emit('toast', { text: result.ok ? 'Equipment changed.' : result.reason, tone: result.ok ? 'normal' : 'danger', short: true });
+    if (result.ok) this.player.refreshEquipment();
+    this.emitState();
+    this.safeSave();
+  }
+
+  respawnAtRefuge() {
+    this.deathAnnounced = false;
+    gameEvents.emit('death-cleared');
+    this.player.respawn(PLAYER_START.x, PLAYER_START.y);
+    if (this.currentMap.id !== DEFAULT_MAP_ID) {
+      this.transitionToMap(DEFAULT_MAP_ID, 'cinder_start');
+      return;
+    }
+    this.state.player.mapId = DEFAULT_MAP_ID;
+    this.state.player.entryPointId = 'cinder_start';
+    this.emitState();
+    this.safeSave();
+  }
+
   handleCommand(command) {
     if (!command) return;
     if (command.type === 'attack') actionInput.attackQueued = true;
     if (command.type === 'interact') actionInput.interactQueued = true;
     if (command.type === 'move') actionInput.setTouchMovement(command.x, command.y, command.active);
-    if (command.type === 'equip') {
-      const result = this.inventory.equip(command.instanceId);
-      gameEvents.emit('toast', { text: result.ok ? 'Equipment changed.' : result.reason, tone: result.ok ? 'normal' : 'danger', short: true });
-      if (result.ok) this.player.refreshEquipment();
-      this.emitState(); this.safeSave();
-    }
+    if (command.type === 'equip') void this.equipItem(command.instanceId);
     if (command.type === 'unequip') { this.inventory.unequip(command.slot); this.player.refreshEquipment(); this.emitState(); this.safeSave(); }
     if (command.type === 'dropItem' || command.type === 'destroyItem') {
       const result = this.inventory.removeInstance(command.instanceId);
@@ -323,7 +484,7 @@ export class WorldScene extends Phaser.Scene {
       }
     }
     if (command.type === 'allocateStats') this.allocateStats(command.points);
-    if (command.type === 'respawn') { this.player.respawn(PLAYER_START.x, PLAYER_START.y); this.deathAnnounced = false; gameEvents.emit('death-cleared'); this.emitState(); this.safeSave(); }
+    if (command.type === 'respawn') this.respawnAtRefuge();
     if (command.type === 'save') { this.safeSave(); gameEvents.emit('toast', { text: 'Progress saved.', tone: 'normal', short: true }); }
     if (command.type === 'debug') this.runDiagnostic(command.action);
   }
@@ -334,6 +495,8 @@ export class WorldScene extends Phaser.Scene {
       this.player.body.setPosition(target.x - 58, target.y);
       this.player.visual.direction = 3;
     };
+    if (action === 'hollow') { this.transitionToMap('map_ashfall_hollow', 'hollow_center'); return; }
+    if (action === 'refuge') { this.transitionToMap(DEFAULT_MAP_ID, 'cinder_start'); return; }
     if (action === 'level') grantXp(this.state, 650);
     if (action === 'vesra') moveNear(this.npcs.find(npc => npc.def.id === 'npc_vesra'));
     if (action === 'merchant') moveNear(this.npcs.find(npc => npc.def.id === 'npc_merchant'));
@@ -396,7 +559,10 @@ export class WorldScene extends Phaser.Scene {
   }
 
   updateZone() {
-    const zone = ZONES.find(entry => this.player.body.x >= entry.x && this.player.body.x < entry.x + entry.width);
+    const allowed = new Set(this.currentMap.zoneIds || []);
+    const zone = ZONES.find(entry => allowed.has(entry.id)
+      && this.player.body.x >= entry.x && this.player.body.x < entry.x + entry.width
+      && this.player.body.y >= entry.y && this.player.body.y < entry.y + entry.height);
     if (zone?.id !== this.currentZone?.id) { this.currentZone = zone; gameEvents.emit('zone', zone); }
   }
 
@@ -425,6 +591,14 @@ export class WorldScene extends Phaser.Scene {
   }
 
   update(time, delta) {
+    // During the short fade between maps, the destination coordinates have
+    // already been written into persistent state. Do not let Player.update()
+    // overwrite them with the still-visible source-map body coordinates.
+    if (this.transitioning) {
+      this.player.body.setVelocity(0);
+      if (DEBUG) this.drawDynamicCollisionDebug();
+      return;
+    }
     this.player.update(time, delta);
     if (DEBUG) this.drawDynamicCollisionDebug();
     if (actionInput.consumeInteract()) this.interact();

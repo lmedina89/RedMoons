@@ -1,5 +1,20 @@
 # Changelog
 
+## v0.1.2.4 — World Streaming & Asset Hardening
+
+- Added stable, data-driven map definitions, entry points and two-way transition records while keeping save schema 1.
+- Preserved the original 2560×1280 Cinder Region as one coherent map and added the first separate map, 1024×768 **Ashfall Hollow**, reached from the Scorched Outskirts.
+- Added visible-source cave wall collision and a small local Cave Spider/Mire Spider population for Ashfall Hollow.
+- Added map-scoped asset resolution plus lazy item visual loading so future regions and equipment do not require every registered texture to be globally preloaded.
+- Added transition-time release of assets that are not required by the destination map package.
+- Moved preserved development/source exports and unused workshop source sheets out of shipping `dist/assets` into top-level `source-assets/`; no source artwork was deleted.
+- Fixed the iPhone debug tray with safe-area bounds, horizontal touch scrolling and non-wrapping buttons; added direct Refuge/Hollow map helpers.
+- Corrected Ash Goblin Raider directional row mapping so the supplied art faces the direction the AI is actually moving.
+- Promoted Wayfarer Shirt, Ashcloth Trousers, Hide Handwraps and Road Boots to player-ready Level-1 gear and equipped them on new characters without overriding existing saves.
+- Added optional shared enemy death animation support and wired Ashstone Golem to its supplied seven-frame death sheet.
+- Hardened scene restarts by removing page lifecycle listeners on shutdown, preventing listener accumulation across repeated map transitions.
+- Expanded validation for map packages/transitions, map-aware saves, starter outfit behavior, Goblin facing, Golem death art, source/runtime separation and existing collision/loot/combat invariants.
+
 ## v0.1.2.3 — Asset & World Variety Expansion
 
 - Expanded the early enemy ecosystem to 16 definitions without increasing collision complexity or changing save schema 1.

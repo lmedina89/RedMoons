@@ -7,7 +7,7 @@ Ashfall is a static Phaser application with four deliberate layers:
 1. **Content data** defines stable item, enemy, NPC, quest, spawn and zone IDs.
 2. **Systems** interpret that data for combat, stats, inventory, dialogue, quests and abstract input.
 3. **Entities** hold runtime state and rendering handles for the player, enemies and NPCs.
-4. **Presentation** consists of one Phaser world scene plus a responsive DOM HUD and panels.
+4. **Presentation** consists of a reusable Phaser world scene that renders the active data-defined map plus a responsive DOM HUD and panels.
 
 Content is not scattered through update loops. Adding another enemy variant, spawn region, item, combat profile or dialogue branch normally requires data plus compatible art rather than another custom scene path.
 
@@ -44,7 +44,7 @@ Randomized visible enemy weapon loadouts are **not** part of v0.1.1.1. Limited w
 
 ## Persistent state
 
-All persistent content uses stable IDs. Save schema 1 stores progression, position, primary stats, unspent points, item instances, equipment slot references, quests, NPC/world flags and settings.
+All persistent content uses stable IDs. Save schema 1 stores progression, map/entry identity and position, primary stats, unspent points, item instances, equipment slot references, quests, NPC/world flags and settings.
 
 Equipment has 12 named references: Head, Shoulders, Chest, Legs, Hands, Feet, Weapon, Offhand, Necklace, Ring 1, Ring 2 and Wings. Inventory owns item instances; equipment only references them. The Wings slot exists even while its progression gate is locked.
 
@@ -65,3 +65,17 @@ Skeleton loadouts are defined in `data/enemies.js` as weighted per-slot pools. A
 NPC definitions now include stable future-facing identity/activity/guild fields without implementing guild logic. Zone records likewise expose level ranges, safety/hostility, biome, event tags and dungeon hooks.
 
 Equipment set definitions live beside items as data-only metadata. `setId`/`gearFamily` can be authored before the bonus evaluator exists, avoiding a later item-schema rewrite.
+## v0.1.2.4 map and asset architecture
+
+`data/world.js` now separates **maps** from **zones**. A map owns world dimensions, renderer identity, entry points, zone membership and world-art asset keys. A zone remains gameplay metadata such as name, level band, hostility and biome. This allows several gameplay zones to share one exterior map while caves/interiors/distant regions use separate maps.
+
+`MAP_TRANSITIONS` links a source map/position to a destination `mapId` + stable `entryPointId`. `WorldScene` stores the destination identity in the player state, saves, fades out, releases unneeded registered textures and restarts. Scene initialization/preload then resolves the new active map from the persisted state. The first implementation connects `map_cinder_region` and `map_ashfall_hollow` in both directions.
+
+Save schema remains 1. `SaveManager` treats missing/invalid map metadata as the Cinder Region and clamps positions against the selected map bounds. This lets older saves migrate safely without a broad schema rewrite. Existing equipment slots are also preserved rather than force-populating the new starter clothes.
+
+`systems/AssetResolver.js` converts the active map plus current actor/item definitions into a concrete texture package. It includes map world art, player base/current equipment, local enemy textures and possible layered loadout art, and local NPC visuals. Equipping an item can request its visual dependencies lazily. This keeps the central immutable asset registry while removing the assumption that every registered texture must be resident on every map.
+
+Development/source artwork is no longer stored under served `dist/assets/source-exports`. It is preserved under top-level `source-assets/`; only curated runtime assets and distribution license records belong under `dist/assets`.
+
+The enemy renderer also now accepts definition-specific directional row maps for non-LPC sheets. This fixes assets such as the supplied Goblin without contaminating AI direction logic. Optional non-layered death metadata (`deathTexture`, frame geometry/timing and row mapping) allows an enemy to enter a short `dying` presentation state before becoming inactive; Ashstone Golem is the first live use.
+

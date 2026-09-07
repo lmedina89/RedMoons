@@ -56,7 +56,7 @@ export const ENEMY_DEFS = Object.freeze({
   enemy_ash_goblin: {
     id: 'enemy_ash_goblin', name: 'Ash Goblin Raider', family: 'goblin', level: 2, maxHp: 49, attack: 10, defense: 2,
     speed: 75, detectRange: 275, attackRange: 46, leashRange: 410, attackCooldown: 1040, recoverMs: 380,
-    xp: 34, currency: [2, 6], walkTexture: 'goblin-walk', attackTexture: 'goblin-attack', walkFrames: 8, attackFrames: 3, originY: 0.72,
+    xp: 34, currency: [2, 6], walkTexture: 'goblin-walk', attackTexture: 'goblin-attack', walkFrames: 8, attackFrames: 3, originY: 0.72, directionRows: [2, 3, 0, 1],
     loot: [
       { itemId: 'weapon_copper_arming_sword', chance: 0.026, rarityWeights: basicLoot },
       { itemId: 'weapon_bronze_arming_sword', chance: 0.016, rarityWeights: basicLoot },
@@ -110,6 +110,7 @@ export const ENEMY_DEFS = Object.freeze({
     speed: 44, detectRange: 310, attackRange: 62, leashRange: 470, attackCooldown: 1350, recoverMs: 520,
     xp: 235, currency: [18, 30], walkTexture: 'golem-walk', attackTexture: 'golem-attack', walkFrames: 7, attackFrames: 7,
     scale: 1.08, originY: 0.72, attackOriginY: 0.80, body: { width: 30, height: 24, offsetX: 17, offsetY: 36 },
+    deathTexture: 'golem-death', deathFrames: 7, deathFrameMs: 105, deathDirectionRows: [0, 0, 0, 0], deathOriginY: 0.72,
     loot: [
       { itemId: 'chest_steel_plate', chance: 0.14, rarityWeights: { magic: 0.72, noble: 0.28 } },
       { itemId: 'weapon_ceramic_arming_sword', chance: 0.070, rarityWeights: { magic: 0.70, noble: 0.30 } },

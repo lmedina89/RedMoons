@@ -13,12 +13,13 @@ const { WEAPON_COMBAT_PROFILES } = await import('../dist/js/data/combat.js');
 const { ENEMY_DEFS } = await import('../dist/js/data/enemies.js');
 const { EQUIPMENT_SET_DEFS, ITEM_DEFS } = await import('../dist/js/data/items.js');
 const { NPC_DEFS, NPC_GUILD_SEEDS } = await import('../dist/js/data/npcs.js');
-const { BUILDING_DEFS, COLLIDERS, REFUGE_WALLS, SPAWN_REGIONS, ZONES } = await import('../dist/js/data/world.js');
+const { BUILDING_DEFS, COLLIDERS, DEFAULT_MAP_ID, HOLLOW_COLLIDERS, HOLLOW_WALLS, MAP_DEFS, MAP_TRANSITIONS, REFUGE_WALLS, SPAWN_REGIONS, ZONES } = await import('../dist/js/data/world.js');
 const { QUEST_DEFS } = await import('../dist/js/data/quests.js');
 const { createDefaultState } = await import('../dist/js/core/GameState.js');
 const { SaveManager } = await import('../dist/js/core/SaveManager.js');
 const { InventorySystem } = await import('../dist/js/systems/InventorySystem.js');
 const { equipmentBonuses, previewDerivedStats, statBreakdown } = await import('../dist/js/systems/StatsSystem.js');
+const { assetDefsForItem, assetDefsForMap } = await import('../dist/js/systems/AssetResolver.js');
 
 const missing = [];
 for (const asset of ASSET_DEFS) {
@@ -37,6 +38,8 @@ const playerSource = await readFile(path.join(dist, 'js/entities/Player.js'), 'u
 const enemySource = await readFile(path.join(dist, 'js/entities/Enemy.js'), 'utf8');
 const mainSource = await readFile(path.join(dist, 'js/main.js'), 'utf8');
 const saveSource = await readFile(path.join(dist, 'js/core/SaveManager.js'), 'utf8');
+const cssSource = await readFile(path.join(dist, 'css/game.css'), 'utf8');
+const assetResolverSource = await readFile(path.join(dist, 'js/systems/AssetResolver.js'), 'utf8');
 for (const required of ['vendor/phaser.min.js', 'js/main.js', 'css/game.css', 'viewport-fit=cover']) assert.ok(html.includes(required), `index.html missing ${required}`);
 assert.ok(html.includes('data-panel="character"'), 'HUD must expose the Character sheet');
 assert.ok(uiSource.includes('Equipment Buffs') && uiSource.includes('Active Effects'), 'Character overview must expose gear buffs and effect status');
@@ -47,7 +50,14 @@ assert.ok(combatSource.includes('cooldownMs: 2400'), 'Empty-swing combat feedbac
 assert.ok(worldSource.includes('queueKillReward') && worldSource.includes('delayedCall(320'), 'Horde kill rewards must be batched');
 assert.ok(layeredSource.includes('ROOT_X') && layeredSource.includes('baseAsset') && layeredSource.includes("equipmentPolicy === 'player'"), 'Renderer must stabilize revised root motion and support actor-specific bases/equipment policies');
 assert.ok(!html.includes('90_user_generated'), 'Prototype-only generator assets must not ship');
-assert.ok(html.includes('v0.1.2.3'), 'Build shell must identify v0.1.2.3');
+assert.ok(html.includes('v0.1.2.4'), 'Build shell must identify v0.1.2.4');
+assert.ok(cssSource.includes('overflow-x: auto') && cssSource.includes('left: calc(var(--safe-left)') && cssSource.includes('flex: 0 0 auto'), 'Debug tray must stay inside safe-area bounds and scroll horizontally on iPhone');
+assert.ok(worldSource.includes('transitionToMap') && worldSource.includes('buildAshfallHollow') && worldSource.includes('releaseAssetsNotNeededForMap'), 'WorldScene must support separate map transitions and asset release');
+assert.ok(worldSource.includes('if (this.transitioning)'), 'WorldScene must freeze source-map updates during map fade so destination coordinates are not overwritten');
+assert.ok(worldSource.includes("this.textures.exists('solid')"), 'Generated helper textures must be reused safely across scene restarts');
+assert.ok(actionInputSource.includes('unbind()'), 'ActionInput must expose restart-safe keyboard handler cleanup');
+assert.ok(worldSource.includes('actionInput.unbind()'), 'WorldScene shutdown must detach ActionInput keyboard handlers');
+assert.ok(assetResolverSource.includes('assetDefsForMap') && assetResolverSource.includes('ensureItemVisualAssets'), 'Asset loading must be map-scoped with lazy equipment support');
 assert.ok(worldSource.includes('playerLootEligible') && worldSource.includes('actionInput.setTouchMovement'), 'WorldScene must enforce player-loot eligibility and route touch vectors through ActionInput');
 assert.ok(worldSource.includes('startFollow(this.player.body, true, 1, 1)'), 'Camera must track the player without delayed catch-up that looks like reverse sliding');
 assert.ok(!worldSource.includes('this.physics.add.collider(this.player.body, this.enemyGroup)'), 'Enemies must not physically shove the player through dynamic body separation');
@@ -72,12 +82,22 @@ assert.equal(COLLIDERS.length, REFUGE_WALLS.length + BUILDING_DEFS.length, 'Asse
 assert.ok(!COLLIDERS.some(collider => ['north-cliff', 'south-cliff', 'west-wall', 'east-fog', 'road-bones'].includes(collider.id)), 'Unrepresented/redundant invisible world blockers must not return');
 assert.ok(worldSource.includes('for (const wall of REFUGE_WALLS) worldArt.lineBetween') && worldSource.includes('collisionDebug.strokeRect'), 'Visible refuge wall art and debug collider audit must share collision data');
 assert.ok(ZONES.every(zone => Array.isArray(zone.levelRange) && typeof zone.safe === 'boolean' && Array.isArray(zone.eventTags)), 'Zones must expose future-proof level/safety/event metadata');
+assert.equal(Object.keys(MAP_DEFS).length, 2, 'World streaming foundation must ship the original region plus one proof secondary map');
+assert.equal(MAP_DEFS[DEFAULT_MAP_ID].width, 2560, 'Cinder Region dimensions must remain unchanged');
+assert.equal(MAP_DEFS[DEFAULT_MAP_ID].height, 1280, 'Cinder Region dimensions must remain unchanged');
+assert.equal(MAP_DEFS.map_ashfall_hollow.width, 1024, 'Ashfall Hollow must use its own smaller map bounds');
+assert.equal(HOLLOW_COLLIDERS.length, HOLLOW_WALLS.length, 'Hollow collision must come only from its visible wall records');
+assert.ok(MAP_TRANSITIONS.some(t => t.mapId === DEFAULT_MAP_ID && t.destinationMapId === 'map_ashfall_hollow'), 'Cinder Region must expose an enterable Hollow transition');
+assert.ok(MAP_TRANSITIONS.some(t => t.mapId === 'map_ashfall_hollow' && t.destinationMapId === DEFAULT_MAP_ID), 'Ashfall Hollow must provide a return transition');
 assert.ok(Object.keys(ENEMY_DEFS).length >= 16, 'Asset variety expansion should ship a broad early enemy roster');
 assert.ok(Object.values(ENEMY_DEFS).filter(enemy => enemy.layered).length >= 4, 'Skeleton family should use layered equipment-bearing actors');
 for (const id of ['enemy_cinder_imp', 'enemy_blight_imp', 'enemy_blueflame_imp']) {
   assert.ok(Array.isArray(ENEMY_DEFS[id].visualPool) && ENEMY_DEFS[id].visualPool.length >= 3, `${id} must expose weighted visual/loadout variety`);
 }
-for (const id of ['enemy_ash_goblin', 'enemy_cave_spider', 'enemy_ember_spider', 'enemy_frost_spider', 'enemy_mire_spider', 'enemy_ashstone_golem']) assert.ok(ENEMY_DEFS[id], `Missing v0.1.2.3 enemy ${id}`);
+for (const id of ['enemy_ash_goblin', 'enemy_cave_spider', 'enemy_ember_spider', 'enemy_frost_spider', 'enemy_mire_spider', 'enemy_ashstone_golem']) assert.ok(ENEMY_DEFS[id], `Missing enemy ${id}`);
+assert.deepEqual(ENEMY_DEFS.enemy_ash_goblin.directionRows, [2, 3, 0, 1], 'Goblin source rows must be remapped so chase movement faces toward the player');
+assert.equal(ENEMY_DEFS.enemy_ashstone_golem.deathTexture, 'golem-death', 'Ashstone Golem must use its supplied death sheet');
+assert.equal(ENEMY_DEFS.enemy_ashstone_golem.deathFrames, 7, 'Ashstone Golem death sequence must expose all seven frames');
 assert.ok(NPC_DEFS.npc_bone_hunter && NPC_DEFS.npc_road_seeker, 'Asset variety pass must add additional persistent adventurer NPC seeds');
 assert.ok(NPC_GUILD_SEEDS.guild_emberbound?.name === 'Emberbound', 'Emberbound must exist as a future NPC-guild seed');
 for (const enemy of Object.values(ENEMY_DEFS)) {
@@ -93,7 +113,11 @@ assert.equal(LAYER_ASSETS.player_red_base.geometry, 'revised64', 'Red-haired pro
 assert.ok(Object.keys(EQUIPMENT_SET_DEFS).length >= 3 && EQUIPMENT_SET_DEFS.set_legion_remnant?.name, 'Named equipment-set metadata must exist without activating bonuses yet');
 assert.ok(SPAWN_REGIONS.some(spawn => spawn.enemyId === 'enemy_carrion_beast') && SPAWN_REGIONS.some(spawn => spawn.enemyId === 'enemy_bloodbone'), 'New enemy families must actually be spawned in the world');
 for (const id of ['enemy_blight_imp', 'enemy_blueflame_imp', 'enemy_ash_goblin', 'enemy_cave_spider', 'enemy_ember_spider', 'enemy_frost_spider', 'enemy_ashstone_golem']) assert.ok(SPAWN_REGIONS.some(spawn => spawn.enemyId === id), `${id} must appear in a real spawn region`);
-assert.ok(SPAWN_REGIONS.reduce((sum, spawn) => sum + spawn.count, 0) <= 40, 'Expanded enemy ecosystem must remain within the mobile-conscious baseline population budget');
+for (const mapId of Object.keys(MAP_DEFS)) {
+  const population = SPAWN_REGIONS.filter(spawn => (spawn.mapId || DEFAULT_MAP_ID) === mapId).reduce((sum, spawn) => sum + spawn.count, 0);
+  assert.ok(population <= 35, `${mapId} population must remain mobile-conscious`);
+}
+assert.ok(SPAWN_REGIONS.some(spawn => spawn.mapId === 'map_ashfall_hollow' && spawn.enemyId === 'enemy_mire_spider'), 'Previously staged Mire Spider must now inhabit the separate cave map');
 for (const enemy of Object.values(ENEMY_DEFS)) for (const drop of enemy.loot) {
   const item = ITEM_DEFS[drop.itemId];
   assert.ok(item, `Enemy loot references unknown item ${drop.itemId}`);
@@ -120,6 +144,20 @@ for (const quest of Object.values(QUEST_DEFS)) {
 assert.equal(QUEST_DEFS.quest_ember_heart.rewards.item.itemId, 'feet_leather_revised', 'Ember Heart quest should reward compatible Ashrunner boots');
 assert.equal(QUEST_DEFS.quest_bone_captain.rewards.item.itemId, 'head_iron_revised', 'Bone Captain quest should reward compatible Iron War Helm');
 
+const defaultState = createDefaultState();
+assert.equal(defaultState.player.mapId, DEFAULT_MAP_ID);
+assert.equal(defaultState.player.entryPointId, 'cinder_start');
+assert.deepEqual(
+  ['chest', 'legs', 'hands', 'feet'].map(slot => defaultState.inventory.find(item => item.instanceId === defaultState.equipment[slot])?.itemId),
+  ['chest_wayfarer', 'legs_ash_pants', 'hands_hide_wraps', 'feet_road_boots'],
+  'New characters must begin in a complete low-level starter outfit'
+);
+for (const itemId of ['chest_wayfarer', 'legs_ash_pants', 'hands_hide_wraps', 'feet_road_boots']) {
+  assert.equal(ITEM_DEFS[itemId].playerEquipReady, true, `${itemId} must be player-equippable starter gear`);
+  assert.equal(ITEM_DEFS[itemId].npcOnly, false, `${itemId} must no longer be NPC-only`);
+  assert.ok(assetDefsForItem(itemId).length >= 2, `${itemId} must resolve real runtime walk/slash art`);
+}
+
 for (const def of Object.values(ITEM_DEFS)) {
   if (!def.visual) continue;
   if (def.slot === 'weapon' || def.slot === 'offhand') {
@@ -143,7 +181,8 @@ for (const [key, expected] of Object.entries({
   'goblin-walk': [512, 256], 'goblin-attack': [192, 256],
   'cave-spider-walk': [384, 256], 'cave-spider-attack': [256, 256],
   'ember-spider-walk': [384, 256], 'frost-spider-walk': [384, 256], 'mire-spider-walk': [384, 256],
-  'golem-walk': [448, 256], 'golem-attack': [448, 384]
+  'golem-walk': [448, 256], 'golem-attack': [448, 384], 'golem-death': [448, 128],
+  'cave3-set': [768, 512]
 })) {
   const def = assetByKey.get(key);
   assert.ok(def, `Missing runtime asset definition ${key}`);
@@ -152,14 +191,15 @@ for (const [key, expected] of Object.entries({
 }
 for (const key of ['imp-red-sword-walk', 'imp-red-sword-shield-walk', 'imp-red-pitchfork-walk', 'imp-green-pitchfork-walk', 'imp-green-pitchfork-shield-walk', 'imp-green-sword-walk', 'imp-blue-sword-walk', 'imp-blue-sword-shield-walk', 'imp-blue-pitchfork-walk']) assert.ok(assetByKey.has(key), `Missing harvested Imp variant ${key}`);
 for (const key of ['adobe2-set', 'mushrooms', 'bush-evergreen', 'bush-seasonal', 'pine-tree-large', 'pine-tree-cluster']) assert.ok(assetByKey.has(key), `Missing expanded world asset ${key}`);
-const stagedFiles = [
-  path.join(dist, 'assets/world/staged/cave3.png'),
-  path.join(dist, 'assets/world/workshops/lpc-revised-blacksmith.png'),
-  path.join(dist, 'assets/world/workshops/lpc-revised-tailor.png'),
-  path.join(dist, 'assets/world/workshops/lpc-revised-woodshop.png')
-];
-for (const file of stagedFiles) await access(file);
-assert.ok(!ASSET_DEFS.some(asset => asset.path.includes('/staged/') || asset.path.includes('/workshops/')), 'Cave/workshop source sheets should stay staged and out of mobile preloads until a map actually uses them');
+await access(path.join(dist, 'assets/world/cave3.png'));
+for (const file of [
+  path.join(root, 'source-assets/world/cave3.png'),
+  path.join(root, 'source-assets/world/workshops/lpc-revised-blacksmith.png'),
+  path.join(root, 'source-assets/world/workshops/lpc-revised-tailor.png'),
+  path.join(root, 'source-assets/world/workshops/lpc-revised-woodshop.png')
+]) await access(file);
+assert.ok(assetByKey.has('cave3-set'), 'Cave3 must move from staged art into the runtime registry only because a live map now uses it');
+assert.ok(!ASSET_DEFS.some(asset => asset.path.includes('/workshops/')), 'Unused workshop source sheets must remain outside runtime dist');
 async function recursiveNames(dir) {
   const entries = await readdir(dir, { withFileTypes: true });
   const names = [];
@@ -170,6 +210,13 @@ async function recursiveNames(dir) {
   return names;
 }
 assert.ok(!(await recursiveNames(path.join(dist, 'assets'))).some(file => file.toLowerCase().endsWith('.psd')), 'Photoshop source files must never ship in runtime dist/assets');
+assert.ok(!(await recursiveNames(path.join(dist, 'assets'))).some(file => file.includes('source-exports')), 'Development source exports must not live inside shipping dist/assets');
+assert.ok((await recursiveNames(path.join(root, 'source-assets'))).length > 20, 'Development source art must be preserved outside dist rather than deleted');
+const cinderAssetKeys = new Set(assetDefsForMap(createDefaultState(), DEFAULT_MAP_ID).map(asset => asset.key));
+const hollowAssetKeys = new Set(assetDefsForMap(createDefaultState(), 'map_ashfall_hollow').map(asset => asset.key));
+assert.ok(cinderAssetKeys.has('adobe-workshop') && !cinderAssetKeys.has('cave3-set'), 'Cinder map package must not preload cave-only world art');
+assert.ok(hollowAssetKeys.has('cave3-set') && !hollowAssetKeys.has('adobe-workshop'), 'Hollow map package must load cave art without town buildings');
+assert.ok(hollowAssetKeys.size < cinderAssetKeys.size, 'Secondary map should load a materially smaller texture package');
 for (const [layerKey, layer] of Object.entries(LAYER_ASSETS)) {
   const geometry = ANIMATION_GEOMETRIES[layer.geometry];
   assert.ok(geometry, `Layer ${layerKey} references unknown geometry ${layer.geometry}`);
@@ -343,6 +390,17 @@ const valid = saveManager.validate(createDefaultState());
 assert.equal(valid.saveVersion, 1);
 assert.equal(valid.gameVersion, GAME_VERSION);
 assert.equal(valid.player.level, 1);
+assert.equal(valid.player.mapId, DEFAULT_MAP_ID);
+const caveSave = createDefaultState();
+caveSave.player.mapId = 'map_ashfall_hollow';
+caveSave.player.entryPointId = 'from_cinder';
+caveSave.player.x = 512; caveSave.player.y = 620;
+const normalizedCaveSave = saveManager.validate(caveSave);
+assert.equal(normalizedCaveSave.player.mapId, 'map_ashfall_hollow');
+assert.equal(normalizedCaveSave.player.x, 512);
+const legacyMaplessSave = createDefaultState();
+delete legacyMaplessSave.player.mapId; delete legacyMaplessSave.player.entryPointId;
+assert.equal(saveManager.validate(legacyMaplessSave).player.mapId, DEFAULT_MAP_ID, 'Schema-1 mapless saves must migrate safely to Cinder Region');
 assert.throws(() => saveManager.validate({ saveVersion: 1 }), /player state/i);
 const unknownItem = createDefaultState();
 unknownItem.inventory.push({ instanceId: 'bad', itemId: 'missing_item', rarity: 'normal', modifiers: {} });
@@ -350,7 +408,10 @@ assert.ok(!saveManager.validate(unknownItem).inventory.some(item => item.instanc
 
 // Multi-slot equipment remains a real state invariant, but only full-combo
 // player-ready visual gear may be equipped.
+const clearStarterArmor = state => { for (const slot of ['chest', 'legs', 'hands', 'feet']) state.equipment[slot] = null; };
+
 const gearState = createDefaultState();
+clearStarterArmor(gearState);
 gearState.player.level = 5;
 gearState.player.stats = { str: 12, dex: 8, vit: 10, spr: 7 };
 gearState.inventory.push(
@@ -426,6 +487,7 @@ assert.equal(expansionState.equipment.feet, 'i_exp_4');
 // Wings exist now but are deliberately progression-gated. Unlocking the flag
 // makes the same item equippable and its buffs feed normal derived-stat math.
 const wingState = createDefaultState();
+clearStarterArmor(wingState);
 wingState.player.level = 5;
 wingState.player.stats = { str: 12, dex: 10, vit: 10, spr: 7 };
 wingState.inventory.push({ instanceId: 'i_wings_test', itemId: 'wings_red_bat', rarity: 'normal', enhancement: 0, modifiers: {} });
@@ -451,13 +513,12 @@ assert.equal(normalizedOldWeapon.inventory[0].itemId, 'weapon_arming_sword');
 assert.equal(normalizedOldWeapon.equipment.weapon, 'i_000001');
 assert.equal(normalizedOldWeapon.inventory.find(item => item.instanceId === 'i_old_spare').itemId, 'weapon_rustblade');
 const oldArmorSave = createDefaultState();
-oldArmorSave.equipment.chest = 'i_000002';
-oldArmorSave.equipment.legs = 'i_000003';
-oldArmorSave.equipment.hands = 'i_000004';
-oldArmorSave.equipment.feet = 'i_000005';
 const normalizedOldArmor = saveManager.validate(oldArmorSave);
-for (const slot of ['chest', 'legs', 'hands', 'feet']) assert.equal(normalizedOldArmor.equipment[slot], null);
-assert.ok(normalizedOldArmor.inventory.some(item => item.instanceId === 'i_000002'));
+for (const slot of ['chest', 'legs', 'hands', 'feet']) assert.ok(normalizedOldArmor.equipment[slot], `Starter ${slot} should remain valid when equipped`);
+const returningUndressedSave = createDefaultState();
+for (const slot of ['chest', 'legs', 'hands', 'feet']) returningUndressedSave.equipment[slot] = null;
+const normalizedReturningUndressed = saveManager.validate(returningUndressedSave);
+for (const slot of ['chest', 'legs', 'hands', 'feet']) assert.equal(normalizedReturningUndressed.equipment[slot], null, 'Existing saves must not be force-dressed');
 
 const legacyRewardSave = createDefaultState();
 legacyRewardSave.inventory.push({ instanceId: 'i_old_warden_reward', itemId: 'head_warden', rarity: 'noble', enhancement: 2, modifiers: { defense: 2 } });
@@ -481,4 +542,4 @@ const normalizedWrongSlot = saveManager.validate(wrongSlotSave);
 assert.equal(normalizedWrongSlot.equipment.head, null, 'Wrong-slot saved equipment must be discarded');
 assert.equal(normalizedWrongSlot.equipment.weapon, 'i_000001', 'Valid weapon reference must survive normalization');
 
-console.log(`Validated ${ASSET_DEFS.length} assets, ${Object.keys(ITEM_DEFS).length} items, ${Object.keys(ENEMY_DEFS).length} enemies, ${Object.keys(NPC_DEFS).length} NPCs, ${BUILDING_DEFS.length} refuge buildings, ${COLLIDERS.length} visible-source colliders, ${Object.keys(QUEST_DEFS).length} quests, v0.1.2.3 asset/world variety expansion, weighted Imp visuals, Goblin/Spider/Golem families, additional adventurer seeds, expanded world props, staged cave/workshops, collision preservation, player-safe loot, four-hit combat geometry, hardened mobile movement, inventory recovery, and save schema 1.`);
+console.log(`Validated ${ASSET_DEFS.length} assets, ${Object.keys(ITEM_DEFS).length} items, ${Object.keys(ENEMY_DEFS).length} enemies, ${Object.keys(NPC_DEFS).length} NPCs, ${BUILDING_DEFS.length} refuge buildings, ${COLLIDERS.length} visible-source colliders, ${Object.keys(QUEST_DEFS).length} quests, v0.1.2.4 world streaming/asset hardening, scrollable diagnostics, corrected Goblin facing, equipped starter clothes, Golem death animation, separate Ashfall Hollow map, map-scoped/lazy texture loading, preserved source art outside dist, collision preservation, player-safe loot, four-hit combat geometry, hardened mobile movement, inventory recovery, and save schema 1.`);
