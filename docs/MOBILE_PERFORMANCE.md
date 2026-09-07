@@ -1,14 +1,14 @@
-# Mobile Performance — v0.1.3.2.2
+# Mobile Performance — v0.1.3.2.3
 
 ## Azrael field-test budget
 
 The full 832×3456 Azrael authoring sheet is never preloaded by gameplay. The Cinder package loads compact 64×64 action crops only (spellcast, thrust, slash, shoot, hurt, idle, jump, emote, run, combat-idle, backslash and halfslash). The full source stays under `source-assets/`.
 
-Azrael's frequent light/glide particles reuse the existing `FxManager` sprite pools. Larger celestial sigils/rings/beams are short-lived Graphics objects and major attacks are cooldown-limited. Judgment Blast uses the shared fixed projectile pool (44 entries in this build). Screen shake is distance-gated against the player's position, so distant autonomous fighting does not repeatedly shake the camera.
+Azrael's frequent light/glide particles reuse the existing `FxManager` sprite pools. Sanctified Nova and Seraphic Judgment add only bounded, short-lived Graphics/tweens plus pooled spark bursts; Seraphic uses three scheduled pulses rather than persistent emitters. All three major AoEs share pacing and individual cooldowns. Judgment Blast uses the shared fixed projectile pool (44 entries in this build). Screen shake is distance-gated against the player's position, so distant autonomous fighting does not repeatedly shake the camera.
 
 Enemy simulation remains player-distance-gated; Azrael's test home is intentionally inside the normal Scorched Outskirts activity area so the user can observe him without expanding the global AI budget. His visual glide crosses low terrain props instead of adding pathfinding or expensive obstacle avoidance. True aerial navigation is deferred.
 
-The release gate remains physical iPhone Safari. Stress the build around clustered Heavenfall casts, repeated Judgment projectiles, several simultaneous enemies, camera shake on/off, Safari background/return and a 10–15 minute continuous fight. Watch for Graphics/tween accumulation, WebAudio loss, frame pacing changes and projectile/particle leftovers.
+The release gate remains physical iPhone Safari. Stress the build around repeated Sanctified Nova/Seraphic Judgment cycles, clustered Heavenfall casts, repeated Judgment projectiles, several simultaneous enemies, camera shake on/off, Safari background/return and a 10–15 minute continuous fight. Watch for Graphics/tween accumulation, WebAudio loss, frame pacing changes and projectile/particle leftovers.
 
 
 

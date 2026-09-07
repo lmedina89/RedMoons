@@ -217,6 +217,149 @@ export class FxManager {
     }
   }
 
+  ancientCelestialSeal(x, y, radius = 128, duration = 900, variant = 'nova') {
+    const g = this.scene.add.graphics().setDepth(8435);
+    const started = this.scene.time.now;
+    const timer = this.scene.time.addEvent({ delay: 32, loop: true, callback: () => {
+      if (!g.active) return;
+      const p = Math.min(1, (this.scene.time.now - started) / Math.max(1, duration));
+      const rotation = (variant === 'judgment' ? -1 : 1) * (0.22 + p * 0.66);
+      const pulse = 0.82 + Math.sin(p * Math.PI * 7) * 0.10;
+      g.clear();
+      g.fillStyle(0xffefad, (0.018 + p * 0.034) * pulse).fillCircle(x, y, radius * 0.94);
+      g.lineStyle(3, 0xffe58b, (0.48 + p * 0.42) * pulse).strokeCircle(x, y, radius);
+      g.lineStyle(1.5, 0xe8fdff, 0.54 + p * 0.28).strokeCircle(x, y, radius * 0.72);
+      g.lineStyle(1.5, 0xfff9d8, 0.44 + p * 0.34).strokeCircle(x, y, radius * 0.43);
+
+      // Twelve geometric rune marks around the seal. They intentionally avoid a
+      // real-world alphabet/religious symbol while still reading as ancient law.
+      for (let i = 0; i < 12; i += 1) {
+        const a = i * Math.PI / 6 + rotation;
+        const r = radius * 0.84;
+        const cx = x + Math.cos(a) * r;
+        const cy = y + Math.sin(a) * r;
+        const tx = -Math.sin(a), ty = Math.cos(a);
+        const rx = Math.cos(a), ry = Math.sin(a);
+        const size = 5 + (i % 3);
+        g.lineStyle(i % 2 ? 1.5 : 2, i % 3 === 0 ? 0xe9fdff : 0xffe58b, 0.54 + p * 0.30);
+        g.beginPath();
+        g.moveTo(cx + rx * size, cy + ry * size);
+        g.lineTo(cx + tx * size, cy + ty * size);
+        g.lineTo(cx - rx * size, cy - ry * size);
+        g.lineTo(cx - tx * size, cy - ty * size);
+        g.closePath(); g.strokePath();
+      }
+
+      // Interlocking six-point celestial geometry in the core.
+      for (let pass = 0; pass < 2; pass += 1) {
+        const offset = rotation * (pass ? -0.72 : 1);
+        g.lineStyle(pass ? 1.5 : 2, pass ? 0xdffcff : 0xfff3b0, 0.50 + p * 0.28);
+        g.beginPath();
+        for (let i = 0; i <= 6; i += 1) {
+          const a = offset + i * Math.PI * 2 / 6 + (pass ? Math.PI / 6 : 0);
+          const px = x + Math.cos(a) * radius * 0.50;
+          const py = y + Math.sin(a) * radius * 0.50;
+          if (i === 0) g.moveTo(px, py); else g.lineTo(px, py);
+        }
+        g.strokePath();
+      }
+
+      g.lineStyle(2, 0xf2ffff, 0.46 + p * 0.34);
+      for (let i = 0; i < 8; i += 1) {
+        const a = i * Math.PI / 4 - rotation * 0.58;
+        g.lineBetween(x + Math.cos(a) * radius * 0.47, y + Math.sin(a) * radius * 0.47,
+          x + Math.cos(a) * radius * 0.68, y + Math.sin(a) * radius * 0.68);
+      }
+      if (p >= 1) { timer.remove(false); if (g.active) g.destroy(); }
+    }});
+    return { destroy: () => { timer.remove(false); if (g.active) g.destroy(); } };
+  }
+
+  sanctifiedNovaImpact(x, y, radius = 146) {
+    const corona = this.scene.add.graphics().setDepth(8590);
+    corona.fillStyle(0xfff7cf, 0.38).fillCircle(x, y, radius * 0.42);
+    corona.lineStyle(5, 0xffffff, 0.88).strokeCircle(x, y, radius * 0.36);
+    corona.lineStyle(3, 0xffe58b, 0.78);
+    for (let i = 0; i < 12; i += 1) {
+      const a = i * Math.PI / 6;
+      corona.lineBetween(x + Math.cos(a) * radius * 0.34, y + Math.sin(a) * radius * 0.34,
+        x + Math.cos(a) * radius * 0.94, y + Math.sin(a) * radius * 0.94);
+    }
+    // Mirrored wing-corona strokes make the detonation unmistakably Azrael's.
+    corona.lineStyle(5, 0xe8fdff, 0.78);
+    for (const side of [-1, 1]) {
+      corona.beginPath();
+      corona.moveTo(x + side * 10, y - 7);
+      corona.lineTo(x + side * radius * 0.30, y - radius * 0.24);
+      corona.lineTo(x + side * radius * 0.55, y - radius * 0.12);
+      corona.lineTo(x + side * radius * 0.34, y + radius * 0.02);
+      corona.lineTo(x + side * radius * 0.60, y + radius * 0.16);
+      corona.strokePath();
+    }
+    this.scene.tweens.add({ targets: corona, alpha: 0, duration: 360, ease: 'Quad.out', onComplete: () => corona.destroy() });
+    this.ring(x, y, radius * 0.58, 'celestial', 330);
+    this.scene.time.delayedCall(45, () => this.ring(x, y, radius * 0.82, 'celestial', 390));
+    this.scene.time.delayedCall(95, () => this.ring(x, y, radius, 'celestial', 440));
+    this.burst(x, y - 12, 'celestial', 2.35);
+    const count = 16;
+    for (let i = 0; i < count; i += 1) {
+      const a = i / count * Math.PI * 2 + (i % 2) * 0.12;
+      const r = radius * (0.34 + (i % 4) * 0.13);
+      this.scene.time.delayedCall((i % 4) * 22, () => this.burst(x + Math.cos(a) * r, y + Math.sin(a) * r - 5, i % 4 === 0 ? 'heal' : 'celestial', 0.78 + (i % 3) * 0.10));
+    }
+  }
+
+  seraphicJudgmentSeal(x, y, radius = 158, duration = 1040) {
+    const base = this.ancientCelestialSeal(x, y, radius, duration, 'judgment');
+    const g = this.scene.add.graphics().setDepth(8445);
+    const started = this.scene.time.now;
+    const timer = this.scene.time.addEvent({ delay: 34, loop: true, callback: () => {
+      if (!g.active) return;
+      const p = Math.min(1, (this.scene.time.now - started) / Math.max(1, duration));
+      g.clear();
+      const alpha = 0.30 + p * 0.52;
+      g.lineStyle(2, 0xffffff, alpha);
+      // Four cardinal 'gates' converge toward the condemned area.
+      for (let i = 0; i < 4; i += 1) {
+        const a = i * Math.PI / 2;
+        const outer = radius * (1.12 - p * 0.10);
+        const inner = radius * 0.78;
+        const sx = x + Math.cos(a) * outer, sy = y + Math.sin(a) * outer;
+        const ex = x + Math.cos(a) * inner, ey = y + Math.sin(a) * inner;
+        g.lineBetween(sx, sy, ex, ey);
+        const tx = -Math.sin(a), ty = Math.cos(a);
+        g.lineBetween(ex + tx * 9, ey + ty * 9, ex - tx * 9, ey - ty * 9);
+      }
+      if (p >= 1) { timer.remove(false); if (g.active) g.destroy(); }
+    }});
+    return { destroy: () => { base.destroy(); timer.remove(false); if (g.active) g.destroy(); } };
+  }
+
+  seraphicJudgmentImpact(x, y, radius = 158, pulse = 0, final = false) {
+    const g = this.scene.add.graphics().setDepth(8600);
+    const offsets = [-0.34, 0, 0.34];
+    const spread = radius * 0.56;
+    for (let i = 0; i < offsets.length; i += 1) {
+      const ox = offsets[i] * spread + ((pulse % 2) ? (i - 1) * 7 : 0);
+      const oy = ((i + pulse) % 2 ? 8 : -7);
+      const ix = x + ox, iy = y + oy;
+      g.lineStyle(final ? 11 : 8, 0xffffff, final ? 0.82 : 0.62).lineBetween(ix, iy - radius * 1.28, ix, iy + 8);
+      g.lineStyle(final ? 5 : 3, 0xffe58b, 0.92).lineBetween(ix - 5, iy - radius * 1.12, ix - 1, iy + 4);
+      g.lineStyle(2, 0xdffcff, 0.86).lineBetween(ix + 6, iy - radius * 1.05, ix + 2, iy + 6);
+      g.lineStyle(2, 0xffffff, 0.72).strokeEllipse(ix, iy, 30 + pulse * 5, 11 + pulse * 2);
+      this.burst(ix, iy - 4, 'celestial', final ? 1.35 : 0.92);
+    }
+    g.fillStyle(0xfff8cf, final ? 0.28 : 0.16).fillCircle(x, y, radius * (final ? 0.46 : 0.30));
+    this.scene.tweens.add({ targets: g, alpha: 0, duration: final ? 360 : 260, ease: 'Quad.out', onComplete: () => g.destroy() });
+    this.ring(x, y, radius * (final ? 1.0 : 0.62 + pulse * 0.10), 'celestial', final ? 460 : 310);
+    if (final) {
+      this.scene.time.delayedCall(70, () => this.ring(x, y, radius * 0.76, 'celestial', 390));
+      this.celestialImpact(x, y, radius * 0.92, 1.35);
+    } else {
+      this.celestialImpact(x, y, radius * 0.44, 0.62);
+    }
+  }
+
   heavenfallImpact(x, y, radius = 176) {
     const flash = this.scene.add.graphics().setDepth(8580);
     flash.fillStyle(0xfff7c8, 0.52).fillCircle(x, y, radius * 0.48);

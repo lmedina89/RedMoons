@@ -1,10 +1,12 @@
-# Architecture — v0.1.3.2.2
+# Architecture — v0.1.3.2.3
 
-## v0.1.3.2.2 faction combat and special-actor boundary
+## v0.1.3.2.3 celestial special-actor boundary
 
 `data/factions.js` is now the shared relationship contract for actors. The player and celestial faction are friendly; monsters are hostile to both. `Enemy` receives a candidate target set and selects only faction-hostile live actors, while `CombatResolver.damageTarget()` routes resolved damage to player, ordinary enemy, or friendly/special actor paths. This keeps ArchAngel Azrael inside the real combat model instead of giving him a bespoke immunity exception.
 
-`entities/Azrael.js` is intentionally a unique controller rather than a generic NPC subclass. His world physics proxy remains compact and world-bounded while the visible sprite hovers above it. The controller uses the supplied run action as glide locomotion, jump as wing-burst startup, combat-idle/idle for hovering, shoot for Judgment Blast, spellcast/emote for Heavenfall, and rotates multiple melee blocks for Celestial Strike. His current Scorched Outskirts home point is a temporary field-test harness, not canonical story placement.
+`entities/Azrael.js` is intentionally a unique controller rather than a generic NPC subclass. His world physics proxy remains compact and world-bounded while the visible sprite hovers above it. The controller uses the supplied run action as glide locomotion, jump as wing-burst startup, combat-idle/idle for hovering, shoot for Judgment Blast, spellcast/emote for Sanctified Nova / Seraphic Judgment / Heavenfall, and rotates multiple melee blocks for Celestial Strike. His current Scorched Outskirts home point is a temporary field-test harness, not canonical story placement.
+
+The expanded major-skill set uses a shared runtime `majorAbilityLockUntil` gate. Per-ability cooldowns still own individual availability, while the shared lock prevents consecutive large invocations from obscuring combat readability. `CombatSystem.allyRadial()` accepts bounded damage/knockback scaling so Seraphic Judgment can resolve three timed pulses without tripling the configured cast budget. `FxManager` builds Nova/Judgment seals and beams from short-lived procedural Graphics plus the existing pooled spark sprites.
 
 `CombatSystem` owns reusable ally ability resolution, celestial AoE/cone damage, radial knockback and distance-gated camera shake. `ProjectileManager` remains pooled and now accepts a friendly-target provider so enemy projectiles can collide with either the player or Azrael. Celestial projectiles are still resolved against enemies only.
 
@@ -13,7 +15,7 @@ Enemy reward contribution is tracked separately from damage resolution. Player d
 Azrael's visible `Lv. ???` is presentation only. His internal level and extreme stats are data values in `specialActors.js`; incoming attacks still pass through defense/resistance/status rules and reduce real HP.
 
 
-> v0.1.3.2.2 keeps save schema 2 while adding non-persistent faction-aware friendly combat and the temporary ArchAngel Azrael field-test actor. Azrael is map-scoped runtime simulation state; he is intentionally not serialized. His compact action crops load only with the Cinder Region. `Assassin.png` remains source-only.
+> v0.1.3.2.3 keeps save schema 2 while adding non-persistent faction-aware friendly combat and the temporary ArchAngel Azrael field-test actor. Azrael is map-scoped runtime simulation state; he is intentionally not serialized. His compact action crops load only with the Cinder Region. `Assassin.png` remains source-only.
 
 ## v0.1.3.2.2 faction-aware mythic actor foundation
 

@@ -1,10 +1,10 @@
-# QA Report — v0.1.3.2.2 ArchAngel Azrael Field Test
+# QA Report — v0.1.3.2.3 ArchAngel Azrael Celestial Expansion
 
 ## Automated/static validation
 
-`npm run check` runs the full structural validator plus `tests/azrael-logic-smoke.mjs`. The suite verifies the v0.1.3.2.2 shell/version, compact Azrael runtime assets, hidden-level mythic nameplate, faction relations, real high-stat/non-invulnerable damage path, status/stagger resistance hooks, cluster-aware targeting, expanded melee-animation rotation, celestial projectile/knockback/VFX wiring, generic enemy targeting, friendly projectile collision, contribution-gated rewards, diagnostics, and every inherited save/map/combat/recovery invariant. All JS/MJS files must also pass `node --check`.
+`npm run check` runs the full structural validator plus `tests/azrael-logic-smoke.mjs`. The suite verifies the v0.1.3.2.3 shell/version, compact Azrael runtime assets, widened hidden-level mythic nameplate, faction relations, real high-stat/non-invulnerable damage path, status/stagger resistance hooks, cluster-aware six-skill targeting, shared major-skill pacing, Sanctified Nova/Seraphic Judgment definitions and VFX/audio wiring, bounded Seraphic pulse scaling, celestial projectile/knockback/VFX wiring, generic enemy targeting, friendly projectile collision, contribution-gated rewards, diagnostics, and every inherited save/map/combat/recovery invariant. All JS/MJS files must also pass `node --check`.
 
-The logic smoke separately proves: celestial/player friendliness, monster↔celestial hostility, clustered target preference, pure-celestial kills failing player reward eligibility, recent material player contribution qualifying a shared kill, and real HP loss when a low-level physical hit resolves against Azrael's extreme defense.
+The logic smoke separately proves: celestial/player friendliness, monster↔celestial hostility, clustered target preference, the two new AoEs cooling down faster than Heavenfall, all major invocations participating in pacing, Seraphic pulse scaling totaling one cast budget, pure-celestial kills failing player reward eligibility, recent material player contribution qualifying a shared kill, and real HP loss against Azrael's extreme defense.
 
 ## Physical iPhone release gate
 
@@ -15,16 +15,19 @@ The logic smoke separately proves: celestial/player friendliness, monster↔cele
 5. Observe **Celestial Strike** repeatedly. Across several casts it should exercise multiple supplied melee blocks (halfslash/slash/thrust/backslash), produce a radiant arc/impact and knock enemies away.
 6. Observe **Wing Burst** from medium range: jump/wing-flare startup → fast glide/dash → radial celestial impact/knockback. Ensure he does not get permanently stuck after the dash.
 7. Observe **Judgment Blast** at range: shoot animation, luminous projectile, trail, impact explosion and knockback. Test against moving enemies and scenery.
-8. Pull/observe a cluster of 3+ mobs near him. **Heavenfall** should visibly channel with a celestial sigil, then land as the strongest effect: beam/flash, layered impact, large radial knockback and strong nearby screen shake.
-9. Repeat the same attack while standing farther away; camera shake must reduce/disappear with distance. Toggle Screen Shake off and confirm it stays off.
-10. Let Azrael solo several mobs. Player XP, ash, loot and quest kill counts must not increase. Then damage a mob materially and let Azrael finish it; normal shared-kill reward should be allowed.
-11. `?debug=1`: use **Near ArchAngel Azrael** and **Azrael AI Overlay**; verify state/action/target distance/HP/internal level update and the overlay can be disabled.
-12. Let ranged/caster/AOE enemies attack him: projectiles, reach attacks and radial attacks must be able to hit Azrael rather than assuming the player is the only target.
-13. Stay in the fight for 10–15 minutes. Watch for lingering sigils, repeated camera shake after leaving range, projectile leaks, rising slowdown, stuck AI states, duplicate audio, or Azrael failing to respawn if somehow killed.
-14. Re-test potion quick use, Cleave, Use placement, Ashen Rest and Cinder↔Hollow transitions to catch regressions from the new actor/faction combat wiring.
-15. Background Safari and return during an active Azrael fight; controls, audio, AI, projectiles, effects and health state must resume normally.
+8. Crowd Azrael with 2+ mobs. **Sanctified Nova** should appear regularly: ancient rotating seal → wing/halo corona → 360° shockwave. Confirm radial knockback, readable but sub-Heavenfall shake, and no player damage.
+9. Observe a 2+ mob cluster at short/mid range. **Seraphic Judgment** should mark the cluster, then deliver three clearly separated descending light-column pulses with the final pulse carrying the largest detonation/knockback.
+10. Pull/observe a cluster of 4+ mobs near him. **Heavenfall** should remain visibly rarer and strongest: beam/flash, layered impact, largest radial knockback and strongest nearby screen shake.
+11. Watch several minutes of combat and confirm Nova/Judgment/Heavenfall do not chain immediately back-to-back; normal Strike/Burst/Blast/glide behavior should separate major casts.
+12. Repeat the same attack while standing farther away; camera shake must reduce/disappear with distance. Toggle Screen Shake off and confirm it stays off.
+13. Let Azrael solo several mobs. Player XP, ash, loot and quest kill counts must not increase. Then damage a mob materially and let Azrael finish it; normal shared-kill reward should be allowed.
+14. `?debug=1`: use **Near ArchAngel Azrael** and **Azrael AI Overlay**; verify state/action/target distance/HP/internal level update and the overlay can be disabled.
+15. Let ranged/caster/AOE enemies attack him: projectiles, reach attacks and radial attacks must be able to hit Azrael rather than assuming the player is the only target.
+16. Stay in the fight for 10–15 minutes. Watch for lingering sigils, repeated camera shake after leaving range, projectile leaks, rising slowdown, stuck AI states, duplicate audio, or Azrael failing to respawn if somehow killed.
+17. Re-test potion quick use, Cleave, Use placement, Ashen Rest and Cinder↔Hollow transitions to catch regressions from the new actor/faction combat wiring.
+18. Background Safari and return during an active Azrael fight; controls, audio, AI, projectiles, effects and health state must resume normally.
 
-No automated interactive browser/iPhone playthrough is claimed. Physical iPhone Safari remains the release gate.
+Also verify the widened banner keeps the complete `ARCHANGEL AZRAEL` title inside the mythic frame in every facing/zoom state. No automated interactive browser/iPhone playthrough is claimed. Physical iPhone Safari remains the release gate.
 
 ---
 

@@ -210,6 +210,18 @@ export class CombatSystem {
       actor.abilityTelegraph?.destroy?.();
       actor.abilityTelegraph = this.fx.celestialSigil(targetX, targetY, ability.radius, ability.windupMs);
       this.fx.burst(node.x, node.y - 28, 'celestial', 1.15);
+    } else if (ability.id === 'azrael_sanctified_nova') {
+      actor.abilityTelegraph?.destroy?.();
+      actor.abilityTelegraph = this.fx.ancientCelestialSeal(node.x, node.y, ability.radius, ability.windupMs, 'nova');
+      this.fx.celestialWingBurst(node.x, node.y, facing, 0.90);
+      this.fx.burst(node.x, node.y - 30, 'celestial', 1.22);
+      this.audio.play('sanctified_nova', { volume: 0.085, throttleMs: 420 });
+    } else if (ability.id === 'azrael_seraphic_judgment') {
+      actor.abilityTelegraph?.destroy?.();
+      actor.abilityTelegraph = this.fx.seraphicJudgmentSeal(targetX, targetY, ability.radius, ability.windupMs);
+      this.fx.celestialSigil(node.x, node.y - 12, 48, ability.windupMs * 0.78);
+      this.fx.burst(node.x, node.y - 30, 'celestial', 1.18);
+      this.audio.play('seraphic_judgment', { volume: 0.085, throttleMs: 460 });
     } else if (ability.id === 'azrael_judgment_blast') {
       this.fx.celestialSigil(node.x, node.y - 12, 42, ability.windupMs * 0.72);
       this.fx.burst(node.x, node.y - 24, 'celestial', 0.9);
@@ -255,7 +267,7 @@ export class CombatSystem {
     return hits;
   }
 
-  allyRadial(actor, ability, x = null, y = null) {
+  allyRadial(actor, ability, x = null, y = null, damageScale = 1, knockbackScale = 1) {
     const node = actorNode(actor);
     const cx = x ?? node?.x;
     const cy = y ?? node?.y;
@@ -266,8 +278,8 @@ export class CombatSystem {
       if (!enemy.sprite.active || enemy.state === 'dying') continue;
       const distance = Phaser.Math.Distance.Between(cx, cy, enemy.sprite.x, enemy.sprite.y);
       if (distance > radius) continue;
-      const amount = this.resolver.damageEnemy(enemy, actor.def.attack * ability.damageMultiplier, {
-        type: 'celestial', sourceX: cx, sourceY: cy, knockback: ability.knockback || 0,
+      const amount = this.resolver.damageEnemy(enemy, actor.def.attack * ability.damageMultiplier * damageScale, {
+        type: 'celestial', sourceX: cx, sourceY: cy, knockback: (ability.knockback || 0) * knockbackScale,
         impact: 'celestial', sourceTeam: 'celestial'
       });
       if (amount) hits += 1;
@@ -299,6 +311,29 @@ export class CombatSystem {
         sourceId: actor.def.id
       });
       this.audio.play('judgment_blast', { volume: 0.09, throttleMs: 220 });
+      return;
+    }
+    if (ability.id === 'azrael_sanctified_nova') {
+      actor.abilityTelegraph?.destroy?.(); actor.abilityTelegraph = null;
+      const hits = this.allyRadial(actor, ability, node.x, node.y);
+      this.fx.sanctifiedNovaImpact(node.x, node.y, ability.radius);
+      this.audio.play('sanctified_nova', { volume: 0.11, throttleMs: 420 });
+      this.shakeAt(node.x, node.y, hits >= 3 ? 205 : 160, hits >= 3 ? 0.0064 : 0.0048, 540);
+      return;
+    }
+    if (ability.id === 'azrael_seraphic_judgment') {
+      actor.abilityTelegraph?.destroy?.(); actor.abilityTelegraph = null;
+      const delays = ability.pulseDelays || [0, 120, 250];
+      const scales = ability.pulseScales || [0.24, 0.30, 0.46];
+      delays.forEach((delay, index) => {
+        this.scene.time.delayedCall(delay, () => {
+          const final = index === delays.length - 1;
+          const hits = this.allyRadial(actor, ability, targetX, targetY, scales[index] || 0.33, final ? 1 : 0.10);
+          this.fx.seraphicJudgmentImpact(targetX, targetY, ability.radius, index, final);
+          this.audio.play('seraphic_judgment', { volume: final ? 0.12 : 0.075, throttleMs: 85 });
+          this.shakeAt(targetX, targetY, final ? (hits >= 3 ? 235 : 195) : 90, final ? (hits >= 3 ? 0.0074 : 0.0058) : 0.0026, final ? 590 : 440);
+        });
+      });
       return;
     }
     if (ability.id === 'azrael_heavenfall') {

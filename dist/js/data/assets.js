@@ -99,7 +99,7 @@ export const ASSET_DEFS = [
   { key: 'golem-attack', path: `${E}golem-attack.png`, frameWidth: 64, frameHeight: 96 },
   { key: 'golem-death', path: `${E}golem-death.png`, frameWidth: 64, frameHeight: 64 },
 
-  // v0.1.3.2.2 ArchAngel Azrael field-test runtime crops. The original
+  // v0.1.3.2.3 ArchAngel Azrael celestial-expansion runtime crops. The original
   // 832x3456 user-supplied ULPC expanded sheet remains in source-assets; only
   // the action blocks used by his live AI are uploaded to the mobile GPU.
   ...[

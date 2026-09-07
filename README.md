@@ -1,6 +1,17 @@
-# Hell RPG v0.1.3.2.2 — ArchAngel Azrael Field Test
+# Hell RPG v0.1.3.2.3 — ArchAngel Azrael Celestial Expansion
 
-Built directly from **v0.1.3.2.1.2 Final Combat HUD Tightening**. Save schema remains **2** and the localStorage key remains `hellrpg.ashfall.save.v1`.
+Built directly from the physically tested **v0.1.3.2.2 ArchAngel Azrael Field Test**. Save schema remains **2** and the localStorage key remains `hellrpg.ashfall.save.v1`.
+
+## v0.1.3.2.3 celestial combat expansion
+
+- Expanded Azrael from four to **six** live abilities with **Sanctified Nova** and **Seraphic Judgment**. Both are true AoE skills, deliberately available more often than Heavenfall.
+- **Sanctified Nova** is a self-centered ancient-celestial detonation for nearby groups: rotating rune seal, halo layers, mirrored wing-corona strokes, sacred particles, radial damage/knockback and proximity screen shake.
+- **Seraphic Judgment** marks a hostile cluster with an ancient celestial seal, then lands three rapid heavenly light-column strikes. The pulses share one configured cast damage budget and the final impact supplies the strongest knockback/shake.
+- Major celestial skills now share a short **major-skill pacing lockout**, preventing Nova/Judgment/Heavenfall from chaining into unreadable visual spam while still allowing ordinary Strike/Burst/Blast actions between them.
+- Heavenfall remains the signature/rarest field-test attack: its cooldown is longer and its cluster requirement is stricter than the two new AoEs.
+- Widened and re-centered the unique mythic nameplate so **ARCHANGEL AZRAEL** remains inside its banner at phone scale while preserving `Lv. ??? • CELESTIAL MYTHIC`.
+- Added distinct procedural SFX signatures for the two new celestial abilities.
+- FX remain mobile-conscious: pooled spark sprites, bounded burst counts, short-lived Graphics/tweens, distance-gated shake, and no full authoring sheet in the runtime preload.
 
 ## ArchAngel Azrael field test
 

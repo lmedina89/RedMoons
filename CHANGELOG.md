@@ -1,5 +1,16 @@
 # Changelog
 
+## v0.1.3.2.3 — ArchAngel Azrael Celestial Expansion
+
+- Preserved the physically validated v0.1.3.2.2 Azrael controller/faction foundation and expanded his autonomous kit from four to six abilities.
+- Added **Sanctified Nova**, a frequent close-range 360° celestial AoE with an animated ancient rune seal, concentric halo shockwaves, wing-corona geometry, sacred particle bursts, strong radial knockback and proximity-scaled camera shake.
+- Added **Seraphic Judgment**, a frequent cluster AoE with an ancient target seal and three rapid descending holy-light pulses; the final pulse delivers the strongest explosion/knockback while total pulse scaling remains bounded to one configured cast multiplier.
+- Added shared **major-ability pacing** so Sanctified Nova, Seraphic Judgment and Heavenfall cannot chain immediately into unreadable effect spam. Minor attacks/movement remain available between major invocations.
+- Increased Heavenfall cooldown to 11.6s and raised its qualifying cluster to 4 so the two new AoEs appear more often while Heavenfall remains the signature event.
+- Added dedicated procedural audio signatures for Sanctified Nova and Seraphic Judgment.
+- Widened Azrael's mythic nameplate from 134px to 176px, re-centered title/subtitle content and widened the HP rail so `ARCHANGEL AZRAEL` no longer hangs outside the frame.
+- Preserved real damage intake, extreme Level-99-equivalent stats, monster-only hostility, contribution-gated rewards, iPhone-conscious FX caps, save schema 2 and the existing temporary Scorched Outskirts field-test placement.
+
 ## v0.1.3.2.2 — ArchAngel Azrael Field Test
 
 - Temporarily placed **ARCHANGEL AZRAEL — Lv. ???** in Scorched Outskirts as a live field-test actor; canonical story placement remains intentionally undecided.

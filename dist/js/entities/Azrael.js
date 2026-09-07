@@ -53,6 +53,7 @@ export class Azrael {
     this.abilityTriggered = false;
     this.abilityTelegraph = null;
     this.abilityCooldowns = new Map();
+    this.majorAbilityLockUntil = 0;
     this.strikeVariant = 0;
     this.nextGlideTrailAt = 0;
     this.repositionSign = 1;
@@ -77,26 +78,28 @@ export class Azrael {
   createNameplate() {
     this.nameplate = this.scene.add.container(this.body.x, this.body.y - 76).setDepth(9100);
     const plate = this.scene.add.graphics();
-    plate.fillStyle(0x080b13, 0.86).fillRoundedRect(-67, -19, 134, 40, 9);
-    plate.lineStyle(1, 0xffe394, 0.88).strokeRoundedRect(-67, -19, 134, 40, 9);
-    plate.lineStyle(1, 0xbff6ff, 0.42).strokeRoundedRect(-63, -15, 126, 32, 7);
+    // Wider mythic plate keeps the full ARCHANGEL AZRAEL title comfortably
+    // inside its frame at phone scale while leaving room for the emblem slot.
+    plate.fillStyle(0x080b13, 0.88).fillRoundedRect(-88, -19, 176, 40, 9);
+    plate.lineStyle(1, 0xffe394, 0.92).strokeRoundedRect(-88, -19, 176, 40, 9);
+    plate.lineStyle(1, 0xbff6ff, 0.46).strokeRoundedRect(-84, -15, 168, 32, 7);
     // Reserved celestial emblem slot: a tiny halo-and-wing seal. A bespoke SVG
     // can replace this later without changing the nameplate contract.
-    plate.lineStyle(2, 0xffe8a6, 0.92).strokeEllipse(-52, -4, 12, 5);
-    plate.lineStyle(2, 0xdff9ff, 0.72).lineBetween(-58, 0, -66, 5).lineBetween(-58, 2, -65, 9);
-    plate.lineStyle(2, 0xdff9ff, 0.72).lineBetween(-46, 0, -38, 5).lineBetween(-46, 2, -39, 9);
+    plate.lineStyle(2, 0xffe8a6, 0.92).strokeEllipse(-70, -4, 12, 5);
+    plate.lineStyle(2, 0xdff9ff, 0.72).lineBetween(-76, 0, -84, 5).lineBetween(-76, 2, -83, 9);
+    plate.lineStyle(2, 0xdff9ff, 0.72).lineBetween(-64, 0, -56, 5).lineBetween(-64, 2, -57, 9);
 
-    this.nameText = this.scene.add.text(5, -14, 'ARCHANGEL AZRAEL', {
+    this.nameText = this.scene.add.text(9, -14, 'ARCHANGEL AZRAEL', {
       fontFamily: 'Georgia, serif', fontSize: '11px', fontStyle: 'bold', color: '#fff0b0',
-      stroke: '#241306', strokeThickness: 3, letterSpacing: 0.4
+      stroke: '#241306', strokeThickness: 3, letterSpacing: 0.35
     }).setOrigin(0.5, 0);
-    this.levelText = this.scene.add.text(5, 0, 'Lv. ???  •  CELESTIAL MYTHIC', {
+    this.levelText = this.scene.add.text(9, 0, 'Lv. ???  •  CELESTIAL MYTHIC', {
       fontFamily: 'Arial, sans-serif', fontSize: '7px', color: '#d9f8ff',
       stroke: '#0a141b', strokeThickness: 2, letterSpacing: 0.2
     }).setOrigin(0.5, 0);
 
     this.healthBack = this.scene.add.graphics();
-    this.healthBack.fillStyle(0x140d0a, 0.92).fillRoundedRect(-54, 14, 108, 5, 2);
+    this.healthBack.fillStyle(0x140d0a, 0.92).fillRoundedRect(-63, 14, 126, 5, 2);
     this.healthBar = this.scene.add.graphics();
     this.nameplate.add([plate, this.nameText, this.levelText, this.healthBack, this.healthBar]);
     this.updateHealthBar();
@@ -119,11 +122,12 @@ export class Azrael {
     if (!this.healthBar) return;
     const ratio = Math.max(0, Math.min(1, this.hp / this.def.maxHp));
     this.healthBar.clear();
-    this.healthBar.fillStyle(0xffe58a, 0.96).fillRoundedRect(-53, 15, 106 * ratio, 3, 1);
-    if (ratio > 0.35) this.healthBar.fillStyle(0xe7ffff, 0.48).fillRect(-52, 15, 104 * ratio, 1);
+    this.healthBar.fillStyle(0xffe58a, 0.96).fillRoundedRect(-62, 15, 124 * ratio, 3, 1);
+    if (ratio > 0.35) this.healthBar.fillStyle(0xe7ffff, 0.48).fillRect(-61, 15, 122 * ratio, 1);
   }
 
   cooldownReady(id, time) { return time >= (this.abilityCooldowns.get(id) || 0); }
+  majorReady(time) { return time >= this.majorAbilityLockUntil; }
   setCooldown(ability, time) { this.abilityCooldowns.set(ability.id, time + ability.cooldownMs); }
 
   setDirection(vx, vy) {
@@ -173,6 +177,18 @@ export class Azrael {
     return count;
   }
 
+  hostileCountNear(enemies, x, y, radius) {
+    const rr = radius * radius;
+    let count = 0;
+    for (const enemy of enemies) {
+      if (!actorAlive(enemy) || !areHostile(this, enemy)) continue;
+      const p = actorPoint(enemy);
+      const dx = p.x - x, dy = p.y - y;
+      if (dx * dx + dy * dy <= rr) count += 1;
+    }
+    return count;
+  }
+
   chooseTarget(enemies) {
     const candidates = this.activeEnemies(enemies);
     let best = null;
@@ -204,6 +220,7 @@ export class Azrael {
     this.state = ability.id === 'azrael_wing_burst' ? 'wingburst' : 'ability';
     this.stateUntil = time + ability.windupMs;
     this.setCooldown(ability, time);
+    if (ability.major) this.majorAbilityLockUntil = Math.max(this.majorAbilityLockUntil, time + (ability.majorLockMs || 2200));
     this.body.setVelocity(0);
     this.setDirection(point.x - this.body.x, point.y - this.body.y);
     this.lastActionName = ability.name;
@@ -272,6 +289,12 @@ export class Azrael {
       this.renderProgress(action, progress, action === 'backslash' ? BACKSLASH_SEQUENCE : null);
     } else if (ability.id === 'azrael_judgment_blast') {
       this.renderProgress('shoot', progress);
+    } else if (ability.id === 'azrael_sanctified_nova') {
+      if (progress < 0.52) this.renderProgress('spellcast', progress / 0.52);
+      else this.renderProgress('emote', (progress - 0.52) / 0.48);
+    } else if (ability.id === 'azrael_seraphic_judgment') {
+      if (progress < 0.76) this.renderProgress('spellcast', progress / 0.76);
+      else this.renderProgress('emote', (progress - 0.76) / 0.24);
     } else if (ability.id === 'azrael_heavenfall') {
       if (progress < 0.68) this.renderProgress('spellcast', progress / 0.68);
       else this.renderProgress('emote', (progress - 0.68) / 0.32);
@@ -325,9 +348,24 @@ export class Azrael {
     this.setDirection(dx, dy);
 
     const heavenfall = this.def.abilities.heavenfall;
+    const sanctified = this.def.abilities.sanctifiedNova;
+    const seraphic = this.def.abilities.seraphicJudgment;
     const cluster = this.clusterCount(this.target, available, heavenfall.targetClusterRadius);
-    if (cluster >= heavenfall.minCluster && distance <= 390 && this.cooldownReady(heavenfall.id, time)) {
-      this.beginAbility(heavenfall, this.target, time); return;
+    const seraphicCluster = this.clusterCount(this.target, available, seraphic.targetClusterRadius);
+    const nearby = this.hostileCountNear(available, this.body.x, this.body.y, sanctified.radius);
+
+    // Major celestial abilities share a short pacing lock so their huge visuals
+    // read as deliberate invocations instead of becoming an unreadable nuke loop.
+    if (this.majorReady(time)) {
+      if (cluster >= heavenfall.minCluster && distance <= 390 && this.cooldownReady(heavenfall.id, time)) {
+        this.beginAbility(heavenfall, this.target, time); return;
+      }
+      if (nearby >= sanctified.minNearby && this.cooldownReady(sanctified.id, time)) {
+        this.beginAbility(sanctified, this.target, time); return;
+      }
+      if (seraphicCluster >= seraphic.minCluster && distance <= seraphic.range && this.cooldownReady(seraphic.id, time)) {
+        this.beginAbility(seraphic, this.target, time); return;
+      }
     }
 
     const strike = this.def.abilities.celestialStrike;
@@ -491,6 +529,7 @@ export class Azrael {
     this.target = null;
     this.currentAbility = null;
     this.abilityCooldowns.clear();
+    this.majorAbilityLockUntil = 0;
     this.strikeVariant = 0;
     this.nextGlideTrailAt = 0;
     this.state = 'idle';
