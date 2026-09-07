@@ -47,6 +47,7 @@ export class WorldScene extends Phaser.Scene {
 
     this.createEnemies();
     this.createNPCs();
+    if (DEBUG) this.dynamicCollisionDebug = this.add.graphics().setDepth(15001);
     this.combat = new CombatSystem(this, this.state, this.player, this.enemies, gameEvents);
     this.createLootPool();
     this.currentZone = null;
@@ -142,7 +143,9 @@ export class WorldScene extends Phaser.Scene {
       body.colliderSource = collider.source;
     }
     if (DEBUG) {
-      const collisionDebug = this.add.graphics().setDepth(15000).lineStyle(2, 0x38ff76, 0.72);
+      // Static blockers are green. Phaser's all-body debug renderer stays off so
+      // diagnostics show only collision surfaces that matter to traversal.
+      const collisionDebug = this.add.graphics().setDepth(15000).lineStyle(2, 0x38ff76, 0.82);
       for (const collider of COLLIDERS) collisionDebug.strokeRect(collider.x - collider.width / 2, collider.y - collider.height / 2, collider.width, collider.height);
     }
     this.enemyGroup = this.physics.add.group({ allowGravity: false, immovable: false });
@@ -342,7 +345,13 @@ export class WorldScene extends Phaser.Scene {
     if (action === 'gilded') moveNear(this.enemies.find(enemy => enemy.sprite.active && enemy.def.id === 'enemy_gilded_guard')?.sprite);
     if (action === 'boss') moveNear(this.enemies.find(enemy => enemy.sprite.active && enemy.def.named)?.sprite);
     if (action === 'heart') this.dropLoot(this.player.body.x + 28, this.player.body.y, this.inventory.createItem('quest_ember_heart', 'normal'));
-    if (action === 'noble') this.inventory.add(this.inventory.createItem('head_warden', 'noble'));
+    if (action === 'magichelm') {
+      // This diagnostic must grant a real player-compatible item, not the old
+      // NPC-only Warden Helm that cannot render the full player combo.
+      this.state.player.level = Math.max(this.state.player.level, 2);
+      this.state.player.stats.str = Math.max(this.state.player.stats.str, 7);
+      this.inventory.add(this.inventory.createItem('head_bronze_revised', 'magic'));
+    }
     if (action === 'gear115') {
       // Make the development gear immediately testable without requiring a
       // full progression grind. This helper exists only when ?debug=1.
@@ -389,8 +398,24 @@ export class WorldScene extends Phaser.Scene {
 
   safeSave() { try { this.saveManager.save(this.state); } catch (error) { console.warn('[Ashfall] Save failed', error); gameEvents.emit('toast', { text: 'Save could not be written on this device.', tone: 'danger' }); } }
 
+  drawDynamicCollisionDebug() {
+    if (!this.dynamicCollisionDebug) return;
+    const graphics = this.dynamicCollisionDebug;
+    graphics.clear();
+    const drawBody = (body, color, alpha = 0.9) => {
+      if (!body?.enable) return;
+      graphics.lineStyle(2, color, alpha).strokeRect(body.x, body.y, body.width, body.height);
+    };
+    // Cyan = player's actual compact movement footprint.
+    drawBody(this.player?.body?.body, 0x38d7ff, 0.95);
+    // Magenta = active enemy footprints. These are informational only; enemies
+    // do not physically shove the player.
+    for (const enemy of this.enemies || []) if (enemy.sprite?.active) drawBody(enemy.sprite.body, 0xff4bd8, 0.55);
+  }
+
   update(time, delta) {
     this.player.update(time, delta);
+    if (DEBUG) this.drawDynamicCollisionDebug();
     if (actionInput.consumeInteract()) this.interact();
     for (const enemy of this.enemies) enemy.update(time, delta, this.player);
     for (const npc of this.npcs) npc.update(time, delta, this.player);

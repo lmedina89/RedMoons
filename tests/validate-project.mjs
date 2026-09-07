@@ -33,6 +33,10 @@ const worldSource = await readFile(path.join(dist, 'js/scenes/WorldScene.js'), '
 const actionInputSource = await readFile(path.join(dist, 'js/systems/ActionInput.js'), 'utf8');
 const combatSource = await readFile(path.join(dist, 'js/systems/CombatSystem.js'), 'utf8');
 const layeredSource = await readFile(path.join(dist, 'js/entities/LayeredCharacter.js'), 'utf8');
+const playerSource = await readFile(path.join(dist, 'js/entities/Player.js'), 'utf8');
+const enemySource = await readFile(path.join(dist, 'js/entities/Enemy.js'), 'utf8');
+const mainSource = await readFile(path.join(dist, 'js/main.js'), 'utf8');
+const saveSource = await readFile(path.join(dist, 'js/core/SaveManager.js'), 'utf8');
 for (const required of ['vendor/phaser.min.js', 'js/main.js', 'css/game.css', 'viewport-fit=cover']) assert.ok(html.includes(required), `index.html missing ${required}`);
 assert.ok(html.includes('data-panel="character"'), 'HUD must expose the Character sheet');
 assert.ok(uiSource.includes('Equipment Buffs') && uiSource.includes('Active Effects'), 'Character overview must expose gear buffs and effect status');
@@ -43,13 +47,17 @@ assert.ok(combatSource.includes('cooldownMs: 2400'), 'Empty-swing combat feedbac
 assert.ok(worldSource.includes('queueKillReward') && worldSource.includes('delayedCall(320'), 'Horde kill rewards must be batched');
 assert.ok(layeredSource.includes('ROOT_X') && layeredSource.includes('baseAsset') && layeredSource.includes("equipmentPolicy === 'player'"), 'Renderer must stabilize revised root motion and support actor-specific bases/equipment policies');
 assert.ok(!html.includes('90_user_generated'), 'Prototype-only generator assets must not ship');
-assert.ok(html.includes('v0.1.2.1'), 'Build shell must identify v0.1.2.1');
+assert.ok(html.includes('v0.1.2.2'), 'Build shell must identify v0.1.2.2');
 assert.ok(worldSource.includes('playerLootEligible') && worldSource.includes('actionInput.setTouchMovement'), 'WorldScene must enforce player-loot eligibility and route touch vectors through ActionInput');
 assert.ok(worldSource.includes('startFollow(this.player.body, true, 1, 1)'), 'Camera must track the player without delayed catch-up that looks like reverse sliding');
 assert.ok(!worldSource.includes('this.physics.add.collider(this.player.body, this.enemyGroup)'), 'Enemies must not physically shove the player through dynamic body separation');
+assert.ok(playerSource.includes("physics.add.sprite(state.player.x, state.player.y, 'solid').setVisible(false)") && playerSource.includes('setSize(16, 14, false).setOffset(-7, 2)') && !playerSource.includes("'solid').setAlpha(0.001).setDisplaySize"), 'Player physics proxy must stay unscaled with a compact foot-area body');
+assert.ok(enemySource.includes("physics.add.sprite(0, 0, 'solid').setVisible(false)") && enemySource.includes('setSize(18, 16, false).setOffset(-8, 2)') && enemySource.includes('setVisible(!this.layered)') && !enemySource.includes("'solid').setAlpha(0.001).setDisplaySize(25, 30)"), 'Layered enemy physics proxies must stay compact, unscaled, and visually hidden across respawns');
+assert.ok(mainSource.includes('debug: false') && worldSource.includes('drawDynamicCollisionDebug') && worldSource.includes('0x38d7ff') && worldSource.includes('0xff4bd8'), 'Debug mode must use targeted collision overlays instead of Phaser global body clutter');
 assert.ok(worldSource.includes("command.type === 'dropItem' || command.type === 'destroyItem'"), 'WorldScene must handle inventory drop/destroy commands');
 assert.ok(uiSource.includes('touchend') && uiSource.includes('capture: true') && uiSource.includes('Confirm Destroy'), 'Mobile input and discard confirmation must be hardened in the UI');
 assert.ok(worldSource.includes("action === 'gear115'") && html.includes('Add 0.1.2 Gear'), 'Debug build must expose the v0.1.1.5 gear regression helper');
+assert.ok(worldSource.includes("action === 'magichelm'") && worldSource.includes("createItem('head_bronze_revised', 'magic')") && html.includes('Add Magic Bronze Helm') && !html.includes('Add Noble Helm'), 'Debug helmet helper must grant player-compatible Magic Bronze War Helm');
 
 const ids = groups => Object.values(groups).map(value => value.id);
 for (const registry of [ITEM_DEFS, ENEMY_DEFS, NPC_DEFS, QUEST_DEFS]) assert.equal(new Set(ids(registry)).size, ids(registry).length, 'Stable content IDs must be unique');
@@ -91,7 +99,17 @@ for (const itemId of ['weapon_brass_arming_sword', 'weapon_iron_arming_sword', '
   assert.equal(item.animationClass, 'full_combo', `${itemId} must declare full combo coverage`);
   assert.equal(item.presentation?.worldGlow, 'rarity', `${itemId} must carry future rarity glow metadata`);
 }
-for (const quest of Object.values(QUEST_DEFS)) assert.ok(NPC_DEFS[quest.giver], `Quest references unknown giver ${quest.giver}`);
+for (const quest of Object.values(QUEST_DEFS)) {
+  assert.ok(NPC_DEFS[quest.giver], `Quest references unknown giver ${quest.giver}`);
+  const rewardId = quest.rewards?.item?.itemId;
+  if (rewardId) {
+    const reward = ITEM_DEFS[rewardId];
+    assert.ok(reward, `Quest ${quest.id} rewards unknown item ${rewardId}`);
+    if (reward.slot) assert.ok(reward.playerEquipReady !== false && !reward.npcOnly && !(reward.slot === 'weapon' && reward.playerCombatReady === false), `Quest ${quest.id} must not reward NPC/legacy-only player gear: ${rewardId}`);
+  }
+}
+assert.equal(QUEST_DEFS.quest_ember_heart.rewards.item.itemId, 'feet_leather_revised', 'Ember Heart quest should reward compatible Ashrunner boots');
+assert.equal(QUEST_DEFS.quest_bone_captain.rewards.item.itemId, 'head_iron_revised', 'Bone Captain quest should reward compatible Iron War Helm');
 
 for (const def of Object.values(ITEM_DEFS)) {
   if (!def.visual) continue;
@@ -384,10 +402,26 @@ const normalizedOldArmor = saveManager.validate(oldArmorSave);
 for (const slot of ['chest', 'legs', 'hands', 'feet']) assert.equal(normalizedOldArmor.equipment[slot], null);
 assert.ok(normalizedOldArmor.inventory.some(item => item.instanceId === 'i_000002'));
 
+const legacyRewardSave = createDefaultState();
+legacyRewardSave.inventory.push({ instanceId: 'i_old_warden_reward', itemId: 'head_warden', rarity: 'noble', enhancement: 2, modifiers: { defense: 2 } });
+legacyRewardSave.inventory.push({ instanceId: 'i_old_cinderhide_reward', itemId: 'chest_cinderhide', rarity: 'magic', enhancement: 1, modifiers: { maxHp: 8 } });
+const normalizedLegacyRewards = saveManager.validate(legacyRewardSave);
+const recoveredHelm = normalizedLegacyRewards.inventory.find(item => item.instanceId === 'i_old_warden_reward');
+const recoveredLeather = normalizedLegacyRewards.inventory.find(item => item.instanceId === 'i_old_cinderhide_reward');
+assert.equal(recoveredHelm.itemId, 'head_iron_revised');
+assert.equal(recoveredHelm.rarity, 'noble');
+assert.equal(recoveredHelm.enhancement, 2);
+assert.equal(recoveredHelm.modifiers.defense, 2);
+assert.equal(recoveredLeather.itemId, 'feet_leather_revised');
+assert.equal(recoveredLeather.rarity, 'magic');
+assert.equal(recoveredLeather.enhancement, 1);
+assert.equal(recoveredLeather.modifiers.maxHp, 8);
+assert.ok(saveSource.includes('legacyPlayerRewardMap'), 'Save normalization must preserve a narrow legacy reward recovery map');
+
 const wrongSlotSave = createDefaultState();
 wrongSlotSave.equipment.head = 'i_000001'; // Arming Sword cannot occupy Head.
 const normalizedWrongSlot = saveManager.validate(wrongSlotSave);
 assert.equal(normalizedWrongSlot.equipment.head, null, 'Wrong-slot saved equipment must be discarded');
 assert.equal(normalizedWrongSlot.equipment.weapon, 'i_000001', 'Valid weapon reference must survive normalization');
 
-console.log(`Validated ${ASSET_DEFS.length} assets, ${Object.keys(ITEM_DEFS).length} items, ${Object.keys(ENEMY_DEFS).length} enemies, ${Object.keys(NPC_DEFS).length} NPCs, ${BUILDING_DEFS.length} refuge buildings, ${COLLIDERS.length} visible-source colliders, ${Object.keys(QUEST_DEFS).length} quests, v0.1.2.1 traversal/toast hotfix, red-haired protagonist, layered NPC/skeleton loadouts, enemy-family expansion, zone metadata, named-set scaffolding, player-safe loot, four-hit combat geometry, hardened mobile movement, inventory recovery, and save schema 1.`);
+console.log(`Validated ${ASSET_DEFS.length} assets, ${Object.keys(ITEM_DEFS).length} items, ${Object.keys(ENEMY_DEFS).length} enemies, ${Object.keys(NPC_DEFS).length} NPCs, ${BUILDING_DEFS.length} refuge buildings, ${COLLIDERS.length} visible-source colliders, ${Object.keys(QUEST_DEFS).length} quests, v0.1.2.2 actor-collision/reward-recovery hotfix, red-haired protagonist, layered NPC/skeleton loadouts, enemy-family expansion, zone metadata, named-set scaffolding, player-safe loot, four-hit combat geometry, hardened mobile movement, inventory recovery, and save schema 1.`);

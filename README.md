@@ -1,8 +1,17 @@
-# Hell RPG v0.1.2.1 — Collision & Toast Hotfix
+# Hell RPG v0.1.2.2 — Actor Collision & Reward Recovery Hotfix
 
 Ashfall Foundation is an original, mobile-first single-player pixel action RPG built with Phaser 3, JavaScript and HTML/CSS. Its progression/combat philosophy is inspired by the feel of classic grind-heavy MMORPGs, while all Hell RPG names, world content and implementation remain original.
 
-v0.1.2.1 is a narrow stabilization hotfix built directly on v0.1.2. It keeps save schema 1 and preserves the world/enemy-variety milestone while correcting traversal and routine notification UX.
+v0.1.2.2 is a narrow stabilization hotfix built directly on v0.1.2.1. It keeps save schema 1 and fixes oversized invisible actor collision proxies, cleans up collision diagnostics, and replaces old NPC-only player rewards/debug grants with full-combo player-compatible gear.
+
+## What is new in v0.1.2.2
+
+- Fixed the root cause of the remaining invisible “force fields”: the player and layered enemies used a 2×2 invisible physics texture that was visually scaled before `body.setSize()`, causing Arcade Physics to multiply the intended body dimensions into huge rectangles. Actor proxies now remain unscaled and use compact foot-area bodies.
+- `?debug=1` now uses targeted collision diagnostics instead of Phaser's global body overlay: static blockers are green, the player's actual movement footprint is cyan, and enemy footprints are faint magenta.
+- The debug helmet helper now grants a **Magic Bronze War Helm** and raises only the minimum test requirements needed to equip it. It no longer grants the NPC-only Warden Helm.
+- Quest equipment rewards are now player-compatible: A Heart Still Burning awards Magic Ashrunner Leather Boots, and The Bone Road Warden awards a Noble Iron War Helm.
+- Save loading converts legacy player-held Warden Helms and Cinderhide Jerkins from those older rewards into compatible replacements while preserving item instance, rarity, enhancement, and modifiers.
+- Save schema remains 1.
 
 ## What is new in v0.1.2
 

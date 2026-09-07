@@ -32,8 +32,11 @@ export class Enemy {
     this.callbacks = callbacks;
     this.layered = Boolean(definition.layered);
     if (this.layered) {
-      this.sprite = scene.physics.add.sprite(0, 0, 'solid').setAlpha(0.001).setDisplaySize(25, 30);
-      this.sprite.body.setSize(18, 22).setOffset(0, 4);
+      this.sprite = scene.physics.add.sprite(0, 0, 'solid').setVisible(false);
+      // Keep layered actors on an unscaled helper sprite. Scaling the 2x2
+      // texture also scales Arcade body dimensions and creates huge phantom
+      // rectangles in diagnostics and proximity behavior.
+      this.sprite.body.setSize(18, 16, false).setOffset(-8, 2);
       this.actorState = createActorEquipmentState({});
       this.visual = new LayeredCharacter(scene, 0, 0, this.actorState, (definition.scale || 1) * 1.3, {
         baseAsset: definition.baseVisual || 'enemy_skeleton_base',
@@ -73,7 +76,7 @@ export class Enemy {
     const usableH = Math.max(1, this.spawn.height - margin * 2);
     this.homeX = this.spawn.x + margin + ((this.index * 137 + Math.random() * 71) % usableW);
     this.homeY = this.spawn.y + margin + ((this.index * 83 + Math.random() * 53) % usableH);
-    this.sprite.setPosition(this.homeX, this.homeY).setActive(true).setVisible(true).clearTint();
+    this.sprite.setPosition(this.homeX, this.homeY).setActive(true).setVisible(!this.layered).clearTint();
     this.sprite.body.enable = true;
     this.hp = this.def.maxHp;
     this.state = 'idle';

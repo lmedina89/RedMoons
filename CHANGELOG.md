@@ -1,5 +1,15 @@
 # Changelog
 
+
+## v0.1.2.2 — Actor Collision & Reward Recovery Hotfix
+
+- Corrected the player and layered-enemy invisible Arcade proxies: the 2×2 helper texture is no longer display-scaled before body sizing, eliminating the giant dynamic collision rectangles that behaved like invisible force fields around visible buildings.
+- Replaced the noisy global Phaser body overlay in `?debug=1` with targeted collision audit rendering: green static blockers, cyan player footprint, faint-magenta enemy footprints.
+- Changed the debug helmet grant from the NPC-only Warden Helm to a player-compatible Magic Bronze War Helm and supplies only its minimum test requirements.
+- Replaced old NPC-only quest equipment rewards with player-ready rewards (Magic Ashrunner Leather Boots and Noble Iron War Helm).
+- Added schema-1 save normalization that upgrades legacy Warden Helm/Cinderhide quest or diagnostic instances to compatible replacements without discarding rarity/modifiers.
+- Preserved all v0.1.2.1 toast, visible-wall collision, world/enemy-variety, loadout, inventory recovery and movement hardening work.
+
 ## v0.1.2.1 — Collision & Toast Hotfix
 
 - Rebuilt Cinder Refuge perimeter collision from the same `REFUGE_WALLS` data used to draw the visible walls, eliminating art/physics drift.

@@ -37,9 +37,16 @@ export class SaveManager {
     state.player.currency = this.number(value.player.currency, 0, 99999999, 0);
     for (const key of ['str', 'dex', 'vit', 'spr']) state.player.stats[key] = this.number(value.player.stats[key], 1, 500, 5);
 
+    const legacyPlayerRewardMap = Object.freeze({
+      // These NPC-only pieces were granted to players by older quest/debug
+      // helpers. Convert the item instance in place so rarity/modifiers and
+      // inventory identity survive while the replacement is actually usable.
+      head_warden: 'head_iron_revised',
+      chest_cinderhide: 'feet_leather_revised'
+    });
     state.inventory = value.inventory.slice(0, 80).filter(item => plainObject(item) && typeof item.instanceId === 'string' && typeof item.itemId === 'string' && ITEM_DEFS[item.itemId]).map(item => ({
       instanceId: item.instanceId.slice(0, 64),
-      itemId: item.itemId.slice(0, 64),
+      itemId: legacyPlayerRewardMap[item.itemId] || item.itemId.slice(0, 64),
       rarity: typeof item.rarity === 'string' ? item.rarity : 'normal',
       enhancement: this.number(item.enhancement, 0, 9, 0),
       modifiers: plainObject(item.modifiers) ? Object.fromEntries(Object.entries(item.modifiers).filter(([, v]) => finite(v)).slice(0, 8)) : {}

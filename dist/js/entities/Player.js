@@ -9,8 +9,11 @@ export class Player {
     this.state = state;
     this.input = input;
     this.onAttack = onAttack;
-    this.body = scene.physics.add.sprite(state.player.x, state.player.y, 'solid').setAlpha(0.001).setDisplaySize(25, 28);
-    this.body.body.setSize(18, 20).setOffset(0, 6).setCollideWorldBounds(true);
+    this.body = scene.physics.add.sprite(state.player.x, state.player.y, 'solid').setVisible(false);
+    // The proxy texture is only 2x2. Never scale the GameObject before setSize():
+    // Arcade applies display scale to body dimensions, which previously turned
+    // this compact footprint into a several-hundred-pixel invisible force field.
+    this.body.body.setSize(16, 14, false).setOffset(-7, 2).setCollideWorldBounds(true);
     this.visual = new LayeredCharacter(scene, this.body.x, this.body.y, state);
     this.attackStarted = -Infinity;
     this.currentAttack = null;

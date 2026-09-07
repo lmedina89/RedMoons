@@ -8,3 +8,8 @@
 - Building interiors are not enterable yet. The refuge buildings are exterior world structures with collision footprints.
 - The supplied v0.1.2 enemy/humanoid/castle art does not yet have complete final attribution records in the project. It is authorized by the user for development/testing but remains a release-readiness item before store/commercial distribution.
 - The player starter clothing pool still lacks a complete full-combo low-level clothing set, so visible equipment progression remains more convincing after the first compatible armor drops.
+
+
+## v0.1.2.2 collision note
+
+Actor collision proxies now use unscaled 2x2 helper sprites with compact foot-area Arcade bodies. Do not reintroduce `setDisplaySize()` on `solid` actor proxies before `body.setSize()`, because Arcade body dimensions inherit GameObject scale.

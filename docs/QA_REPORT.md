@@ -27,3 +27,11 @@ Hotfix focus: verify the refuge east opening is freely traversable, every static
 ## Known manual-only areas
 
 Browser rendering, exact art alignment, touch feel, Safari lifecycle behavior and performance under a real horde still require physical-device observation. Automated validation cannot certify visual taste or iOS event delivery.
+
+
+## v0.1.2.2 targeted regression
+
+- Walk through Cinder Refuge center, east gate, every building approach, Scorched Outskirts and Bone Road with `?debug=1`. Green boxes must match visible static blockers; the cyan player footprint must stay compact around the feet.
+- Spawn several layered skeleton variants; faint-magenta enemy footprints must remain compact and must not shove the player.
+- Use Add Magic Bronze Helm and verify it equips after the helper grants minimum requirements.
+- Verify old saves containing Warden Helm/Cinderhide reward instances normalize to player-compatible replacements.
