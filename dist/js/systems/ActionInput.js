@@ -6,7 +6,9 @@ export class ActionInput {
     this.interactQueued = false;
     this.run = false;
     this.keys = null;
-    this.touchMoving = false;
+    this.touchActive = false;
+    this.touchX = 0;
+    this.touchY = 0;
   }
 
   bind(scene) {
@@ -20,36 +22,46 @@ export class ActionInput {
     scene.input.keyboard.on('keydown-Q', () => window.dispatchEvent(new CustomEvent('ashfall-ui', { detail: { action: 'quests' } })));
   }
 
-  setTouchMove(x, y, active = true) {
-    const clamp = value => Math.max(-1, Math.min(1, Number.isFinite(value) ? value : 0));
-    let nextX = clamp(x);
-    let nextY = clamp(y);
+  setTouchMovement(x, y, active = true) {
+    let nextX = Number.isFinite(Number(x)) ? Number(x) : 0;
+    let nextY = Number.isFinite(Number(y)) ? Number(y) : 0;
     const length = Math.hypot(nextX, nextY);
-    if (!active || length < 0.08) {
-      this.resetTouchMovement();
-      return;
-    }
     if (length > 1) { nextX /= length; nextY /= length; }
-    this.moveX = nextX;
-    this.moveY = nextY;
-    this.touchMoving = true;
-    window.__ashfallTouchMoving = true;
+    const moving = Boolean(active) && Math.hypot(nextX, nextY) >= 0.08;
+    this.touchActive = moving;
+    this.touchX = moving ? nextX : 0;
+    this.touchY = moving ? nextY : 0;
+    if (!moving) { this.moveX = 0; this.moveY = 0; }
+    if (typeof window !== 'undefined') window.__ashfallTouchMoving = moving;
   }
 
   resetTouchMovement() {
+    this.touchActive = false;
+    this.touchX = 0;
+    this.touchY = 0;
     this.moveX = 0;
     this.moveY = 0;
-    this.touchMoving = false;
-    window.__ashfallTouchMoving = false;
+    if (typeof window !== 'undefined') {
+      window.__ashfallTouchMoving = false;
+      window.__ashfallRun = false;
+    }
   }
 
   update() {
     if (!this.keys) return;
     const keyboardX = (this.keys.right.isDown || this.keys.right2.isDown ? 1 : 0) - (this.keys.left.isDown || this.keys.left2.isDown ? 1 : 0);
     const keyboardY = (this.keys.down.isDown || this.keys.down2.isDown ? 1 : 0) - (this.keys.up.isDown || this.keys.up2.isDown ? 1 : 0);
-    if (keyboardX || keyboardY) { this.moveX = keyboardX; this.moveY = keyboardY; }
-    else if (!this.touchMoving) { this.moveX = 0; this.moveY = 0; }
-    this.run = this.keys.run.isDown || window.__ashfallRun === true;
+    if (keyboardX || keyboardY) {
+      this.moveX = keyboardX;
+      this.moveY = keyboardY;
+    } else if (this.touchActive) {
+      this.moveX = this.touchX;
+      this.moveY = this.touchY;
+    } else {
+      this.moveX = 0;
+      this.moveY = 0;
+    }
+    this.run = this.keys.run.isDown || (typeof window !== 'undefined' && window.__ashfallRun === true);
     if (Phaser.Input.Keyboard.JustDown(this.keys.attack)) this.attackQueued = true;
     if (Phaser.Input.Keyboard.JustDown(this.keys.interact)) this.interactQueued = true;
   }

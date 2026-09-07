@@ -15,14 +15,18 @@ export class UIManager {
     this.snapshot = null;
     this.panel = null;
     this.selectedItem = null;
+    this.pendingItemAction = null;
     this.characterTab = 'overview';
     this.pendingStats = { str: 0, dex: 0, vit: 0, spr: 0 };
     this.confirmingStats = false;
     this.dialogueOpenAt = 0;
+    this.activeMovePointerId = null;
+    this.stopTouchMovement = null;
+    this.toastElement = null;
     this.toastTimer = null;
+    this.toastVisibleUntil = 0;
+    this.toastPriority = -1;
     this.toastCooldowns = new Map();
-    this.activeToastPriority = -1;
-    this.resetTouchMovement = () => {};
     this.bindEvents();
     this.bindTouchControls();
     if (DEBUG) {
@@ -38,7 +42,7 @@ export class UIManager {
     gameEvents.on('zone', zone => { $('#zone-name').textContent = zone.name; $('#zone-danger').textContent = zone.danger; });
     gameEvents.on('toast', data => this.toast(data));
     gameEvents.on('dialogue', data => this.showDialogue(data));
-    gameEvents.on('death', data => { this.resetTouchMovement(); window.__ashfallUiBlocked = true; $('#death-text').textContent = data.text; $('#death-screen').classList.remove('hidden'); });
+    gameEvents.on('death', data => { this.stopTouchMovement?.(); window.__ashfallUiBlocked = true; $('#death-text').textContent = data.text; $('#death-screen').classList.remove('hidden'); });
     gameEvents.on('death-cleared', () => { $('#death-screen').classList.add('hidden'); window.__ashfallUiBlocked = false; });
 
     document.querySelectorAll('[data-panel]').forEach(button => button.addEventListener('click', () => this.openPanel(button.dataset.panel)));
@@ -54,21 +58,10 @@ export class UIManager {
   bindTouchControls() {
     const joystick = $('#joystick');
     const knob = $('#joystick-knob');
-    let activePointerId = null;
 
-    const stop = (event = null, force = false) => {
-      if (!force && activePointerId !== null && event?.pointerId !== activePointerId) return;
-      const pointerId = activePointerId;
-      activePointerId = null;
-      if (pointerId !== null && joystick.hasPointerCapture?.(pointerId)) {
-        try { joystick.releasePointerCapture(pointerId); } catch (_) { /* Safari may already have released it. */ }
-      }
-      knob.style.transform = 'translate(0, 0)';
-      gameEvents.emit('command', { type: 'move', x: 0, y: 0, active: false });
-    };
-
+    const emitMove = (x, y, active) => gameEvents.emit('command', { type: 'move', x, y, active });
     const update = event => {
-      if (activePointerId !== event.pointerId) return;
+      if (this.activeMovePointerId !== event.pointerId) return;
       event.preventDefault();
       const rect = joystick.getBoundingClientRect();
       const cx = rect.left + rect.width / 2;
@@ -79,27 +72,46 @@ export class UIManager {
       const len = Math.hypot(dx, dy);
       if (len > max) { dx = dx / len * max; dy = dy / len * max; }
       knob.style.transform = `translate(${dx}px, ${dy}px)`;
-      gameEvents.emit('command', { type: 'move', x: dx / max, y: dy / max, active: len >= max * 0.08 });
+      emitMove(dx / max, dy / max, true);
     };
+    const stop = (event = null, force = false) => {
+      if (!force && event && this.activeMovePointerId !== event.pointerId) return;
+      const pointerId = this.activeMovePointerId;
+      this.activeMovePointerId = null;
+      if (pointerId !== null && joystick.hasPointerCapture?.(pointerId)) {
+        try { joystick.releasePointerCapture(pointerId); } catch { /* capture may already be gone */ }
+      }
+      knob.style.transform = 'translate(0, 0)';
+      emitMove(0, 0, false);
+    };
+    this.stopTouchMovement = () => stop(null, true);
 
     joystick.addEventListener('pointerdown', event => {
-      if (activePointerId !== null) return;
+      // If Safari lost a previous pointer-up, a fresh joystick touch becomes
+      // authoritative instead of being ignored behind a stale pointer id.
+      if (this.activeMovePointerId !== null && this.activeMovePointerId !== event.pointerId) stop(null, true);
       event.preventDefault();
-      activePointerId = event.pointerId;
-      try { joystick.setPointerCapture(event.pointerId); } catch (_) { /* Global release listeners remain as a fallback. */ }
+      this.activeMovePointerId = event.pointerId;
+      try { joystick.setPointerCapture(event.pointerId); } catch { /* capture is best-effort */ }
       update(event);
     });
     joystick.addEventListener('pointermove', update);
-    joystick.addEventListener('pointerup', event => stop(event));
-    joystick.addEventListener('pointercancel', event => stop(event));
-    joystick.addEventListener('lostpointercapture', event => stop(event));
-    window.addEventListener('pointerup', event => stop(event), true);
-    window.addEventListener('pointercancel', event => stop(event), true);
-    window.addEventListener('blur', () => stop(null, true));
-    window.addEventListener('pagehide', () => stop(null, true));
-    window.addEventListener('orientationchange', () => stop(null, true));
-    document.addEventListener('visibilitychange', () => { if (document.hidden) stop(null, true); });
-    this.resetTouchMovement = () => stop(null, true);
+    joystick.addEventListener('pointerup', stop);
+    joystick.addEventListener('pointercancel', stop);
+    joystick.addEventListener('lostpointercapture', stop);
+    // Capture-phase document/window listeners survive more iOS Safari edge
+    // cases than relying on the joystick's pointer capture alone.
+    document.addEventListener('pointerup', stop, { passive: true, capture: true });
+    document.addEventListener('pointercancel', stop, { passive: true, capture: true });
+    window.addEventListener('pointerup', stop, { passive: true, capture: true });
+    window.addEventListener('pointercancel', stop, { passive: true, capture: true });
+    const stopWhenNoTouchesRemain = event => { if (!event.touches || event.touches.length === 0) stop(null, true); };
+    document.addEventListener('touchend', stopWhenNoTouchesRemain, { passive: true, capture: true });
+    document.addEventListener('touchcancel', stopWhenNoTouchesRemain, { passive: true, capture: true });
+    window.addEventListener('blur', this.stopTouchMovement, { passive: true });
+    window.addEventListener('pagehide', this.stopTouchMovement, { passive: true });
+    window.addEventListener('orientationchange', this.stopTouchMovement, { passive: true });
+    document.addEventListener('visibilitychange', () => { if (document.hidden) this.stopTouchMovement?.(); }, { passive: true });
 
     $('#attack-button').addEventListener('pointerdown', event => { event.preventDefault(); gameEvents.emit('command', { type: 'attack' }); });
     $('#interact-button').addEventListener('pointerup', event => { event.preventDefault(); gameEvents.emit('command', { type: 'interact' }); });
@@ -124,7 +136,7 @@ export class UIManager {
   }
 
   openPanel(requestedPanel) {
-    this.resetTouchMovement();
+    this.stopTouchMovement?.();
     const panel = requestedPanel === 'stats' ? 'character' : requestedPanel;
     if (!this.snapshot || !['inventory', 'character', 'quests'].includes(panel)) return;
     this.panel = panel;
@@ -171,7 +183,7 @@ export class UIManager {
     }).join('');
     const selected = items.find(item => item.instanceId === this.selectedItem);
     $('#modal-content').innerHTML = `<div class="inventory-layout"><div><h3 class="section-heading">Equipped</h3><div class="equipment-strip">${this.equipmentSlotCards(state, { interactive: true })}</div><h3 class="section-heading inventory-heading">Pack</h3><div class="inventory-grid">${slots}</div><p class="empty-copy">${items.length}/30 slots • ${state.player.currency} ash coin</p></div><div class="item-details">${selected ? this.itemDetails(selected, equippedIds.has(selected.instanceId)) : '<h3>Select an item</h3><p>Tap gear to inspect its requirements, modifiers and equipped comparison. Multiple armor slots can be worn at the same time.</p>'}</div></div>`;
-    document.querySelectorAll('[data-item]').forEach(button => button.addEventListener('click', () => { this.selectedItem = button.dataset.item; this.renderInventory(); }));
+    document.querySelectorAll('[data-item]').forEach(button => button.addEventListener('click', () => { if (this.selectedItem !== button.dataset.item) this.pendingItemAction = null; this.selectedItem = button.dataset.item; this.renderInventory(); }));
     document.querySelectorAll('[data-equipped-item]').forEach(card => {
       const select = () => { this.selectedItem = card.dataset.equippedItem; this.renderInventory(); };
       card.addEventListener('click', select);
@@ -179,6 +191,20 @@ export class UIManager {
     });
     $('[data-equip]')?.addEventListener('click', event => { gameEvents.emit('command', { type: 'equip', instanceId: event.currentTarget.dataset.equip }); setTimeout(() => this.panel === 'inventory' && this.renderInventory(), 0); });
     $('[data-unequip]')?.addEventListener('click', event => { gameEvents.emit('command', { type: 'unequip', slot: event.currentTarget.dataset.unequip }); setTimeout(() => this.panel === 'inventory' && this.renderInventory(), 0); });
+    document.querySelectorAll('[data-item-action]').forEach(button => button.addEventListener('click', () => {
+      const action = button.dataset.itemAction;
+      const instanceId = button.dataset.instanceId;
+      if (button.disabled) return;
+      if (this.pendingItemAction?.action === action && this.pendingItemAction?.instanceId === instanceId) {
+        this.pendingItemAction = null;
+        gameEvents.emit('command', { type: action === 'drop' ? 'dropItem' : 'destroyItem', instanceId });
+        setTimeout(() => this.panel === 'inventory' && this.renderInventory(), 0);
+        return;
+      }
+      this.pendingItemAction = { action, instanceId };
+      this.renderInventory();
+    }));
+    $('[data-item-action-cancel]')?.addEventListener('click', () => { this.pendingItemAction = null; this.renderInventory(); });
   }
 
   itemDetails(item, equipped) {
@@ -192,7 +218,14 @@ export class UIManager {
     const equippedItemId = this.snapshot.state.equipment[def.slot];
     const equippedItem = this.snapshot.state.inventory.find(candidate => candidate.instanceId === equippedItemId);
     const compare = equippedItem && equippedItem.instanceId !== item.instanceId ? this.comparisonText(item, equippedItem) : '';
-    return `<h3 style="color:${rarity.color}">${def.name}</h3><span class="rarity-label" style="color:${rarity.color}">${rarity.label}</span><p>${def.slot ? this.slotLabel(def.slot).toUpperCase() : 'QUEST ITEM'} • Enhancement +${item.enhancement || 0} • Value ${def.value}</p><ul>${stats}</ul><p class="requirements">Base requirements: ${requirements}</p>${gate}${animation}${compare}<footer>${def.slot ? equipped ? `<button type="button" data-unequip="${def.slot}">Unequip</button>` : playerReady ? `<button type="button" data-equip="${item.instanceId}">Equip to ${this.slotLabel(def.slot)}</button>` : `<span class="requirements">Reserved for humanoid/NPC loadouts until a full animation export exists.</span>` : ''}</footer>`;
+    const protectedQuest = Boolean(def.questItem);
+    const pending = this.pendingItemAction?.instanceId === item.instanceId ? this.pendingItemAction.action : null;
+    const equipControl = def.slot ? equipped ? `<button type="button" data-unequip="${def.slot}">Unequip</button>` : playerReady ? `<button type="button" data-equip="${item.instanceId}">Equip to ${this.slotLabel(def.slot)}</button>` : `<span class="requirements">Reserved for humanoid/NPC loadouts until a full animation export exists.</span>` : '';
+    const dropLabel = pending === 'drop' ? 'Confirm Drop' : 'Drop';
+    const destroyLabel = pending === 'destroy' ? 'Confirm Destroy' : 'Destroy';
+    const discardControls = `<div class="item-discard-actions"><button type="button" data-item-action="drop" data-instance-id="${item.instanceId}" ${protectedQuest ? 'disabled' : ''}>${protectedQuest ? 'Drop (Quest)' : dropLabel}</button><button type="button" class="danger-action" data-item-action="destroy" data-instance-id="${item.instanceId}" ${protectedQuest ? 'disabled' : ''}>${protectedQuest ? 'Destroy (Quest)' : destroyLabel}</button>${pending ? '<button type="button" class="muted-action" data-item-action-cancel>Cancel</button>' : ''}</div>`;
+    const discardNote = protectedQuest ? '<p class="requirements">Quest item protected: it cannot be dropped or destroyed while it is needed for progression.</p>' : pending ? `<p class="discard-warning">Tap <strong>Confirm ${pending === 'drop' ? 'Drop' : 'Destroy'}</strong> again to continue.${equipped ? ' This will also unequip the item.' : ''}</p>` : '';
+    return `<h3 style="color:${rarity.color}">${def.name}</h3><span class="rarity-label" style="color:${rarity.color}">${rarity.label}</span><p>${def.slot ? this.slotLabel(def.slot).toUpperCase() : 'QUEST ITEM'} • Enhancement +${item.enhancement || 0} • Value ${def.value}</p><ul>${stats}</ul><p class="requirements">Base requirements: ${requirements}</p>${gate}${animation}${compare}<footer class="item-main-actions">${equipControl}</footer>${discardControls}${discardNote}`;
   }
 
   comparisonText(item, equippedItem) {
@@ -276,7 +309,7 @@ export class UIManager {
   }
 
   showDialogue(data) {
-    this.resetTouchMovement();
+    this.stopTouchMovement?.();
     if (DEBUG) console.info('[Ashfall diagnostics] dialogue received', data.speaker);
     window.__ashfallUiBlocked = true;
     this.dialogueOpenAt = performance.now();
@@ -287,39 +320,35 @@ export class UIManager {
     $('#dialogue-close').focus();
   }
 
-  toast({ text, tone = 'normal', short = false, key = text, cooldownMs = null }) {
+  toast({ text, tone = 'normal', short = false, cooldownMs = null }) {
+    if (!text) return;
     const now = performance.now();
-    const cooldown = cooldownMs ?? (tone === 'muted' || tone === 'combat' ? 1400 : 350);
-    const lastShown = this.toastCooldowns.get(key) ?? -Infinity;
+    const priorities = { muted: 0, combat: 1, normal: 2, magic: 2, noble: 3, quest: 4, level: 5, danger: 6 };
+    const priority = priorities[tone] ?? 2;
+    const key = `${tone}:${text}`;
+    const cooldown = cooldownMs ?? (tone === 'muted' ? 1600 : tone === 'combat' ? 300 : 0);
+    const blockedUntil = this.toastCooldowns.get(key) || 0;
+    if (now < blockedUntil) return;
+    if (cooldown > 0) this.toastCooldowns.set(key, now + cooldown);
+
+    if (this.toastElement && now < this.toastVisibleUntil && priority < this.toastPriority) return;
+
     const stack = $('#toast-stack');
-    const existing = stack.firstElementChild;
-    const priorities = { muted: 0, combat: 0, normal: 1, magic: 1, noble: 2, quest: 3, level: 3, danger: 4 };
-    const priority = priorities[tone] ?? 1;
-
-    if (now - lastShown < cooldown) {
-      if (existing?.dataset.toastKey === key) {
-        clearTimeout(this.toastTimer);
-        this.toastTimer = setTimeout(() => this.clearToast(existing), short ? 1200 : 2100);
-      }
-      return;
-    }
-    if (existing && priority < this.activeToastPriority) return;
-
-    this.toastCooldowns.set(key, now);
+    const element = this.toastElement || document.createElement('div');
     clearTimeout(this.toastTimer);
-    stack.replaceChildren();
-    const element = document.createElement('div');
     element.className = `toast ${tone}`;
-    element.dataset.toastKey = key;
     element.textContent = text;
-    stack.append(element);
-    this.activeToastPriority = priority;
-    this.toastTimer = setTimeout(() => this.clearToast(element), short ? 1200 : 2100);
-  }
-
-  clearToast(element) {
-    if (element?.isConnected) element.remove();
-    if (!$('#toast-stack').firstElementChild) this.activeToastPriority = -1;
-    this.toastTimer = null;
+    stack.replaceChildren(element);
+    this.toastElement = element;
+    this.toastPriority = priority;
+    const duration = short ? 950 : (priority >= 4 ? 2100 : 1450);
+    this.toastVisibleUntil = now + duration;
+    this.toastTimer = setTimeout(() => {
+      if (this.toastElement !== element) return;
+      element.remove();
+      this.toastElement = null;
+      this.toastPriority = -1;
+      this.toastVisibleUntil = 0;
+    }, duration);
   }
 }

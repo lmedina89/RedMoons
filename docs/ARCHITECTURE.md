@@ -36,7 +36,7 @@ The older `single_slash` profile remains for future humanoid/NPC loadouts and ot
 
 ## Combat and simulation
 
-A melee hit evaluates a forward area against every active enemy, so attacks are not coupled to a permanent target. Enemy definitions configure ranges, speed, timings, defense, leash and loot. A shared `isPlayerLootEligible` rule protects the normal drop path: explicit quest items are allowed, while equipment that is NPC-only, legacy-only, or otherwise incompatible with the current player animation/equip framework is rejected even if a stale loot-table entry references it. Runtime states cover idle, patrol, detect, chase, attack, recover, reposition and return.
+A melee hit evaluates a forward area against every active enemy, so attacks are not coupled to a permanent target. Enemy definitions configure ranges, speed, timings, defense, leash and loot. Runtime states cover idle, patrol, detect, chase, attack, recover, reposition and return.
 
 Enemy reasoning is throttled and distance-activated. Distant actors stop movement and avoid repeated decision work. Enemy actors are allocated once per spawn slot and reused after respawn. Damage numbers, hit sparks and physical loot drops use fixed pools.
 
@@ -52,6 +52,6 @@ The validator reconstructs a safe state, clamps numeric values, filters unknown 
 
 ## Input and UI
 
-`ActionInput` exposes movement, run, attack and interact actions independently from their source. Keyboard and touch controls feed the same commands. Touch movement is clamped/deadzoned through one setter, owns one active pointer at a time, and is force-reset when pointer capture is lost, the app backgrounds, orientation changes, or blocking UI takes control. The camera uses immediate player follow so camera catch-up cannot masquerade as leftward character drift. Attack input can remain queued through the current swing, allowing the next combo action to begin after recovery rather than requiring frame-perfect taps.
+`ActionInput` exposes movement, run, attack and interact actions independently from their source. Keyboard and touch controls feed the same commands. Attack input can remain queued through the current swing, allowing the next combo action to begin after recovery rather than requiring frame-perfect taps.
 
-Menus pause player control but do not own simulation data; they issue commands through the shared event bus. Routine notifications are presented through a single priority-aware/deduplicated toast so horde combat cannot stack large DOM panels over the playfield. Character Overview reads the same stat breakdown used by gameplay. Inventory and Character read the same explicit 12-slot equipment map, including the locked Wing presentation.
+Menus pause player control but do not own simulation data; they issue commands through the shared event bus. Character Overview reads the same stat breakdown used by gameplay. Inventory and Character read the same explicit 12-slot equipment map, including the locked Wing presentation.

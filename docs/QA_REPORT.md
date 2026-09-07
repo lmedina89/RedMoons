@@ -1,12 +1,30 @@
-# v0.1.1.3 QA report
+# v0.1.1.4 QA report — Inventory Recovery & Movement Hardening
+
+## v0.1.1.4 automated/source checks
+
+- Project validator passes all existing asset, animation, equipment, loot, stat and save-schema checks.
+- Player/enemy dynamic body collision is absent, preventing enemy chase/separation physics from moving the player after input stops.
+- Mobile joystick source includes capture-phase document/window pointer release/cancel handling, touch-end/touch-cancel fallbacks, stale-pointer takeover, lost-capture handling, visibility reset, page-hide reset and orientation reset.
+- InventorySystem can remove an exact item instance, clears any equipment slot referencing it, and refuses quest-critical removal by default.
+- UI exposes Drop and Destroy for ordinary items with two-tap confirmation; quest items show protected disabled controls.
+- World Drop returns the same instance to the physical loot system; Destroy permanently removes it.
+- Every JS/MJS file passes `node --check`.
+- Save schema remains 1.
+
+## v0.1.1.4 physical iPhone regression pass
+
+1. Travel right well into the enemy zones, release the joystick, and verify enemies can no longer shove/slide the player left. Repeat while several enemies are chasing from different sides.
+2. Hold/release the joystick repeatedly, drag outside its ring, attack/use while moving, and app-switch/rotate once. Movement must zero immediately on release/lifecycle loss.
+3. Fill the pack, select an ordinary unequipped item, tap Drop then Confirm Drop, verify one slot frees and the same item appears on the ground nearby, then pick it back up.
+4. Select an equipped item, Drop it, and verify it is safely unequipped, removed from the pack, rendered on the ground, and player visuals/stats update.
+5. Select an ordinary item, Destroy then Confirm Destroy, and verify it is permanently removed and the slot remains free after save/reload.
+6. Select the Living Ember Heart and confirm Drop/Destroy are visibly protected so the active quest cannot be bricked.
+
+---
+
+# v0.1.1.3 QA report — Mobile Input & Loot UX Hotfix
 
 ## Automated checks completed
-
-- The build shell and package identify v0.1.1.3 while save schema stays at 1.
-- Source guards verify immediate camera follow (`1,1` lerp), the centralized touch-vector reset path, joystick deadzone, and global pointer/background reset hooks.
-- Source guards verify one-toast replacement/deduplication and the 1.6-second attack-miss limiter.
-- Every enemy loot-table entry is validated through the shared player-loot eligibility rule; NPC-only/legacy incompatible equipment fails the build if reintroduced as a normal drop.
-- Equipment quest rewards are also validated as player-compatible.
 
 - `npm run check` validates all referenced runtime assets, stable content relationships, combat profiles, equipment stacking, wing gating, Character-sheet stat math, save normalization and animation geometry.
 - Animation geometry now validates explicit frame `sequence` values rather than assuming a simple frame count.
@@ -58,16 +76,16 @@ Automated/source checks cannot establish final iPhone feel or pixel-layer alignm
 6. Save, reload and verify all equipped slots/stat totals persist.
 7. Load an existing v0.1.1 browser save if available and verify it opens normally, keeps the rest of its previous equipment intact, and upgrades the equipped Rustblade to the Ashen Arming Sword.
 
-Any remaining visual alignment or touch/combo timing defects found on-device should be repaired in another v0.1.1.x hotfix before beginning the v0.1.2 town/enemy-loadout milestone.
+Any visual alignment or touch/combo timing defects found in that pass should be repaired as v0.1.1.1.x before beginning the v0.1.2 town/enemy-loadout milestone.
 
 
 ## v0.1.1.3 targeted regression checks
 
-- Walk continuously from Cinder Refuge far enough east for the camera to begin following. Release the joystick: the player should stop immediately and should not appear to drift/slide left while the camera catches up.
-- Drag the joystick right/left/up/down, release outside the ring, cancel a touch, open a menu while moving, background Safari, return, and rotate away/back. Every path should neutralize movement.
-- Hold movement with one finger while tapping Attack/Use with another; the secondary pointer must not steal or cancel joystick ownership.
-- Spam Attack in empty space. At most one compact “Your blade cuts only ash.” notice should be visible, with repeated taps suppressed for roughly 1.6 seconds.
-- Trigger several different messages quickly. Only one toast should occupy the playfield; high-priority quest/level/danger feedback may replace lower-priority combat/muted feedback.
-- Kill Cinder Imps, Ash Skeletons and Captain Ossivar repeatedly. No NPC-only/legacy equipment should drop. Living Ember Heart remains allowed because it is an explicit quest item.
-- Complete the equipment-rewarding quests and confirm the rewarded gear is player-compatible.
-- Load an older schema-1 save containing legacy gear and confirm those inventory items are preserved even though they are not eligible for new normal drops.
+- Hold the joystick right for several seconds and confirm the character stays screen-anchored instead of drifting left as the camera catches up; release it and confirm movement stops immediately.
+- Repeat in all four directions, drag to the joystick edge, drag outside the control, then release.
+- Move with the joystick while rapidly tapping Attack and Use; the combat touches must not steal or corrupt the movement pointer.
+- While moving, app-switch away and back, lock/unlock if convenient, rotate the device, and open/close a modal; movement must reset to zero rather than resume by itself.
+- Spam Attack in empty space; only one compact `Your blade cuts only ash.` toast should appear and repeated taps should be suppressed for about 1.8 seconds.
+- Trigger XP/coin, loot pickup, quest, level and danger messages and confirm only one toast is visible at a time, with higher-priority messages replacing/suppressing lower-priority chatter.
+- Kill Cinder Imps, Ash Skeletons and Captain Ossivar repeatedly. No NPC/legacy-only equipment should appear as a new ground drop; the Living Ember Heart remains allowed as a quest drop.
+- Load an older save containing legacy gear and verify those inventory items are preserved even though they no longer drop normally.

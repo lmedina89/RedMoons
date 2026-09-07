@@ -40,7 +40,6 @@ export class CombatSystem {
     this.events = events;
     this.damageNumbers = new DamageNumberPool(scene);
     this.effects = new EffectPool(scene);
-    this.lastMissToastAt = -Infinity;
   }
 
   playerAttack(attack = {}) {
@@ -63,10 +62,7 @@ export class CombatSystem {
         this.effects.burst(enemy.sprite.x, enemy.sprite.y - 12);
       }
     }
-    if (!hitCount && this.scene.time.now - this.lastMissToastAt >= 1600) {
-      this.lastMissToastAt = this.scene.time.now;
-      this.events.emit('toast', { text: 'Your blade cuts only ash.', tone: 'muted', short: true, key: 'attack-miss', cooldownMs: 1600 });
-    }
+    if (!hitCount) this.events.emit('toast', { text: 'Your blade cuts only ash.', tone: 'muted', short: true, cooldownMs: 1800 });
   }
 }
 

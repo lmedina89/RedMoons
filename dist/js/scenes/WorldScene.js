@@ -1,6 +1,6 @@
 import { ASSET_DEFS } from '../data/assets.js';
 import { ENEMY_DEFS } from '../data/enemies.js';
-import { ITEM_DEFS, isPlayerLootEligible } from '../data/items.js';
+import { ITEM_DEFS } from '../data/items.js';
 import { NPC_DEFS } from '../data/npcs.js';
 import { COLLIDERS, PROP_DEFS, SPAWN_REGIONS, ZONES } from '../data/world.js';
 import { DEBUG, GAME_VERSION, PLAYER_START, RARITY, TILE_SIZE, WORLD_HEIGHT, WORLD_WIDTH } from '../config.js';
@@ -40,7 +40,9 @@ export class WorldScene extends Phaser.Scene {
     actionInput.bind(this);
     this.player = new Player(this, this.state, actionInput, attack => this.combat.playerAttack(attack));
     this.physics.add.collider(this.player.body, this.obstacles);
-    this.physics.add.collider(this.player.body, this.enemyGroup);
+    // Enemy contact is handled by combat range, not Arcade body separation.
+    // Dynamic enemy colliders could physically shove the player after input
+    // stopped, which felt like intermittent reverse sliding on mobile.
     this.cameras.main.startFollow(this.player.body, true, 1, 1);
 
     this.createEnemies();
@@ -55,7 +57,7 @@ export class WorldScene extends Phaser.Scene {
     this.killRewardTimer = null;
 
     this.offUiCommand = gameEvents.on('command', command => this.handleCommand(command));
-    this.events.once(Phaser.Scenes.Events.SHUTDOWN, () => this.offUiCommand?.());
+    this.events.once(Phaser.Scenes.Events.SHUTDOWN, () => { this.offUiCommand?.(); actionInput.resetTouchMovement(); });
     window.addEventListener('pagehide', () => this.safeSave(), { passive: true });
     document.addEventListener('visibilitychange', () => { if (document.hidden) this.safeSave(); });
     this.updateZone();
@@ -161,8 +163,9 @@ export class WorldScene extends Phaser.Scene {
     this.state.player.currency += coins;
     if (def.family === 'imp') this.state.worldFlags.impKillsSinceHeart = (this.state.worldFlags.impKillsSinceHeart || 0) + 1;
     for (const entry of def.loot) {
-      const dropDef = ITEM_DEFS[entry.itemId];
-      if (!isPlayerLootEligible(dropDef)) continue;
+      const lootDef = ITEM_DEFS[entry.itemId];
+      const playerLootEligible = lootDef?.questItem || !lootDef?.slot || (lootDef?.playerEquipReady !== false && !lootDef?.npcOnly && !(lootDef?.slot === 'weapon' && lootDef?.playerCombatReady === false));
+      if (!playerLootEligible) continue;
       const pityHeart = entry.itemId === 'quest_ember_heart' && this.state.worldFlags.impKillsSinceHeart >= 6 && !this.inventory.countItem('quest_ember_heart');
       if (Math.random() <= entry.chance || pityHeart) {
         const item = this.inventory.createItem(entry.itemId, pickRarity(entry.rarityWeights));
@@ -260,7 +263,7 @@ export class WorldScene extends Phaser.Scene {
     if (!command) return;
     if (command.type === 'attack') actionInput.attackQueued = true;
     if (command.type === 'interact') actionInput.interactQueued = true;
-    if (command.type === 'move') actionInput.setTouchMove(command.x, command.y, command.active);
+    if (command.type === 'move') actionInput.setTouchMovement(command.x, command.y, command.active);
     if (command.type === 'equip') {
       const result = this.inventory.equip(command.instanceId);
       gameEvents.emit('toast', { text: result.ok ? 'Equipment changed.' : result.reason, tone: result.ok ? 'normal' : 'danger', short: true });
@@ -268,6 +271,25 @@ export class WorldScene extends Phaser.Scene {
       this.emitState(); this.safeSave();
     }
     if (command.type === 'unequip') { this.inventory.unequip(command.slot); this.player.refreshEquipment(); this.emitState(); this.safeSave(); }
+    if (command.type === 'dropItem' || command.type === 'destroyItem') {
+      const result = this.inventory.removeInstance(command.instanceId);
+      if (!result.ok) {
+        gameEvents.emit('toast', { text: result.reason, tone: 'danger' });
+      } else {
+        const def = ITEM_DEFS[result.item.itemId];
+        if (result.unequippedSlots.length) this.player.refreshEquipment();
+        if (command.type === 'dropItem') {
+          const angle = Math.random() * Math.PI * 2;
+          const distance = 42;
+          this.dropLoot(this.player.body.x + Math.cos(angle) * distance, this.player.body.y + Math.sin(angle) * distance, result.item);
+          gameEvents.emit('toast', { text: `Dropped ${def?.name || result.item.itemId}.`, tone: 'normal', short: true });
+        } else {
+          gameEvents.emit('toast', { text: `Destroyed ${def?.name || result.item.itemId}.`, tone: 'danger', short: true });
+        }
+        this.emitState();
+        this.safeSave();
+      }
+    }
     if (command.type === 'allocateStats') this.allocateStats(command.points);
     if (command.type === 'respawn') { this.player.respawn(PLAYER_START.x, PLAYER_START.y); this.deathAnnounced = false; gameEvents.emit('death-cleared'); this.emitState(); this.safeSave(); }
     if (command.type === 'save') { this.safeSave(); gameEvents.emit('toast', { text: 'Progress saved.', tone: 'normal', short: true }); }

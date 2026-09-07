@@ -68,6 +68,22 @@ export class InventorySystem {
     return true;
   }
 
+  removeInstance(instanceId, { allowQuest = false } = {}) {
+    const index = this.state.inventory.findIndex(item => item.instanceId === instanceId);
+    if (index < 0) return { ok: false, reason: 'Item not found.', item: null, unequippedSlots: [] };
+    const item = this.state.inventory[index];
+    const def = ITEM_DEFS[item.itemId];
+    if (def?.questItem && !allowQuest) return { ok: false, reason: 'Quest items are protected so story progress cannot be lost.', item: null, unequippedSlots: [] };
+    const unequippedSlots = [];
+    for (const [slot, equippedId] of Object.entries(this.state.equipment)) {
+      if (equippedId !== instanceId) continue;
+      this.state.equipment[slot] = null;
+      unequippedSlots.push(slot);
+    }
+    this.state.inventory.splice(index, 1);
+    return { ok: true, reason: '', item, unequippedSlots };
+  }
+
   removeItem(itemId, count = 1) {
     let remaining = count;
     for (let i = this.state.inventory.length - 1; i >= 0 && remaining > 0; i -= 1) {

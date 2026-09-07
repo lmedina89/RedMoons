@@ -1,16 +1,24 @@
 # Changelog
 
-## v0.1.1.3 — Mobile Control & Loot UX Hotfix
+## v0.1.1.4 — Inventory Recovery & Movement Hardening
 
-- Removed camera catch-up lerp so travelling east no longer makes the player appear to slide back left as the camera recenters.
-- Hardened the virtual joystick around a single active pointer, finite/clamped vectors, an 8% deadzone, and forced neutral resets on pointer cancel/loss, blur, page hide, visibility loss and orientation change.
-- Movement resets immediately when a blocking menu, dialogue, death screen or equivalent UI transition takes control.
-- Replaced the three-message toast stack with one compact priority-aware notification. Duplicate low-value feedback is deduplicated/rate-limited instead of covering the combat field.
-- Rate-limited the repeated “Your blade cuts only ash.” attack-miss notice at the combat-system source.
-- Added a reusable player-loot eligibility rule: quest items remain valid, but NPC-only/legacy equipment that cannot use the player moveset is blocked from normal enemy drops.
-- Cleaned Cinder Imp, Ash Skeleton and Captain Ossivar loot tables so normal equipment drops are player-compatible.
-- Replaced incompatible equipment quest rewards with current player-compatible revised gear.
-- Preserved legacy gear definitions/assets and existing save inventory for future humanoid enemy loadouts; save schema remains version 1.
+- Removed dynamic player/enemy body separation so chasing enemies can no longer physically shove the player after movement input stops. Combat contact remains range-driven, which also better supports future large enemy pulls.
+- Hardened the mobile joystick lifecycle with capture-phase pointer release handling, touch-end/touch-cancel fallbacks, and stale-pointer takeover on the next joystick touch.
+- Added Drop and Destroy controls to every inventory item detail view. Equipped items may be discarded and are safely unequipped first.
+- Drop places the same item instance back into the world near the player; Destroy permanently removes it. Both use a two-tap confirmation.
+- Quest-critical items show the controls but are protected from drop/destroy so progression cannot be bricked.
+- Save schema remains 1.
+
+## v0.1.1.3 — Mobile Input & Loot UX Hotfix
+
+- Removed delayed camera catch-up during gameplay follow so sustained right/left travel no longer makes the player appear to slide backward as the camera recenters.
+- Hardened the iPhone virtual joystick around one active pointer with immediate zeroing on release, cancel, lost pointer capture, blur, page hide, visibility loss and orientation changes.
+- Moved touch-vector ownership into `ActionInput`, with finite-value validation, normalization and a small deadzone so stale DOM/global values cannot keep the player moving.
+- Replaced stacked combat toasts with a single prioritized notification surface.
+- Rate-limited repeated low-value combat notices such as `Your blade cuts only ash.` and reduced toast size/placement so combat remains visible.
+- Removed NPC/legacy-only gear from normal enemy loot tables.
+- Added a runtime loot-eligibility guard: quest items may always drop, while equipment must be player-compatible to enter the player loot stream.
+- Preserved legacy items in existing saves and preserved save schema 1.
 
 ## v0.1.1.2 — Combat Visual Stability Hotfix
 

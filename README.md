@@ -1,24 +1,19 @@
-# Hell RPG v0.1.1.3 — Mobile Control & Loot UX Hotfix
+# Hell RPG v0.1.1.4 — Inventory Recovery & Movement Hardening
 
 Ashfall Foundation is a production-minded vertical slice for a mobile-first, single-player pixel action RPG. It is an original dark-fantasy game built with Phaser 3, plain JavaScript and HTML/CSS. It does not use copyrighted Dekaron/2Moons content.
 
-## v0.1.1.3 hotfix
 
-On-device iPhone testing exposed an apparent leftward slide after travelling east and excessive combat notification stacking. Camera follow now tracks the player without catch-up lerp, touch movement owns one active pointer and force-resets on pointer loss/background/orientation changes, and tiny residual joystick vectors are deadzoned.
+Inventory recovery: every normal inventory item can now be dropped back into the world or destroyed from its detail pane after a two-tap confirmation. Quest-critical items remain protected. Mobile movement also avoids enemy-body shove and has additional iOS pointer-release fallbacks.
 
-Combat/UI notices now use one compact priority-aware toast instead of stacking across the playfield. Duplicate messages refresh/suppress rather than spawning more boxes, and the no-target attack message is independently rate-limited.
+## v0.1.1.4 hotfix
 
-Normal enemy loot is now restricted to quest items or equipment that is actually compatible with the current player animation/equipment framework. Legacy/NPC-only gear remains preserved for old saves and future humanoid enemy loadouts, but it no longer appears as ordinary enemy loot. Quest equipment rewards were also switched to player-compatible gear.
+Physical iPhone testing showed that the earlier camera/touch fix greatly reduced reverse sliding but did not eliminate it in every situation. v0.1.1.4 removes dynamic player/enemy body separation so chasing enemies cannot physically push the player's Arcade body after movement input has stopped. Combat contact remains distance/range driven, which is also a better fit for future large Dekaron-style enemy pulls.
 
-Save schema remains version 1.
+The joystick lifecycle is hardened again for iOS Safari: pointer release/cancel listeners now run in capture phase at document/window level, touch-end/touch-cancel provide an additional fallback, and a fresh joystick touch can take ownership from a stale pointer id instead of being ignored. The immediate camera follow and ActionInput deadzone/zeroing from v0.1.1.3 remain intact.
 
-## v0.1.1.2 hotfix
+Inventory recovery is now built in. Every normal item detail view has **Drop** and **Destroy** controls with a two-tap confirmation. Dropping safely unequips the item if necessary and places the same item instance back into the world near the player; destroying removes it permanently. Quest-critical items display the controls in a protected disabled state so story progress cannot be lost.
 
-On-device testing exposed two visual/UX problems: revised one-handed poses appear to slide inside their sprite cells, and older slash-only layers cannot stay registered to those poses. v0.1.1.2 stabilizes the player root position and restricts player equipment to assets with the complete revised combat set. Older assets remain in the project for humanoid/NPC use. Classic hair is temporarily disabled until a revised-combat hair export is supplied.
-
-Rapid horde kills aggregate XP/coin feedback into a single burst notification. v0.1.1.3 further replaces the old three-toast stack with one compact deduplicated notification.
-
-**Still needed for a fully dressed four-hit player:** revised-combat hair, legs, boots, shoulders, and any offhand/shield intended for player use. Iron War Helm, Legion Cuirass, Legion Gloves, Crimson Bat Wings, and the Ashen Arming Sword are full-combo compatible now.
+The v0.1.1.3 singleton/rate-limited toast system and player-safe loot eligibility rules remain intact. Save schema remains version 1.
 
 ## What changed in v0.1.1.1
 
@@ -38,7 +33,7 @@ This release extends the v0.1.1 Character & Combat Foundation without changing s
 
 Start in Cinder Refuge, speak with Warden Vesra, travel east into the Scorched Outskirts, fight Cinder Imps and Ash Skeletons, collect physical loot, gain XP, allocate earned stats, equip multiple visible armor pieces plus a weapon/offhand, inspect the full Character sheet, and push to Captain Ossivar at the edge of Bone Road.
 
-Only player-compatible revised-combat gear (plus explicit quest items) is eligible for normal enemy loot. Wings are deliberately staged for later high-progression unlock rather than granted to a new character.
+New revised-combat gear is integrated into skeleton/Captain loot tables. Wings are deliberately staged for later high-progression unlock rather than granted to a new character.
 
 Touch controls are designed first for iPhone landscape. Keyboard controls are also available: WASD/arrows to move, Shift to run, Space to attack, E to interact, I for inventory, C for Character and Q for quests.
 
@@ -66,7 +61,7 @@ For JavaScript syntax checks:
 find dist/js -name '*.js' -print0 | xargs -0 -n1 node --check
 ```
 
-Append `?debug=1` to the local/deployed URL to enable development diagnostics. v0.1.1.3 exposes **Add 0.1.1.3 Gear** and **Unlock Wings** helpers specifically so the new equipment/animation coverage can be tested without grinding drops.
+Append `?debug=1` to the local/deployed URL to enable development diagnostics. v0.1.1.4 exposes **Add 0.1.1.4 Gear** and **Unlock Wings** helpers specifically so the new equipment/animation coverage can be tested without grinding drops.
 
 ## GitHub Pages
 
