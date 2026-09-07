@@ -42,8 +42,10 @@ export class CombatSystem {
     this.effects = new EffectPool(scene);
   }
 
-  playerAttack() {
+  playerAttack(attack = {}) {
     const derived = derivedStats(this.state);
+    const range = 92 * (attack.rangeMultiplier || 1);
+    const damage = derived.attack * (attack.damageMultiplier || 1);
     const facing = [[0, -1], [-1, 0], [0, 1], [1, 0]][this.player.visual.direction];
     let hitCount = 0;
     for (const enemy of this.enemies) {
@@ -51,11 +53,11 @@ export class CombatSystem {
       const dx = enemy.sprite.x - this.player.body.x;
       const dy = enemy.sprite.y - this.player.body.y;
       const distSq = dx * dx + dy * dy;
-      if (distSq > 92 * 92) continue;
+      if (distSq > range * range) continue;
       const distance = Math.sqrt(distSq) || 1;
       const dot = (dx / distance) * facing[0] + (dy / distance) * facing[1];
       if (dot < 0.05 && distance > 34) continue;
-      if (enemy.takeDamage(derived.attack, this.player.body.x, this.player.body.y, this.scene.time.now)) {
+      if (enemy.takeDamage(damage, this.player.body.x, this.player.body.y, this.scene.time.now)) {
         hitCount += 1;
         this.effects.burst(enemy.sprite.x, enemy.sprite.y - 12);
       }

@@ -54,6 +54,13 @@ export class SaveManager {
       state.equipment[slot] = validForSlot ? id : null;
       if (validForSlot) equippedIds.add(id);
     }
+    // v0.1.1 shipped the Rustblade as the starter player weapon before the
+    // full four-hit LPC Revised weapon set existed. Upgrade only the *equipped*
+    // legacy Rustblade in-place so returning players immediately receive the
+    // new combat-ready starter sword while unequipped Rustblades remain valid
+    // limited-animation content for future humanoid enemy loadouts.
+    const equippedWeapon = itemsById.get(state.equipment.weapon);
+    if (equippedWeapon?.itemId === 'weapon_rustblade') equippedWeapon.itemId = 'weapon_arming_sword';
     state.quests = structuredClone(base.quests);
     for (const [id, fallback] of Object.entries(base.quests)) {
       const incoming = value.quests[id];
@@ -63,7 +70,7 @@ export class SaveManager {
         for (const key of Object.keys(fallback.objectives)) state.quests[id].objectives[key] = this.number(incoming.objectives[key], 0, 9999, 0);
       }
     }
-    state.worldFlags = plainObject(value.worldFlags) ? structuredClone(value.worldFlags) : {};
+    state.worldFlags = { ...base.worldFlags, ...(plainObject(value.worldFlags) ? structuredClone(value.worldFlags) : {}) };
     state.npcStates = plainObject(value.npcStates) ? structuredClone(value.npcStates) : {};
     state.settings = { ...base.settings, ...(plainObject(value.settings) ? value.settings : {}) };
     state.nextItemSequence = this.number(value.nextItemSequence, 1, 99999999, state.inventory.length + 1);

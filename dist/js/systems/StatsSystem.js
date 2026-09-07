@@ -22,7 +22,7 @@ function calculateDerived(level, primary, direct = {}) {
     maxEssence: Math.floor(21 + primary.spr * 6 + level * 3 + (direct.maxEssence || 0)),
     attack: Math.floor(3 + primary.str * 1.75 + primary.dex * 0.45 + (direct.attack || 0)),
     defense: Math.floor(1 + primary.vit * 0.65 + primary.dex * 0.18 + (direct.defense || 0)),
-    moveSpeed: 142 + Math.min(26, primary.dex * 1.2)
+    moveSpeed: 142 + Math.min(26, primary.dex * 1.2) + (direct.moveSpeed || 0)
   };
 }
 

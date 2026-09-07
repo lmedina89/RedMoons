@@ -6,8 +6,8 @@ import { equipmentBonuses, previewDerivedStats, statBreakdown, xpForLevel } from
 
 const $ = selector => document.querySelector(selector);
 const EQUIPMENT_SLOTS = Object.freeze([
-  ['head', 'Head'], ['chest', 'Chest'], ['hands', 'Hands'], ['legs', 'Legs'], ['feet', 'Feet'],
-  ['weapon', 'Weapon'], ['offhand', 'Offhand'], ['necklace', 'Necklace'], ['ring1', 'Ring 1'], ['ring2', 'Ring 2']
+  ['head', 'Head'], ['shoulders', 'Shoulders'], ['chest', 'Chest'], ['hands', 'Hands'], ['legs', 'Legs'], ['feet', 'Feet'],
+  ['weapon', 'Weapon'], ['offhand', 'Offhand'], ['necklace', 'Necklace'], ['ring1', 'Ring 1'], ['ring2', 'Ring 2'], ['wings', 'Wings']
 ]);
 
 export class UIManager {
@@ -115,8 +115,11 @@ export class UIManager {
       const def = item && ITEM_DEFS[item.itemId];
       const rarity = item ? (RARITY[item.rarity] || RARITY.normal) : null;
       const stats = item ? this.itemStatSummary(item) : '';
+      const locked = slot === 'wings' && !state.worldFlags?.wingsUnlocked && !item;
       const attrs = interactive && item ? `role="button" tabindex="0" data-equipped-item="${item.instanceId}"` : '';
-      return `<article class="equipment-slot-card ${item ? 'filled' : 'empty'}" ${attrs}><small>${label}</small><strong style="${rarity ? `color:${rarity.color}` : ''}">${def?.name || 'Empty'}</strong>${stats ? `<span>${stats}</span>` : '<span>—</span>'}${unequip && item ? `<button type="button" class="slot-unequip" data-char-unequip="${slot}" aria-label="Unequip ${def.name}">Unequip</button>` : ''}</article>`;
+      const name = def?.name || (locked ? 'Locked' : 'Empty');
+      const sub = stats || (locked ? 'Advanced progression' : '—');
+      return `<article class="equipment-slot-card ${item ? 'filled' : 'empty'} ${locked ? 'locked' : ''}" ${attrs}><small>${label}</small><strong style="${rarity ? `color:${rarity.color}` : ''}">${name}</strong><span>${sub}</span>${unequip && item ? `<button type="button" class="slot-unequip" data-char-unequip="${slot}" aria-label="Unequip ${def.name}">Unequip</button>` : ''}</article>`;
     }).join('');
   }
 
@@ -149,10 +152,12 @@ export class UIManager {
     const rarity = RARITY[item.rarity] || RARITY.normal;
     const stats = Object.entries(this.itemTotalStats(item)).map(([key, value]) => `<li>+${value} ${this.statLabel(key)}</li>`).join('') || '<li>No combat bonuses</li>';
     const requirements = [`Level ${def.levelReq || 1}`, ...Object.entries(def.requirements || {}).map(([key, value]) => `${key.toUpperCase()} ${value}`)].join(' • ');
+    const gate = def.equipGate && !this.snapshot.state.worldFlags?.[def.equipGate] ? `<p class="requirements">Locked: ${def.gateLabel || 'advanced progression'}.</p>` : '';
+    const animation = def.slot === 'weapon' ? `<p>Combat set: ${def.playerCombatReady === false ? 'Humanoid/NPC only' : def.combatProfile === 'sword_four_hit' ? 'Full 4-hit sword combo' : 'Basic attack'}</p>` : '';
     const equippedItemId = this.snapshot.state.equipment[def.slot];
     const equippedItem = this.snapshot.state.inventory.find(candidate => candidate.instanceId === equippedItemId);
     const compare = equippedItem && equippedItem.instanceId !== item.instanceId ? this.comparisonText(item, equippedItem) : '';
-    return `<h3 style="color:${rarity.color}">${def.name}</h3><span class="rarity-label" style="color:${rarity.color}">${rarity.label}</span><p>${def.slot ? this.slotLabel(def.slot).toUpperCase() : 'QUEST ITEM'} • Enhancement +${item.enhancement || 0} • Value ${def.value}</p><ul>${stats}</ul><p class="requirements">Base requirements: ${requirements}</p>${compare}<footer>${def.slot ? equipped ? `<button type="button" data-unequip="${def.slot}">Unequip</button>` : `<button type="button" data-equip="${item.instanceId}">Equip to ${this.slotLabel(def.slot)}</button>` : ''}</footer>`;
+    return `<h3 style="color:${rarity.color}">${def.name}</h3><span class="rarity-label" style="color:${rarity.color}">${rarity.label}</span><p>${def.slot ? this.slotLabel(def.slot).toUpperCase() : 'QUEST ITEM'} • Enhancement +${item.enhancement || 0} • Value ${def.value}</p><ul>${stats}</ul><p class="requirements">Base requirements: ${requirements}</p>${gate}${animation}${compare}<footer>${def.slot ? equipped ? `<button type="button" data-unequip="${def.slot}">Unequip</button>` : `<button type="button" data-equip="${item.instanceId}">Equip to ${this.slotLabel(def.slot)}</button>` : ''}</footer>`;
   }
 
   comparisonText(item, equippedItem) {

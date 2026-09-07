@@ -18,7 +18,7 @@ export function createDefaultState() {
       currency: 35
     },
     inventory: [
-      { instanceId: 'i_000001', itemId: 'weapon_rustblade', rarity: 'normal', enhancement: 0, modifiers: {} },
+      { instanceId: 'i_000001', itemId: 'weapon_arming_sword', rarity: 'normal', enhancement: 0, modifiers: {} },
       { instanceId: 'i_000002', itemId: 'chest_wayfarer', rarity: 'normal', enhancement: 0, modifiers: {} },
       { instanceId: 'i_000003', itemId: 'legs_ash_pants', rarity: 'normal', enhancement: 0, modifiers: {} },
       { instanceId: 'i_000004', itemId: 'hands_hide_wraps', rarity: 'normal', enhancement: 0, modifiers: {} },
@@ -26,6 +26,7 @@ export function createDefaultState() {
     ],
     equipment: {
       head: null,
+      shoulders: null,
       chest: 'i_000002',
       legs: 'i_000003',
       hands: 'i_000004',
@@ -34,14 +35,15 @@ export function createDefaultState() {
       offhand: null,
       necklace: null,
       ring1: null,
-      ring2: null
+      ring2: null,
+      wings: null
     },
     quests: {
       quest_ash_pest: { state: 'available', objectives: { kill_imp: 0 } },
       quest_ember_heart: { state: 'locked', objectives: { collect_heart: 0 } },
       quest_bone_captain: { state: 'locked', objectives: { kill_captain: 0 } }
     },
-    worldFlags: {},
+    worldFlags: { wingsUnlocked: false },
     npcStates: {},
     settings: { musicVolume: 0.5, sfxVolume: 0.75, screenShake: true, diagnostics: false },
     nextItemSequence: 6

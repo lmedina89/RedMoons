@@ -1,8 +1,10 @@
 const P = 'assets/player/';
+const R = 'assets/player/revised/';
 const E = 'assets/enemies/';
 const W = 'assets/world/';
 
 export const ASSET_DEFS = [
+  // Original v0.1.x modular LPC layers retained for backwards-compatible gear.
   { key: 'body-walk', path: `${P}body-walk.png`, frameWidth: 64, frameHeight: 64 },
   { key: 'body-slash', path: `${P}body-slash.png`, frameWidth: 64, frameHeight: 64 },
   { key: 'hair-walk', path: `${P}hair-walk.png`, frameWidth: 64, frameHeight: 64 },
@@ -15,6 +17,31 @@ export const ASSET_DEFS = [
   { key: 'long-sword-fg', path: `${P}long-sword-fg.png`, frameWidth: 128, frameHeight: 128, oversized: true },
   { key: 'wood-shield-bg', path: `${P}wood-shield-bg.png`, frameWidth: 64, frameHeight: 64, expanded: true },
   { key: 'wood-shield-fg', path: `${P}wood-shield-fg.png`, frameWidth: 64, frameHeight: 64, expanded: true },
+
+  // v0.1.1.1 LPC Revised runtime crops. Only the animation regions actually
+  // used by gameplay are preloaded, avoiding the cost of loading every full
+  // 832x3456 generator export on mobile GPUs.
+  { key: 'revised-body-walk', path: `${R}body-walk.png`, frameWidth: 64, frameHeight: 64 },
+  { key: 'revised-body-slash', path: `${R}body-slash.png`, frameWidth: 64, frameHeight: 64 },
+  { key: 'revised-body-backslash', path: `${R}body-backslash.png`, frameWidth: 64, frameHeight: 64 },
+  { key: 'revised-body-halfslash', path: `${R}body-halfslash.png`, frameWidth: 64, frameHeight: 64 },
+  ...['legion-chest', 'legion-gloves', 'iron-helmet', 'red-bat-wings'].flatMap(key => [
+    { key: `${key}-walk`, path: `${R}${key}-walk.png`, frameWidth: 64, frameHeight: 64 },
+    { key: `${key}-slash`, path: `${R}${key}-slash.png`, frameWidth: 64, frameHeight: 64 },
+    { key: `${key}-backslash`, path: `${R}${key}-backslash.png`, frameWidth: 64, frameHeight: 64 },
+    { key: `${key}-halfslash`, path: `${R}${key}-halfslash.png`, frameWidth: 64, frameHeight: 64 }
+  ]),
+  ...['boots', 'shoulders'].flatMap(key => [
+    { key: `${key}-walk`, path: `${R}${key}-walk.png`, frameWidth: 64, frameHeight: 64 },
+    { key: `${key}-slash`, path: `${R}${key}-slash.png`, frameWidth: 64, frameHeight: 64 }
+  ]),
+  { key: 'arming-sword-walk', path: `${R}arming-sword-walk.png`, frameWidth: 64, frameHeight: 64 },
+  { key: 'arming-sword-slash', path: `${R}arming-sword-slash.png`, frameWidth: 128, frameHeight: 128, oversized: true },
+  { key: 'arming-sword-backslash', path: `${R}arming-sword-backslash.png`, frameWidth: 128, frameHeight: 128, oversized: true },
+  { key: 'arming-sword-halfslash', path: `${R}arming-sword-halfslash.png`, frameWidth: 128, frameHeight: 128, oversized: true },
+  { key: 'katana-walk', path: `${R}katana-walk.png`, frameWidth: 128, frameHeight: 128, oversized: true },
+  { key: 'katana-slash', path: `${R}katana-slash.png`, frameWidth: 128, frameHeight: 128, oversized: true },
+
   { key: 'imp-walk', path: `${E}imp-walk.png`, frameWidth: 64, frameHeight: 64 },
   { key: 'imp-attack', path: `${E}imp-attack.png`, frameWidth: 64, frameHeight: 64 },
   { key: 'imp-death', path: `${E}imp-death.png`, frameWidth: 64, frameHeight: 64 },
@@ -31,44 +58,85 @@ export const ASSET_DEFS = [
   { key: 'fire', path: `${W}fire.png`, frameWidth: 32, frameHeight: 64 }
 ];
 
-// All rows are expressed in the source spritesheet's real frame grid.
-// Direction order matches the rest of Ashfall: up, left, down, right.
+const range = (start, end) => Object.freeze(Array.from({ length: end - start + 1 }, (_, i) => start + i));
+const dirs = Object.freeze([0, 1, 2, 3]);
+
+// Direction order is up, left, down, right. `sequence` is the actual frame
+// cycle from the LPC animation guide; it is intentionally not assumed to be
+// every frame from left to right.
 export const ANIMATION_GEOMETRIES = Object.freeze({
   classic: Object.freeze({
-    idle: Object.freeze({ source: 'walk', rows: [0, 1, 2, 3], stride: 9, frames: 1 }),
-    walk: Object.freeze({ source: 'walk', rows: [0, 1, 2, 3], stride: 9, frames: 9 }),
-    slash: Object.freeze({ source: 'slash', rows: [0, 1, 2, 3], stride: 6, frames: 6 })
+    idle: Object.freeze({ source: 'walk', rows: dirs, stride: 9, sequence: Object.freeze([0]) }),
+    walk: Object.freeze({ source: 'walk', rows: dirs, stride: 9, sequence: range(1, 8) }),
+    slash: Object.freeze({ source: 'slash', rows: dirs, stride: 6, sequence: range(0, 5) })
+  }),
+  revised64: Object.freeze({
+    idle: Object.freeze({ source: 'walk', rows: dirs, stride: 9, sequence: Object.freeze([0]) }),
+    walk: Object.freeze({ source: 'walk', rows: dirs, stride: 9, sequence: range(1, 8) }),
+    slash: Object.freeze({ source: 'slash', rows: dirs, stride: 6, sequence: range(0, 5) }),
+    slash1h: Object.freeze({ source: 'backslash', rows: dirs, stride: 13, sequence: range(0, 6) }),
+    backslash1h: Object.freeze({ source: 'backslash', rows: dirs, stride: 13, sequence: Object.freeze([0, 1, 2, 3, 4, 5, 7, 8, 9, 10, 11, 12]) }),
+    halfslash1h: Object.freeze({ source: 'halfslash', rows: dirs, stride: 6, sequence: range(0, 5) })
+  }),
+  revised64Basic: Object.freeze({
+    idle: Object.freeze({ source: 'walk', rows: dirs, stride: 9, sequence: Object.freeze([0]) }),
+    walk: Object.freeze({ source: 'walk', rows: dirs, stride: 9, sequence: range(1, 8) }),
+    slash: Object.freeze({ source: 'slash', rows: dirs, stride: 6, sequence: range(0, 5) })
   }),
   expanded64: Object.freeze({
-    idle: Object.freeze({ source: 'texture', rows: [8, 9, 10, 11], stride: 13, frames: 1 }),
-    walk: Object.freeze({ source: 'texture', rows: [8, 9, 10, 11], stride: 13, frames: 9 }),
-    slash: Object.freeze({ source: 'texture', rows: [12, 13, 14, 15], stride: 13, frames: 6 })
+    idle: Object.freeze({ source: 'texture', rows: [8, 9, 10, 11], stride: 13, sequence: Object.freeze([0]) }),
+    walk: Object.freeze({ source: 'texture', rows: [8, 9, 10, 11], stride: 13, sequence: range(1, 8) }),
+    slash: Object.freeze({ source: 'texture', rows: [12, 13, 14, 15], stride: 13, sequence: range(0, 5) })
   }),
   dcssSword128: Object.freeze({
-    // The DCSS sword source is not an Expanded LPC 4-row block. It stores
-    // up / left / down and mirrors the left-facing side row for right.
-    idle: Object.freeze({ source: 'texture', rows: [6, 7, 8, 7], stride: 13, frames: 1, mirror: [false, false, false, true] }),
-    walk: Object.freeze({ source: 'texture', rows: [6, 7, 8, 7], stride: 13, frames: 9, mirror: [false, false, false, true] }),
-    slash: Object.freeze({ source: 'texture', rows: [9, 10, 11, 10], stride: 13, frames: 6, mirror: [false, false, false, true] })
+    // The older DCSS source stores up / left / down and mirrors left for right.
+    idle: Object.freeze({ source: 'texture', rows: [6, 7, 8, 7], stride: 13, sequence: Object.freeze([0]), mirror: [false, false, false, true] }),
+    walk: Object.freeze({ source: 'texture', rows: [6, 7, 8, 7], stride: 13, sequence: range(1, 8), mirror: [false, false, false, true] }),
+    slash: Object.freeze({ source: 'texture', rows: [9, 10, 11, 10], stride: 13, sequence: range(0, 5), mirror: [false, false, false, true] })
+  }),
+  armingSword: Object.freeze({
+    idle: Object.freeze({ source: 'walk', rows: dirs, stride: 9, sequence: Object.freeze([0]) }),
+    walk: Object.freeze({ source: 'walk', rows: dirs, stride: 9, sequence: range(1, 8) }),
+    slash: Object.freeze({ source: 'slash', rows: dirs, stride: 6, sequence: range(0, 5) }),
+    slash1h: Object.freeze({ source: 'backslash', rows: dirs, stride: 13, sequence: range(0, 6) }),
+    backslash1h: Object.freeze({ source: 'backslash', rows: dirs, stride: 13, sequence: Object.freeze([0, 1, 2, 3, 4, 5, 7, 8, 9, 10, 11, 12]) }),
+    halfslash1h: Object.freeze({ source: 'halfslash', rows: dirs, stride: 6, sequence: range(0, 5) })
+  }),
+  katanaNpc128: Object.freeze({
+    idle: Object.freeze({ source: 'walk', rows: dirs, stride: 9, sequence: Object.freeze([0]) }),
+    walk: Object.freeze({ source: 'walk', rows: dirs, stride: 9, sequence: range(1, 8) }),
+    slash: Object.freeze({ source: 'slash', rows: dirs, stride: 6, sequence: range(0, 5) })
   })
 });
 
 export const LAYER_ASSETS = Object.freeze({
-  body: { walk: 'body-walk', slash: 'body-slash', geometry: 'classic' },
-  hair: { walk: 'hair-walk', slash: 'hair-slash', geometry: 'classic' },
-  chest_wayfarer: { walk: 'shirt-walk', slash: 'shirt-slash', geometry: 'classic' },
-  chest_leather: { walk: 'leather-walk', slash: 'leather-slash', geometry: 'classic' },
-  chest_plate: { walk: 'plate-chest-walk', slash: 'plate-chest-slash', geometry: 'classic' },
-  legs_ash: { walk: 'pants-walk', slash: 'pants-slash', geometry: 'classic' },
-  legs_plate: { walk: 'plate-legs-walk', slash: 'plate-legs-slash', geometry: 'classic' },
-  feet_road: { walk: 'shoes-walk', slash: 'shoes-slash', geometry: 'classic' },
-  feet_plate: { walk: 'plate-feet-walk', slash: 'plate-feet-slash', geometry: 'classic' },
-  hands_hide: { walk: 'bracers-walk', slash: 'bracers-slash', geometry: 'classic' },
-  hands_plate: { walk: 'plate-hands-walk', slash: 'plate-hands-slash', geometry: 'classic' },
-  head_chain: { walk: 'chain-head-walk', slash: 'chain-head-slash', geometry: 'classic' },
-  head_plate: { walk: 'plate-head-walk', slash: 'plate-head-slash', geometry: 'classic' },
-  weapon_long_sword_bg: { texture: 'long-sword-bg', geometry: 'dcssSword128' },
-  weapon_long_sword_fg: { texture: 'long-sword-fg', geometry: 'dcssSword128' },
-  shield_wood_bg: { texture: 'wood-shield-bg', geometry: 'expanded64' },
-  shield_wood_fg: { texture: 'wood-shield-fg', geometry: 'expanded64' }
+  // The base body uses the new LPC Revised animation coverage.
+  body: { walk: 'revised-body-walk', slash: 'revised-body-slash', backslash: 'revised-body-backslash', halfslash: 'revised-body-halfslash', geometry: 'revised64' },
+  hair: { walk: 'hair-walk', slash: 'hair-slash', geometry: 'classic', attackFallback: 'slash' },
+
+  chest_wayfarer: { walk: 'shirt-walk', slash: 'shirt-slash', geometry: 'classic', attackFallback: 'slash' },
+  chest_leather: { walk: 'leather-walk', slash: 'leather-slash', geometry: 'classic', attackFallback: 'slash' },
+  chest_plate: { walk: 'plate-chest-walk', slash: 'plate-chest-slash', geometry: 'classic', attackFallback: 'slash' },
+  legs_ash: { walk: 'pants-walk', slash: 'pants-slash', geometry: 'classic', attackFallback: 'slash' },
+  legs_plate: { walk: 'plate-legs-walk', slash: 'plate-legs-slash', geometry: 'classic', attackFallback: 'slash' },
+  feet_road: { walk: 'shoes-walk', slash: 'shoes-slash', geometry: 'classic', attackFallback: 'slash' },
+  feet_plate: { walk: 'plate-feet-walk', slash: 'plate-feet-slash', geometry: 'classic', attackFallback: 'slash' },
+  hands_hide: { walk: 'bracers-walk', slash: 'bracers-slash', geometry: 'classic', attackFallback: 'slash' },
+  hands_plate: { walk: 'plate-hands-walk', slash: 'plate-hands-slash', geometry: 'classic', attackFallback: 'slash' },
+  head_chain: { walk: 'chain-head-walk', slash: 'chain-head-slash', geometry: 'classic', attackFallback: 'slash' },
+  head_plate: { walk: 'plate-head-walk', slash: 'plate-head-slash', geometry: 'classic', attackFallback: 'slash' },
+
+  head_iron_revised: { walk: 'iron-helmet-walk', slash: 'iron-helmet-slash', backslash: 'iron-helmet-backslash', halfslash: 'iron-helmet-halfslash', geometry: 'revised64' },
+  shoulders_legion: { walk: 'shoulders-walk', slash: 'shoulders-slash', geometry: 'revised64Basic', attackFallback: 'slash' },
+  chest_legion: { walk: 'legion-chest-walk', slash: 'legion-chest-slash', backslash: 'legion-chest-backslash', halfslash: 'legion-chest-halfslash', geometry: 'revised64' },
+  hands_legion: { walk: 'legion-gloves-walk', slash: 'legion-gloves-slash', backslash: 'legion-gloves-backslash', halfslash: 'legion-gloves-halfslash', geometry: 'revised64' },
+  feet_revised: { walk: 'boots-walk', slash: 'boots-slash', geometry: 'revised64Basic', attackFallback: 'slash' },
+  wings_red_bat: { walk: 'red-bat-wings-walk', slash: 'red-bat-wings-slash', backslash: 'red-bat-wings-backslash', halfslash: 'red-bat-wings-halfslash', geometry: 'revised64' },
+
+  weapon_long_sword_bg: { texture: 'long-sword-bg', geometry: 'dcssSword128', attackFallback: 'slash' },
+  weapon_long_sword_fg: { texture: 'long-sword-fg', geometry: 'dcssSword128', attackFallback: 'slash' },
+  weapon_arming_sword_fg: { walk: 'arming-sword-walk', slash: 'arming-sword-slash', backslash: 'arming-sword-backslash', halfslash: 'arming-sword-halfslash', geometry: 'armingSword', oversizedSources: ['slash', 'backslash', 'halfslash'] },
+  weapon_katana_npc_fg: { walk: 'katana-walk', slash: 'katana-slash', geometry: 'katanaNpc128', oversizedSources: ['walk', 'slash'], attackFallback: 'slash' },
+  shield_wood_bg: { texture: 'wood-shield-bg', geometry: 'expanded64', attackFallback: 'slash' },
+  shield_wood_fg: { texture: 'wood-shield-fg', geometry: 'expanded64', attackFallback: 'slash' }
 });

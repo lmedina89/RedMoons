@@ -16,7 +16,10 @@ export const ENEMY_DEFS = Object.freeze({
     loot: [
       { itemId: 'head_chain_coif', chance: 0.14, rarityWeights: { normal: 0.62, magic: 0.31, noble: 0.07 } },
       { itemId: 'hands_iron', chance: 0.1, rarityWeights: { normal: 0.65, magic: 0.28, noble: 0.07 } },
-      { itemId: 'feet_iron', chance: 0.1, rarityWeights: { normal: 0.65, magic: 0.28, noble: 0.07 } }
+      { itemId: 'feet_iron', chance: 0.1, rarityWeights: { normal: 0.65, magic: 0.28, noble: 0.07 } },
+      { itemId: 'hands_legion', chance: 0.05, rarityWeights: { normal: 0.62, magic: 0.31, noble: 0.07 } },
+      { itemId: 'feet_revised', chance: 0.05, rarityWeights: { normal: 0.62, magic: 0.31, noble: 0.07 } },
+      { itemId: 'head_iron_revised', chance: 0.04, rarityWeights: { normal: 0.58, magic: 0.34, noble: 0.08 } }
     ]
   },
   enemy_bone_captain: {
@@ -26,7 +29,10 @@ export const ENEMY_DEFS = Object.freeze({
     loot: [
       { itemId: 'head_warden', chance: 0.65, rarityWeights: { magic: 0.65, noble: 0.35 } },
       { itemId: 'chest_ash_plate', chance: 0.35, rarityWeights: { magic: 0.7, noble: 0.3 } },
-      { itemId: 'legs_iron_greaves', chance: 0.4, rarityWeights: { magic: 0.72, noble: 0.28 } }
+      { itemId: 'legs_iron_greaves', chance: 0.4, rarityWeights: { magic: 0.72, noble: 0.28 } },
+      { itemId: 'shoulders_legion', chance: 0.32, rarityWeights: { magic: 0.72, noble: 0.28 } },
+      { itemId: 'chest_legion', chance: 0.24, rarityWeights: { magic: 0.68, noble: 0.32 } },
+      { itemId: 'weapon_arming_sword', chance: 0.22, rarityWeights: { magic: 0.72, noble: 0.28 } }
     ]
   }
 });

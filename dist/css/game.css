@@ -112,11 +112,13 @@ button:active { transform: translateY(1px); filter: brightness(1.25); }
 /* v0.1.1 character + equipment foundation */
 .section-heading { margin: 0 0 7px; color: #dba95d; font-size: .82rem; letter-spacing: .06em; text-transform: uppercase; }
 .inventory-heading { margin-top: 12px; }
-.equipment-strip { display: grid; grid-template-columns: repeat(5, minmax(66px, 1fr)); gap: 6px; }
+.equipment-strip { display: grid; grid-template-columns: repeat(6, minmax(58px, 1fr)); gap: 6px; }
 .equipment-slot-card { min-width: 0; min-height: 64px; position: relative; padding: 7px; background: #160d0b; border: 1px solid #4d3024; border-radius: 5px; overflow: hidden; }
 .equipment-slot-card[role="button"] { cursor: pointer; }
 .equipment-slot-card[role="button"]:focus-visible { outline: 2px solid var(--gold); outline-offset: 1px; }
 .equipment-slot-card.filled { background: linear-gradient(145deg, #241510, #160d0b); border-color: #6b402d; }
+.equipment-slot-card.locked { opacity: .72; border-style: dashed; background: #120b09; }
+.equipment-slot-card.locked > strong { color: #8f7563; }
 .equipment-slot-card > small { display: block; margin-bottom: 3px; color: #9e806a; font: 700 .58rem Arial, sans-serif; letter-spacing: .08em; text-transform: uppercase; }
 .equipment-slot-card > strong { display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: #d9cbbb; font: 700 .67rem Arial, sans-serif; }
 .equipment-slot-card > span { display: block; margin-top: 4px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: #a99483; font: .56rem Arial, sans-serif; }
@@ -146,7 +148,7 @@ button:active { transform: translateY(1px); filter: brightness(1.25); }
 .effect-copy { margin: 0; padding: 8px; background: #160d0b; border: 1px dashed #493127; }
 
 @media (max-height: 430px) {
-  .equipment-strip { grid-template-columns: repeat(5, minmax(62px, 1fr)); gap: 4px; }
+  .equipment-strip { grid-template-columns: repeat(6, minmax(54px, 1fr)); gap: 4px; }
   .equipment-slot-card { min-height: 55px; padding: 5px; }
   .character-tabs { top: -10px; margin-bottom: 6px; padding: 4px 0; }
   .character-summary { margin-bottom: 7px; }
@@ -158,7 +160,7 @@ button:active { transform: translateY(1px); filter: brightness(1.25); }
 }
 
 @media (max-width: 760px) {
-  .equipment-strip { grid-template-columns: repeat(5, minmax(58px, 1fr)); }
+  .equipment-strip { grid-template-columns: repeat(6, minmax(50px, 1fr)); }
   .character-layout { grid-template-columns: 1fr; }
   .character-summary { grid-template-columns: 1fr 1fr; }
 }

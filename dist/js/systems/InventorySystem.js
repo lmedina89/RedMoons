@@ -39,6 +39,8 @@ export class InventorySystem {
   canEquip(instance) {
     const def = instance && ITEM_DEFS[instance.itemId];
     if (!def?.slot) return { ok: false, reason: 'This item cannot be equipped.' };
+    if (def.npcOnly || (def.slot === 'weapon' && def.playerCombatReady === false)) return { ok: false, reason: 'This weapon uses a limited humanoid/NPC animation set.' };
+    if (def.equipGate && !this.state.worldFlags?.[def.equipGate]) return { ok: false, reason: `${def.gateLabel || 'This equipment tier'} is not unlocked yet.` };
     if (this.state.player.level < (def.levelReq || 1)) return { ok: false, reason: `Requires level ${def.levelReq}.` };
     for (const [stat, needed] of Object.entries(def.requirements || {})) {
       if ((this.state.player.stats[stat] || 0) < needed) return { ok: false, reason: `Requires ${stat.toUpperCase()} ${needed}.` };

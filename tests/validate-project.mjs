@@ -9,6 +9,7 @@ const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const dist = path.join(root, 'dist');
 const { GAME_VERSION } = await import('../dist/js/config.js');
 const { ANIMATION_GEOMETRIES, ASSET_DEFS, LAYER_ASSETS } = await import('../dist/js/data/assets.js');
+const { WEAPON_COMBAT_PROFILES } = await import('../dist/js/data/combat.js');
 const { ENEMY_DEFS } = await import('../dist/js/data/enemies.js');
 const { ITEM_DEFS } = await import('../dist/js/data/items.js');
 const { NPC_DEFS } = await import('../dist/js/data/npcs.js');
@@ -31,11 +32,21 @@ for (const required of ['vendor/phaser.min.js', 'js/main.js', 'css/game.css', 'v
 assert.ok(html.includes('data-panel="character"'), 'HUD must expose the Character sheet');
 assert.ok(uiSource.includes('Equipment Buffs') && uiSource.includes('Active Effects'), 'Character overview must expose gear buffs and effect status');
 assert.ok(!html.includes('90_user_generated'), 'Prototype-only generator assets must not ship');
+assert.ok(html.includes('v0.1.1.1'), 'Build shell must identify v0.1.1.1');
 
 const ids = groups => Object.values(groups).map(value => value.id);
 for (const registry of [ITEM_DEFS, ENEMY_DEFS, NPC_DEFS, QUEST_DEFS]) assert.equal(new Set(ids(registry)).size, ids(registry).length, 'Stable content IDs must be unique');
 for (const enemy of Object.values(ENEMY_DEFS)) for (const drop of enemy.loot) assert.ok(ITEM_DEFS[drop.itemId], `Enemy loot references unknown item ${drop.itemId}`);
 for (const quest of Object.values(QUEST_DEFS)) assert.ok(NPC_DEFS[quest.giver], `Quest references unknown giver ${quest.giver}`);
+
+for (const def of Object.values(ITEM_DEFS)) {
+  if (!def.visual) continue;
+  if (def.slot === 'weapon' || def.slot === 'offhand') {
+    assert.ok(LAYER_ASSETS[`${def.visual}_fg`] || LAYER_ASSETS[`${def.visual}_bg`], `Item ${def.id} references unknown layered visual ${def.visual}`);
+  } else {
+    assert.ok(LAYER_ASSETS[def.visual], `Item ${def.id} references unknown visual ${def.visual}`);
+  }
+}
 
 // Validate animation geometry against the real PNG frame grids. This catches
 // row/column drift such as treating the 3-direction DCSS sword as a generic
@@ -59,7 +70,8 @@ for (const [layerKey, layer] of Object.entries(LAYER_ASSETS)) {
     const rows = height / def.frameHeight;
     assert.equal(Number.isInteger(columns) && Number.isInteger(rows), true, `${textureKey} dimensions do not fit declared frame size`);
     assert.equal(animation.stride, columns, `${layerKey}/${action} stride does not match ${textureKey} columns`);
-    assert.ok(animation.frames >= 1 && animation.frames <= columns, `${layerKey}/${action} frame count is outside the source row`);
+    assert.ok(Array.isArray(animation.sequence) && animation.sequence.length >= 1, `${layerKey}/${action} must declare a non-empty frame sequence`);
+    for (const frame of animation.sequence) assert.ok(Number.isInteger(frame) && frame >= 0 && frame < columns, `${layerKey}/${action} frame ${frame} is outside the source row`);
     assert.equal(animation.rows.length, 4, `${layerKey}/${action} must resolve all four Ashfall facings`);
     for (const row of animation.rows) assert.ok(Number.isInteger(row) && row >= 0 && row < rows, `${layerKey}/${action} row ${row} is outside ${textureKey}`);
   }
@@ -132,12 +144,66 @@ async function frameHasAlpha(textureKey, row, frame) {
 for (const action of ['walk', 'slash']) {
   const animation = ANIMATION_GEOMETRIES.dcssSword128[action];
   for (let direction = 0; direction < 4; direction += 1) {
-    for (let frame = 0; frame < animation.frames; frame += 1) {
+    for (const frame of animation.sequence) {
       const row = animation.rows[direction];
       const background = await frameHasAlpha('long-sword-bg', row, frame);
       const foreground = await frameHasAlpha('long-sword-fg', row, frame);
       assert.ok(background || foreground, `DCSS sword ${action} direction ${direction} frame ${frame} maps to empty source artwork`);
     }
+  }
+}
+
+// v0.1.1.1 combat coverage: the player-ready body, core revised armor, wings
+// and arming sword must contain real pixels for every source frame used by the
+// four-hit profile. Limited armor is explicitly allowed to fall back to slash.
+assert.deepEqual(WEAPON_COMBAT_PROFILES.sword_four_hit.attacks.map(attack => attack.action), ['slash', 'slash1h', 'backslash1h', 'halfslash1h']);
+assert.deepEqual(WEAPON_COMBAT_PROFILES.sword_four_hit.attacks.map(attack => attack.frames), [6, 7, 12, 6]);
+assert.ok(WEAPON_COMBAT_PROFILES.sword_four_hit.comboWindowMs >= 500, 'Four-hit combo needs a usable continuation window');
+
+const fullComboLayers = ['body', 'head_iron_revised', 'chest_legion', 'hands_legion', 'wings_red_bat'];
+for (const layerKey of fullComboLayers) {
+  const layer = LAYER_ASSETS[layerKey];
+  const geometry = ANIMATION_GEOMETRIES[layer.geometry];
+  for (const action of ['walk', 'slash', 'slash1h', 'backslash1h', 'halfslash1h']) {
+    const animation = geometry[action];
+    const textureKey = layer[animation.source];
+    assert.ok(textureKey, `${layerKey} must supply ${animation.source} for ${action}`);
+    for (let direction = 0; direction < 4; direction += 1) {
+      const row = animation.rows[direction];
+      let populated = 0;
+      for (const frame of animation.sequence) populated += Number(await frameHasAlpha(textureKey, row, frame));
+      // Modular LPC layers may intentionally be transparent for an isolated
+      // pose (e.g. a glove pixel layer when the hand is fully occluded). An
+      // entire missing action/direction, however, must fail validation.
+      const minimum = layerKey === 'body' ? animation.sequence.length : Math.max(1, animation.sequence.length - 1);
+      assert.ok(populated >= minimum, `${layerKey}/${action} direction ${direction} has only ${populated}/${animation.sequence.length} populated source frames`);
+    }
+  }
+}
+for (const layerKey of ['shoulders_legion', 'feet_revised']) {
+  const layer = LAYER_ASSETS[layerKey];
+  assert.equal(layer.attackFallback, 'slash', `${layerKey} must explicitly declare its revised-attack fallback`);
+  assert.equal(ANIMATION_GEOMETRIES[layer.geometry].slash1h, undefined, `${layerKey} must not pretend to contain unsupported revised attacks`);
+}
+const armingLayer = LAYER_ASSETS.weapon_arming_sword_fg;
+const armingGeometry = ANIMATION_GEOMETRIES[armingLayer.geometry];
+for (const action of ['walk', 'slash', 'slash1h', 'backslash1h', 'halfslash1h']) {
+  const animation = armingGeometry[action];
+  const textureKey = armingLayer[animation.source];
+  for (let direction = 0; direction < 4; direction += 1) {
+    const row = animation.rows[direction];
+    for (const frame of animation.sequence) assert.ok(await frameHasAlpha(textureKey, row, frame), `Arming sword ${action} direction ${direction} frame ${frame} maps to empty artwork`);
+  }
+}
+const katanaLayer = LAYER_ASSETS.weapon_katana_npc_fg;
+assert.ok(katanaLayer, 'Katana must be staged as a concrete NPC visual rather than an unused source export');
+const katanaGeometry = ANIMATION_GEOMETRIES[katanaLayer.geometry];
+for (const action of ['walk', 'slash']) {
+  const animation = katanaGeometry[action];
+  const textureKey = katanaLayer[animation.source];
+  for (let direction = 0; direction < 4; direction += 1) {
+    const row = animation.rows[direction];
+    for (const frame of animation.sequence) assert.ok(await frameHasAlpha(textureKey, row, frame), `Katana ${action} direction ${direction} frame ${frame} maps to empty artwork`);
   }
 }
 
@@ -167,7 +233,7 @@ assert.equal(Object.values(gearState.equipment).filter(Boolean).length, 7, 'Star
 assert.equal(gearState.equipment.weapon, 'i_000001', 'Equipping armor/offhand must not replace the weapon');
 assert.equal(gearState.equipment.chest, 'i_000002', 'Equipping another armor slot must not replace chest armor');
 const starterGear = equipmentBonuses(gearState);
-assert.equal(starterGear.attack, 3);
+assert.equal(starterGear.attack, 4);
 assert.equal(starterGear.defense, 10);
 assert.equal(starterGear.str, 2);
 const beforeChestSwap = { ...gearState.equipment };
@@ -182,10 +248,55 @@ assert.ok(breakdown.gearImpact.attack > equipmentBonuses(gearState).attack, 'STR
 const preview = previewDerivedStats(gearState, { vit: 1 });
 assert.equal(preview.maxHp, breakdown.totalDerived.maxHp + 9, 'Growth preview must use the same final-stat formula as gameplay');
 
+// New slots are part of the save model even before their progression unlocks.
+assert.deepEqual(Object.keys(createDefaultState().equipment), ['head', 'shoulders', 'chest', 'legs', 'hands', 'feet', 'weapon', 'offhand', 'necklace', 'ring1', 'ring2', 'wings']);
+assert.equal(createDefaultState().worldFlags.wingsUnlocked, false);
+
+// Limited-animation weapons remain valid content for old saves / future humanoid
+// loadouts, but cannot be newly equipped by the player.
+const limitedWeaponState = createDefaultState();
+limitedWeaponState.inventory.push(
+  { instanceId: 'i_rust_test', itemId: 'weapon_rustblade', rarity: 'normal', enhancement: 0, modifiers: {} },
+  { instanceId: 'i_katana_test', itemId: 'weapon_katana_npc', rarity: 'normal', enhancement: 0, modifiers: {} }
+);
+const limitedInventory = new InventorySystem(limitedWeaponState);
+assert.equal(limitedInventory.equip('i_rust_test').ok, false);
+assert.equal(limitedInventory.equip('i_katana_test').ok, false);
+assert.equal(ITEM_DEFS.weapon_katana_npc.visual, 'weapon_katana_npc');
+assert.equal(limitedWeaponState.equipment.weapon, 'i_000001', 'Rejected NPC weapons must not disturb the equipped player weapon');
+
+// Wings exist now but are deliberately progression-gated. Unlocking the flag
+// makes the same item equippable and its buffs feed normal derived-stat math.
+const wingState = createDefaultState();
+wingState.player.level = 5;
+wingState.player.stats = { str: 12, dex: 10, vit: 10, spr: 7 };
+wingState.inventory.push({ instanceId: 'i_wings_test', itemId: 'wings_red_bat', rarity: 'normal', enhancement: 0, modifiers: {} });
+const wingInventory = new InventorySystem(wingState);
+assert.equal(wingInventory.equip('i_wings_test').ok, false, 'Wings must remain locked before advanced progression unlocks them');
+wingState.worldFlags.wingsUnlocked = true;
+assert.equal(wingInventory.equip('i_wings_test').ok, true);
+assert.equal(wingState.equipment.wings, 'i_wings_test');
+const wingGear = equipmentBonuses(wingState);
+assert.equal(wingGear.defense, 7, 'Starter armor plus wings defense should aggregate');
+assert.equal(wingGear.maxHp, 25, 'Wing Max HP buff must aggregate');
+assert.equal(wingGear.moveSpeed, 6, 'Wing movement bonus must aggregate');
+assert.equal(statBreakdown(wingState).totalDerived.moveSpeed, 160, 'Wing movement bonus must participate in final movement speed');
+
+// A v0.1.0/v0.1.1-style old save remains loadable, but its equipped starter
+// Rustblade migrates in-place to the new four-hit player weapon. Unequipped
+// Rustblades stay untouched for future humanoid loadouts.
+const oldWeaponSave = createDefaultState();
+oldWeaponSave.inventory[0].itemId = 'weapon_rustblade';
+oldWeaponSave.inventory.push({ instanceId: 'i_old_spare', itemId: 'weapon_rustblade', rarity: 'magic', enhancement: 0, modifiers: { attack: 1 } });
+const normalizedOldWeapon = saveManager.validate(oldWeaponSave);
+assert.equal(normalizedOldWeapon.inventory[0].itemId, 'weapon_arming_sword');
+assert.equal(normalizedOldWeapon.equipment.weapon, 'i_000001');
+assert.equal(normalizedOldWeapon.inventory.find(item => item.instanceId === 'i_old_spare').itemId, 'weapon_rustblade');
+
 const wrongSlotSave = createDefaultState();
-wrongSlotSave.equipment.head = 'i_000001'; // Rustblade cannot occupy Head.
+wrongSlotSave.equipment.head = 'i_000001'; // Arming Sword cannot occupy Head.
 const normalizedWrongSlot = saveManager.validate(wrongSlotSave);
 assert.equal(normalizedWrongSlot.equipment.head, null, 'Wrong-slot saved equipment must be discarded');
 assert.equal(normalizedWrongSlot.equipment.weapon, 'i_000001', 'Valid weapon reference must survive normalization');
 
-console.log(`Validated ${ASSET_DEFS.length} assets, ${Object.keys(ITEM_DEFS).length} items, ${Object.keys(ENEMY_DEFS).length} enemies, ${Object.keys(NPC_DEFS).length} NPCs, ${Object.keys(QUEST_DEFS).length} quests, animation geometry, multi-slot equipment, stat aggregation, and save schema 1.`);
+console.log(`Validated ${ASSET_DEFS.length} assets, ${Object.keys(ITEM_DEFS).length} items, ${Object.keys(ENEMY_DEFS).length} enemies, ${Object.keys(NPC_DEFS).length} NPCs, ${Object.keys(QUEST_DEFS).length} quests, four-hit combat geometry, 12-slot equipment, wing gating, stat aggregation, and save schema 1.`);

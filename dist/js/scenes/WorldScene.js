@@ -38,7 +38,7 @@ export class WorldScene extends Phaser.Scene {
     this.questSystem = new QuestSystem(this.state, this.inventory, (rewards, name) => this.grantRewards(rewards, name));
     this.dialogueSystem = new DialogueSystem(this.state, this.inventory);
     actionInput.bind(this);
-    this.player = new Player(this, this.state, actionInput, () => this.combat.playerAttack());
+    this.player = new Player(this, this.state, actionInput, attack => this.combat.playerAttack(attack));
     this.physics.add.collider(this.player.body, this.obstacles);
     this.physics.add.collider(this.player.body, this.enemyGroup);
     this.cameras.main.startFollow(this.player.body, true, 0.12, 0.12);
@@ -268,6 +268,20 @@ export class WorldScene extends Phaser.Scene {
     if (action === 'boss') moveNear(this.enemies.find(enemy => enemy.sprite.active && enemy.def.named)?.sprite);
     if (action === 'heart') this.dropLoot(this.player.body.x + 28, this.player.body.y, this.inventory.createItem('quest_ember_heart', 'normal'));
     if (action === 'noble') this.inventory.add(this.inventory.createItem('head_warden', 'noble'));
+    if (action === 'gear111') {
+      // Make the development gear immediately testable without requiring a
+      // full progression grind. This helper exists only when ?debug=1.
+      this.state.player.level = Math.max(this.state.player.level, 5);
+      this.state.player.stats.str = Math.max(this.state.player.stats.str, 12);
+      this.state.player.stats.dex = Math.max(this.state.player.stats.dex, 8);
+      this.state.player.stats.vit = Math.max(this.state.player.stats.vit, 7);
+      const ids = ['weapon_arming_sword', 'head_iron_revised', 'shoulders_legion', 'chest_legion', 'hands_legion', 'feet_revised'];
+      for (const itemId of ids) if (!this.state.inventory.some(item => item.itemId === itemId)) this.inventory.add(this.inventory.createItem(itemId, 'normal'));
+    }
+    if (action === 'wings') {
+      this.state.worldFlags.wingsUnlocked = true;
+      if (!this.state.inventory.some(item => item.itemId === 'wings_red_bat')) this.inventory.add(this.inventory.createItem('wings_red_bat', 'normal'));
+    }
     if (action === 'fall') { this.state.player.hp = 1; this.hitPlayer(9999); }
     this.emitState();
     gameEvents.emit('toast', { text: `Diagnostic: ${action}`, tone: 'muted', short: true });
