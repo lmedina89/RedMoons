@@ -1,46 +1,42 @@
-# v0.1.2.4.2 QA report — Player Transition & Starter Visual Recovery
+# v0.1.2.4.3 QA report — Transition Lifecycle Recovery
 
 ## Scope
 
-This is a narrow physical-device recovery release built from v0.1.2.4.1. It does not activate transformation gameplay or add a new region.
+This is a narrow lifecycle hotfix built from v0.1.2.4.2. It does not add combat skills, transformation gameplay, content, maps or save-schema changes.
 
-## Repairs under test
+## Physical-device finding
 
-### A. Player visual survival across map handoffs
-- Destination package still loads before map state is committed.
-- Loaded textures are retained for the browser session rather than eagerly evicted during a Scene restart.
-- Player layered presentation is rebuilt immediately after `Player` construction.
-- A delayed visual-integrity pass checks for missing player texture keys and can re-prepare the current map package before rebuilding again.
-- Physics proxy remains invisible in normal play; cyan proxy appears only under `?debug=1`.
+v0.1.2.4.2 fixed the previous blank/invisible-player handoff: Ashfall Hollow and the player could render correctly after travel. Physical iPhone Safari testing then exposed a second lifecycle defect: the destination Scene was visually present but all simulation remained frozen until reset/reload.
 
-### B. Starter outfit synchronization
-- Starter item IDs/stats remain unchanged for save compatibility.
-- Wayfarer Shirt, Ashcloth Trousers, Hide Handwraps and Road Boots now resolve to revised full-combo-compatible visual layers.
-- New starter trousers use dedicated walk/slash/backslash/halfslash runtime crops aligned directly to the revised player poses.
-- Hide Handwraps use the same verified revised glove geometry recolored to a worn brown leather palette; alpha/pose geometry is unchanged.
-- An all-four-facing contact-sheet audit was generated during the release pass for walk, slash, one-handed slash, backslash and halfslash keyframes; the starter clothing stack remained anchored to the player poses.
-- Legacy classic clothing layers remain in the asset library but are not the default starter presentation.
+## Root cause
 
-### C. Source concept preservation
-- `Transformation.png` plus six other user-provided 832×3456 concept sheets are staged outside `dist/`.
-- None are registered in `ASSET_DEFS` for this hotfix.
-- `Transformation.png` is the only authoritative future player-transformation source.
+`transitionToMap()` sets `this.transitioning = true` before destination asset preparation/fade. `WorldScene.update()` intentionally returns while that flag is true so the source-map player body cannot overwrite committed destination coordinates. Phaser `Scene.restart()` restarts the same Scene instance rather than constructing a new `WorldScene`, so the custom field remained true after restart. The destination rendered, but its update loop was permanently gated.
+
+## Repair
+
+`WorldScene.create()` now resets `this.transitioning = false` on every Scene creation/restart before ActionInput is rebound and before the destination gameplay loop begins. No input/physics pause API was involved; the stale transition guard itself was the freeze.
+
+The following v0.1.2.4.2 safeguards remain unchanged:
+- prepare destination assets before committing map identity/coordinates;
+- retain already-loaded textures for the browser session;
+- deterministic layered-player visual reconstruction and delayed integrity recovery;
+- combo-safe Level-1 starter visuals;
+- schema-1 map-aware save normalization.
 
 ## Automated validation
 
-`npm run check` validates project/data invariants, runtime asset presence/dimensions/alpha coverage, full-combo starter visual coverage, save normalization, map definitions, content staging, and source/runtime separation.
-
-All JS source is also checked with `node --check` before packaging.
+`npm run check` requires the Scene-create transition reset to exist and to occur before ActionInput is rebound. It also retains all existing map, save, asset, starter-gear, collision, loot and animation invariants. All JavaScript is checked with `node --check` before packaging.
 
 ## Physical iPhone release gate
 
-1. New Game: confirm complete starter outfit appears at Level 1.
-2. Perform slash → one-handed slash → backslash → halfslash in all directions; no clothing layer may shift independently.
-3. Debug or natural travel Cinder → Hollow → Cinder at least five round trips with no refresh.
-4. Confirm player remains visible on every arrival and after first movement/attack.
-5. Save in Hollow → page reload → Continue; map and player should render immediately.
-6. Save in Cinder → page reload → Continue; same expectation.
-7. Unequip starter pieces, save/reload, and verify the game does not force-dress the player.
-8. Background/foreground Safari and switch apps during a 10–15 minute session; check input, duplicate handlers, map rendering and player visibility.
+1. Cinder → Hollow: immediately walk and attack; no reset/refresh.
+2. Confirm local Spiders continue updating and can attack/chase.
+3. Use the southern Hollow return transition.
+4. On Cinder arrival, immediately walk and attack again.
+5. Repeat at least five round trips.
+6. Save in Hollow → reload → Continue; confirm movement/enemy simulation immediately.
+7. Save in Cinder → reload → Continue; same expectation.
+8. Background/foreground Safari and repeat a map transition.
+9. Check for duplicate touches, duplicate toasts, stuck joystick state, frozen enemies or degraded performance.
 
-v0.1.2.4.2 becomes the baseline only after the physical-device transition/player-visual test passes.
+v0.1.2.4.3 becomes the baseline only after this physical-device lifecycle gate passes.

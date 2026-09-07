@@ -147,7 +147,7 @@ This layout is intentional: future harvesting can continue from the preserved so
 
 ## 2026-09-07 user-created Demon / Heavenly / transformation concepts
 
-The following user-supplied full 832×3456 RGBA LPC-style sheets are preserved under `source-assets/character-concepts/2026-09-07/` and are **not runtime assets in v0.1.2.4.2**:
+The following user-supplied full 832×3456 RGBA LPC-style sheets are preserved under `source-assets/character-concepts/2026-09-07/` and are **not runtime assets in v0.1.2.4.3**:
 
 - `player-transformation/Transformation.png` — authoritative future player transformation source.
 - `demon-castle/DemonBase.png`

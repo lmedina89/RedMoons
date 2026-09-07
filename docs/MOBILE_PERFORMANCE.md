@@ -1,6 +1,6 @@
-# Mobile Performance Considerations — v0.1.2.4.2
+# Mobile Performance Considerations — v0.1.2.4.3
 
-## v0.1.2.4.2 transition memory policy
+## v0.1.2.4.3 transition memory/lifecycle policy
 
 Map assets remain **lazy by first visit**, but textures already loaded during the current browser session are retained. Physical iPhone Safari testing showed that eager TextureManager eviction during Phaser Scene restarts could leave the newly constructed player layer stack without usable textures even though the map itself rendered. Current two-map memory remains manageable, so reliability takes precedence over aggressive eviction in this hotfix. A later cache-eviction policy must be device-tested behind a clean scene handoff before reintroduction.
 
@@ -59,7 +59,7 @@ Moving a source file out of `dist/` does not mean losing it.
 
 Do not solve world expansion by continually increasing the Cinder Region dimensions. Caves, dungeons, interiors, distant regions, guild spaces and major future towns should normally be separate maps with map-owned actor and texture packages.
 
-When transitioning, the destination package is loaded only when needed. In v0.1.2.4.2, textures already visited during the current browser session remain cached instead of being evicted during the Phaser Scene restart, because physical iPhone testing exposed a WebKit-sensitive player-visual failure at that boundary. This still prevents *unvisited* regions from loading up front. A later bounded cache/eviction layer can be reintroduced only after it passes the same physical-device transition gate.
+When transitioning, the destination package is loaded only when needed. In v0.1.2.4.3, the v0.1.2.4.2 policy remains: textures already visited during the current browser session remain cached instead of being evicted during the Phaser Scene restart, because physical iPhone testing exposed a WebKit-sensitive player-visual failure at that boundary. This still prevents *unvisited* regions from loading up front. A later bounded cache/eviction layer can be reintroduced only after it passes the same physical-device transition gate.
 
 ## Next performance steps when needed
 

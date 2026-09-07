@@ -1,8 +1,8 @@
-# Architecture — v0.1.2.4.2
+# Architecture — v0.1.2.4.3
 
-## Map-transition lifecycle invariant (v0.1.2.4.2)
+## Map-transition lifecycle invariant (v0.1.2.4.3)
 
-A transition prepares/verifies the destination package while the source map is still active, commits map/entry coordinates only after success, saves, fades, then restarts WorldScene. Loaded textures are retained for the browser session. On destination create the player layered stack is explicitly rebuilt and a delayed integrity pass can re-prepare the current map assets if required textures are missing. This intentionally separates **map package loading** from future **texture cache eviction** so WebKit reliability can be proven first.
+A transition prepares/verifies the destination package while the source map is still active, commits map/entry coordinates only after success, saves, fades, then restarts WorldScene. During the source fade, `this.transitioning` gates `update()` so the old player body cannot overwrite committed destination coordinates. Phaser `Scene.restart()` reuses the Scene instance, so `WorldScene.create()` must reset that transient flag before destination gameplay begins. Loaded textures are retained for the browser session. On destination create the player layered stack is explicitly rebuilt and a delayed integrity pass can re-prepare the current map assets if required textures are missing. This intentionally separates **map package loading**, **transient Scene lifecycle state**, and future **texture cache eviction**.
 
 ## Player visual compatibility
 

@@ -30,6 +30,11 @@ export class WorldScene extends Phaser.Scene {
     this.saveManager = this.registry.get('saveManager');
     this.currentMap = mapForId(this.state.player.mapId);
     this.state.player.mapId = this.currentMap.id;
+    // Phaser Scene.restart() reuses this WorldScene instance. A transition sets
+    // this flag before the fade so the source map cannot overwrite committed
+    // destination coordinates. Reset it on every create() or the restarted
+    // destination Scene will render normally but update() will return forever.
+    this.transitioning = false;
     this.makeRuntimeTextures();
     this.physics.world.setBounds(0, 0, this.currentMap.width, this.currentMap.height);
     this.cameras.main.setBounds(0, 0, this.currentMap.width, this.currentMap.height).setRoundPixels(true).setZoom(1);
@@ -79,7 +84,7 @@ export class WorldScene extends Phaser.Scene {
     this.emitState();
     this.cameras.main.fadeIn(150, 12, 6, 4);
     gameEvents.emit('ready', { version: GAME_VERSION });
-    // v0.1.2.4.2 intentionally retains textures that have already been loaded
+    // v0.1.2.4.3 retains the v0.1.2.4.2 texture policy and intentionally retains textures that have already been loaded
     // during this browser session. Map-scoped loading still prevents unopened
     // regions from loading at startup, but WebKit device testing showed that
     // eager TextureManager eviction during Scene restarts could invalidate the

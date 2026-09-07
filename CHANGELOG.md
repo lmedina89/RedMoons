@@ -1,5 +1,15 @@
 # Changelog
 
+## v0.1.2.4.3 — Transition Lifecycle Recovery
+
+### Physical-iPhone transition repair
+- Fixed the post-transition full-simulation freeze found on physical iPhone Safari after v0.1.2.4.2 successfully restored destination rendering and player visuals.
+- Root cause: `transitionToMap()` sets `this.transitioning = true` to freeze the source map during fade, while Phaser `Scene.restart()` reuses the same `WorldScene` instance. The stale flag therefore survived into the destination Scene and caused `update()` to return forever.
+- `WorldScene.create()` now explicitly resets the transient transition flag before normal destination simulation begins. The source-map fade guard remains unchanged, so committed destination coordinates are still protected.
+- Preserved v0.1.2.4.2 session-retained texture caching, deterministic player-layer restoration, combo-safe starter visuals, save schema 1, map IDs/entry IDs and source-art staging.
+- Added a validator invariant that requires the transition flag to be reset during `create()` and verifies that the reset occurs before ActionInput binds / destination gameplay begins.
+
+
 ## v0.1.2.4.2 — Player Transition & Starter Visual Recovery
 
 ### Physical-iPhone repairs

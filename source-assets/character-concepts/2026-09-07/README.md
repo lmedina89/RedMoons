@@ -6,7 +6,7 @@ These full 832×3456 RGBA Universal-LPC-style sheets are **development/source ar
 
 - `player-transformation/Transformation.png` — the one sheet currently designated for the future timed **player transformation** system. It will eventually be harvested into compact action-specific runtime crops. Equipment remains mechanically equipped during transformation; incompatible armor/clothing visuals may be suppressed while compatible weapon/shield layers can remain visible.
 
-No transformation gameplay is activated in v0.1.2.4.2. This file is staged only.
+No transformation gameplay is activated in v0.1.2.4.3. This file is staged only.
 
 ## Demon Castle source pool
 

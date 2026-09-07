@@ -1,56 +1,36 @@
-# Hell RPG v0.1.2.4.2 — Player Transition & Starter Visual Recovery
+# Hell RPG v0.1.2.4.3 — Transition Lifecycle Recovery
 
-This hotfix is built directly from v0.1.2.4.1 and keeps **save schema 1**. Its release gate is the user's physical iPhone Safari because both repaired problems were found there.
+This narrow hotfix is built directly from v0.1.2.4.2 and keeps **save schema 1**. Physical iPhone Safari testing proved that v0.1.2.4.2 could render both the destination map and player after Cinder ↔ Ashfall Hollow travel, but the restarted Scene remained permanently frozen until a browser reset.
 
 ## What changed
 
-### Player survives map transitions visually
-The destination map is still prepared before transition state is committed. v0.1.2.4.2 changes only the post-load cache policy: textures already loaded in this browser session are retained rather than eagerly removed during Scene restarts. The player layer stack is explicitly reconstructed on Scene creation and checked again after the first frame. If required visual textures are unexpectedly missing, the current package is re-prepared and the player visual is rebuilt.
+### Destination simulation resumes after map travel
+`WorldScene.transitionToMap()` deliberately sets `this.transitioning = true` during the source-map fade so `update()` cannot overwrite the already-committed destination coordinates. Phaser `Scene.restart()` reuses the same Scene instance, so that field survived the restart in v0.1.2.4.2. The destination map rendered, but `update()` saw the stale flag and returned every frame.
 
-This intentionally trades a modest amount of session memory for transition reliability. Unvisited maps still are **not** loaded at startup.
+v0.1.2.4.3 resets the transient transition flag during every `WorldScene.create()` before the destination simulation begins. The source-map freeze guard remains intact during the fade, while the restarted destination map can immediately process player input, enemy AI, interactions, HUD updates and autosaves.
 
-### Level-1 clothes no longer use slash-only legacy visuals
-Fresh characters keep the familiar starter item names and stats:
-
-- Wayfarer Shirt
-- Ashcloth Trousers
-- Hide Handwraps
-- Road Boots
-- Ashen Arming Sword
-
-The four clothing items now use player-only full-combo-compatible revised visuals; NPC/enemy loadouts that share those item IDs keep their original classic presentation. `Ashcloth Trousers` includes a compact revised-combat overlay generated from the exact player poses, and `Hide Handwraps` use a brown low-level recolor of the verified revised glove poses. Both remain aligned through slash → one-handed slash → backslash → halfslash. Existing saves keep their equipment choices; the visual fix follows the same item IDs, so a returning character wearing the old starter items benefits automatically.
-
-### Future Demon / Heavenly / transformation art is preserved
-The newly supplied 832×3456 LPC-style sheets are source-only under:
-
-`source-assets/character-concepts/2026-09-07/`
-
-`Transformation.png` is the only sheet currently designated as the future **player transformation**. The other uploaded sheets are preserved for future Demon Castle mobs/elites/bosses or Heavenly Castle/unique NPCs. No transformation feature is activated in this release.
-
-## Existing systems preserved
-
-- Cinder Region + Ashfall Hollow separate-map architecture
-- Continue / New Game / Load Save single-slot flow
-- map-loading overlay and prepare-before-commit transition safety
-- horizontally swipeable diagnostics tray
-- corrected Ash Goblin facing
-- Ashstone Golem death animation
-- save schema 1 compatibility
-- data-driven items/enemies/NPCs/quests/maps
-- compact runtime crops with full source art kept outside `dist/`
+### Existing v0.1.2.4.2 recovery work is preserved
+- Destination assets are still prepared before map state is committed.
+- Already-visited textures remain cached for the current browser session to avoid the earlier WebKit texture-lifecycle failure.
+- The player layered visual stack is still rebuilt and integrity-checked after Scene creation.
+- Combo-safe player-only Level-1 starter visuals remain unchanged.
+- Continue / New Game / Load Save remains unchanged.
+- `Transformation.png` and all Demon/Heavenly concept sheets remain source-only and preserved.
 
 ## Physical iPhone release gate
 
-1. Start/Continue in Cinder and confirm the full Level-1 outfit is visible.
-2. Perform the complete four-hit sword chain facing all four directions; clothes must not shift independently from the body.
-3. Cinder → Hollow → Cinder → Hollow → Cinder without Safari refresh; player must remain visible every time.
-4. Save in Hollow, reload the page, Continue, and confirm both map and player appear immediately.
-5. Save in Cinder, reload, Continue, and repeat.
-6. Remove/equip starter gear and verify returning saves are not force-dressed.
-7. Switch apps/background Safari during a 10–15 minute session and verify input, player visibility and map rendering remain stable.
+1. Start/Continue in Cinder and confirm movement + attack work.
+2. Enter Ashfall Hollow naturally or with `?debug=1` → `Map: Hollow`.
+3. **Immediately move and attack after arrival without reset or refresh.**
+4. Confirm Spiders move/attack and `Use` works on the return exit.
+5. Return to Cinder and immediately move/attack again.
+6. Repeat Cinder → Hollow → Cinder at least five round trips with no reset/refresh.
+7. Save in Hollow → page reload → Continue; verify map, player and simulation are immediately live.
+8. Save in Cinder → page reload → Continue and repeat.
+9. Background/foreground Safari during a 10–15 minute session and check for stuck input, duplicate actions or simulation freeze.
 
 ## Debug
-Append `?debug=1` to the GitHub Pages URL. The diagnostics tray is horizontally swipeable and includes direct `Map: Refuge` / `Map: Hollow` travel buttons.
+Append `?debug=1` to the GitHub Pages URL. The diagnostics tray remains horizontally swipeable and includes direct `Map: Refuge` / `Map: Hollow` travel buttons.
 
 ## Source-art policy
-Development/source artwork is preserved under `source-assets/`. Runtime art under `dist/assets/` should remain curated and action-specific. Never delete useful source sheets merely to reduce the shipping build; move them out of `dist/` instead.
+Development/source artwork remains under `source-assets/`. Runtime art under `dist/assets/` stays curated and action-specific. No useful source sheet is deleted merely to reduce the shipping build.

@@ -1,8 +1,8 @@
-# Known limitations — v0.1.2.4.2
+# Known limitations — v0.1.2.4.3
 
-## v0.1.2.4.2 validation note
+## v0.1.2.4.3 validation note
 
-The disappearing-player defect was observed on physical iPhone Safari and cannot be considered closed until repeated no-refresh Cinder ↔ Hollow travel passes on that device. Automated/static validation can prove the asset and recovery paths exist but cannot substitute for the WebKit release gate. The staged `Transformation.png` and Demon/Heavenly character sheets are source-only concepts; transformation mechanics and expanded action harvesting are deliberately deferred.
+v0.1.2.4.2 proved that destination map/player rendering could survive the handoff, but physical iPhone Safari then exposed a stale Scene transition flag that froze all destination simulation until reset. v0.1.2.4.3 explicitly resets that transient flag on every Scene create/restart. It cannot be considered closed until repeated no-refresh Cinder ↔ Hollow travel confirms movement, attacks, enemy AI and interactions resume immediately on the physical device. The staged `Transformation.png` and Demon/Heavenly character sheets remain source-only concepts; transformation mechanics and expanded action harvesting are deliberately deferred.
 
 ## Current gameplay/system limits
 

@@ -31,7 +31,7 @@ export const ASSET_DEFS = [
     { key: `${key}-backslash`, path: `${R}${key}-backslash.png`, frameWidth: 64, frameHeight: 64 },
     { key: `${key}-halfslash`, path: `${R}${key}-halfslash.png`, frameWidth: 64, frameHeight: 64 }
   ]),
-  // v0.1.2.4.2 combo-safe starter trouser overlay. It is derived from the
+  // v0.1.2.4.3 combo-safe starter trouser overlay. It is derived from the
   // exact revised player poses, so beginner clothing no longer shifts when the
   // sword combo changes from slash to one-handed/backslash/halfslash actions.
   ...['walk', 'slash', 'backslash', 'halfslash'].flatMap(action => [
