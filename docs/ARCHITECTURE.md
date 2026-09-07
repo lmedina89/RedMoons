@@ -1,4 +1,16 @@
-# Architecture — v0.1.3.2.4
+# Architecture — v0.1.4.0
+
+
+## v0.1.4.0 world traversal and area boundary
+
+`data/world.js` remains the source of truth for visible static geometry, but colliders now also declare which actor classes they block. All current visible walls and building footprints block both `player` and `enemy`. `WorldScene` installs separate filtered Arcade colliders for the player and enemy group; it still does **not** install enemy/player physical separation. This preserves the mobile movement hardening from v0.1.1.4 while making world solids authoritative for ordinary ground monsters.
+
+`systems/WorldNavigation.js` is intentionally small and pure. It owns collision-kind checks, future phase-traversal opt-out, rectangle-area resolution, 90-degree detour vector generation and cheap segment-vs-solid line checks used to prevent basic melee through walls. `Enemy` owns only per-instance obstruction state. Repeated collision asks an enemy to wall-follow temporarily; a sufficiently long blocked chase enters an `obstructed` cooldown and disengages. This is a low-cost steering layer, not a navmesh. A* or a flow-field should only be introduced if later dungeon geometry proves this insufficient.
+
+`AREA_DEFS` partitions each active map into non-overlapping local areas while `ZONES` remain the broader safety/biome/NPC boundaries. The HUD consumes the new `area` event; NPC loading and broad map logic continue to use zone IDs. Each area can stage encounter-family weights and group archetypes without forcing the current spawner to change in the same release.
+
+`data/encounters.js` defines family and group vocabulary only. v0.1.4.0 deliberately keeps the proven `SPAWN_REGIONS` runtime; each spawn now has an `areaId` so a later encounter-director migration can be incremental instead of destructive.
+
 
 ## v0.1.3.2.4 celestial special-actor boundary
 

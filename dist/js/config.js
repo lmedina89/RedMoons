@@ -1,4 +1,4 @@
-export const GAME_VERSION = '0.1.3.2.4';
+export const GAME_VERSION = '0.1.4.0';
 export const SAVE_VERSION = 2;
 export const SAVE_KEY = 'hellrpg.ashfall.save.v1';
 export const TILE_SIZE = 32;

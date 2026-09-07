@@ -56,6 +56,7 @@ export class UIManager {
     });
     gameEvents.on('state', snapshot => { this.snapshot = snapshot; this.renderHud(); });
     gameEvents.on('zone', zone => { $('#zone-name').textContent = zone.name; $('#zone-danger').textContent = zone.danger; });
+    gameEvents.on('area', area => { $('#zone-name').textContent = area.name; $('#zone-danger').textContent = area.danger; });
     gameEvents.on('toast', data => this.toast(data));
     gameEvents.on('dialogue', data => this.showDialogue(data));
     gameEvents.on('death', data => { this.stopTouchMovement?.(); window.__ashfallUiBlocked = true; $('#death-text').textContent = data.text; $('#death-screen').classList.remove('hidden'); });

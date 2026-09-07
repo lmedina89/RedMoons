@@ -1,6 +1,7 @@
 import { ENEMY_ABILITY_DEFS } from '../data/abilities.js';
 import { LayeredCharacter, createActorEquipmentState } from './LayeredCharacter.js';
 import { areHostile } from '../data/factions.js';
+import { detourVelocity } from '../systems/WorldNavigation.js';
 
 const ACTION_FRAMES = Object.freeze({ slash: 6, spellcast: 7, thrust: 8, shoot: 13, hurt: 6, attack: 6 });
 
@@ -91,6 +92,17 @@ export class Enemy {
     this.abilityTargetY = 0;
     this.abilityTelegraph = null;
     this.abilityCooldowns = new Map();
+    // Lightweight ground-navigation state. Static Arcade collision is the hard
+    // guarantee; these fields only stop an AI from endlessly pushing into the
+    // same wall when its target is on the other side.
+    this.worldCollisionStreak = 0;
+    this.worldCollisionBlockedSince = 0;
+    this.lastWorldCollisionAt = -Infinity;
+    this.lastWorldCollisionCountAt = -Infinity;
+    this.lastWorldObstacleId = null;
+    this.worldDetourUntil = 0;
+    this.worldDetourSign = index % 2 ? 1 : -1;
+    this.navigationDisengageUntil = 0;
     this.respawn(0);
   }
 
@@ -144,11 +156,48 @@ export class Enemy {
     this.sprite.setVelocity(0);
     this.clearAbility();
     this.abilityCooldowns.clear();
+    this.worldCollisionStreak = 0;
+    this.worldCollisionBlockedSince = 0;
+    this.lastWorldCollisionAt = -Infinity;
+    this.lastWorldCollisionCountAt = -Infinity;
+    this.lastWorldObstacleId = null;
+    this.worldDetourUntil = 0;
+    this.worldDetourSign = this.index % 2 ? 1 : -1;
+    this.navigationDisengageUntil = 0;
     this.combat?.statuses.clear(this);
     this.applyLoadout();
     this.visual?.setVisible(true);
     this.visual?.clearTint();
     this.renderVisual('idle', 0, null);
+  }
+
+  onWorldCollision(obstacle, time) {
+    if (!this.sprite.active || this.state === 'dying' || this.state === 'dead') return;
+    const collisionGap = time - this.lastWorldCollisionAt;
+    if (collisionGap > 700) {
+      this.worldCollisionStreak = 0;
+      this.worldCollisionBlockedSince = time;
+    }
+    if (time - this.lastWorldCollisionCountAt >= 120) {
+      this.worldCollisionStreak += 1;
+      this.lastWorldCollisionCountAt = time;
+      // Alternate wall-follow direction after several failed contacts so a
+      // creature does not commit forever to the wrong end of a long barrier.
+      if (this.worldCollisionStreak % 5 === 0) this.worldDetourSign *= -1;
+    }
+    this.lastWorldCollisionAt = time;
+    this.lastWorldObstacleId = obstacle?.colliderId || null;
+    this.worldDetourUntil = Math.max(this.worldDetourUntil, time + 1150);
+
+    const blockedFor = time - this.worldCollisionBlockedSince;
+    if (this.state === 'chase' && this.worldCollisionStreak >= 8 && blockedFor >= 2800) {
+      if (this.state === 'ability') this.clearAbility();
+      this.state = 'obstructed';
+      this.stateUntil = time + 900;
+      this.navigationDisengageUntil = time + 2400;
+      this.worldDetourSign *= -1;
+      this.sprite.setVelocity(0);
+    }
   }
 
   setDirection(vx, vy) {
@@ -163,11 +212,13 @@ export class Enemy {
     this.visual.render(this.sprite.x, this.sprite.y, action, frameStep, this.sprite.y, progress);
   }
 
-  availableAbility(time, distance) {
+  availableAbility(time, distance, targetNode = null) {
     for (const id of this.def.abilities || []) {
       const ability = ENEMY_ABILITY_DEFS[id];
       if (!ability || time < (this.abilityCooldowns.get(id) || 0)) continue;
       if (distance > ability.range || distance < (ability.minRange || 0)) continue;
+      if ((ability.type === 'melee_reach' || ability.type === 'radial_aoe') && targetNode
+        && !this.scene.hasWorldLineOfSight?.(this.sprite.x, this.sprite.y, targetNode.x, targetNode.y)) continue;
       return ability;
     }
     return null;
@@ -276,19 +327,30 @@ export class Enemy {
       const homeDx = this.homeX - this.sprite.x;
       const homeDy = this.homeY - this.sprite.y;
       const homeDistance = Math.hypot(homeDx, homeDy);
-      if (homeDistance > this.def.leashRange) this.state = 'return';
+      if (time - this.lastWorldCollisionAt > 700 && time >= this.worldDetourUntil) {
+        this.worldCollisionStreak = 0;
+        this.worldCollisionBlockedSince = 0;
+        this.lastWorldObstacleId = null;
+      }
+      if (this.state === 'obstructed' && time >= this.stateUntil) {
+        this.state = homeDistance > 80 ? 'return' : 'idle';
+        this.stateUntil = time + 700;
+        this.worldCollisionStreak = 0;
+        this.worldCollisionBlockedSince = 0;
+      }
+      if (homeDistance > this.def.leashRange && this.state !== 'obstructed') this.state = 'return';
       if (this.state === 'idle' && time >= this.stateUntil) { this.state = 'patrol'; this.stateUntil = time + 1000 + Math.random() * 1600; }
-      if ((this.state === 'idle' || this.state === 'patrol') && targetNode && distance < this.def.detectRange) { this.state = 'detect'; this.stateUntil = time + 220; }
+      if ((this.state === 'idle' || this.state === 'patrol') && time >= this.navigationDisengageUntil && targetNode && distance < this.def.detectRange) { this.state = 'detect'; this.stateUntil = time + 220; }
       if (this.state === 'detect' && time >= this.stateUntil) this.state = targetNode ? 'chase' : 'idle';
 
       if (this.state === 'chase' && targetNode) {
-        const ability = this.availableAbility(time, distance);
+        const ability = this.availableAbility(time, distance, targetNode);
         if (ability) this.beginAbility(ability, target, time);
-        else if (distance <= this.def.attackRange) { this.state = 'attack'; this.stateUntil = time + this.def.attackCooldown; this.attackApplied = false; }
+        else if (distance <= this.def.attackRange && this.scene.hasWorldLineOfSight?.(this.sprite.x, this.sprite.y, targetNode.x, targetNode.y) !== false) { this.state = 'attack'; this.stateUntil = time + this.def.attackCooldown; this.attackApplied = false; }
       }
       if (this.state === 'attack' && !this.attackApplied && time >= this.stateUntil - this.def.attackCooldown * 0.48) {
         this.attackApplied = true;
-        if (targetNode && distance <= this.def.attackRange + 18) this.callbacks.hitTarget?.(target, this.def.attack, this.sprite.x, this.sprite.y, this);
+        if (targetNode && distance <= this.def.attackRange + 18 && this.scene.hasWorldLineOfSight?.(this.sprite.x, this.sprite.y, targetNode.x, targetNode.y) !== false) this.callbacks.hitTarget?.(target, this.def.attack, this.sprite.x, this.sprite.y, this);
       }
       if (this.state === 'attack' && time >= this.stateUntil) { this.state = 'recover'; this.stateUntil = time + this.def.recoverMs; }
       if (this.state === 'recover' && time >= this.stateUntil) { this.state = targetNode && Math.random() < 0.34 ? 'reposition' : (targetNode ? 'chase' : 'idle'); this.stateUntil = time + 420; }
@@ -306,6 +368,12 @@ export class Enemy {
       } else if (this.state === 'reposition' && targetNode) {
         const inv = distance ? 1 / distance : 0; vx = -dy * inv * speed * 0.65; vy = dx * inv * speed * 0.65;
       }
+      if (time < this.worldDetourUntil && (this.state === 'chase' || this.state === 'return' || this.state === 'patrol') && (vx || vy)) {
+        const detour = detourVelocity(vx, vy, this.worldDetourSign);
+        vx = detour.vx;
+        vy = detour.vy;
+      }
+      if (this.state === 'obstructed') { vx = 0; vy = 0; }
       if (this.state !== 'ability') this.sprite.setVelocity(vx, vy);
       this.setDirection(vx || dx, vy || dy);
     }

@@ -1,4 +1,9 @@
-# Mobile Performance — v0.1.3.2.4
+# Mobile Performance — v0.1.4.0
+
+## v0.1.4.0 navigation cost policy
+
+The world-collision repair uses Phaser Arcade's existing broadphase/static-group collision plus tiny per-enemy steering state. It does not allocate a nav grid, run A* every think tick, or increase live monster counts. Area identity is rectangle metadata and the new visual landmarks use a handful of persistent Graphics commands. This keeps the pass appropriate for iPhone-first testing while leaving a clean upgrade path if future dungeon complexity requires pathfinding.
+
 
 ## Azrael field-test budget
 

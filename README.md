@@ -1,6 +1,23 @@
-# Hell RPG v0.1.3.2.4 — Sanctuary of the First Light
+# Hell RPG v0.1.4.0 — World Collision & Cinder Region Layout Foundation
 
-Built directly from the physically approved **v0.1.3.2.3 ArchAngel Azrael Celestial Expansion**. Save schema remains **2** and the localStorage key remains `hellrpg.ashfall.save.v1`.
+Built directly from the physically approved **v0.1.3.2.4 Sanctuary of the First Light**. Save schema remains **2** and the localStorage key remains `hellrpg.ashfall.save.v1`.
+
+
+## v0.1.4.0 World Collision & Cinder Region Layout Foundation
+
+This is the first controlled world-building pass after Azrael was physically approved. It intentionally does **not** add a new monster wave, replace Azrael, or attempt a giant town overhaul in one risky patch. The release fixes traversal integrity first and gives the existing Cinder Region a stable local-area model that future encounter and art passes can build on.
+
+- Ordinary ground enemies now collide with the same visible refuge walls, building footprints, Hollow walls and new Fallen Watch ruin walls that stop the player. Enemy/player dynamic separation remains disabled, so the old monster-shove/reverse-slide problem is not reintroduced.
+- Enemy AI receives lightweight obstruction steering: contact with a solid temporarily turns chase/return movement along the wall; repeated failed contacts alternate the wall-follow side; a target that remains unreachable eventually causes a short disengage instead of endless wall pushing. Basic melee also requires a clear world line so enemies cannot simply stop at a wall and hit through it. This deliberately avoids a full A* grid until maps become maze-like enough to justify it on mobile.
+- Current collision records expose actor-blocking categories (`player`, `enemy`). A future phasing enemy can opt out explicitly with `traversal.worldCollision = 'phase'`; wall-phasing is no longer accidental default behavior.
+- The Cinder Region is now partitioned into stable local identities: **Cinder Refuge, Ashen Causeway, Emberfields, Cinderwood, First-Light Scar, The Fallen Watch, Ashgrave Hollow, and Bone Road**. Ashfall Hollow has its own area identity on its separate map.
+- The HUD reports the fine-grained local area while the original broad zones remain intact for NPC/map logic.
+- First layout cues are visible without introducing new art dependencies: the Causeway extends east from the Refuge gate, First-Light Scar receives restrained celestial ground treatment around Azrael, Fallen Watch gains visible broken collision walls, and Ashgrave receives initial grave landmarks.
+- Every spawn definition now records an intended `areaId`, and local area definitions seed weighted monster-family and encounter-group metadata. The runtime spawn counts/roster are deliberately preserved for this collision field test.
+- New family vocabulary covers current `imp`, `goblin`, `spider`, `carrion`, `rotwing`, `skeleton`, `construct` families plus future `celestial`; group archetypes seed roaming, packs, patrols, guards, rituals and ambushes. These are planning/data foundations, not a claim that group AI is already live.
+- Azrael's seven-skill behavior, Sanctuary healing, balance, VFX/audio and approved art are unchanged from v0.1.3.2.4.
+
+See `docs/WORLD_FOUNDATION.md` for the physical iPhone collision/area test route.
 
 
 ## v0.1.3.2.4 Sanctuary of the First Light

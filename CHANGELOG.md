@@ -1,5 +1,19 @@
 # Changelog
 
+## v0.1.4.0 — World Collision & Cinder Region Layout Foundation
+
+- Built directly from physically approved v0.1.3.2.4 Sanctuary of the First Light; save schema remains 2.
+- Fixed the major traversal inconsistency where ordinary monsters could pass through static walls/buildings that blocked the player.
+- Added filtered enemy↔static-world Arcade collision without restoring enemy↔player physical separation.
+- Added lightweight collision steering and unreachable-target disengage behavior instead of expensive full-map A* pathfinding.
+- Added explicit actor-blocking collider metadata and future opt-in `phase` traversal support.
+- Added nine local area definitions across the two current maps, including eight deliberate Cinder Region sub-areas.
+- Added first restrained layout/identity cues for Ashen Causeway, Emberfields, Cinderwood, First-Light Scar, Fallen Watch and Ashgrave Hollow.
+- Added five visible Fallen Watch ruin-wall segments sourced from the same records used for collision.
+- Added monster-family and encounter-group metadata foundations; current live spawn populations and Azrael's approved combat behavior remain unchanged.
+- Added `tests/world-navigation-smoke.mjs` and expanded structural validation for area partitioning, family references, spawn-area mapping and shared player/enemy world solids.
+- Verified all 310 existing runtime/source art files unchanged from v0.1.3.2.4.
+
 ## v0.1.3.2.4 — Sanctuary of the First Light
 
 - Built directly from the physically approved v0.1.3.2.3 Azrael Celestial Expansion; Sanctified Nova, Seraphic Judgment, Heavenfall, movement, faction behavior and existing combat presentation are preserved.

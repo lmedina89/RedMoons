@@ -14,7 +14,8 @@ const { ENEMY_DEFS } = await import('../dist/js/data/enemies.js');
 const { EQUIPMENT_SET_DEFS, ITEM_DEFS } = await import('../dist/js/data/items.js');
 const { CONSUMABLE_EFFECT_DEFS, MERCHANT_SUPPLY_DEFS, QUICK_CONSUMABLE_SLOTS, RECOVERY_DROP_TABLE } = await import('../dist/js/data/consumables.js');
 const { NPC_DEFS, NPC_GUILD_SEEDS } = await import('../dist/js/data/npcs.js');
-const { BUILDING_DEFS, COLLIDERS, DEFAULT_MAP_ID, HOLLOW_COLLIDERS, HOLLOW_WALLS, MAP_DEFS, MAP_TRANSITIONS, RECOVERY_POINTS, REFUGE_WALLS, SPAWN_REGIONS, ZONES } = await import('../dist/js/data/world.js');
+const { AREA_DEFS, BUILDING_DEFS, COLLIDERS, DEFAULT_MAP_ID, FALLEN_WATCH_WALLS, HOLLOW_COLLIDERS, HOLLOW_WALLS, MAP_DEFS, MAP_TRANSITIONS, RECOVERY_POINTS, REFUGE_WALLS, SPAWN_REGIONS, ZONES } = await import('../dist/js/data/world.js');
+const { MONSTER_FAMILY_DEFS, ENCOUNTER_GROUP_ARCHETYPES } = await import('../dist/js/data/encounters.js');
 const { QUEST_DEFS } = await import('../dist/js/data/quests.js');
 const { SKILL_DEFS, DEFAULT_SKILL_SLOTS, normalizeSkillState, resolvedSkillDef } = await import('../dist/js/data/skills.js');
 const { STATUS_DEFS } = await import('../dist/js/data/statuses.js');
@@ -68,8 +69,8 @@ assert.ok(combatSource.includes('cooldownMs: 2400'), 'Empty-swing combat feedbac
 assert.ok(worldSource.includes('queueKillReward') && worldSource.includes('delayedCall(320'), 'Horde kill rewards must be batched');
 assert.ok(layeredSource.includes('ROOT_X') && layeredSource.includes('baseAsset') && layeredSource.includes("equipmentPolicy === 'player'"), 'Renderer must stabilize revised root motion and support actor-specific bases/equipment policies');
 assert.ok(!html.includes('90_user_generated'), 'Prototype-only generator assets must not ship');
-assert.equal(GAME_VERSION, '0.1.3.2.4', 'Sanctuary build version must be v0.1.3.2.4');
-assert.ok(html.includes('v0.1.3.2.4'), 'Build shell must identify v0.1.3.2.4');
+assert.equal(GAME_VERSION, '0.1.4.0', 'World foundation build version must be v0.1.4.0');
+assert.ok(html.includes('v0.1.4.0'), 'Build shell must identify v0.1.4.0');
 assert.ok(html.includes('id="start-screen"') && html.includes('id="continue-game"') && html.includes('id="new-game"') && html.includes('id="load-game"'), 'Start menu must expose Continue, New Game and Load Save');
 assert.ok(html.includes('data-quick-consumable="health"') && html.includes('data-quick-consumable="essence"'), 'Mobile HUD must expose dedicated HP and Essence quick-use controls');
 assert.ok(html.includes('class="flask-glyph"') && cssSource.includes('#skill-button-0') && cssSource.includes('#skill-button-1') && cssSource.includes('#skill-button-2'), 'Combat hotfix must expose recognizable flask glyphs and absolute radial skill positions');
@@ -88,7 +89,7 @@ assert.ok(mainSource.includes('loadExisting()') && mainSource.includes('saveMana
 assert.ok(saveSource.includes('loadExisting()') && saveSource.includes('summary(state)'), 'Save manager must expose non-destructive slot inspection for the title menu');
 assert.ok(cssSource.includes('overflow-x: auto') && cssSource.includes('left: calc(var(--safe-left)') && cssSource.includes('flex: 0 0 auto'), 'Debug tray must stay inside safe-area bounds and scroll horizontally on iPhone');
 assert.ok(worldSource.includes('transitionToMap') && worldSource.includes('buildAshfallHollow'), 'WorldScene must support separate map transitions');
-assert.ok(!worldSource.includes('releaseAssetsNotNeededForMap('), 'v0.1.3.2.4 must not eagerly evict textures during the WebKit-sensitive Scene handoff');
+assert.ok(!worldSource.includes('releaseAssetsNotNeededForMap('), 'v0.1.4.0 must not eagerly evict textures during the WebKit-sensitive Scene handoff');
 assert.ok(!assetResolverSource.includes('releaseAssetsNotNeededForMap'), 'Unsafe eager texture-eviction helper must not remain exposed in the hotfix resolver API');
 assert.ok(worldSource.includes('recoverPlayerVisual') && worldSource.includes('this.player.restoreVisual()'), 'WorldScene must explicitly reconstruct and verify the layered player after map handoff');
 assert.ok(playerSource.includes('restoreVisual()') && layeredSource.includes('missingTextureKeys') && layeredSource.includes('restore('), 'Player renderer must expose deterministic visual restoration/integrity checks');
@@ -146,16 +147,27 @@ assert.ok(REFUGE_WALLS.some(wall => wall.id === 'refuge-east-north') && REFUGE_W
 const eastNorth = REFUGE_WALLS.find(wall => wall.id === 'refuge-east-north');
 const eastSouth = REFUGE_WALLS.find(wall => wall.id === 'refuge-east-south');
 assert.ok(eastSouth.y1 - eastNorth.y2 >= 400, 'Refuge east exit must remain broadly touch-traversable');
-assert.ok(COLLIDERS.every(collider => ['visible-wall', 'building'].includes(collider.source)), 'Every static collider must correspond to visible wall/building geometry');
-assert.equal(COLLIDERS.length, REFUGE_WALLS.length + BUILDING_DEFS.length, 'Asset-variety pass must not introduce any extra static colliders');
+assert.ok(COLLIDERS.every(collider => ['visible-wall', 'ruin-wall', 'building'].includes(collider.source)), 'Every static collider must correspond to visible wall/building/ruin geometry');
+assert.equal(COLLIDERS.length, REFUGE_WALLS.length + FALLEN_WATCH_WALLS.length + BUILDING_DEFS.length, 'World foundation static collision must come only from visible refuge walls, Fallen Watch ruin walls and buildings');
 assert.ok(!COLLIDERS.some(collider => ['north-cliff', 'south-cliff', 'west-wall', 'east-fog', 'road-bones'].includes(collider.id)), 'Unrepresented/redundant invisible world blockers must not return');
-assert.ok(worldSource.includes('for (const wall of REFUGE_WALLS) worldArt.lineBetween') && worldSource.includes('collisionDebug.strokeRect'), 'Visible refuge wall art and debug collider audit must share collision data');
+assert.ok(worldSource.includes('for (const wall of REFUGE_WALLS) worldArt.lineBetween') && worldSource.includes('for (const wall of FALLEN_WATCH_WALLS) worldArt.lineBetween') && worldSource.includes('collisionDebug.strokeRect'), 'Visible refuge/Fallen Watch wall art and debug collider audit must share collision data');
 assert.ok(ZONES.every(zone => Array.isArray(zone.levelRange) && typeof zone.safe === 'boolean' && Array.isArray(zone.eventTags)), 'Zones must expose future-proof level/safety/event metadata');
 assert.equal(Object.keys(MAP_DEFS).length, 2, 'World streaming foundation must ship the original region plus one proof secondary map');
 assert.equal(MAP_DEFS[DEFAULT_MAP_ID].width, 2560, 'Cinder Region dimensions must remain unchanged');
 assert.equal(MAP_DEFS[DEFAULT_MAP_ID].height, 1280, 'Cinder Region dimensions must remain unchanged');
 assert.equal(MAP_DEFS.map_ashfall_hollow.width, 1024, 'Ashfall Hollow must use its own smaller map bounds');
 assert.equal(HOLLOW_COLLIDERS.length, HOLLOW_WALLS.length, 'Hollow collision must come only from its visible wall records');
+assert.ok(COLLIDERS.every(collider => collider.blocksActors?.includes('player') && collider.blocksActors?.includes('enemy')), 'Every current Cinder solid must block both player and ordinary ground enemies');
+assert.ok(HOLLOW_COLLIDERS.every(collider => collider.blocksActors?.includes('player') && collider.blocksActors?.includes('enemy')), 'Every Hollow wall must block both player and ordinary ground enemies');
+assert.equal(AREA_DEFS.filter(area => area.mapId === DEFAULT_MAP_ID).length, 8, 'Cinder Region must expose eight deliberate local areas');
+assert.ok(AREA_DEFS.some(area => area.id === 'area_first_light_scar') && AREA_DEFS.some(area => area.id === 'area_fallen_watch') && AREA_DEFS.some(area => area.id === 'area_ashgrave_hollow'), 'World layout foundation must expose the First-Light Scar, Fallen Watch and Ashgrave Hollow identities');
+for (const area of AREA_DEFS) {
+  for (const family of area.encounter?.families || []) assert.ok(MONSTER_FAMILY_DEFS[family.id], `${area.id} references unknown monster family ${family.id}`);
+  for (const group of area.encounter?.groups || []) assert.ok(ENCOUNTER_GROUP_ARCHETYPES[group], `${area.id} references unknown encounter group ${group}`);
+}
+assert.ok(worldSource.includes('this.enemyGroup,') && worldSource.includes('this.obstacles,') && worldSource.includes('enemyObstacleProcess') && worldSource.includes('onEnemyObstacleCollision'), 'Enemy group must collide with static world solids through a filtered collider');
+assert.ok(enemySource.includes('onWorldCollision(obstacle, time)') && enemySource.includes("this.state = 'obstructed'") && enemySource.includes('worldDetourUntil') && enemySource.includes('hasWorldLineOfSight'), 'Ground enemy AI must steer/disengage when world collision blocks pursuit and must not basic-melee through solids');
+assert.ok(uiSource.includes("gameEvents.on('area'"), 'HUD must display fine-grained local area identity');
 assert.ok(MAP_TRANSITIONS.some(t => t.mapId === DEFAULT_MAP_ID && t.destinationMapId === 'map_ashfall_hollow'), 'Cinder Region must expose an enterable Hollow transition');
 assert.ok(MAP_TRANSITIONS.some(t => t.mapId === 'map_ashfall_hollow' && t.destinationMapId === DEFAULT_MAP_ID), 'Ashfall Hollow must provide a return transition');
 assert.ok(Object.keys(ENEMY_DEFS).length >= 16, 'Asset variety expansion should ship a broad early enemy roster');
@@ -254,6 +266,11 @@ for (const id of ['enemy_blight_imp', 'enemy_blueflame_imp', 'enemy_ash_goblin',
 for (const mapId of Object.keys(MAP_DEFS)) {
   const population = SPAWN_REGIONS.filter(spawn => (spawn.mapId || DEFAULT_MAP_ID) === mapId).reduce((sum, spawn) => sum + spawn.count, 0);
   assert.ok(population <= 35, `${mapId} population must remain mobile-conscious`);
+}
+for (const spawn of SPAWN_REGIONS) {
+  const area = AREA_DEFS.find(entry => entry.id === spawn.areaId);
+  assert.ok(area, `${spawn.id} must reference a valid intended local area`);
+  assert.equal(area.mapId, spawn.mapId || DEFAULT_MAP_ID, `${spawn.id} area/map metadata must agree`);
 }
 assert.ok(SPAWN_REGIONS.some(spawn => spawn.mapId === 'map_ashfall_hollow' && spawn.enemyId === 'enemy_mire_spider'), 'Previously staged Mire Spider must now inhabit the separate cave map');
 for (const enemy of Object.values(ENEMY_DEFS)) for (const drop of enemy.loot) {
@@ -896,4 +913,4 @@ const normalizedWrongSlot = saveManager.validate(wrongSlotSave);
 assert.equal(normalizedWrongSlot.equipment.head, null, 'Wrong-slot saved equipment must be discarded');
 assert.equal(normalizedWrongSlot.equipment.weapon, 'i_000001', 'Valid weapon reference must survive normalization');
 
-console.log(`Validated ${ASSET_DEFS.length} assets, ${Object.keys(ITEM_DEFS).length} items, ${Object.keys(ENEMY_DEFS).length} enemies, ${Object.keys(NPC_DEFS).length} NPCs, ${BUILDING_DEFS.length} refuge buildings, ${COLLIDERS.length} visible-source colliders, ${Object.keys(QUEST_DEFS).length} quests, ${Object.keys(SKILL_DEFS).length} player skills, ${Object.keys(ENEMY_ABILITY_DEFS).length} enemy abilities, v0.1.3.2.4 Sanctuary of the First Light, seven-skill paced AI, ancient celestial AoE/healing VFX, faction combat, knockback/shake, contribution-gated rewards, v0.1.3.2.1.2 final combat-HUD tightening, staged Azrael/Assassin source sheets, v0.1.3.2 recovery/consumables, stackable supplies, sanctuary/merchant recovery, v0.1.3.1 combat polish, true run/spear thrust, skill-rank hooks, expanded LPC actions, pooled projectiles, statuses/FX/audio, stable Cinder/Hollow streaming, combo-safe starter clothes, and save schema ${SAVE_VERSION}.`);
+console.log(`Validated ${ASSET_DEFS.length} assets, ${Object.keys(ITEM_DEFS).length} items, ${Object.keys(ENEMY_DEFS).length} enemies, ${Object.keys(NPC_DEFS).length} NPCs, ${BUILDING_DEFS.length} refuge buildings, ${COLLIDERS.length} visible-source colliders, ${Object.keys(QUEST_DEFS).length} quests, ${Object.keys(SKILL_DEFS).length} player skills, ${Object.keys(ENEMY_ABILITY_DEFS).length} enemy abilities, v0.1.4.0 World Collision & Cinder Region Layout Foundation, shared player/enemy world solids, obstruction steering, eight Cinder sub-areas, habitat/group seeds, inherited Sanctuary of the First Light, seven-skill paced AI, ancient celestial AoE/healing VFX, faction combat, knockback/shake, contribution-gated rewards, v0.1.3.2.1.2 final combat-HUD tightening, staged Azrael/Assassin source sheets, v0.1.3.2 recovery/consumables, stackable supplies, sanctuary/merchant recovery, v0.1.3.1 combat polish, true run/spear thrust, skill-rank hooks, expanded LPC actions, pooled projectiles, statuses/FX/audio, stable Cinder/Hollow streaming, combo-safe starter clothes, and save schema ${SAVE_VERSION}.`);

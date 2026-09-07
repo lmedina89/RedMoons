@@ -1,12 +1,29 @@
-# QA Report — v0.1.3.2.4 Sanctuary of the First Light
+# QA Report — v0.1.4.0 World Collision & Cinder Region Layout Foundation
+
+Automated scope for this release adds `tests/world-navigation-smoke.mjs` to the inherited structural, Azrael and Sanctuary suites. The world test validates shared player/enemy solid metadata, future phase opt-out semantics, detour-vector behavior, exact local-area partitioning on both maps, Azrael's placement inside First-Light Scar, encounter family/group references, and every spawn's intended area/map relationship. Structural validation also verifies the real WorldScene enemy↔obstacle collider wiring and Enemy obstruction/disengage implementation.
+
+Artifact regression separately compares Azrael controller/data/combat/VFX/audio files against the physically approved v0.1.3.2.4 baseline and hashes all runtime/source art. Physical iPhone Safari remains required to validate actual live Arcade collision and feel.
 
 ## Automated/static validation
 
-`npm run check` runs the full structural validator plus `tests/azrael-logic-smoke.mjs` and the focused `tests/sanctuary-healing-smoke.mjs`. The suite verifies the v0.1.3.2.4 shell/version, compact Azrael runtime assets, widened hidden-level mythic nameplate, faction relations, real high-stat/non-invulnerable damage path, status/stagger resistance hooks, cluster-aware seven-skill targeting, shared major-skill pacing, Sanctified Nova/Seraphic Judgment/Sanctuary definitions and VFX/audio wiring, positional/faction-gated Sanctuary healing, bounded Seraphic pulse scaling, celestial projectile/knockback/VFX wiring, generic enemy targeting, friendly projectile collision, contribution-gated rewards, diagnostics, and every inherited save/map/combat/recovery invariant. All JS/MJS files must also pass `node --check`.
+`npm run check` runs the full structural validator plus `tests/azrael-logic-smoke.mjs`, `tests/sanctuary-healing-smoke.mjs` and `tests/world-navigation-smoke.mjs`. The suite verifies the v0.1.4.0 shell/version, shared player/enemy static-solid metadata, obstruction steering/disengage hooks, melee line-of-sight blocking, non-overlapping local-area resolution, spawn-area/family/group references, and every inherited save/map/combat/recovery/Azrael invariant. All JS/MJS files must also pass `node --check`.
 
 The logic smoke separately proves: celestial/player friendliness, monster↔celestial hostility, clustered target preference, the two offensive expansion AoEs cooling down faster than Heavenfall, all major invocations including Sanctuary participating in pacing, Seraphic pulse scaling totaling one cast budget, pure-celestial kills failing player reward eligibility, recent material player contribution qualifying a shared kill, and real HP loss against Azrael's extreme defense. The Sanctuary smoke separately verifies position gating, player healing, celestial-ally healing, out-of-range exclusion, non-celestial exclusion and reduced Azrael self-healing.
 
-## Physical iPhone release gate
+## Physical iPhone world-foundation gate
+
+1. Lure an ordinary Outskirts enemy against each solid east Refuge wall segment while the player stands safely inside. The enemy must not cross the wall.
+2. Move to the broad Refuge gate and confirm the same enemy can use the real opening; there must be no invisible blocker across the exit.
+3. Circle a Refuge building during pursuit. The enemy must respect the footprint, must not melee through the building, and must not physically shove/drag the player.
+4. At The Fallen Watch, use the new broken wall segments as cover/chokepoints. Enemies should collide and try a side route through visible gaps.
+5. Hold an unreachable position behind a long wall. Repeated wall contact should lead to steering/retry and eventually a short disengage rather than phasing or permanent vibration.
+6. Enter Ashfall Hollow and repeat the wall test with cave spiders; the southern return opening must remain traversable.
+7. Travel through the new local areas and confirm the HUD chip changes cleanly among Ashen Causeway, Emberfields, Cinderwood, First-Light Scar, Fallen Watch and Ashgrave Hollow.
+8. Recheck Azrael in First-Light Scar. His seven-skill combat, Sanctuary healing, movement and performance must remain consistent with the physically approved v0.1.3.2.4 baseline.
+
+The expanded route is in `docs/WORLD_FOUNDATION.md`. No automated interactive browser/iPhone playthrough is claimed.
+
+## Inherited Azrael/iPhone regression gate
 
 1. Continue the same schema-2 character and enter Scorched Outskirts; confirm **ARCHANGEL AZRAEL / Lv. ??? / CELESTIAL MYTHIC** appears with a distinct HP bar and no ordinary numeric level.
 2. Stand near him without attacking. He must never target, damage, stagger or knock back the player.

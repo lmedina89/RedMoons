@@ -3,7 +3,7 @@ import { MERCHANT_SUPPLY_DEFS, RECOVERY_DROP_TABLE } from '../data/consumables.j
 import { ITEM_DEFS } from '../data/items.js';
 import { NPC_DEFS } from '../data/npcs.js';
 import { AZRAEL_DEF } from '../data/specialActors.js';
-import { BUILDING_DEFS, COLLIDERS, DEFAULT_MAP_ID, HOLLOW_COLLIDERS, HOLLOW_WALLS, MAP_TRANSITIONS, PROP_DEFS, RECOVERY_POINTS, REFUGE_WALLS, SPAWN_REGIONS, TOWN_PROP_DEFS, ZONES, mapForId } from '../data/world.js';
+import { AREA_DEFS, BUILDING_DEFS, COLLIDERS, DEFAULT_MAP_ID, FALLEN_WATCH_WALLS, HOLLOW_COLLIDERS, HOLLOW_WALLS, MAP_TRANSITIONS, PROP_DEFS, RECOVERY_POINTS, REFUGE_WALLS, SPAWN_REGIONS, TOWN_PROP_DEFS, ZONES, mapForId } from '../data/world.js';
 import { DEBUG, GAME_VERSION, PLAYER_START, RARITY, TILE_SIZE, WORLD_HEIGHT, WORLD_WIDTH } from '../config.js';
 import { gameEvents } from '../core/EventBus.js';
 import { actionInput } from '../systems/ActionInput.js';
@@ -14,6 +14,7 @@ import { QuestSystem } from '../systems/QuestSystem.js';
 import { RecoverySystem } from '../systems/RecoverySystem.js';
 import { assetDefsForMap, ensureItemVisualAssets, prepareMapAssets, queueAssetDefs } from '../systems/AssetResolver.js';
 import { derivedStats, grantXp } from '../systems/StatsSystem.js';
+import { ACTOR_COLLISION_KIND, colliderBlocksActor, enemyIgnoresWorldCollision, pointInRectArea, segmentIntersectsCollider } from '../systems/WorldNavigation.js';
 import { Enemy } from '../entities/Enemy.js';
 import { NPC } from '../entities/NPC.js';
 import { Azrael } from '../entities/Azrael.js';
@@ -55,13 +56,20 @@ export class WorldScene extends Phaser.Scene {
     // Physical iPhone Safari testing exposed a WebKit/Phaser transition case
     // where the physics proxy survived but layered sprites could remain hidden.
     this.player.restoreVisual();
-    this.physics.add.collider(this.player.body, this.obstacles);
+    this.physics.add.collider(this.player.body, this.obstacles, null, this.playerObstacleProcess, this);
     // Enemy contact is handled by combat range, not Arcade body separation.
-    // Dynamic enemy colliders could physically shove the player after input
-    // stopped, which felt like intermittent reverse sliding on mobile.
+    // Dynamic enemy/player colliders still stay disabled so monsters cannot
+    // shove the player; only static world solids separate both actor classes.
     this.cameras.main.startFollow(this.player.body, true, 1, 1);
 
     this.createEnemies();
+    this.enemyObstacleCollider = this.physics.add.collider(
+      this.enemyGroup,
+      this.obstacles,
+      this.onEnemyObstacleCollision,
+      this.enemyObstacleProcess,
+      this
+    );
     this.createNPCs();
     this.createAzrael();
     if (DEBUG) this.dynamicCollisionDebug = this.add.graphics().setDepth(15001);
@@ -72,6 +80,7 @@ export class WorldScene extends Phaser.Scene {
     this.recovery = new RecoverySystem(this, this.state, this.inventory, this.player, gameEvents);
     this.createLootPool();
     this.currentZone = null;
+    this.currentArea = null;
     this.lastHudUpdate = 0;
     this.lastSave = 0;
     this.deathAnnounced = false;
@@ -93,6 +102,7 @@ export class WorldScene extends Phaser.Scene {
       this.combat?.destroy();
     });
     this.updateZone();
+    this.updateArea();
     this.emitState();
     this.cameras.main.fadeIn(150, 12, 6, 4);
     gameEvents.emit('ready', { version: GAME_VERSION });
@@ -148,9 +158,26 @@ export class WorldScene extends Phaser.Scene {
     worldArt.fillStyle(0x4c261c, 0.58).fillRect(1940, 0, 620, WORLD_HEIGHT);
     worldArt.fillStyle(0x160c0b, 0.86).fillRect(1930, 0, 18, WORLD_HEIGHT);
 
+    // v0.1.4.0 area identity pass. These are intentionally restrained ground
+    // cues rather than a full art overhaul: enough to make the region legible
+    // while the collision/navigation foundation is being field-tested.
+    worldArt.fillStyle(0x6f321d, 0.12).fillRect(720, 0, 720, 390);      // Emberfields
+    worldArt.fillStyle(0x211a16, 0.20).fillRect(720, 830, 720, 450);    // Cinderwood
+    worldArt.fillStyle(0xd8b85e, 0.075).fillRect(1080, 390, 360, 440); // First-Light Scar
+    worldArt.fillStyle(0x40352d, 0.18).fillRect(1440, 0, 500, 640);     // Fallen Watch
+    worldArt.fillStyle(0x24171a, 0.24).fillRect(1440, 640, 500, 640);   // Ashgrave Hollow
+    for (let i = 0; i < 12; i += 1) {
+      const x = 790 + ((i * 137) % 570), y = 80 + ((i * 83) % 245);
+      worldArt.fillStyle(0x7f2b15, 0.11 + (i % 3) * 0.025).fillEllipse(x, y, 70 + (i % 4) * 18, 38 + (i % 3) * 12);
+    }
+    worldArt.lineStyle(3, 0xffdc8a, 0.16).strokeCircle(1200, 610, 150);
+    worldArt.lineStyle(1, 0xfff2ba, 0.13).strokeCircle(1200, 610, 112);
+
     // Cinder Refuge streets: broad readable paths connect the east gate to
     // every important structure without hard-coding movement logic.
     const roads = this.add.graphics().setDepth(-760);
+    roads.lineStyle(56, 0x6f4a32, 0.43).lineBetween(690, 610, 1080, 610);
+    roads.lineStyle(18, 0xa56f42, 0.16).lineBetween(720, 610, 1080, 610);
     roads.lineStyle(48, 0x6f4a32, 0.48).lineBetween(690, 610, 340, 610);
     roads.lineStyle(34, 0x6f4a32, 0.42).lineBetween(340, 610, 250, 430);
     roads.lineStyle(34, 0x6f4a32, 0.42).lineBetween(340, 610, 525, 485);
@@ -163,6 +190,19 @@ export class WorldScene extends Phaser.Scene {
     // This prevents visible art and physics from drifting apart over time.
     worldArt.lineStyle(10, 0x493127, 0.95);
     for (const wall of REFUGE_WALLS) worldArt.lineBetween(wall.x1, wall.y1, wall.x2, wall.y2);
+    worldArt.lineStyle(14, 0x55483c, 0.96);
+    for (const wall of FALLEN_WATCH_WALLS) worldArt.lineBetween(wall.x1, wall.y1, wall.x2, wall.y2);
+    worldArt.lineStyle(3, 0x8d765d, 0.54);
+    for (const wall of FALLEN_WATCH_WALLS) worldArt.lineBetween(wall.x1, wall.y1, wall.x2, wall.y2);
+
+    // Ashgrave's first landmarks are deliberately cheap procedural markers.
+    // Later art passes can replace them without touching area or collision data.
+    for (let i = 0; i < 9; i += 1) {
+      const gx = 1500 + (i % 3) * 120 + (i % 2) * 18;
+      const gy = 770 + Math.floor(i / 3) * 125;
+      worldArt.fillStyle(0x66594f, 0.72).fillRoundedRect(gx - 7, gy - 16, 14, 24, 3);
+      worldArt.fillStyle(0x1a1011, 0.30).fillEllipse(gx, gy + 10, 34, 13);
+    }
 
     for (let i = 0; i < 95; i += 1) {
       const x = 720 + ((i * 193) % 1810);
@@ -192,12 +232,24 @@ export class WorldScene extends Phaser.Scene {
     this.add.text(350, 72, 'CINDER REFUGE', { fontFamily: 'Georgia, serif', fontSize: '21px', color: '#f3c77b', stroke: '#170c0a', strokeThickness: 5, letterSpacing: 3 }).setOrigin(0.5).setDepth(1000);
     this.add.text(1270, 105, 'SCORCHED OUTSKIRTS', { fontFamily: 'Georgia, serif', fontSize: '18px', color: '#d89a62', stroke: '#170c0a', strokeThickness: 5, letterSpacing: 2 }).setOrigin(0.5).setDepth(1000);
     this.add.text(2200, 330, 'BONE ROAD', { fontFamily: 'Georgia, serif', fontSize: '20px', color: '#d4c1ad', stroke: '#170c0a', strokeThickness: 5, letterSpacing: 4 }).setOrigin(0.5).setDepth(1000);
+    const areaLabel = (x, y, text, color = '#bda487') => this.add.text(x, y, text, {
+      fontFamily: 'Georgia, serif', fontSize: '10px', color, stroke: '#170c0a', strokeThickness: 3, letterSpacing: 1
+    }).setOrigin(0.5).setAlpha(0.82).setDepth(980);
+    areaLabel(900, 420, 'ASHEN CAUSEWAY');
+    areaLabel(1080, 62, 'EMBERFIELDS', '#dca071');
+    areaLabel(1080, 1215, 'CINDERWOOD', '#a98f77');
+    areaLabel(1200, 430, 'FIRST-LIGHT SCAR', '#f0d58a');
+    areaLabel(1700, 80, 'THE FALLEN WATCH', '#c0ad99');
+    areaLabel(1690, 700, 'ASHGRAVE HOLLOW', '#b99a9e');
 
     this.obstacles = this.physics.add.staticGroup();
     for (const collider of COLLIDERS) {
       const body = this.obstacles.create(collider.x, collider.y, 'solid').setDisplaySize(collider.width, collider.height).setAlpha(0.001).refreshBody();
       body.colliderId = collider.id;
       body.colliderSource = collider.source;
+      body.colliderBlocksActors = collider.blocksActors || ['player', 'enemy'];
+      body.colliderWidth = collider.width;
+      body.colliderHeight = collider.height;
     }
     if (DEBUG) {
       // Static blockers are green. Phaser's all-body debug renderer stays off so
@@ -247,12 +299,37 @@ export class WorldScene extends Phaser.Scene {
       const body = this.obstacles.create(collider.x, collider.y, 'solid').setDisplaySize(collider.width, collider.height).setAlpha(0.001).refreshBody();
       body.colliderId = collider.id;
       body.colliderSource = collider.source;
+      body.colliderBlocksActors = collider.blocksActors || ['player', 'enemy'];
+      body.colliderWidth = collider.width;
+      body.colliderHeight = collider.height;
     }
     if (DEBUG) {
       const collisionDebug = this.add.graphics().setDepth(15000).lineStyle(2, 0x38ff76, 0.82);
       for (const collider of HOLLOW_COLLIDERS) collisionDebug.strokeRect(collider.x - collider.width / 2, collider.y - collider.height / 2, collider.width, collider.height);
     }
     this.enemyGroup = this.physics.add.group({ allowGravity: false, immovable: false });
+  }
+
+  playerObstacleProcess(_playerBody, obstacle) {
+    return colliderBlocksActor(obstacle, ACTOR_COLLISION_KIND.PLAYER);
+  }
+
+  enemyObstacleProcess(enemySprite, obstacle) {
+    const enemy = enemySprite?.enemyRef;
+    if (!enemy || !enemySprite.active || enemyIgnoresWorldCollision(enemy)) return false;
+    return colliderBlocksActor(obstacle, ACTOR_COLLISION_KIND.ENEMY);
+  }
+
+  onEnemyObstacleCollision(enemySprite, obstacle) {
+    enemySprite?.enemyRef?.onWorldCollision?.(obstacle, this.time.now);
+  }
+
+  hasWorldLineOfSight(x1, y1, x2, y2, actorKind = ACTOR_COLLISION_KIND.ENEMY) {
+    for (const obstacle of this.obstacles?.getChildren?.() || []) {
+      if (!colliderBlocksActor(obstacle, actorKind)) continue;
+      if (segmentIntersectsCollider(x1, y1, x2, y2, obstacle, -0.5)) return false;
+    }
+    return true;
   }
 
   createTransitionMarkers() {
@@ -782,6 +859,12 @@ ${point.label || 'Use'}`, {
     if (zone?.id !== this.currentZone?.id) { this.currentZone = zone; gameEvents.emit('zone', zone); }
   }
 
+  updateArea() {
+    const allowed = new Set(this.currentMap.areaIds || []);
+    const area = AREA_DEFS.find(entry => allowed.has(entry.id) && pointInRectArea(entry, this.player.body.x, this.player.body.y));
+    if (area?.id !== this.currentArea?.id) { this.currentArea = area; if (area) gameEvents.emit('area', area); }
+  }
+
   emitState() {
     const derived = derivedStats(this.state);
     this.state.player.hp = Math.min(this.state.player.hp, derived.maxHp);
@@ -830,6 +913,7 @@ ${point.label || 'Use'}`, {
     for (const enemy of this.enemies) enemy.update(time, delta, this.player, friendlyTargets);
     for (const npc of this.npcs) npc.update(time, delta, this.player);
     this.updateZone();
+    this.updateArea();
     if (time - this.lastHudUpdate > 120) { this.lastHudUpdate = time; this.emitState(); }
     if (time - this.lastSave > 10000) { this.lastSave = time; this.safeSave(); }
   }

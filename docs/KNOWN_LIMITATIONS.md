@@ -1,4 +1,16 @@
-# Known Limitations — v0.1.3.2.4
+# Known Limitations — v0.1.4.0
+
+
+## v0.1.4.0 world-foundation limits
+
+- The new obstruction behavior is lightweight wall-follow/disengage steering, **not** full A* pathfinding. It is intended for the current open Cinder Region/Hollow geometry and must be physically tested around long walls, corners and the Fallen Watch gaps before more maze-like dungeons are authored.
+- Only visible traversal-relevant geometry is solid. Decorative rocks, vegetation, graves and most scenery remain nonblocking on purpose; invisible decorative blockers are still prohibited.
+- Fallen Watch and Ashgrave are first-pass spatial identities, not finished handcrafted zones. Their richer props, encounter compositions, secrets, rewards and story hooks belong in subsequent v0.1.4.x passes after collision behavior is approved.
+- Monster-family weights and encounter-group archetypes are metadata foundations. Current live spawns remain the v0.1.3.x population and do not yet form coordinated patrol/guard/ritual/ambush AI groups.
+- No current enemy is allowed to phase through static solids. A future ghost/ethereal actor must opt in explicitly and should receive clear presentation so wall traversal reads as an ability.
+- Azrael remains mechanically frozen from the physically approved v0.1.3.2.4 build. First-Light Scar changes his surrounding ground identity only; his permanent narrative location is still TBD.
+- Physical iPhone Safari testing remains the release gate for actual Arcade separation, steering feel, corner behavior, frame pacing and readability. Automated tests cannot prove a live touch/physics playthrough.
+
 
 ## v0.1.3.2.4 celestial-expansion limits
 
