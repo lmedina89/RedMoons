@@ -2,9 +2,9 @@ export const SKILL_DEFS = Object.freeze({
   skill_ember_cleave: Object.freeze({
     id: 'skill_ember_cleave', name: 'Ember Cleave', shortName: 'Cleave', icon: 'I', unlockLevel: 1, maxRank: 5,
     essenceCost: 8, cooldownMs: 4000, castMs: 420, triggerAt: 0.48, animation: 'slash',
-    type: 'cone_melee', damageType: 'fire', damageMultiplier: 1.35, range: 132, arcDegrees: 126,
+    type: 'cone_melee', damageType: 'fire', damageMultiplier: 1.50, range: 148, arcDegrees: 148, knockback: 145,
     status: Object.freeze({ id: 'burn', chance: 0.45 }), fx: 'ember_cleave', sfx: 'ember_cleave',
-    rankGrowth: Object.freeze({ damageMultiplier: 0.07, range: 5, arcDegrees: 2, statusChance: 0.04 })
+    rankGrowth: Object.freeze({ damageMultiplier: 0.07, range: 5, arcDegrees: 2, knockback: 8, statusChance: 0.04 })
   }),
   skill_ashen_guard: Object.freeze({
     id: 'skill_ashen_guard', name: 'Ashen Guard', shortName: 'Guard', icon: 'II', unlockLevel: 3, maxRank: 5,

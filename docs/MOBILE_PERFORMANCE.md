@@ -1,4 +1,10 @@
-# Mobile Performance Considerations — v0.1.3.1
+# Mobile Performance — v0.1.3.2.1
+
+> v0.1.3.2.1 reduces the right-side DOM control footprint, adds only two tiny inline SVG flask glyphs, keeps combat range graphics behind `?debug=1`, and does not preload the staged full Azrael/Assassin sheets.
+
+The recovery release adds no new texture atlases or source art to the runtime preload. Recovery markers/FX are procedural Phaser graphics, audio uses the existing procedural WebAudio manager, and consumables are data/inventory entries. Stackable supplies reduce inventory DOM/card pressure compared with one instance per flask. Passive recovery performs only a small nearby-hostile scan using the already bounded active enemy set and does not introduce a separate high-frequency timer.
+
+The existing map-scoped loading/session-cache policy remains unchanged. Physical iPhone Safari remains the performance gate; include repeated combat, potion spam, merchant open/close, Cinder↔Hollow transitions and background/return in the 10–15 minute stress pass.
 
 ## v0.1.2.4.3 transition memory/lifecycle policy
 

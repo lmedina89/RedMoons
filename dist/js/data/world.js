@@ -28,6 +28,10 @@ export const BUILDING_DEFS = Object.freeze([
   { id: 'refuge_house_east', name: 'Cinder House', texture: 'adobe-house-tower', x: 510, y: 100, scale: 0.70, depthOffset: -30, collider: { x: 510, y: 128, width: 80, height: 52 } }
 ]);
 
+export const RECOVERY_POINTS = Object.freeze([
+  Object.freeze({ id: 'recovery_ashen_rest', name: 'Ashen Rest Hearth', mapId: 'map_cinder_region', x: 180, y: 805, radius: 72, label: 'Rest & Recover' })
+]);
+
 export const TOWN_PROP_DEFS = Object.freeze([
   { texture: 'castle2-set', frame: 148, x: 286, y: 425, scale: 1.0 }, // anvil
   { texture: 'castle2-set', frame: 233, x: 390, y: 620, scale: 1.0 }, // barrel

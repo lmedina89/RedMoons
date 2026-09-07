@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <meta name="theme-color" content="#120907">
-  <meta name="description" content="Hell RPG v0.1.3.1 — Combat Polish & Skill Feel, a mobile-first pixel action RPG.">
+  <meta name="description" content="Hell RPG v0.1.3.2.1 — Combat UX & Feel Hotfix, a mobile-first pixel action RPG.">
   <title>Hell RPG — Ashfall Foundation</title>
   <link rel="stylesheet" href="css/game.css">
 </head>
@@ -43,7 +43,7 @@
             <button type="button" id="confirm-new-game" class="danger-button">Overwrite & Start</button>
           </div>
         </section>
-        <small class="start-version">v0.1.3.1 • save schema 2</small>
+        <small class="start-version">v0.1.3.2.1 • save schema 2</small>
       </div>
     </section>
 
@@ -82,6 +82,16 @@
       <div class="combat-controls">
         <div id="status-strip" class="status-strip" aria-live="polite" aria-label="Active combat effects"></div>
         <button type="button" id="interact-button" class="round-button secondary" aria-label="Interact or pick up item">Use</button>
+        <div class="recovery-cluster" aria-label="Quick recovery items">
+          <button type="button" id="quick-health" class="recovery-button health" data-quick-consumable="health" aria-label="Use health flask">
+            <span class="flask-glyph" aria-hidden="true"><svg viewBox="0 0 28 32" focusable="false"><path class="flask-neck" d="M10 2h8v5l2 2v3H8V9l2-2z"/><path class="flask-body" d="M7 11h14l3 5v9c0 3-2 5-5 5H9c-3 0-5-2-5-5v-9z"/><path class="flask-liquid" d="M6 20c4-2 6 2 10 0 3-1 5-1 7 0v5c0 2-2 3-4 3H9c-2 0-3-1-3-3z"/></svg></span>
+            <small>HP ×0</small><b></b>
+          </button>
+          <button type="button" id="quick-essence" class="recovery-button essence" data-quick-consumable="essence" aria-label="Use Essence flask">
+            <span class="flask-glyph" aria-hidden="true"><svg viewBox="0 0 28 32" focusable="false"><path class="flask-neck" d="M10 2h8v5l2 2v3H8V9l2-2z"/><path class="flask-body" d="M7 11h14l3 5v9c0 3-2 5-5 5H9c-3 0-5-2-5-5v-9z"/><path class="flask-liquid" d="M6 20c4-2 6 2 10 0 3-1 5-1 7 0v5c0 2-2 3-4 3H9c-2 0-3-1-3-3z"/></svg></span>
+            <small>ES ×0</small><b></b>
+          </button>
+        </div>
         <div class="skill-cluster" aria-label="Combat skills">
           <button type="button" id="skill-button-0" class="skill-button" data-skill-slot="0" aria-label="Skill 1"><span>I</span><small>Cleave</small><b></b></button>
           <button type="button" id="skill-button-1" class="skill-button" data-skill-slot="1" aria-label="Skill 2" disabled><span>II</span><small>Locked</small><b></b></button>
@@ -125,6 +135,8 @@
       <button type="button" data-debug="hollow">Map: Hollow</button>
       <button type="button" data-debug="level">Grant test XP</button>
       <button type="button" data-debug="combatkit">Combat Test Kit</button>
+      <button type="button" data-debug="recoverykit">Recovery Test Kit</button>
+      <button type="button" data-debug="ranges">Combat Ranges</button>
       <button type="button" data-debug="vesra">Near Vesra</button>
       <button type="button" data-debug="merchant">Near Merchant</button>
       <button type="button" data-debug="imp">Near Cinder Imp</button>
@@ -149,7 +161,7 @@
       <button type="button" data-debug="wings">Unlock Wings</button>
       <button type="button" data-debug="fall">Fall</button>
     </aside>
-    <div id="build-label">v0.1.3.1 • save schema 2</div>
+    <div id="build-label">v0.1.3.2.1 • save schema 2</div>
   </main>
 
   <script src="vendor/phaser.min.js"></script>

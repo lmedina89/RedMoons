@@ -62,7 +62,7 @@ export class SkillController {
   trigger(def) {
     const p = this.player.body;
     const facing = [[0, -1], [-1, 0], [0, 1], [1, 0]][this.player.visual.direction];
-    this.fx.skill(def.id, p.x, p.y, facing);
+    this.fx.skill(def.id, p.x, p.y, facing, def);
     if (def.type === 'cone_melee') {
       this.combat.playerCone(def, facing);
     } else if (def.type === 'self_buff') {

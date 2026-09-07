@@ -1,7 +1,8 @@
 import { ENEMY_DEFS } from '../data/enemies.js';
+import { MERCHANT_SUPPLY_DEFS, RECOVERY_DROP_TABLE } from '../data/consumables.js';
 import { ITEM_DEFS } from '../data/items.js';
 import { NPC_DEFS } from '../data/npcs.js';
-import { BUILDING_DEFS, COLLIDERS, DEFAULT_MAP_ID, HOLLOW_COLLIDERS, HOLLOW_WALLS, MAP_TRANSITIONS, PROP_DEFS, REFUGE_WALLS, SPAWN_REGIONS, TOWN_PROP_DEFS, ZONES, mapForId } from '../data/world.js';
+import { BUILDING_DEFS, COLLIDERS, DEFAULT_MAP_ID, HOLLOW_COLLIDERS, HOLLOW_WALLS, MAP_TRANSITIONS, PROP_DEFS, RECOVERY_POINTS, REFUGE_WALLS, SPAWN_REGIONS, TOWN_PROP_DEFS, ZONES, mapForId } from '../data/world.js';
 import { DEBUG, GAME_VERSION, PLAYER_START, RARITY, TILE_SIZE, WORLD_HEIGHT, WORLD_WIDTH } from '../config.js';
 import { gameEvents } from '../core/EventBus.js';
 import { actionInput } from '../systems/ActionInput.js';
@@ -9,6 +10,7 @@ import { CombatSystem } from '../systems/CombatSystem.js';
 import { DialogueSystem } from '../systems/DialogueSystem.js';
 import { InventorySystem, pickRarity } from '../systems/InventorySystem.js';
 import { QuestSystem } from '../systems/QuestSystem.js';
+import { RecoverySystem } from '../systems/RecoverySystem.js';
 import { assetDefsForMap, ensureItemVisualAssets, prepareMapAssets, queueAssetDefs } from '../systems/AssetResolver.js';
 import { derivedStats, grantXp } from '../systems/StatsSystem.js';
 import { Enemy } from '../entities/Enemy.js';
@@ -40,6 +42,7 @@ export class WorldScene extends Phaser.Scene {
     this.cameras.main.setBounds(0, 0, this.currentMap.width, this.currentMap.height).setRoundPixels(true).setZoom(1);
     this.buildWorld();
     this.createTransitionMarkers();
+    this.createRecoveryMarkers();
 
     this.inventory = new InventorySystem(this.state);
     this.questSystem = new QuestSystem(this.state, this.inventory, (rewards, name) => this.grantRewards(rewards, name));
@@ -62,6 +65,7 @@ export class WorldScene extends Phaser.Scene {
     this.combat = new CombatSystem(this, this.state, this.player, this.enemies, gameEvents);
     this.player.combat = this.combat;
     for (const enemy of this.enemies) enemy.combat = this.combat;
+    this.recovery = new RecoverySystem(this, this.state, this.inventory, this.player, gameEvents);
     this.createLootPool();
     this.currentZone = null;
     this.lastHudUpdate = 0;
@@ -320,6 +324,21 @@ export class WorldScene extends Phaser.Scene {
     }
   }
 
+  createRecoveryMarkers() {
+    this.recoveryPoints = RECOVERY_POINTS.filter(point => point.mapId === this.currentMap.id);
+    for (const point of this.recoveryPoints) {
+      const marker = this.add.graphics().setDepth(point.y - 4);
+      marker.fillStyle(0x4f2b1c, 0.42).fillCircle(point.x, point.y, 20);
+      marker.lineStyle(2, 0xe3b667, 0.82).strokeCircle(point.x, point.y, 20);
+      marker.fillStyle(0xffb65e, 0.86).fillCircle(point.x, point.y - 2, 5);
+      marker.fillStyle(0xffdf8a, 0.62).fillCircle(point.x, point.y - 9, 3);
+      this.add.text(point.x, point.y + 29, `${point.name}
+${point.label || 'Use'}`, {
+        fontFamily: 'Georgia, serif', fontSize: '10px', align: 'center', color: '#efcf95', stroke: '#170c0a', strokeThickness: 3
+      }).setOrigin(0.5, 0).setDepth(point.y + 36);
+    }
+  }
+
   createEnemies() {
     this.enemies = [];
     const callbacks = {
@@ -380,6 +399,10 @@ export class WorldScene extends Phaser.Scene {
         if (entry.itemId === 'quest_ember_heart') this.state.worldFlags.impKillsSinceHeart = 0;
       }
     }
+    for (const entry of RECOVERY_DROP_TABLE) {
+      if (def.level < entry.minLevel || def.level > entry.maxLevel || Math.random() > entry.chance) continue;
+      this.dropLoot(enemy.sprite.x, enemy.sprite.y, this.inventory.createItem(entry.itemId, 'normal'));
+    }
     this.queueKillReward(def, coins);
     if (xpResult.levels) {
       gameEvents.emit('toast', { text: `Level ${this.state.player.level}! +5 stat points, +1 skill point`, tone: 'level' });
@@ -418,45 +441,88 @@ export class WorldScene extends Phaser.Scene {
     this.emitState();
   }
 
-  interact() {
-    let nearestTransition = null;
+  nearestInteraction() {
+    let target = null;
     let nearestDistance = Infinity;
     for (const transition of this.mapTransitions || []) {
       const distance = Phaser.Math.Distance.Between(this.player.body.x, this.player.body.y, transition.x, transition.y);
-      if (distance <= transition.radius && distance < nearestDistance) { nearestTransition = transition; nearestDistance = distance; }
+      if (distance <= transition.radius && distance < nearestDistance) {
+        target = { type: 'transition', target: transition, distance, label: 'Travel', detail: transition.label || 'Map transition' };
+        nearestDistance = distance;
+      }
     }
-    if (nearestTransition) {
-      this.transitionToMap(nearestTransition.destinationMapId, nearestTransition.destinationEntryId);
-      return;
-    }
+    if (target) return target;
 
-    let nearestNpc = null;
+    nearestDistance = Infinity;
+    for (const point of this.recoveryPoints || []) {
+      const distance = Phaser.Math.Distance.Between(this.player.body.x, this.player.body.y, point.x, point.y);
+      if (distance <= point.radius && distance < nearestDistance) {
+        target = { type: 'recovery', target: point, distance, label: 'Rest', detail: point.name || 'Recovery point' };
+        nearestDistance = distance;
+      }
+    }
+    if (target) return target;
+
     nearestDistance = 92;
-    for (const npc of this.npcs) {
+    for (const npc of this.npcs || []) {
       const distance = Phaser.Math.Distance.Between(this.player.body.x, this.player.body.y, npc.x, npc.y);
-      if (distance < nearestDistance) { nearestNpc = npc; nearestDistance = distance; }
+      if (distance < nearestDistance) {
+        target = { type: 'npc', target: npc, distance, label: 'Talk', detail: npc.def?.name || 'NPC' };
+        nearestDistance = distance;
+      }
     }
-    if (nearestNpc) { this.talkTo(nearestNpc); return; }
+    if (target) return target;
 
-    let nearestDrop = null;
     nearestDistance = 78;
-    for (const drop of this.lootPool) {
+    for (const drop of this.lootPool || []) {
       if (!drop.active) continue;
       const distance = Phaser.Math.Distance.Between(this.player.body.x, this.player.body.y, drop.x, drop.y);
-      if (distance < nearestDistance) { nearestDrop = drop; nearestDistance = distance; }
+      if (distance < nearestDistance) {
+        const def = drop.item && ITEM_DEFS[drop.item.itemId];
+        target = { type: 'loot', target: drop, distance, label: 'Loot', detail: def?.name || 'Dropped item' };
+        nearestDistance = distance;
+      }
     }
-    if (nearestDrop) {
+    return target;
+  }
+
+  interactionSnapshot() {
+    const interaction = this.nearestInteraction();
+    return interaction
+      ? { available: true, type: interaction.type, label: interaction.label, detail: interaction.detail }
+      : { available: false, type: null, label: 'Use', detail: 'Nothing nearby' };
+  }
+
+  interact() {
+    const interaction = this.nearestInteraction();
+    if (!interaction) {
+      gameEvents.emit('toast', { text: 'Nothing nearby to interact with.', tone: 'muted', short: true });
+      return;
+    }
+    if (interaction.type === 'transition') {
+      const transition = interaction.target;
+      this.transitionToMap(transition.destinationMapId, transition.destinationEntryId);
+      return;
+    }
+    if (interaction.type === 'recovery') {
+      this.recovery?.rest(interaction.target);
+      return;
+    }
+    if (interaction.type === 'npc') {
+      this.talkTo(interaction.target);
+      return;
+    }
+    if (interaction.type === 'loot') {
+      const nearestDrop = interaction.target;
       const item = nearestDrop.item;
       if (!this.inventory.add(item)) { gameEvents.emit('toast', { text: 'Inventory full (30 slots).', tone: 'danger' }); return; }
       this.tweens.killTweensOf(nearestDrop);
       nearestDrop.setActive(false).setVisible(false); nearestDrop.body.enable = false; nearestDrop.item = null;
       this.questSystem.recordCollect(item.itemId);
       const def = ITEM_DEFS[item.itemId];
-      gameEvents.emit('toast', { text: `Picked up ${RARITY[item.rarity].label} ${def.name}`, tone: item.rarity });
+      gameEvents.emit('toast', { text: `Picked up ${RARITY[item.rarity].label} ${def.name}${(item.quantity || 1) > 1 ? ` ×${item.quantity}` : ''}`, tone: item.rarity });
       this.emitState(); this.safeSave();
-      return;
     }
-    gameEvents.emit('toast', { text: 'Nothing nearby to interact with.', tone: 'muted', short: true });
   }
 
   talkTo(npc) {
@@ -470,7 +536,7 @@ export class WorldScene extends Phaser.Scene {
       }
     }
     if (DEBUG) console.info('[Ashfall diagnostics] talk', npc.def.id);
-    gameEvents.emit('dialogue', { speaker: npc.def.name, role: npc.def.role, text, action });
+    gameEvents.emit('dialogue', { speaker: npc.def.name, role: npc.def.role, text, action, uiAction: npc.def.id === 'npc_merchant' ? 'merchant' : null });
     this.emitState(); this.safeSave();
   }
 
@@ -524,6 +590,9 @@ export class WorldScene extends Phaser.Scene {
     if (command.type === 'skill') {
       if (this.combat?.skills.useSlot(command.slot)) this.emitState();
     }
+    if (command.type === 'useConsumable') this.recovery?.useInstance(command.instanceId);
+    if (command.type === 'useQuickConsumable') this.recovery?.useQuick(command.slot);
+    if (command.type === 'buyItem') this.buyMerchantItem(command.itemId);
     if (command.type === 'move') actionInput.setTouchMovement(command.x, command.y, command.active);
     if (command.type === 'equip') void this.equipItem(command.instanceId);
     if (command.type === 'unequip') { this.inventory.unequip(command.slot); this.player.refreshEquipment(); this.emitState(); this.safeSave(); }
@@ -614,6 +683,20 @@ export class WorldScene extends Phaser.Scene {
       this.deathAnnounced = false;
       gameEvents.emit('death-cleared');
     }
+    if (action === 'recoverykit') {
+      for (const [itemId, quantity] of [['consumable_ashblood_minor', 5], ['consumable_essence_minor', 5], ['consumable_cinder_ration', 3]]) {
+        this.inventory.add(this.inventory.createItem(itemId, 'normal', quantity));
+      }
+      const derived = derivedStats(this.state);
+      this.state.player.hp = Math.max(1, Math.floor(derived.maxHp * 0.35));
+      this.state.player.essence = Math.max(0, Math.floor(derived.maxEssence * 0.25));
+    }
+    if (action === 'ranges') {
+      const enabled = this.combat?.toggleRangeDebug();
+      gameEvents.emit('toast', { text: enabled ? 'Combat ranges: cyan basic / orange Cleave.' : 'Combat range overlay off.', tone: 'muted', short: true });
+      this.emitState();
+      return;
+    }
     if (action === 'wings') {
       this.state.worldFlags.wingsUnlocked = true;
       if (!this.state.inventory.some(item => item.itemId === 'wings_red_bat')) this.inventory.add(this.inventory.createItem('wings_red_bat', 'normal'));
@@ -621,6 +704,25 @@ export class WorldScene extends Phaser.Scene {
     if (action === 'fall') { this.state.player.hp = 1; this.hitPlayer(9999); }
     this.emitState();
     gameEvents.emit('toast', { text: `Diagnostic: ${action}`, tone: 'muted', short: true });
+  }
+
+  buyMerchantItem(itemId) {
+    const stock = MERCHANT_SUPPLY_DEFS.find(entry => entry.itemId === itemId);
+    const def = ITEM_DEFS[itemId];
+    if (!stock || !def) return;
+    if (this.state.player.currency < stock.price) {
+      gameEvents.emit('toast', { text: `Need ${stock.price} ash for ${def.name}.`, tone: 'danger', short: true });
+      return;
+    }
+    const item = this.inventory.createItem(itemId, 'normal');
+    if (!this.inventory.add(item)) {
+      gameEvents.emit('toast', { text: 'Pack is full. Make room before buying supplies.', tone: 'danger' });
+      return;
+    }
+    this.state.player.currency -= stock.price;
+    gameEvents.emit('toast', { text: `Bought ${def.name} • ${stock.price} ash`, tone: 'normal', short: true });
+    this.emitState();
+    this.safeSave();
   }
 
   allocateStats(points) {
@@ -648,7 +750,7 @@ export class WorldScene extends Phaser.Scene {
     const derived = derivedStats(this.state);
     this.state.player.hp = Math.min(this.state.player.hp, derived.maxHp);
     this.state.player.essence = Math.min(this.state.player.essence, derived.maxEssence);
-    gameEvents.emit('state', { state: this.state, derived, quests: this.questSystem?.activeSummary() || [], combat: this.combat?.snapshot(this.time.now) || { skills: [], effects: [] } });
+    gameEvents.emit('state', { state: this.state, derived, quests: this.questSystem?.activeSummary() || [], combat: this.combat?.snapshot(this.time.now) || { skills: [], effects: [] }, recovery: this.recovery?.snapshot(this.time.now) || { quick: [], food: { active: false }, passive: { active: false } }, interaction: this.interactionSnapshot() });
   }
 
   safeSave() { try { this.saveManager.save(this.state); } catch (error) { console.warn('[Ashfall] Save failed', error); gameEvents.emit('toast', { text: 'Save could not be written on this device.', tone: 'danger' }); } }
@@ -678,8 +780,11 @@ export class WorldScene extends Phaser.Scene {
       return;
     }
     this.combat?.update(time, delta);
+    this.recovery?.update(time, delta);
     this.player.update(time, delta);
     for (let slot = 0; slot < 3; slot += 1) if (actionInput.consumeSkill(slot)) this.combat?.skills.useSlot(slot);
+    if (actionInput.consumeRecovery(0)) this.recovery?.useQuick('health');
+    if (actionInput.consumeRecovery(1)) this.recovery?.useQuick('essence');
     if (DEBUG) this.drawDynamicCollisionDebug();
     if (actionInput.consumeInteract()) this.interact();
     for (const enemy of this.enemies) enemy.update(time, delta, this.player);

@@ -2,6 +2,8 @@ fa40503b92305713a3804e6a43e1eed315920332ef3671568ed5ac949a0ac969  source-assets/
 0174b0438cd58889f0bec8d296ea6d4c707d27306cf8ea4b75ba1c77261c1f52  source-assets/character-concepts/2026-09-07/demon-castle/DemonLordFlesh.png
 dd93f30567aeafcff7ba191fb02093c8988fd76ebf719cd0d8f2d2aa9682ae28  source-assets/character-concepts/2026-09-07/demon-castle/RedDemon.png
 33547ab9f5d5a96f01d1c9fbab87718a4209669b6cb874718b5f9377eeeee630  source-assets/character-concepts/2026-09-07/demon-castle/TanDemon.png
+6907acbc93ed168b1219486a3c019e9cba61f21b25e235b53f618552b4035732  source-assets/character-concepts/2026-09-07/heavenly-and-unique/HoodedAzrael.png
 f4a82e44aa5b66d731c60df3cd018aac6e75c560daf7572ffbd890ba7de38438  source-assets/character-concepts/2026-09-07/heavenly-and-unique/TransupOrHolyKnight.png
 25f20814bf438dc68272c02c5823b11ffa065d44fa70a4954dff9b451b18e0ca  source-assets/character-concepts/2026-09-07/heavenly-and-unique/Truetrans.png
+eea1f082662f92cd69b400cc20d2edc675079866559d32cbd71e03383d1bd25a  source-assets/character-concepts/2026-09-07/human-hostile/Assassin.png
 273c6d3e76c152a26b15cc7dd73bdb21316d65bcf1287afa54ff93cf337f4a9c  source-assets/character-concepts/2026-09-07/player-transformation/Transformation.png

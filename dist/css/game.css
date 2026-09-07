@@ -106,12 +106,21 @@ button:active { transform: translateY(1px); filter: brightness(1.25); }
 .joystick { position: absolute; pointer-events: auto; user-select: none; -webkit-user-select: none; -webkit-touch-callout: none; left: calc(var(--safe-left) + 24px); bottom: calc(var(--safe-bottom) + 20px); width: 126px; height: 126px; touch-action: none; }
 .joystick-ring { position: absolute; inset: 0; border: 2px solid #d7a35d88; border-radius: 50%; background: radial-gradient(circle, #50312642 0 34%, #120a088c 35% 66%, #79462d5c 67%); box-shadow: 0 5px 18px #0008, inset 0 0 18px #000a; }
 #joystick-knob { position: absolute; width: 54px; height: 54px; left: 36px; top: 36px; border-radius: 50%; border: 2px solid #c4814e; background: radial-gradient(circle at 38% 35%, #8c5740, #351c16 70%); box-shadow: 0 5px 10px #0009; }
-.combat-controls { position: absolute; pointer-events: auto; user-select: none; -webkit-user-select: none; -webkit-touch-callout: none; right: calc(var(--safe-right) + 24px); bottom: calc(var(--safe-bottom) + 19px); display: flex; align-items: flex-end; gap: 14px; }
-.round-button { border-radius: 50%; padding: 0; width: 76px; height: 76px; touch-action: manipulation; }
+/* v0.1.3.2.1: compact radial combat cluster. Attack owns the anchor; skills orbit it and Use/recovery keep fixed utility positions. */
+.combat-controls { position: absolute; pointer-events: none; user-select: none; -webkit-user-select: none; -webkit-touch-callout: none; right: calc(var(--safe-right) + 22px); bottom: calc(var(--safe-bottom) + 18px); width: 338px; height: 205px; }
+.combat-controls button { pointer-events: auto; }
+.round-button { border-radius: 50%; padding: 0; width: 72px; height: 72px; touch-action: manipulation; }
+#attack-button { position: absolute; right: 0; bottom: 0; }
 .round-button.attack { width: 98px; height: 98px; border: 3px solid #b54b2d; background: radial-gradient(circle at 40% 32%, #a9432a, #4c1d15 70%); box-shadow: 0 0 0 5px #1b0b087d, 0 7px 18px #0009; color: #ffe0a3; text-transform: uppercase; }
+#interact-button { position: absolute; left: 0; bottom: 0; transition: opacity .12s ease, filter .12s ease, box-shadow .12s ease; }
 .round-button.secondary { background: radial-gradient(circle at 40% 32%, #66513e, #2c1d18 70%); border: 2px solid #927156; }
-.skill-cluster { display: grid; grid-template-columns: repeat(3, 56px); gap: 6px; align-items: end; margin-bottom: 7px; }
-.skill-button { position: relative; width: 56px; height: 56px; min-height: 56px; padding: 3px 2px 2px; overflow: hidden; border-radius: 12px; border-color: #8d5537; background: radial-gradient(circle at 45% 30%, #693321, #25130f 72%); touch-action: manipulation; }
+#interact-button.inactive { opacity: .46; filter: saturate(.65); }
+#interact-button.available { opacity: 1; border-color: #d7a35d; box-shadow: 0 0 0 3px #1b0b0860, 0 0 16px #d99d4a55; }
+.skill-cluster { position: absolute; inset: 0; pointer-events: none; }
+.skill-button { position: absolute; width: 56px; height: 56px; min-height: 56px; padding: 3px 2px 2px; overflow: hidden; border-radius: 50%; border-color: #8d5537; background: radial-gradient(circle at 45% 30%, #693321, #25130f 72%); touch-action: manipulation; pointer-events: auto; box-shadow: 0 3px 10px #0008; }
+#skill-button-0 { right: 106px; bottom: 10px; }
+#skill-button-1 { right: 124px; bottom: 72px; }
+#skill-button-2 { right: 54px; bottom: 124px; }
 .skill-button span { display: block; color: #f3c46e; font-size: .78rem; line-height: 1; }
 .skill-button small { display: block; margin-top: 4px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: #f1dac0; font: 700 .52rem Arial, sans-serif; }
 .skill-button b { position: absolute; inset: 0; display: grid; place-items: center; color: #fff0cf; background: rgba(9,4,3,.62); font: 800 .74rem Arial, sans-serif; text-shadow: 0 1px 3px #000; pointer-events: none; }
@@ -121,7 +130,7 @@ button:active { transform: translateY(1px); filter: brightness(1.25); }
 .skill-button:disabled { opacity: .38; filter: grayscale(.5); cursor: default; }
 .skill-button::before { content: attr(data-rank); position: absolute; right: 3px; top: 2px; z-index: 2; color: #ffe0a3; font: 800 .43rem Arial, sans-serif; opacity: .78; pointer-events: none; }
 .skill-button.cooling b { background: conic-gradient(from 0deg, rgba(7,3,3,.80) 0deg var(--cooldown-angle, 0deg), rgba(9,4,3,.38) var(--cooldown-angle, 0deg) 360deg); }
-.status-strip { position: absolute; right: 105px; bottom: 108px; max-width: 220px; display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 4px; pointer-events: none; }
+.status-strip { position: absolute; right: 0; bottom: 210px; max-width: 240px; display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 4px; pointer-events: none; }
 .status-chip { display: inline-flex; align-items: center; gap: 4px; padding: 3px 6px; border: 1px solid #75503b; border-radius: 10px; background: rgba(18,9,7,.86); color: #ead7bd; font: 700 .52rem Arial, sans-serif; box-shadow: 0 2px 8px #0008; }
 .status-chip b { color: #fff0ca; font-size: .48rem; }
 .status-buff { border-color: #a97b3c; color: #f4d392; }
@@ -169,7 +178,7 @@ button:active { transform: translateY(1px); filter: brightness(1.25); }
 @media (orientation: portrait) and (max-width: 760px) { #rotate-advisory { display: grid; } }
 @media (max-height: 430px) {
   .hud-vitals { transform: scale(.86); transform-origin: top left; }.hud-actions { transform: scale(.9); transform-origin: top right; }
-  #quest-tracker { top: calc(var(--safe-top) + 88px); transform: scale(.9); transform-origin: top left; }.joystick { transform: scale(.86); transform-origin: bottom left; }.combat-controls { transform: scale(.86); transform-origin: bottom right; }
+  #quest-tracker { top: calc(var(--safe-top) + 88px); transform: scale(.9); transform-origin: top left; }.joystick { transform: scale(.86); transform-origin: bottom left; }.combat-controls { transform: scale(.90); transform-origin: bottom right; }
   .modal-panel { height: 92vh; }.modal-panel > header { padding: 7px 12px; }.modal-panel h2 { font-size: 1rem; }#modal-content { padding: 10px; }
 }
 @media (max-width: 700px) { .inventory-grid { grid-template-columns: repeat(5, minmax(44px, 1fr)); }.inventory-layout { grid-template-columns: 1.1fr .9fr; gap: 10px; }.stats-layout { gap: 10px; } }
@@ -239,3 +248,40 @@ button:active { transform: translateY(1px); filter: brightness(1.25); }
 .item-discard-actions .muted-action { border-color: #5d5148; background: #201714; color: #c9b9aa; }
 .item-discard-actions button:disabled { opacity: .42; cursor: not-allowed; filter: grayscale(.35); }
 .discard-warning { margin: 8px 0 0; padding: 7px 8px; border-left: 3px solid #d6634d; background: #351611; color: #f0c6b8 !important; }
+
+/* v0.1.3.2 recovery + consumables */
+.recovery-cluster { position: absolute; left: 0; bottom: 82px; display: grid; grid-template-columns: repeat(2, 50px); gap: 6px; align-items: end; pointer-events: none; }
+.recovery-button { position: relative; width: 50px; height: 50px; min-height: 50px; padding: 2px; overflow: hidden; border-radius: 14px; touch-action: manipulation; pointer-events: auto; box-shadow: 0 3px 10px #0008; }
+.recovery-button.health { border-color: #c35d4d; background: radial-gradient(circle at 42% 28%, #9e4537, #28120f 72%); }
+.recovery-button.essence { border-color: #8065b4; background: radial-gradient(circle at 42% 28%, #68499a, #1e152d 72%); }
+.recovery-button .flask-glyph { display: block; width: 25px; height: 28px; margin: -1px auto -3px; line-height: 1; }
+.recovery-button .flask-glyph svg { width: 100%; height: 100%; overflow: visible; filter: drop-shadow(0 1px 2px #000a); }
+.recovery-button .flask-neck { fill: #d7c6ad; stroke: #24120e; stroke-width: 1.4; }
+.recovery-button .flask-body { fill: #d9cab8; stroke: #24120e; stroke-width: 1.5; }
+.recovery-button.health .flask-liquid { fill: #d84c3d; }
+.recovery-button.essence .flask-liquid { fill: #8d69d9; }
+.recovery-button small { display: block; position: relative; z-index: 2; margin-top: 0; color: #fff2d8; font: 800 .53rem Arial, sans-serif; line-height: 1; text-shadow: 0 1px 2px #000; }
+.recovery-button b { position: absolute; inset: 0; z-index: 3; display: grid; place-items: center; color: #fff4d8; background: rgba(9,4,3,.62); font: 800 .72rem Arial, sans-serif; text-shadow: 0 1px 3px #000; pointer-events: none; }
+.recovery-button b:empty { display: none; }
+.recovery-button.cooling b { display: grid; background: conic-gradient(from 0deg, rgba(7,3,3,.84) 0deg var(--cooldown-angle, 0deg), rgba(9,4,3,.34) var(--cooldown-angle, 0deg) 360deg); }
+.recovery-button:disabled { opacity: .42; filter: grayscale(.42); }
+.recovery-button.empty small::after { content: ' EMPTY'; color: #e0a39a; font-size: .43rem; }
+.item-slot .stack-count { position: absolute; right: 3px; top: 2px; padding: 1px 3px; border-radius: 7px; background: #050303c9; color: #fff0d3; font: 800 .52rem Arial, sans-serif; font-style: normal; }
+.merchant-header { display: flex; justify-content: space-between; gap: 18px; align-items: flex-start; padding: 10px 12px; margin-bottom: 10px; background: #1a0f0c; border: 1px solid #513023; }
+.merchant-header small { color: #9d7c68; font: 700 .58rem Arial, sans-serif; letter-spacing: .1em; }
+.merchant-header h3 { margin: 3px 0 4px; color: #edca87; }
+.merchant-header p { margin: 0; color: #bda995; font: .72rem/1.35 Arial, sans-serif; }
+.merchant-header > strong { flex: 0 0 auto; color: #f0c45c; font: 800 .9rem Arial, sans-serif; }
+.merchant-grid { display: grid; gap: 8px; }
+.merchant-card { display: grid; grid-template-columns: 1fr auto; gap: 12px; align-items: center; padding: 11px 12px; background: #190e0c; border: 1px solid #503024; }
+.merchant-card small { color: #9f7d67; font: 700 .54rem Arial, sans-serif; letter-spacing: .08em; }
+.merchant-card strong { display: block; margin-top: 2px; color: #eed09a; font: 800 .82rem Arial, sans-serif; }
+.merchant-card p { margin: 4px 0; color: #c7b4a2; font: .7rem/1.3 Arial, sans-serif; }
+.merchant-card span { color: #a9907d; font: .62rem Arial, sans-serif; }
+.merchant-card button { min-width: 82px; min-height: 42px; }
+@media (max-height: 430px) {
+  .combat-controls { transform: scale(.90); transform-origin: bottom right; }
+  .recovery-cluster { grid-template-columns: repeat(2, 48px); gap: 5px; }
+  .recovery-button { width: 48px; height: 48px; min-height: 48px; }
+}
+.status-recovery { border-color: #5f9a69; color: #b9edc1; }

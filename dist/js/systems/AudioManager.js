@@ -49,7 +49,11 @@ export class AudioManager {
       slam: [90, 38, 0.22, 'square'],
       blocked: [620, 390, 0.055, 'square'],
       ready: [540, 760, 0.08, 'sine'],
-      denied: [150, 110, 0.08, 'square']
+      denied: [150, 110, 0.08, 'square'],
+      heal: [360, 720, 0.16, 'sine'],
+      essence: [280, 610, 0.17, 'sine'],
+      food: [190, 260, 0.09, 'triangle'],
+      rest: [240, 540, 0.24, 'sine']
     };
     const [from, to, duration, type] = specs[id] || specs.hit;
     const ctx = this.context;

@@ -5,6 +5,7 @@ export class ActionInput {
     this.attackQueued = false;
     this.interactQueued = false;
     this.skillQueued = [false, false, false];
+    this.recoveryQueued = [false, false];
     this.run = false;
     this.keys = null;
     this.touchActive = false;
@@ -19,11 +20,12 @@ export class ActionInput {
     this.unbind();
     this.keyboard = scene.input.keyboard;
     this.skillQueued = [false, false, false];
+    this.recoveryQueued = [false, false];
     this.keys = this.keyboard.addKeys({
       up: 'W', down: 'S', left: 'A', right: 'D',
       up2: 'UP', down2: 'DOWN', left2: 'LEFT', right2: 'RIGHT',
       attack: 'SPACE', interact: 'E', run: 'SHIFT', inventory: 'I', character: 'C', quests: 'Q',
-      skill1: 'ONE', skill2: 'TWO', skill3: 'THREE'
+      skill1: 'ONE', skill2: 'TWO', skill3: 'THREE', recoveryHealth: 'FOUR', recoveryEssence: 'FIVE'
     });
     this.keyboardHandlers = {
       inventory: () => window.dispatchEvent(new CustomEvent('ashfall-ui', { detail: { action: 'inventory' } })),
@@ -91,11 +93,14 @@ export class ActionInput {
     if (Phaser.Input.Keyboard.JustDown(this.keys.skill1)) this.skillQueued[0] = true;
     if (Phaser.Input.Keyboard.JustDown(this.keys.skill2)) this.skillQueued[1] = true;
     if (Phaser.Input.Keyboard.JustDown(this.keys.skill3)) this.skillQueued[2] = true;
+    if (Phaser.Input.Keyboard.JustDown(this.keys.recoveryHealth)) this.recoveryQueued[0] = true;
+    if (Phaser.Input.Keyboard.JustDown(this.keys.recoveryEssence)) this.recoveryQueued[1] = true;
   }
 
   consumeAttack() { const value = this.attackQueued; this.attackQueued = false; return value; }
   consumeInteract() { const value = this.interactQueued; this.interactQueued = false; return value; }
   consumeSkill(slot) { const index = Math.max(0, Math.min(2, Number(slot) || 0)); const value = this.skillQueued[index]; this.skillQueued[index] = false; return value; }
+  consumeRecovery(slot) { const index = Math.max(0, Math.min(1, Number(slot) || 0)); const value = this.recoveryQueued[index]; this.recoveryQueued[index] = false; return value; }
 }
 
 export const actionInput = new ActionInput();

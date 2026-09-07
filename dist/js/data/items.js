@@ -90,6 +90,10 @@ export const ITEM_DEFS = Object.freeze({
 
   wings_red_bat: { id: 'wings_red_bat', name: 'Crimson Bat Wings', slot: 'wings', tags: ['wings', 'prestige', 'revised_combat'], levelReq: 1, requirements: {}, equipGate: 'wingsUnlocked', gateLabel: 'Ascendant wing attunement', baseStats: { defense: 3, maxHp: 25, moveSpeed: 6 }, visual: 'wings_red_bat', value: 250, playerEquipReady: true, animationClass: 'full_combo', presentation: PLAYER_GEAR_PRESENTATION },
 
+  consumable_ashblood_minor: { id: 'consumable_ashblood_minor', name: 'Minor Ashblood Flask', slot: null, tags: ['consumable', 'recovery', 'health_flask'], levelReq: 1, requirements: {}, baseStats: {}, visual: null, value: 6, stackMax: 20, consumableEffect: 'heal_minor' },
+  consumable_essence_minor: { id: 'consumable_essence_minor', name: 'Minor Essence Flask', slot: null, tags: ['consumable', 'recovery', 'essence_flask'], levelReq: 1, requirements: {}, baseStats: {}, visual: null, value: 7, stackMax: 20, consumableEffect: 'essence_minor' },
+  consumable_cinder_ration: { id: 'consumable_cinder_ration', name: 'Cinder Ration', slot: null, tags: ['consumable', 'recovery', 'food'], levelReq: 1, requirements: {}, baseStats: {}, visual: null, value: 3, stackMax: 20, consumableEffect: 'cinder_ration' },
+
   quest_ember_heart: { id: 'quest_ember_heart', name: 'Living Ember Heart', slot: null, tags: ['quest', 'rare_essence'], levelReq: 1, requirements: {}, baseStats: {}, visual: null, value: 0, questItem: true }
 });
 

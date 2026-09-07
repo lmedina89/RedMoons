@@ -21,7 +21,34 @@ The skeletal demon bodies are specifically intended to reuse compatible LPC armo
 
 - `heavenly-and-unique/TransupOrHolyKnight.png` — special/unique humanoid NPC candidate; **not** the player transformation.
 - `heavenly-and-unique/Truetrans.png` — preserved winged humanoid character source; **not** the player transformation after the 2026-09-07 reclassification. Candidate for a Heavenly Castle NPC/guard/named character or other future role.
+- `heavenly-and-unique/HoodedAzrael.png` — canonical **ArchAngel Azrael** source. Azrael is a unique mythic/celestial NPC, never a generic spawn and never a player transformation. His normal presentation is planned around hover/glide/wing-burst movement and an expanded combat moveset. His public level presentation is intentionally obscured (`Lv. ???`). The full source is staged here for the upcoming field-test build; v0.1.3.2.1 does not preload it at runtime.
 
-Human-bodied winged sources should generally bias toward Heavenly Castle NPCs, guards, commanders, named characters or related factions; exact story roles remain flexible.
+Human-bodied winged sources should generally bias toward Heavenly Castle NPCs, guards, commanders, named characters or related factions; exact story roles remain flexible except for ArchAngel Azrael, whose unique role is now reserved.
+
+## Hostile human source pool
+
+- `human-hostile/Assassin.png` — reusable hostile human assassin/skirmisher source. Planned actions include agile run/walk movement, thrust/lunge, slash/backslash/halfslash combos, optional thrown-knife use from the shoot block, and evasive jump behavior.
+
+## Expanded LPC row map used by the staged 832×3456 sheets
+
+The sheets use 64×64 cells (13 columns × 54 rows). Four-row action blocks use direction order **North, West, South, East**:
+
+- rows 0–3: spellcast (7 frames)
+- rows 4–7: thrust (8)
+- rows 8–11: walk (9)
+- rows 12–15: slash (6)
+- rows 16–19: shoot (13)
+- row 20: hurt/down (6)
+- row 21: climb (6)
+- rows 22–25: idle (2)
+- rows 26–29: jump (5)
+- rows 30–33: sit (3)
+- rows 34–37: emote (3)
+- rows 38–41: run (8)
+- rows 42–45: combat idle (2)
+- rows 46–49: backslash (13)
+- rows 50–53: halfslash (6)
+
+For Azrael, `run` is reserved as the primary wing-assisted glide presentation, `jump` as lift/wing-burst material, and the advanced slash blocks for signature combat. The sheet's hurt/down row is reserved for knockdown/defeat rather than a routine hit flinch.
 
 `SHA256SUMS.txt` records the exact staged bytes.

@@ -24,7 +24,10 @@ export function createDefaultState() {
       { instanceId: 'i_000002', itemId: 'chest_wayfarer', rarity: 'normal', enhancement: 0, modifiers: {} },
       { instanceId: 'i_000003', itemId: 'legs_ash_pants', rarity: 'normal', enhancement: 0, modifiers: {} },
       { instanceId: 'i_000004', itemId: 'hands_hide_wraps', rarity: 'normal', enhancement: 0, modifiers: {} },
-      { instanceId: 'i_000005', itemId: 'feet_road_boots', rarity: 'normal', enhancement: 0, modifiers: {} }
+      { instanceId: 'i_000005', itemId: 'feet_road_boots', rarity: 'normal', enhancement: 0, modifiers: {} },
+      { instanceId: 'i_000006', itemId: 'consumable_ashblood_minor', rarity: 'normal', enhancement: 0, modifiers: {}, quantity: 3 },
+      { instanceId: 'i_000007', itemId: 'consumable_essence_minor', rarity: 'normal', enhancement: 0, modifiers: {}, quantity: 2 },
+      { instanceId: 'i_000008', itemId: 'consumable_cinder_ration', rarity: 'normal', enhancement: 0, modifiers: {}, quantity: 2 }
     ],
     skills: { unlocked: ['skill_ember_cleave'], slots: ['skill_ember_cleave', null, null], ranks: { skill_ember_cleave: 1 } },
     equipment: {
@@ -49,6 +52,6 @@ export function createDefaultState() {
     worldFlags: { wingsUnlocked: false },
     npcStates: {},
     settings: { musicVolume: 0.5, sfxVolume: 0.75, screenShake: true, diagnostics: false },
-    nextItemSequence: 6
+    nextItemSequence: 9
   };
 }

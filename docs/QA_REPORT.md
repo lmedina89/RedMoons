@@ -1,4 +1,49 @@
-# v0.1.3.1 QA report — Combat Polish & Skill Feel
+# QA Report — v0.1.3.2.1 Combat UX & Feel Hotfix
+
+## Automated/static validation
+
+The validator now checks the compact radial HUD structure, fixed Use anchoring, flask-glyph/count/cooldown states, contextual interaction snapshot wiring, explicit basic-attack arcs, stronger Cleave geometry/knockback, live-range-derived Cleave FX, diagnostic range-toggle wiring and staged Azrael/Assassin source dimensions/runtime exclusion. All inherited recovery, save, asset, map-transition and combat checks remain active.
+
+## Physical iPhone release gate
+
+1. Fresh/continued save: confirm Attack, all available skill slots, Use and HP/ES flasks fit without overlap in landscape.
+2. Unlock all three skills via Combat Test Kit and verify the skills form an arc around Attack rather than expanding leftward.
+3. Recovery Test Kit: drink HP and ES; verify count decrement, shared cooldown, countdown sweep, disabled rapid-tap state and clear zero-count state.
+4. Move near Vesra, Ashen Rest, a map transition and dropped loot; verify Use changes to Talk / Rest / Travel / Loot and returns to dimmed Use when leaving range.
+5. Toggle Combat Ranges under `?debug=1`: cyan basic cone must be shorter/narrower than orange Cleave.
+6. Fight with all four sword-combo stages and verify attacks no longer hit enemies far to the side/behind merely because they are inside the radius.
+7. Cleave one, two and several enemies; verify 148px/148° targeting, fire arc alignment, knockback and restrained screen shake.
+8. Repeat Cinder ↔ Hollow transitions and Safari background/return; no control displacement, frozen input, missing player layers or lost recovery controls.
+9. Run a 10–15 minute mixed combat/recovery session and watch for accumulating graphics, stuck cooldown overlays or slowdown.
+
+No automated interactive browser/iPhone playthrough is claimed. Physical iPhone Safari remains the release gate.
+
+---
+
+## Inherited QA history
+
+# QA Report — v0.1.3.2 Recovery & Consumables
+
+## Automated/static validation
+
+The project validator covers consumable definitions, starting stacks, merchant/drop/recovery-point references, stack merging/consumption, full-pack partial-stack behavior, shared flask cooldowns, HP/Essence restoration, ration combat blocking/interruption, sanctuary full recovery, save quantity normalization and all inherited combat/map invariants. All JS/MJS files must also pass `node --check`.
+
+## Physical iPhone release gate
+
+1. New Game shows 3 HP flasks, 2 Essence flasks and 2 rations as three stacks.
+2. Recovery Test Kit lowers resources; HP quick-use restores 35 HP and decrements exactly one flask.
+3. Immediately pressing ES is blocked by the shared 4s flask cooldown; after cooldown it restores 28 Essence.
+4. Rapid taps never double-consume.
+5. A ration starts only while safe, shows meal recovery, heals over time, and is interrupted by taking/dealing damage.
+6. Passive HP regeneration begins only after about 9s safe/out of combat; Essence does not passively regenerate.
+7. Ashen Rest Hearth restores full HP/Essence and clears combat statuses.
+8. Ilyan → Trade allows all three purchases, subtracts ash and merges stacks; full-pack behavior remains safe.
+9. Enemy recovery drops can be picked up and merge into existing stacks.
+10. Save/reload preserves quantities.
+11. Cinder↔Hollow transitions remain stable and recovery controls work immediately after arrival.
+12. Safari background/return plus a 10–15 minute mixed combat/recovery session shows no stuck cooldowns, duplicate consumption, frozen controls or material slowdown.
+
+No automated browser playthrough is claimed; physical iPhone Safari is the release gate.
 
 ## Scope
 

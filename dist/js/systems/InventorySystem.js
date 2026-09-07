@@ -4,16 +4,22 @@ import { ITEM_DEFS, MODIFIER_POOL } from '../data/items.js';
 export class InventorySystem {
   constructor(state) { this.state = state; }
 
-  createItem(itemId, rarity = 'normal') {
+  nextInstanceId() { return `i_${String(this.state.nextItemSequence++).padStart(6, '0')}`; }
+
+  createItem(itemId, rarity = 'normal', quantity = 1) {
+    const def = ITEM_DEFS[itemId];
     const safeRarity = RARITY[rarity] && !RARITY[rarity].future ? rarity : 'normal';
     const instance = {
-      instanceId: `i_${String(this.state.nextItemSequence++).padStart(6, '0')}`,
+      instanceId: this.nextInstanceId(),
       itemId,
       rarity: safeRarity,
       enhancement: 0,
-      modifiers: {}
+      modifiers: {},
+      quantity: Math.max(1, Math.floor(quantity || 1))
     };
-    const rolls = RARITY[safeRarity].modifierRolls;
+    // Consumables/quest objects do not roll equipment affixes merely because
+    // they happen to exist as inventory instances.
+    const rolls = def?.slot ? RARITY[safeRarity].modifierRolls : 0;
     const used = new Set();
     for (let i = 0; i < rolls; i += 1) {
       let modifier = MODIFIER_POOL[Math.floor(Math.random() * MODIFIER_POOL.length)];
@@ -27,12 +33,39 @@ export class InventorySystem {
   }
 
   add(item) {
-    if (this.state.inventory.length >= 30) return false;
-    this.state.inventory.push(item);
+    const def = item && ITEM_DEFS[item.itemId];
+    if (!item || !def) return false;
+    const max = Math.max(1, Math.floor(def.stackMax || 1));
+    let remaining = Math.max(1, Math.floor(item.quantity || 1));
+    if (max <= 1) {
+      if (this.state.inventory.length >= 30) return false;
+      item.quantity = 1;
+      this.state.inventory.push(item);
+      return true;
+    }
+
+    const matching = this.state.inventory.filter(existing => existing.itemId === item.itemId && existing.rarity === item.rarity && (existing.quantity || 1) < max);
+    const existingCapacity = matching.reduce((sum, existing) => sum + (max - (existing.quantity || 1)), 0);
+    const neededNewStacks = Math.max(0, Math.ceil((remaining - existingCapacity) / max));
+    if (this.state.inventory.length + neededNewStacks > 30) return false;
+
+    for (const existing of matching) {
+      if (remaining <= 0) break;
+      const add = Math.min(remaining, max - (existing.quantity || 1));
+      existing.quantity = (existing.quantity || 1) + add;
+      remaining -= add;
+    }
+    let first = true;
+    while (remaining > 0) {
+      const quantity = Math.min(max, remaining);
+      this.state.inventory.push({ ...item, instanceId: first ? item.instanceId : this.nextInstanceId(), modifiers: { ...(item.modifiers || {}) }, quantity });
+      first = false;
+      remaining -= quantity;
+    }
     return true;
   }
 
-  countItem(itemId) { return this.state.inventory.filter(item => item.itemId === itemId).length; }
+  countItem(itemId) { return this.state.inventory.filter(item => item.itemId === itemId).reduce((sum, item) => sum + Math.max(1, Math.floor(item.quantity || 1)), 0); }
   hasTag(tag) { return this.state.inventory.some(item => ITEM_DEFS[item.itemId]?.tags?.includes(tag)); }
   get(instanceId) { return this.state.inventory.find(item => item.instanceId === instanceId) || null; }
 
@@ -53,8 +86,6 @@ export class InventorySystem {
     const check = this.canEquip(instance);
     if (!check.ok) return check;
     const def = ITEM_DEFS[instance.itemId];
-    // One item instance can occupy only one slot. Swapping a slot leaves the
-    // replaced item safely in inventory rather than deleting it.
     for (const slot of Object.keys(this.state.equipment)) {
       if (this.state.equipment[slot] === instanceId) this.state.equipment[slot] = null;
     }
@@ -65,6 +96,15 @@ export class InventorySystem {
   unequip(slot) {
     if (!(slot in this.state.equipment)) return false;
     this.state.equipment[slot] = null;
+    return true;
+  }
+
+  consumeOne(instanceId) {
+    const index = this.state.inventory.findIndex(item => item.instanceId === instanceId);
+    if (index < 0) return false;
+    const item = this.state.inventory[index];
+    if ((item.quantity || 1) > 1) item.quantity = (item.quantity || 1) - 1;
+    else this.state.inventory.splice(index, 1);
     return true;
   }
 
@@ -85,13 +125,19 @@ export class InventorySystem {
   }
 
   removeItem(itemId, count = 1) {
-    let remaining = count;
+    let remaining = Math.max(0, Math.floor(count));
     for (let i = this.state.inventory.length - 1; i >= 0 && remaining > 0; i -= 1) {
       const item = this.state.inventory[i];
       if (item.itemId !== itemId) continue;
       if (Object.values(this.state.equipment).includes(item.instanceId)) continue;
-      this.state.inventory.splice(i, 1);
-      remaining -= 1;
+      const quantity = Math.max(1, Math.floor(item.quantity || 1));
+      if (quantity > remaining) {
+        item.quantity = quantity - remaining;
+        remaining = 0;
+      } else {
+        this.state.inventory.splice(i, 1);
+        remaining -= quantity;
+      }
     }
     return remaining === 0;
   }

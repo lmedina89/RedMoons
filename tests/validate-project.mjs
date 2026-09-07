@@ -12,8 +12,9 @@ const { ANIMATION_GEOMETRIES, ASSET_DEFS, LAYER_ASSETS } = await import('../dist
 const { WEAPON_COMBAT_PROFILES } = await import('../dist/js/data/combat.js');
 const { ENEMY_DEFS } = await import('../dist/js/data/enemies.js');
 const { EQUIPMENT_SET_DEFS, ITEM_DEFS } = await import('../dist/js/data/items.js');
+const { CONSUMABLE_EFFECT_DEFS, MERCHANT_SUPPLY_DEFS, QUICK_CONSUMABLE_SLOTS, RECOVERY_DROP_TABLE } = await import('../dist/js/data/consumables.js');
 const { NPC_DEFS, NPC_GUILD_SEEDS } = await import('../dist/js/data/npcs.js');
-const { BUILDING_DEFS, COLLIDERS, DEFAULT_MAP_ID, HOLLOW_COLLIDERS, HOLLOW_WALLS, MAP_DEFS, MAP_TRANSITIONS, REFUGE_WALLS, SPAWN_REGIONS, ZONES } = await import('../dist/js/data/world.js');
+const { BUILDING_DEFS, COLLIDERS, DEFAULT_MAP_ID, HOLLOW_COLLIDERS, HOLLOW_WALLS, MAP_DEFS, MAP_TRANSITIONS, RECOVERY_POINTS, REFUGE_WALLS, SPAWN_REGIONS, ZONES } = await import('../dist/js/data/world.js');
 const { QUEST_DEFS } = await import('../dist/js/data/quests.js');
 const { SKILL_DEFS, DEFAULT_SKILL_SLOTS, normalizeSkillState, resolvedSkillDef } = await import('../dist/js/data/skills.js');
 const { STATUS_DEFS } = await import('../dist/js/data/statuses.js');
@@ -22,6 +23,7 @@ const { ENEMY_ABILITY_DEFS } = await import('../dist/js/data/abilities.js');
 const { createDefaultState } = await import('../dist/js/core/GameState.js');
 const { SaveManager } = await import('../dist/js/core/SaveManager.js');
 const { InventorySystem } = await import('../dist/js/systems/InventorySystem.js');
+const { RecoverySystem } = await import('../dist/js/systems/RecoverySystem.js');
 const { equipmentBonuses, previewDerivedStats, statBreakdown } = await import('../dist/js/systems/StatsSystem.js');
 const { assetDefsForItem, assetDefsForMap } = await import('../dist/js/systems/AssetResolver.js');
 
@@ -49,6 +51,7 @@ const statusControllerSource = await readFile(path.join(dist, 'js/systems/Status
 const projectileManagerSource = await readFile(path.join(dist, 'js/systems/ProjectileManager.js'), 'utf8');
 const fxManagerSource = await readFile(path.join(dist, 'js/systems/FxManager.js'), 'utf8');
 const audioManagerSource = await readFile(path.join(dist, 'js/systems/AudioManager.js'), 'utf8');
+const recoverySource = await readFile(path.join(dist, 'js/systems/RecoverySystem.js'), 'utf8');
 const animationResolverSource = await readFile(path.join(dist, 'js/systems/AnimationResolver.js'), 'utf8');
 const combatResolverSource = await readFile(path.join(dist, 'js/systems/CombatResolver.js'), 'utf8');
 for (const required of ['vendor/phaser.min.js', 'js/main.js', 'css/game.css', 'viewport-fit=cover']) assert.ok(html.includes(required), `index.html missing ${required}`);
@@ -61,14 +64,26 @@ assert.ok(combatSource.includes('cooldownMs: 2400'), 'Empty-swing combat feedbac
 assert.ok(worldSource.includes('queueKillReward') && worldSource.includes('delayedCall(320'), 'Horde kill rewards must be batched');
 assert.ok(layeredSource.includes('ROOT_X') && layeredSource.includes('baseAsset') && layeredSource.includes("equipmentPolicy === 'player'"), 'Renderer must stabilize revised root motion and support actor-specific bases/equipment policies');
 assert.ok(!html.includes('90_user_generated'), 'Prototype-only generator assets must not ship');
-assert.ok(html.includes('v0.1.3.1'), 'Build shell must identify v0.1.3.1');
+assert.equal(GAME_VERSION, '0.1.3.2.1', 'Hotfix version must be v0.1.3.2.1');
+assert.ok(html.includes('v0.1.3.2.1'), 'Build shell must identify v0.1.3.2.1');
 assert.ok(html.includes('id="start-screen"') && html.includes('id="continue-game"') && html.includes('id="new-game"') && html.includes('id="load-game"'), 'Start menu must expose Continue, New Game and Load Save');
+assert.ok(html.includes('data-quick-consumable="health"') && html.includes('data-quick-consumable="essence"'), 'Mobile HUD must expose dedicated HP and Essence quick-use controls');
+assert.ok(html.includes('class="flask-glyph"') && cssSource.includes('#skill-button-0') && cssSource.includes('#skill-button-1') && cssSource.includes('#skill-button-2'), 'Combat hotfix must expose recognizable flask glyphs and absolute radial skill positions');
+assert.ok(cssSource.includes('width: 338px; height: 205px') && cssSource.includes('#interact-button { position: absolute; left: 0; bottom: 0;'), 'Combat controls must use a compact anchored geometry so Use cannot be pushed away by skills');
+assert.ok(uiSource.includes("interaction.available") && worldSource.includes('nearestInteraction()') && worldSource.includes('interaction: this.interactionSnapshot()'), 'Use must reflect the nearby interaction without changing interaction priority');
+assert.ok(uiSource.includes('quick.count <= 0 || quick.remainingMs > 0') && uiSource.includes("button.classList.toggle('empty'"), 'Recovery HUD must expose disabled cooldown/empty states instead of accepting misleading taps');
+assert.ok(combatSource.includes('const arcDegrees = attack.arcDegrees || 96') && combatSource.includes('dot < cosThreshold'), 'Basic attacks must use an explicit narrower directional arc instead of an almost-half-circle hit test');
+assert.ok(combatSource.includes('toggleRangeDebug') && combatSource.includes('cyan basic / orange Cleave') === false, 'CombatSystem must expose the range-debug toggle without owning UI copy');
+assert.ok(worldSource.includes("action === 'ranges'") && html.includes('data-debug="ranges"'), 'Diagnostics must expose the basic/Cleave combat range overlay');
+assert.ok(html.includes('data-debug="recoverykit"'), 'Diagnostics must include a recovery test kit');
+assert.ok(recoverySource.includes('cooldownGroup') && recoverySource.includes('activeFood') && recoverySource.includes('9000'), 'RecoverySystem must own shared cooldowns, food recovery and delayed passive regen');
+assert.ok(worldSource.includes('createRecoveryMarkers') && worldSource.includes('buyMerchantItem') && worldSource.includes('RECOVERY_DROP_TABLE'), 'WorldScene must wire sanctuary recovery, merchant supplies and recovery loot');
 assert.ok(html.includes('id="map-loading-overlay"') && uiSource.includes("gameEvents.on('map-loading'"), 'Map transitions must expose a visible loading state');
 assert.ok(mainSource.includes('loadExisting()') && mainSource.includes('saveManager.reset()') && mainSource.includes('confirm-new-game'), 'Main boot flow must preserve Continue/Load and require explicit overwrite confirmation for an existing single-slot save');
 assert.ok(saveSource.includes('loadExisting()') && saveSource.includes('summary(state)'), 'Save manager must expose non-destructive slot inspection for the title menu');
 assert.ok(cssSource.includes('overflow-x: auto') && cssSource.includes('left: calc(var(--safe-left)') && cssSource.includes('flex: 0 0 auto'), 'Debug tray must stay inside safe-area bounds and scroll horizontally on iPhone');
 assert.ok(worldSource.includes('transitionToMap') && worldSource.includes('buildAshfallHollow'), 'WorldScene must support separate map transitions');
-assert.ok(!worldSource.includes('releaseAssetsNotNeededForMap('), 'v0.1.3.1 must not eagerly evict textures during the WebKit-sensitive Scene handoff');
+assert.ok(!worldSource.includes('releaseAssetsNotNeededForMap('), 'v0.1.3.2.1 must not eagerly evict textures during the WebKit-sensitive Scene handoff');
 assert.ok(!assetResolverSource.includes('releaseAssetsNotNeededForMap'), 'Unsafe eager texture-eviction helper must not remain exposed in the hotfix resolver API');
 assert.ok(worldSource.includes('recoverPlayerVisual') && worldSource.includes('this.player.restoreVisual()'), 'WorldScene must explicitly reconstruct and verify the layered player after map handoff');
 assert.ok(playerSource.includes('restoreVisual()') && layeredSource.includes('missingTextureKeys') && layeredSource.includes('restore('), 'Player renderer must expose deterministic visual restoration/integrity checks');
@@ -152,10 +167,13 @@ assert.equal(ENEMY_DEFS.enemy_ashstone_golem.deathFrames, 7, 'Ashstone Golem dea
 assert.deepEqual(Object.keys(SKILL_DEFS), ['skill_ember_cleave', 'skill_ashen_guard', 'skill_ruin_pulse'], 'Combat foundation should prove the player framework with exactly three initial skills');
 assert.deepEqual(Object.values(SKILL_DEFS).map(skill => skill.unlockLevel), [1, 3, 5], 'Initial player skills must unlock at levels 1/3/5');
 assert.deepEqual(DEFAULT_SKILL_SLOTS, ['skill_ember_cleave', null, null]);
-assert.ok(SKILL_DEFS.skill_ember_cleave.range >= 130 && SKILL_DEFS.skill_ember_cleave.arcDegrees >= 125, 'Ember Cleave polish must materially widen and extend the touch-friendly cone');
+assert.ok(SKILL_DEFS.skill_ember_cleave.range >= 148 && SKILL_DEFS.skill_ember_cleave.arcDegrees >= 148 && SKILL_DEFS.skill_ember_cleave.damageMultiplier >= 1.5 && SKILL_DEFS.skill_ember_cleave.knockback >= 140, 'Ember Cleave hotfix must clearly outrange/out-angle basic attacks and add stronger impact');
+const basicSwordAttacks = WEAPON_COMBAT_PROFILES.sword_four_hit.attacks;
+assert.ok(Math.max(...basicSwordAttacks.map(attack => 92 * (attack.rangeMultiplier || 1))) < SKILL_DEFS.skill_ember_cleave.range, 'Cleave must physically outrange every ordinary sword-combo hit');
+assert.ok(Math.max(...basicSwordAttacks.map(attack => attack.arcDegrees || 96)) < SKILL_DEFS.skill_ember_cleave.arcDegrees, 'Cleave must remain wider than every ordinary sword-combo hit');
 assert.ok(SKILL_DEFS.skill_ruin_pulse.damageMultiplier >= 1.15 && SKILL_DEFS.skill_ruin_pulse.knockback >= 250, 'Ruin Pulse polish must add meaningful impact without becoming a giant-radius screen clear');
 assert.equal(SKILL_DEFS.skill_ashen_guard.durationMs, 5000, 'Ashen Guard rank hook must start from the live five-second duration');
-assert.ok(fxManagerSource.includes('g.arc(x, y, 108') && fxManagerSource.includes('this.ring(x, y, 114'), 'Cleave and Ruin Pulse polish FX must visually match the expanded hit feel');
+assert.ok(fxManagerSource.includes('outerRadius = range * 0.94') && fxManagerSource.includes('halfArc') && fxManagerSource.includes('this.ring(x, y, 114'), 'Cleave FX must derive from the live skill range/arc while Ruin Pulse keeps its existing radial presentation');
 assert.ok(combatSource.includes("ability.type === 'melee_reach'") && fxManagerSource.includes('lineTelegraph'), 'Bone Spearman must use shared telegraphed reach combat rather than bespoke collision code');
 for (const skill of Object.values(SKILL_DEFS)) assert.equal(skill.maxRank, 5, `${skill.id} must expose five future progression ranks`);
 for (const id of ['burn', 'poison', 'slow', 'guard', 'stagger']) assert.ok(STATUS_DEFS[id], `Missing initial status ${id}`);
@@ -246,6 +264,18 @@ assert.deepEqual(
   'NPC/shared starter item IDs must retain classic visual mappings instead of receiving player-only revised geometry'
 );
 
+assert.equal(defaultState.inventory.find(item => item.itemId === 'consumable_ashblood_minor')?.quantity, 3, 'Fresh characters should start with three health flasks in one stack');
+assert.equal(defaultState.inventory.find(item => item.itemId === 'consumable_essence_minor')?.quantity, 2, 'Fresh characters should start with two Essence flasks in one stack');
+assert.equal(defaultState.inventory.find(item => item.itemId === 'consumable_cinder_ration')?.quantity, 2, 'Fresh characters should start with two field rations in one stack');
+for (const itemId of ['consumable_ashblood_minor', 'consumable_essence_minor', 'consumable_cinder_ration']) {
+  assert.ok(ITEM_DEFS[itemId].consumableEffect && ITEM_DEFS[itemId].stackMax === 20, `${itemId} must use the reusable stackable consumable path`);
+  assert.ok(CONSUMABLE_EFFECT_DEFS[ITEM_DEFS[itemId].consumableEffect], `${itemId} references an unknown recovery effect`);
+}
+assert.equal(QUICK_CONSUMABLE_SLOTS.length, 2, 'The first recovery HUD should stay compact at two flask shortcuts');
+assert.equal(MERCHANT_SUPPLY_DEFS.length, 3, 'Ilyan should carry the three foundation recovery supplies');
+assert.ok(RECOVERY_DROP_TABLE.some(entry => entry.itemId === 'consumable_ashblood_minor'), 'Enemy recovery table must include health flasks');
+assert.ok(RECOVERY_POINTS.some(point => point.id === 'recovery_ashen_rest' && point.mapId === DEFAULT_MAP_ID), 'Cinder Refuge must contain a reusable sanctuary recovery point');
+
 assert.deepEqual(defaultState.skills, { unlocked: ['skill_ember_cleave'], slots: ['skill_ember_cleave', null, null], ranks: { skill_ember_cleave: 1 } }, 'Fresh Level-1 state must start with Ember Cleave equipped at Rank 1');
 const levelFiveSkillState = createDefaultState();
 levelFiveSkillState.player.level = 5;
@@ -329,14 +359,15 @@ const conceptRoot = path.join(root, 'source-assets/character-concepts/2026-09-07
 for (const file of [
   'player-transformation/Transformation.png',
   'demon-castle/DemonBase.png', 'demon-castle/RedDemon.png', 'demon-castle/TanDemon.png', 'demon-castle/DemonLordFlesh.png',
-  'heavenly-and-unique/Truetrans.png', 'heavenly-and-unique/TransupOrHolyKnight.png', 'README.md', 'SHA256SUMS.txt'
+  'heavenly-and-unique/Truetrans.png', 'heavenly-and-unique/TransupOrHolyKnight.png', 'heavenly-and-unique/HoodedAzrael.png',
+  'human-hostile/Assassin.png', 'README.md', 'SHA256SUMS.txt'
 ]) await access(path.join(conceptRoot, file));
 for (const file of await recursiveNames(conceptRoot)) {
   if (!file.toLowerCase().endsWith('.png')) continue;
   const size = await pngSize(file);
   assert.deepEqual([size.width, size.height], [832, 3456], `${file} must preserve the full LPC source sheet`);
 }
-assert.ok(!(await recursiveNames(path.join(dist, 'assets'))).some(file => file.includes('Transformation.png') || file.includes('Truetrans.png')), 'Future full character concept sheets must not ship in runtime dist/assets');
+assert.ok(!(await recursiveNames(path.join(dist, 'assets'))).some(file => ['Transformation.png', 'Truetrans.png', 'HoodedAzrael.png', 'Assassin.png'].some(name => file.includes(name))), 'Full concept sheets, including staged Azrael/Assassin sources, must not ship in runtime dist/assets before compact runtime harvesting');
 for (const file of ['WEAPON_long_spear.png', 'README.md', 'lpc_entry_README.txt', 'SHA256SUMS.txt']) await access(path.join(root, 'source-assets/combat-v0131/classic-spear', file));
 const cinderAssetKeys = new Set(assetDefsForMap(createDefaultState(), DEFAULT_MAP_ID).map(asset => asset.key));
 const hollowAssetKeys = new Set(assetDefsForMap(createDefaultState(), 'map_ashfall_hollow').map(asset => asset.key));
@@ -556,6 +587,11 @@ assert.equal(valid.saveVersion, SAVE_VERSION);
 assert.equal(SAVE_VERSION, 2, 'Combat line must retain persistent skill state on save schema 2');
 assert.equal(valid.gameVersion, GAME_VERSION);
 assert.equal(valid.player.level, 1);
+assert.equal(valid.inventory.find(item => item.itemId === 'consumable_ashblood_minor')?.quantity, 3, 'Current saves must preserve consumable stack quantities');
+const legacyQuantitySave = createDefaultState();
+for (const item of legacyQuantitySave.inventory) delete item.quantity;
+const normalizedLegacyQuantities = saveManager.validate(legacyQuantitySave);
+assert.ok(normalizedLegacyQuantities.inventory.every(item => item.quantity === 1), 'Pre-stack inventory instances must normalize safely to quantity 1');
 const timestampedSave = createDefaultState();
 timestampedSave.saveVersion = 1;
 delete timestampedSave.skills;
@@ -642,6 +678,86 @@ discardState.inventory.push({ instanceId: 'i_quest_test', itemId: 'quest_ember_h
 const questDiscard = discardInventory.removeInstance('i_quest_test');
 assert.equal(questDiscard.ok, false);
 assert.ok(discardState.inventory.some(item => item.instanceId === 'i_quest_test'));
+
+// v0.1.3.2 stackable recovery inventory: add merges stacks, countItem sums
+// quantities, and consuming one never destroys the whole stack.
+const stackState = createDefaultState();
+const stackInventory = new InventorySystem(stackState);
+const healthStack = stackState.inventory.find(item => item.itemId === 'consumable_ashblood_minor');
+assert.equal(stackInventory.countItem('consumable_ashblood_minor'), 3);
+assert.equal(stackInventory.add(stackInventory.createItem('consumable_ashblood_minor', 'normal', 4)), true);
+assert.equal(stackInventory.countItem('consumable_ashblood_minor'), 7);
+assert.equal(stackState.inventory.filter(item => item.itemId === 'consumable_ashblood_minor').length, 1, 'Compatible consumables should merge before consuming another pack slot');
+assert.equal(stackInventory.consumeOne(healthStack.instanceId), true);
+assert.equal(stackInventory.countItem('consumable_ashblood_minor'), 6);
+
+// A full 30-slot pack may still merge into an existing partial stack, but a
+// purchase/drop that would require a 31st slot must fail atomically.
+const fullStackState = createDefaultState();
+const fullStackInventory = new InventorySystem(fullStackState);
+const fullHealth = fullStackState.inventory.find(item => item.itemId === 'consumable_ashblood_minor');
+fullHealth.quantity = 19;
+while (fullStackState.inventory.length < 30) {
+  const id = `i_fill_${String(fullStackState.inventory.length).padStart(2, '0')}`;
+  fullStackState.inventory.push({ instanceId: id, itemId: 'weapon_rustblade', rarity: 'normal', enhancement: 0, modifiers: {}, quantity: 1 });
+}
+assert.equal(fullStackInventory.add(fullStackInventory.createItem('consumable_ashblood_minor', 'normal', 1)), true, 'A full pack must allow filling an existing partial stack');
+assert.equal(fullHealth.quantity, 20);
+fullHealth.quantity = 19;
+assert.equal(fullStackInventory.add(fullStackInventory.createItem('consumable_ashblood_minor', 'normal', 2)), false, 'A full pack must reject a recovery pickup requiring a new stack');
+assert.equal(fullHealth.quantity, 19, 'Failed stacked adds must not partially mutate an existing stack');
+
+// Recovery behavior smoke without a browser renderer.
+const recoveryState = createDefaultState();
+const recoveryInventory = new InventorySystem(recoveryState);
+const derivedRecovery = statBreakdown(recoveryState).totalDerived;
+recoveryState.player.hp = 20;
+recoveryState.player.essence = 5;
+const recoveryEvents = { emitted: [], emit(type, data) { this.emitted.push([type, data]); } };
+const recoveryScene = {
+  time: { now: 10000 },
+  enemies: [],
+  combat: { fx: { burst() {}, ring() {} }, audio: { play() {} }, statuses: { clear() {} } },
+  emitState() {}, safeSave() {}
+};
+const recoveryPlayer = { dead: false, body: { x: 100, y: 100 } };
+const recovery = new RecoverySystem(recoveryScene, recoveryState, recoveryInventory, recoveryPlayer, recoveryEvents);
+assert.equal(recovery.useQuick('health'), true, 'Health quick slot should consume a flask when injured');
+assert.equal(recoveryState.player.hp, Math.min(derivedRecovery.maxHp, 55));
+assert.equal(recoveryInventory.countItem('consumable_ashblood_minor'), 2);
+assert.equal(recovery.useQuick('essence'), false, 'Health and Essence flasks must share one cooldown group');
+recoveryScene.time.now += 4001;
+assert.equal(recovery.useQuick('essence'), true, 'Essence flask should work after the shared cooldown expires');
+assert.equal(recoveryState.player.essence, Math.min(derivedRecovery.maxEssence, 33));
+
+// Scene.restart() must not create an instant potion/meal cooldown exploit. A
+// newly constructed RecoverySystem for the same in-memory state inherits the
+// transient session clock, while JSON saves remain clean.
+recoveryState.player.hp = 20;
+recoveryScene.time.now += 4001;
+assert.equal(recovery.useQuick('health'), true);
+const restartedRecovery = new RecoverySystem(recoveryScene, recoveryState, recoveryInventory, recoveryPlayer, recoveryEvents);
+assert.ok(restartedRecovery.cooldownRemaining('flask') > 0, 'Recovery cooldown must survive WorldScene restart/map handoff');
+assert.ok(!JSON.stringify(recoveryState).includes('__recoveryRuntime'), 'Transient recovery timing must not be persisted in save JSON');
+recoveryScene.time.now += 4001;
+recovery.rest({ name: 'Ashen Rest Hearth' });
+assert.equal(recoveryState.player.hp, derivedRecovery.maxHp, 'Sanctuary rest must fully restore HP');
+assert.equal(recoveryState.player.essence, derivedRecovery.maxEssence, 'Sanctuary rest must fully restore Essence');
+
+// Food is out-of-combat recovery: nearby hostiles block starting it and any
+// later combat event interrupts an active meal without consuming another item.
+recoveryState.player.hp = 30;
+recoveryScene.time.now += 5000;
+recoveryScene.enemies = [{ dead: false, sprite: { active: true, x: 120, y: 100 } }];
+const ration = recoveryState.inventory.find(item => item.itemId === 'consumable_cinder_ration');
+const rationBefore = ration.quantity;
+assert.equal(recovery.useInstance(ration.instanceId), false, 'A ration must not start while a hostile is nearby');
+assert.equal(ration.quantity, rationBefore, 'Blocked ration use must not consume the stack');
+recoveryScene.enemies = [];
+assert.equal(recovery.useInstance(ration.instanceId), true, 'A ration should start after combat pressure is gone');
+assert.ok(recovery.session.activeFood, 'Ration use must create a timed recovery state');
+recovery.markCombat();
+assert.equal(recovery.session.activeFood, null, 'Taking or dealing damage must interrupt meal recovery');
 
 // New slots are part of the save model even before their progression unlocks.
 assert.deepEqual(Object.keys(createDefaultState().equipment), ['head', 'shoulders', 'chest', 'legs', 'hands', 'feet', 'weapon', 'offhand', 'necklace', 'ring1', 'ring2', 'wings']);
@@ -737,4 +853,4 @@ const normalizedWrongSlot = saveManager.validate(wrongSlotSave);
 assert.equal(normalizedWrongSlot.equipment.head, null, 'Wrong-slot saved equipment must be discarded');
 assert.equal(normalizedWrongSlot.equipment.weapon, 'i_000001', 'Valid weapon reference must survive normalization');
 
-console.log(`Validated ${ASSET_DEFS.length} assets, ${Object.keys(ITEM_DEFS).length} items, ${Object.keys(ENEMY_DEFS).length} enemies, ${Object.keys(NPC_DEFS).length} NPCs, ${BUILDING_DEFS.length} refuge buildings, ${COLLIDERS.length} visible-source colliders, ${Object.keys(QUEST_DEFS).length} quests, ${Object.keys(SKILL_DEFS).length} player skills, ${Object.keys(ENEMY_ABILITY_DEFS).length} enemy abilities, v0.1.3.1 combat polish, true run/spear thrust, skill-rank hooks, expanded LPC actions, pooled projectiles, statuses/FX/audio, stable Cinder/Hollow streaming, combo-safe starter clothes, and save schema ${SAVE_VERSION}.`);
+console.log(`Validated ${ASSET_DEFS.length} assets, ${Object.keys(ITEM_DEFS).length} items, ${Object.keys(ENEMY_DEFS).length} enemies, ${Object.keys(NPC_DEFS).length} NPCs, ${BUILDING_DEFS.length} refuge buildings, ${COLLIDERS.length} visible-source colliders, ${Object.keys(QUEST_DEFS).length} quests, ${Object.keys(SKILL_DEFS).length} player skills, ${Object.keys(ENEMY_ABILITY_DEFS).length} enemy abilities, v0.1.3.2.1 combat-HUD/Cleave hotfix, staged Azrael/Assassin source sheets, v0.1.3.2 recovery/consumables, stackable supplies, sanctuary/merchant recovery, v0.1.3.1 combat polish, true run/spear thrust, skill-rank hooks, expanded LPC actions, pooled projectiles, statuses/FX/audio, stable Cinder/Hollow streaming, combo-safe starter clothes, and save schema ${SAVE_VERSION}.`);

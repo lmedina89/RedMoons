@@ -1,4 +1,14 @@
-# Architecture — v0.1.3.1
+# Architecture — v0.1.3.2.1
+
+> v0.1.3.2.1 keeps save schema 2 and adds no new persistent runtime subsystem. HUD geometry remains DOM/CSS; interaction hints reuse WorldScene gameplay priority; combat-range diagnostics live in CombatSystem and are gated by `DEBUG`. ArchAngel Azrael/Assassin remain source-only until the next runtime-harvesting pass.
+
+## Recovery and stackable consumables
+
+`RecoverySystem` owns transient recovery cooldowns, recent-combat timing, food-over-time state and passive safe-zone HP regeneration. Consumable content is immutable data in `data/consumables.js`; persistent ownership remains ordinary inventory state. Inventory stacks store `quantity`, while equipment continues to reference unique non-stackable instance IDs. Save schema stays at 2: missing quantities normalize to 1, so pre-stack saves remain valid.
+
+Quick-use HP/Essence controls and Inventory Use both dispatch into the same recovery path. Flask effects share a named cooldown group. Food checks recent combat plus nearby active hostiles and is interrupted through the same combat callback used when the player takes or deals damage. Sanctuary rest is a map-defined `RECOVERY_POINTS` interaction rather than a Cinder-specific hard-coded heal, allowing later camps, shrines and dungeon recovery points to reuse it. Merchant stock and generic recovery drops are also data-driven.
+
+Stack additions are capacity-checked before mutation: compatible stacks are filled first, a completely full pack may still accept an item if an existing stack has capacity, and additions that need a new slot fail atomically.
 
 ## Map-transition lifecycle invariant (v0.1.2.4.3)
 

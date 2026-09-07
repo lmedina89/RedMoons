@@ -5,7 +5,9 @@ const FX_COLORS = Object.freeze({
   poison: 0x79d64d,
   shadow: 0xb26cff,
   guard: 0xe7b85d,
-  earth: 0xc99558
+  earth: 0xc99558,
+  heal: 0x72d78a,
+  essence: 0xa98cff
 });
 
 export class FxManager {
@@ -13,7 +15,7 @@ export class FxManager {
     this.scene = scene;
     this.makeTextures();
     this.pools = new Map();
-    for (const key of ['physical', 'fire', 'blueflame', 'poison', 'shadow', 'guard', 'earth']) {
+    for (const key of ['physical', 'fire', 'blueflame', 'poison', 'shadow', 'guard', 'earth', 'heal', 'essence']) {
       this.pools.set(key, Array.from({ length: 12 }, () => scene.add.sprite(0, 0, `fx-${key}`).setVisible(false).setDepth(8600)));
     }
     this.indices = new Map();
@@ -102,17 +104,25 @@ export class FxManager {
 
   trail(x, y, kind = 'physical') { this.burst(x, y, kind, 0.45); }
 
-  skill(skillId, x, y, facing = [0, 1]) {
+  skill(skillId, x, y, facing = [0, 1], def = null) {
     if (skillId === 'skill_ember_cleave') {
       const g = this.scene.add.graphics().setDepth(8500);
       const angle = Math.atan2(facing[1], facing[0]);
-      g.lineStyle(10, FX_COLORS.fire, 0.78);
+      const range = Math.max(96, def?.range || 148);
+      const halfArc = (def?.arcDegrees || 148) * Math.PI / 360;
+      const outerRadius = range * 0.94;
+      const innerRadius = range * 0.69;
+      g.lineStyle(12, FX_COLORS.fire, 0.72);
       g.beginPath();
-      g.arc(x, y, 108, angle - 1.10, angle + 1.10, false); g.strokePath();
-      g.lineStyle(3, 0xffc879, 0.82);
+      g.arc(x, y, outerRadius, angle - halfArc, angle + halfArc, false); g.strokePath();
+      g.lineStyle(4, 0xffd69a, 0.90);
       g.beginPath();
-      g.arc(x, y, 91, angle - 1.05, angle + 1.05, false); g.strokePath();
-      this.scene.tweens.add({ targets: g, alpha: 0, duration: 300, onComplete: () => g.destroy() });
+      g.arc(x, y, innerRadius, angle - halfArc * 0.96, angle + halfArc * 0.96, false); g.strokePath();
+      for (const offset of [-0.72, -0.24, 0.24, 0.72]) {
+        const a = angle + halfArc * offset;
+        this.burst(x + Math.cos(a) * range * 0.82, y + Math.sin(a) * range * 0.82, 'fire', 0.58);
+      }
+      this.scene.tweens.add({ targets: g, alpha: 0, duration: 330, onComplete: () => g.destroy() });
     } else if (skillId === 'skill_ashen_guard') {
       this.ring(x, y, 56, 'guard', 420); this.burst(x, y - 18, 'guard', 1.2);
     } else if (skillId === 'skill_ruin_pulse') {

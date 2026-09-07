@@ -1,4 +1,18 @@
-# Known limitations — v0.1.3.1
+# Known Limitations — v0.1.3.2.1
+
+## v0.1.3.2.1 hotfix limits
+
+- The radial/fan HUD is validated structurally and remains subject to physical iPhone Safari feel/readability testing.
+- `Combat Ranges` is diagnostics-only and is available only under `?debug=1`; normal builds keep combat/collision overlays off.
+- ArchAngel Azrael and the Assassin are source-staged only in this hotfix. Their full 832×3456 sheets are intentionally excluded from `dist/` until compact runtime actions are harvested for v0.1.3.2.2.
+- Azrael's mythic nameplate/emblem, NPC-vs-monster faction AI and flashy celestial skill effects are planned for the next field-test build rather than partially implemented here.
+
+- Recovery balance is foundation tuning, not final economy balance. Flask prices, drop rates, cooldowns and passive regeneration should be adjusted after longer physical-device/dungeon playtests.
+- Cinder Rations are intentionally interrupted by combat and are not a combat-healing substitute. There is no antidote/cleanse consumable, resurrection item or dedicated healing skill yet.
+- Ilyan has a fixed three-item foundation stock; buyback, quantity selectors, rotating stock and richer shop UX are future work.
+- Quick recovery buttons currently target fixed HP/Essence item IDs rather than a configurable consumable hotbar.
+- Active food/cooldown timers are runtime state and are not persisted through a page reload; persistent inventory quantities are saved.
+- Map presentation remains intentionally simple until combat/recovery systems are validated, so Ashfall Hollow is still a systems test space rather than the final dungeon presentation.
 
 ## v0.1.3.1 validation note
 

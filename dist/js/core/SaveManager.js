@@ -84,7 +84,10 @@ export class SaveManager {
       itemId: legacyPlayerRewardMap[item.itemId] || item.itemId.slice(0, 64),
       rarity: typeof item.rarity === 'string' ? item.rarity : 'normal',
       enhancement: this.number(item.enhancement, 0, 9, 0),
-      modifiers: plainObject(item.modifiers) ? Object.fromEntries(Object.entries(item.modifiers).filter(([, v]) => finite(v)).slice(0, 8)) : {}
+      modifiers: plainObject(item.modifiers) ? Object.fromEntries(Object.entries(item.modifiers).filter(([, v]) => finite(v)).slice(0, 8)) : {},
+      // v0.1.3.2 introduces stackable consumables without changing save schema.
+      // Every older inventory instance safely normalizes to quantity 1.
+      quantity: this.number(item.quantity, 1, Math.max(1, ITEM_DEFS[legacyPlayerRewardMap[item.itemId] || item.itemId]?.stackMax || 1), 1)
     }));
     const itemsById = new Map(state.inventory.map(item => [item.instanceId, item]));
     const equippedIds = new Set();

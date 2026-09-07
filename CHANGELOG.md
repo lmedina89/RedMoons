@@ -1,5 +1,31 @@
 # Changelog
 
+## v0.1.3.2.1 — Combat UX & Feel Hotfix
+
+- Rebuilt the iPhone combat HUD around a fixed Attack anchor with three radial/fan skill positions; `Use` and recovery controls no longer participate in a horizontal flex row and therefore cannot be pushed out by unlocked skills.
+- Added recognizable inline flask glyphs, persistent HP/ES counts, explicit empty state and disabled cooldown state to the recovery quick buttons while retaining the existing shared RecoverySystem and keyboard 4/5 inputs.
+- Added contextual `Use` presentation driven by the exact interaction priority used by gameplay: Travel → Rest → Talk → Loot; the button dims when nothing is in range.
+- Corrected basic sword attack geometry to use data-driven 96°–120° combo arcs rather than the previous almost-half-circle hit test.
+- Retuned Rank-1 Ember Cleave to 148px / 148°, 1.50× attack damage and 145 knockback so it is decisively wider/longer/heavier than ordinary attacks.
+- Cleave FX now derives from resolved skill range/arc, adds lightweight edge bursts and restrained hit-confirm screen shake.
+- Added `Combat Ranges` diagnostics: cyan = current/basic melee cone; orange = resolved Ember Cleave cone.
+- Staged `HoodedAzrael.png` and `Assassin.png` under source-only character concepts, verified as 832×3456 RGBA Expanded-LPC sheets, documented their canonical 54-row action map and reserved ArchAngel Azrael's unique mythic role for the next field-test build.
+- Save schema remains 2; no save identities, map IDs, quests, inventories or existing recovery data are reset.
+
+## v0.1.3.2 — Recovery & Consumables
+
+- Added reusable `RecoverySystem` and data-driven consumable definitions without changing save schema 2.
+- Added stackable Minor Ashblood Flasks (+35 HP), Minor Essence Flasks (+28 Essence) and Cinder Rations (+28 HP over 7s outside combat), all with persistent quantities and safe normalization for older saves.
+- HP/Essence flasks share a 4-second recovery cooldown; mobile quick-use buttons and keyboard 4/5 provide combat access while Inventory retains a normal Use action.
+- Added out-of-combat food interruption rules and slow passive HP recovery after 9 seconds of safety; passive recovery never restores Essence and does not run around nearby hostiles.
+- Added the Ashen Rest Hearth recovery point in Cinder Refuge for full HP/Essence restoration, status cleansing and recovery-cooldown reset.
+- Added Ilyan's Field Supplies merchant panel with deterministic basic recovery stock so unlucky drops cannot strand progression.
+- Added low recovery-item drop chances to normal enemy defeats using the existing pooled world-loot path.
+- New characters start with 3 health flasks, 2 Essence flasks and 2 rations in three stacks rather than seven inventory slots.
+- Hardened stack operations so a full 30-slot pack can still fill an existing partial stack, while additions requiring a new slot fail atomically without partial mutation.
+- Added recovery/status HUD feedback, procedural recovery FX/SFX and a `Recovery Test Kit` diagnostic helper.
+- Preserved v0.1.3.1 combat tuning, true run, Bone Spearman, map transitions, all source art, skill-rank hooks and save schema 2.
+
 ## v0.1.3.1 — Combat Polish & Skill Feel
 
 - Built directly on the physical-iPhone-validated v0.1.3 Combat Systems Foundation.

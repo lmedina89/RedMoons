@@ -181,3 +181,7 @@ Bone Archer now uses a verified compact bow+arrow shoot overlay harvested from t
 The player/starter true-run runtime sheets are compact crops/derivatives from the preserved Expanded LPC source exports already retained outside `dist/`. `starter-wraps-run.png` uses the same verified brown-wrap presentation as the existing starter hand layers; the source glove export has no rear-facing run pixels, so the rear row is deterministically reconstructed from the verified player's rear-run hand pixels using the existing brown wrap palette rather than leaving the handwraps to vanish.
 
 The Bone Spearman uses `dist/assets/enemies/skeleton-spear-thrust.png`, harvested from the preserved LPC Medieval Fantasy / `lpc_entry` long-spear source. The exact source spear, source readme/credit text and hashes are retained under `source-assets/combat-v0131/classic-spear/`.
+## v0.1.3.2 recovery presentation
+
+v0.1.3.2 introduces no new external visual or audio asset dependency. The Ashen Rest marker, recovery feedback and cooldown presentation use procedural Phaser/DOM graphics, and heal/Essence/food/rest sounds use the existing procedural WebAudio foundation. All v0.1.3.1 source artwork is retained unchanged.
+

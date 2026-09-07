@@ -43,6 +43,7 @@ export class CombatResolver {
     this.damageNumbers.show(enemy.sprite.x, enemy.sprite.y - 38, result.amount, false, result.critical);
     this.fx.impact(options.impact || type, enemy.sprite.x, enemy.sprite.y - 12);
     this.audio.play('hit', { throttleMs: 35 });
+    this.callbacks.enemyDamaged?.(result.amount, enemy, options);
     return result.amount;
   }
 

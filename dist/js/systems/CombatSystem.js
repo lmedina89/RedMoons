@@ -5,6 +5,8 @@ import { ProjectileManager } from './ProjectileManager.js';
 import { FxManager } from './FxManager.js';
 import { AudioManager } from './AudioManager.js';
 import { SkillController } from './SkillController.js';
+import { DEBUG } from '../config.js';
+import { resolvedSkillDef } from '../data/skills.js';
 
 export class DamageNumberPool {
   constructor(scene, size = 28) {
@@ -33,17 +35,22 @@ export class CombatSystem {
     this.fx = new FxManager(scene);
     this.audio = new AudioManager(scene, state);
     this.resolver = new CombatResolver(scene, state, this.damageNumbers, this.fx, this.audio, {
-      playerDamaged: amount => this.scene.afterPlayerDamage?.(amount)
+      playerDamaged: amount => { this.scene.recovery?.markCombat(); this.scene.afterPlayerDamage?.(amount); },
+      enemyDamaged: () => this.scene.recovery?.markCombat()
     });
     this.statuses = new StatusController(scene, this.resolver, this.fx);
     this.resolver.setStatusController(this.statuses);
     this.projectiles = new ProjectileManager(scene, this.resolver, this.statuses, this.fx, this.audio, player, enemies);
     this.skills = new SkillController(scene, state, player, this, this.statuses, this.fx, this.audio, events);
+    this.rangeDebugEnabled = false;
+    this.rangeDebugGraphics = DEBUG ? scene.add.graphics().setDepth(16020).setVisible(false) : null;
   }
 
   playerAttack(attack = {}) {
     const derived = derivedStats(this.state);
     const range = 92 * (attack.rangeMultiplier || 1);
+    const arcDegrees = attack.arcDegrees || 96;
+    const cosThreshold = Math.cos(arcDegrees * Math.PI / 360);
     const damage = derived.attack * (attack.damageMultiplier || 1);
     const facing = [[0, -1], [-1, 0], [0, 1], [1, 0]][this.player.visual.direction];
     let hitCount = 0;
@@ -55,7 +62,7 @@ export class CombatSystem {
       if (distSq > range * range) continue;
       const distance = Math.sqrt(distSq) || 1;
       const dot = (dx / distance) * facing[0] + (dy / distance) * facing[1];
-      if (dot < 0.05 && distance > 34) continue;
+      if (dot < cosThreshold) continue;
       const applied = this.resolver.damageEnemy(enemy, damage, {
         type: 'physical', sourceX: this.player.body.x, sourceY: this.player.body.y,
         critChance: Math.min(0.18, (this.state.player.stats.dex || 0) * 0.008), impact: 'physical'
@@ -79,6 +86,7 @@ export class CombatSystem {
       if (dot < cosThreshold) continue;
       const amount = this.resolver.damageEnemy(enemy, derived.attack * def.damageMultiplier, {
         type: def.damageType, sourceX: this.player.body.x, sourceY: this.player.body.y,
+        knockback: def.knockback || 0,
         critChance: Math.min(0.2, (this.state.player.stats.dex || 0) * 0.009), impact: 'fire'
       });
       if (amount) {
@@ -86,6 +94,7 @@ export class CombatSystem {
         if (def.status && Math.random() <= (def.status.chance ?? 1)) this.statuses.apply(enemy, def.status.id, { power: derived.attack, x: this.player.body.x, y: this.player.body.y });
       }
     }
+    if (hits && this.state.settings.screenShake) this.scene.cameras.main.shake(hits >= 2 ? 120 : 82, hits >= 2 ? 0.0034 : 0.0022);
     if (!hits) this.events.emit('toast', { text: `${def.name} finds no target.`, tone: 'muted', short: true, cooldownMs: 1200 });
   }
 
@@ -161,9 +170,44 @@ export class CombatSystem {
     }
   }
 
+  toggleRangeDebug() {
+    if (!DEBUG || !this.rangeDebugGraphics) return false;
+    this.rangeDebugEnabled = !this.rangeDebugEnabled;
+    this.rangeDebugGraphics.setVisible(this.rangeDebugEnabled);
+    if (!this.rangeDebugEnabled) this.rangeDebugGraphics.clear();
+    return this.rangeDebugEnabled;
+  }
+
+  drawRangeDebug() {
+    const g = this.rangeDebugGraphics;
+    if (!this.rangeDebugEnabled || !g || !this.player?.body) return;
+    g.clear();
+    const px = this.player.body.x;
+    const py = this.player.body.y;
+    const facing = [[0, -1], [-1, 0], [0, 1], [1, 0]][this.player.visual.direction];
+    const angle = Math.atan2(facing[1], facing[0]);
+    const drawCone = (range, arcDegrees, color, width) => {
+      const half = arcDegrees * Math.PI / 360;
+      const a0 = angle - half;
+      const a1 = angle + half;
+      g.lineStyle(width, color, 0.9);
+      g.beginPath();
+      g.moveTo(px, py);
+      g.lineTo(px + Math.cos(a0) * range, py + Math.sin(a0) * range);
+      g.arc(px, py, range, a0, a1, false);
+      g.lineTo(px, py);
+      g.strokePath();
+    };
+    const attack = this.player.currentAttack || this.player.combatProfile().attacks[0];
+    drawCone(92 * (attack.rangeMultiplier || 1), attack.arcDegrees || 96, 0x3edcff, 2);
+    const cleave = resolvedSkillDef(this.state, 'skill_ember_cleave');
+    if (cleave) drawCone(cleave.range, cleave.arcDegrees || 100, 0xff7a32, 3);
+  }
+
   update(time) {
     this.statuses.update(time);
     this.projectiles.update(time);
+    if (DEBUG) this.drawRangeDebug();
   }
 
   snapshot(time = this.scene.time.now) {
@@ -172,6 +216,7 @@ export class CombatSystem {
 
   destroy() {
     this.projectiles.clear();
+    this.rangeDebugGraphics?.destroy();
     this.audio.destroy();
   }
 }
