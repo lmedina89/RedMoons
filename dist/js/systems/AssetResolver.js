@@ -3,6 +3,7 @@ import { ENEMY_DEFS } from '../data/enemies.js';
 import { ITEM_DEFS } from '../data/items.js';
 import { NPC_DEFS } from '../data/npcs.js';
 import { DEFAULT_MAP_ID, MAP_DEFS, SPAWN_REGIONS, mapForId } from '../data/world.js';
+import { AZRAEL_DEF } from '../data/specialActors.js';
 
 const ASSET_BY_KEY = new Map(ASSET_DEFS.map(asset => [asset.key, asset]));
 const LAYER_TEXTURE_FIELDS = Object.freeze(['texture', 'walk', 'run', 'slash', 'backslash', 'halfslash', 'spellcast', 'thrust', 'shoot', 'hurt']);
@@ -78,6 +79,12 @@ export function assetDefsForMap(state, requestedMapId = null) {
   for (const spawn of SPAWN_REGIONS) {
     if (mapIdForSpawn(spawn) !== map.id) continue;
     addEnemy(keys, ENEMY_DEFS[spawn.enemyId]);
+  }
+
+  // The temporary Azrael field-test actor is map-scoped just like enemies.
+  // Load only his compact runtime action crops when the Cinder Region is live.
+  if (AZRAEL_DEF.home.mapId === map.id) {
+    for (const key of Object.values(AZRAEL_DEF.assets)) addAssetKey(keys, key);
   }
 
   const zoneIds = new Set(map.zoneIds || []);

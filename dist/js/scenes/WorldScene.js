@@ -2,6 +2,7 @@ import { ENEMY_DEFS } from '../data/enemies.js';
 import { MERCHANT_SUPPLY_DEFS, RECOVERY_DROP_TABLE } from '../data/consumables.js';
 import { ITEM_DEFS } from '../data/items.js';
 import { NPC_DEFS } from '../data/npcs.js';
+import { AZRAEL_DEF } from '../data/specialActors.js';
 import { BUILDING_DEFS, COLLIDERS, DEFAULT_MAP_ID, HOLLOW_COLLIDERS, HOLLOW_WALLS, MAP_TRANSITIONS, PROP_DEFS, RECOVERY_POINTS, REFUGE_WALLS, SPAWN_REGIONS, TOWN_PROP_DEFS, ZONES, mapForId } from '../data/world.js';
 import { DEBUG, GAME_VERSION, PLAYER_START, RARITY, TILE_SIZE, WORLD_HEIGHT, WORLD_WIDTH } from '../config.js';
 import { gameEvents } from '../core/EventBus.js';
@@ -15,6 +16,7 @@ import { assetDefsForMap, ensureItemVisualAssets, prepareMapAssets, queueAssetDe
 import { derivedStats, grantXp } from '../systems/StatsSystem.js';
 import { Enemy } from '../entities/Enemy.js';
 import { NPC } from '../entities/NPC.js';
+import { Azrael } from '../entities/Azrael.js';
 import { Player } from '../entities/Player.js';
 
 export class WorldScene extends Phaser.Scene {
@@ -61,10 +63,12 @@ export class WorldScene extends Phaser.Scene {
 
     this.createEnemies();
     this.createNPCs();
+    this.createAzrael();
     if (DEBUG) this.dynamicCollisionDebug = this.add.graphics().setDepth(15001);
     this.combat = new CombatSystem(this, this.state, this.player, this.enemies, gameEvents);
     this.player.combat = this.combat;
     for (const enemy of this.enemies) enemy.combat = this.combat;
+    if (this.azrael) this.azrael.combat = this.combat;
     this.recovery = new RecoverySystem(this, this.state, this.inventory, this.player, gameEvents);
     this.createLootPool();
     this.currentZone = null;
@@ -85,6 +89,7 @@ export class WorldScene extends Phaser.Scene {
       actionInput.unbind();
       window.removeEventListener('pagehide', this.onPageHide);
       document.removeEventListener('visibilitychange', this.onVisibilityChange);
+      this.azrael?.destroy();
       this.combat?.destroy();
     });
     this.updateZone();
@@ -347,9 +352,9 @@ ${point.label || 'Use'}`, {
   createEnemies() {
     this.enemies = [];
     const callbacks = {
-      hitPlayer: (amount, x, y, enemy) => this.hitPlayer(amount, x, y, enemy),
-      beginAbility: (enemy, ability) => this.combat?.beginEnemyAbility(enemy, ability, enemy.abilityTargetX, enemy.abilityTargetY),
-      triggerAbility: (enemy, ability, targetX, targetY) => this.combat?.triggerEnemyAbility(enemy, ability, targetX, targetY),
+      hitTarget: (target, amount, x, y, enemy) => this.combat?.enemyMeleeTarget(target, amount, x, y, enemy),
+      beginAbility: (enemy, ability, target) => this.combat?.beginEnemyAbility(enemy, ability, target, enemy.abilityTargetX, enemy.abilityTargetY),
+      triggerAbility: (enemy, ability, targetX, targetY, target) => this.combat?.triggerEnemyAbility(enemy, ability, targetX, targetY, target),
       damageNumber: (x, y, amount, hostile) => this.combat?.damageNumbers.show(x, y, amount, hostile),
       died: enemy => this.onEnemyDied(enemy)
     };
@@ -363,6 +368,21 @@ ${point.label || 'Use'}`, {
   createNPCs() {
     const zoneIds = new Set(this.currentMap.zoneIds || []);
     this.npcs = Object.values(NPC_DEFS).filter(def => zoneIds.has(def.homeZone)).map(def => new NPC(this, def));
+  }
+
+  createAzrael() {
+    this.azrael = null;
+    if (AZRAEL_DEF.home.mapId !== this.currentMap.id) return;
+    this.azrael = new Azrael(this, AZRAEL_DEF);
+    // His hidden proxy obeys world bounds, but intentionally does not collide
+    // with low terrain props: the field-test locomotion is a wing-assisted
+    // hover/glide and should cross rocks instead of snagging like a walker.
+  }
+
+  friendlyCombatants() {
+    const actors = [this.player];
+    if (this.azrael && !this.azrael.dead) actors.push(this.azrael);
+    return actors;
   }
 
   createLootPool() {
@@ -388,6 +408,10 @@ ${point.label || 'Use'}`, {
 
   onEnemyDied(enemy) {
     const def = enemy.def;
+    // ArchAngel Azrael can clear mobs for the field test, but his solo kills do
+    // not become an AFK XP/loot engine. Player rewards require recent material
+    // contribution through the shared combat resolver.
+    if (!enemy.playerRewardEligible?.(this.time.now)) return;
     this.questSystem.recordKill(def);
     const xpResult = grantXp(this.state, def.xp);
     const coins = Phaser.Math.Between(def.currency[0], def.currency[1]);
@@ -656,6 +680,13 @@ ${point.label || 'Use'}`, {
     if (action === 'gilded') moveNear(this.enemies.find(enemy => enemy.sprite.active && enemy.def.id === 'enemy_gilded_guard')?.sprite);
     if (action === 'golem') moveNear(this.enemies.find(enemy => enemy.sprite.active && enemy.def.id === 'enemy_ashstone_golem')?.sprite);
     if (action === 'boss') moveNear(this.enemies.find(enemy => enemy.sprite.active && enemy.def.named)?.sprite);
+    if (action === 'azrael') moveNear(this.azrael?.body);
+    if (action === 'azraelai') {
+      const enabled = this.azrael?.setDebugEnabled(!this.azrael.debugEnabled);
+      gameEvents.emit('toast', { text: enabled ? 'Azrael AI diagnostics on.' : 'Azrael AI diagnostics off.', tone: 'muted', short: true });
+      this.emitState();
+      return;
+    }
     if (action === 'heart') this.dropLoot(this.player.body.x + 28, this.player.body.y, this.inventory.createItem('quest_ember_heart', 'normal'));
     if (action === 'magichelm') {
       // This diagnostic must grant a real player-compatible item, not the old
@@ -755,7 +786,7 @@ ${point.label || 'Use'}`, {
     const derived = derivedStats(this.state);
     this.state.player.hp = Math.min(this.state.player.hp, derived.maxHp);
     this.state.player.essence = Math.min(this.state.player.essence, derived.maxEssence);
-    gameEvents.emit('state', { state: this.state, derived, quests: this.questSystem?.activeSummary() || [], combat: this.combat?.snapshot(this.time.now) || { skills: [], effects: [] }, recovery: this.recovery?.snapshot(this.time.now) || { quick: [], food: { active: false }, passive: { active: false } }, interaction: this.interactionSnapshot() });
+    gameEvents.emit('state', { state: this.state, derived, quests: this.questSystem?.activeSummary() || [], combat: this.combat?.snapshot(this.time.now) || { skills: [], effects: [] }, recovery: this.recovery?.snapshot(this.time.now) || { quick: [], food: { active: false }, passive: { active: false } }, interaction: this.interactionSnapshot(), azrael: this.azrael?.snapshot(this.time.now) || null });
   }
 
   safeSave() { try { this.saveManager.save(this.state); } catch (error) { console.warn('[Ashfall] Save failed', error); gameEvents.emit('toast', { text: 'Save could not be written on this device.', tone: 'danger' }); } }
@@ -773,6 +804,8 @@ ${point.label || 'Use'}`, {
     // Magenta = active enemy footprints. These are informational only; enemies
     // do not physically shove the player.
     for (const enemy of this.enemies || []) if (enemy.sprite?.active) drawBody(enemy.sprite.body, 0xff4bd8, 0.55);
+    // Gold = ArchAngel Azrael's compact combat/navigation proxy.
+    if (this.azrael && !this.azrael.dead) drawBody(this.azrael.body?.body, 0xffd86b, 0.72);
   }
 
   update(time, delta) {
@@ -792,7 +825,9 @@ ${point.label || 'Use'}`, {
     if (actionInput.consumeRecovery(1)) this.recovery?.useQuick('essence');
     if (DEBUG) this.drawDynamicCollisionDebug();
     if (actionInput.consumeInteract()) this.interact();
-    for (const enemy of this.enemies) enemy.update(time, delta, this.player);
+    this.azrael?.update(time, delta, this.enemies);
+    const friendlyTargets = this.friendlyCombatants();
+    for (const enemy of this.enemies) enemy.update(time, delta, this.player, friendlyTargets);
     for (const npc of this.npcs) npc.update(time, delta, this.player);
     this.updateZone();
     if (time - this.lastHudUpdate > 120) { this.lastHudUpdate = time; this.emitState(); }

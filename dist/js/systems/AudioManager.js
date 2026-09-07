@@ -53,7 +53,11 @@ export class AudioManager {
       heal: [360, 720, 0.16, 'sine'],
       essence: [280, 610, 0.17, 'sine'],
       food: [190, 260, 0.09, 'triangle'],
-      rest: [240, 540, 0.24, 'sine']
+      rest: [240, 540, 0.24, 'sine'],
+      celestial_strike: [680, 310, 0.12, 'sine'],
+      wing_burst: [410, 1020, 0.18, 'triangle'],
+      judgment_blast: [760, 360, 0.22, 'sine'],
+      heavenfall: [220, 880, 0.34, 'triangle']
     };
     const [from, to, duration, type] = specs[id] || specs.hit;
     const ctx = this.context;

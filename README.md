@@ -1,7 +1,26 @@
-# Hell RPG v0.1.3.2.1.2 — Final Combat HUD Tightening
+# Hell RPG v0.1.3.2.2 — ArchAngel Azrael Field Test
 
-Built directly from **v0.1.3.2.1.1 HUD Position & Hearth Visibility Hotfix**. Save schema remains **2** and the localStorage key remains unchanged.
+Built directly from **v0.1.3.2.1.2 Final Combat HUD Tightening**. Save schema remains **2** and the localStorage key remains `hellrpg.ashfall.save.v1`.
 
+## ArchAngel Azrael field test
+
+- Temporarily places **ArchAngel Azrael** in the Scorched Outskirts as a live autonomous celestial combatant. This placement is a validation harness, not a final story location.
+- Normal presentation uses a unique mythic nameplate: **ARCHANGEL AZRAEL**, **Lv. ???**, **CELESTIAL MYTHIC**, a visible HP bar, and a reserved celestial-emblem treatment. His real internal field-test level/stats remain diagnostics-only.
+- Azrael is **not invulnerable**. He uses the shared damage/status pipeline with real endgame-scale HP/attack/defense/resistances, so ordinary field mobs chip him for tiny amounts while future high-tier threats can still matter.
+- Added reusable faction relationships: player ↔ celestial are friendly, celestial ↔ monster are hostile. Azrael never targets or damages the player; monsters can target and damage him.
+- Enemy melee, telegraphed reach attacks, radial attacks and enemy projectiles can now resolve against faction-hostile friendly actors instead of assuming the player is the only legal target.
+- Azrael's AI is cluster-aware and range-aware rather than simple chase AI. It chooses targets, glides, repositions, uses ranged pressure, enters with wing bursts, and prioritizes **Heavenfall** when several enemies are grouped.
+- His ordinary locomotion uses the supplied **run** block as a wing-assisted glide with hover bob/light trail; **jump** drives Wing Burst startup. Celestial Strike rotates through halfslash, slash, thrust and backslash so most of the supplied combat moveset is actually exercised.
+- Initial celestial kit: **Celestial Strike**, **Wing Burst**, **Judgment Blast**, and **Heavenfall**. Effects use a consistent celestial language: radiant sigils, halo/ring geometry, wing-shaped energy, luminous trails, heavenly beams, layered impact bursts, radial knockback and distance-gated screen shake.
+- Judgment Blast uses a pooled celestial projectile with a distinct luminous projectile texture, trail, impact burst and knockback.
+- Pure Azrael kills grant **no player XP, ash, loot or quest credit**. A player who materially contributed recent damage can still receive normal rewards on a shared kill.
+- `?debug=1` adds **Near ArchAngel Azrael** and **Azrael AI Overlay** helpers. The overlay exposes AI state/action, target distance, HP and internal level only for development testing.
+- The full 832×3456 HoodedAzrael source sheet remains outside runtime `dist/assets`; the live map loads only compact 64×64 action crops needed by his controller.
+- `Assassin.png` remains source-staged for the next hostile-human AI pass and is intentionally not spawned in this field test.
+
+## Physical-device focus
+
+Watch Azrael from close and medium range while several mob families engage him. Confirm that his movement reads as wing-assisted rather than ordinary walking, his four skills are visually distinct, Heavenfall feels dramatically stronger than ordinary attacks, monsters can chip his HP, none of his attacks hurt or knock the player, his solo kills do not award progression, and extended combat remains smooth on iPhone Safari.
 
 ## v0.1.3.2.1.2 final phone-position pass
 
@@ -20,7 +39,7 @@ Built directly from **v0.1.3.2.1.1 HUD Position & Hearth Visibility Hotfix**. Sa
 - Save schema remains 2. No progression or item state is reset.
 
 
-This focused hotfix fixes the physical-iPhone combat-UI problems found after v0.1.3.2 and retunes Ember Cleave so it has a clear skill identity before the ArchAngel Azrael field-test build.
+The inherited v0.1.3.2.1.x hotfix line below documents the physical-iPhone combat HUD/Cleave foundation that this Azrael field-test build preserves.
 
 ## Mobile combat HUD
 
@@ -43,18 +62,10 @@ v0.1.3.2.1 makes that distinction explicit:
 - Successful Cleave hits add restrained screen-shake feedback, stronger with multi-target hits.
 - `?debug=1` adds **Combat Ranges**: cyan shows the current/basic sword cone and orange shows Ember Cleave's real cone.
 
-## Staged next-build source characters
+## Source-character status
 
-The new full 832×3456 sheets are preserved under `source-assets/` only in this hotfix and are **not preloaded by the runtime yet**:
-
-- `heavenly-and-unique/HoodedAzrael.png` — canonical **ArchAngel Azrael**, unique mythic/celestial NPC. Planned public presentation: `ArchAngel Azrael`, `Lv. ???`, custom mythic nameplate, hover/glide locomotion and spectacular high-level combat.
-- `human-hostile/Assassin.png` — reusable hostile human assassin/skirmisher source.
-
-Both sheets were verified as 64×64-cell Expanded-LPC layouts (832×3456). Their canonical row map and intended animation use are documented with the source art.
-
-## Next checkpoint
-
-After this build passes physical iPhone testing, **v0.1.3.2.2 — ArchAngel Azrael Field Test** is planned to add faction-aware NPC combat, Azrael's real high-level damage intake/stats, monster-only targeting, hover/glide AI, flashy celestial skills, radial knockback, proximity-scaled screen shake and performance-capped effects.
+- `heavenly-and-unique/HoodedAzrael.png` now powers the live field-test actor through compact map-scoped runtime action crops; the full 832×3456 source remains preserved outside `dist/`.
+- `human-hostile/Assassin.png` remains source-staged for the next enemy-variety pass and is intentionally not spawned in this build.
 
 ## Physical iPhone test gate
 

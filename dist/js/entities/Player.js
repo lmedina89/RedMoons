@@ -12,6 +12,8 @@ export class Player {
     this.input = input;
     this.onAttack = onAttack;
     this.combat = null;
+    this.isPlayer = true;
+    this.faction = 'player';
     this.body = scene.physics.add.sprite(state.player.x, state.player.y, 'solid').setVisible(false);
     // The proxy texture is only 2x2. Never scale the GameObject before setSize():
     // Arcade applies display scale to body dimensions, which previously turned

@@ -1,7 +1,13 @@
 import { PROJECTILE_DEFS } from '../data/projectiles.js';
 
+function actorNode(actor) { return actor?.body || actor?.sprite || null; }
+function actorAlive(actor) {
+  const node = actorNode(actor);
+  return Boolean(actor && node && actor.dead !== true && actor.state !== 'dying' && actor.state !== 'dead' && node.active !== false);
+}
+
 export class ProjectileManager {
-  constructor(scene, resolver, statuses, fx, audio, player, enemies, size = 40) {
+  constructor(scene, resolver, statuses, fx, audio, player, enemies, size = 40, friendlyTargetsProvider = null) {
     this.scene = scene;
     this.resolver = resolver;
     this.statuses = statuses;
@@ -9,6 +15,7 @@ export class ProjectileManager {
     this.audio = audio;
     this.player = player;
     this.enemies = enemies;
+    this.friendlyTargetsProvider = friendlyTargetsProvider || (() => [player]);
     this.items = Array.from({ length: size }, () => ({
       sprite: scene.physics.add.sprite(-200, -200, 'projectile-arrow').setActive(false).setVisible(false).setDepth(8400),
       data: null,
@@ -30,12 +37,15 @@ export class ProjectileManager {
     sprite.body.enable = true; sprite.setVelocity(vx, vy);
     item.data = { ...payload, def, expiresAt: this.scene.time.now + def.lifetimeMs };
     item.lastTrailAt = 0;
-    this.audio.play(projectileId === 'bone_arrow' ? 'arrow' : def.damageType === 'fire' ? 'fire' : def.damageType === 'poison' ? 'poison' : 'shadow');
+    this.audio.play(projectileId === 'celestial_judgment' ? 'judgment_blast' : projectileId === 'bone_arrow' ? 'arrow' : def.damageType === 'fire' ? 'fire' : def.damageType === 'poison' ? 'poison' : 'shadow');
     return true;
   }
 
   deactivate(item, impact = false) {
-    if (impact && item.data) this.fx.impact(item.data.def.impact || item.data.def.damageType, item.sprite.x, item.sprite.y);
+    if (impact && item.data) {
+      if (item.data.def.impact === 'celestial') this.fx.celestialImpact(item.sprite.x, item.sprite.y, 58, 0.62);
+      else this.fx.impact(item.data.def.impact || item.data.def.damageType, item.sprite.x, item.sprite.y);
+    }
     item.sprite.setVelocity(0).setActive(false).setVisible(false);
     item.sprite.body.enable = false; item.data = null;
   }
@@ -43,12 +53,25 @@ export class ProjectileManager {
   applyHit(item, target) {
     const data = item.data;
     if (!data) return;
-    const options = { type: data.def.damageType, sourceX: data.x, sourceY: data.y, impact: data.def.impact };
+    const options = {
+      type: data.def.damageType, sourceX: data.x, sourceY: data.y, impact: data.def.impact,
+      knockback: data.knockback || data.def.knockback || 0,
+      sourceTeam: data.team
+    };
     const amount = data.team === 'enemy'
-      ? this.resolver.damagePlayer(target, data.damage, options)
+      ? this.resolver.damageTarget(target, data.damage, options)
       : this.resolver.damageEnemy(target, data.damage, options);
     if (amount && data.status && Math.random() <= (data.status.chance ?? 1)) {
-      this.statuses.apply(target, data.status.id, { power: data.sourcePower || data.damage, x: data.x, y: data.y });
+      this.statuses.apply(target, data.status.id, {
+        power: data.sourcePower || data.damage, x: data.x, y: data.y, team: data.team
+      });
+    }
+    if (amount && data.def.impact === 'celestial' && this.scene.state?.settings?.screenShake && this.player?.body) {
+      const distance = Phaser.Math.Distance.Between(item.sprite.x, item.sprite.y, this.player.body.x, this.player.body.y);
+      if (distance < 410) {
+        const falloff = Math.max(0.18, 1 - distance / 410);
+        this.scene.cameras.main.shake(Math.round(95 * (0.75 + falloff * 0.25)), 0.0032 * falloff);
+      }
     }
     this.deactivate(item, true);
   }
@@ -63,9 +86,14 @@ export class ProjectileManager {
         this.fx.trail(item.sprite.x, item.sprite.y, item.data.def.trail || item.data.def.damageType);
       }
       if (item.data.team === 'enemy') {
-        const dx = this.player.body.x - item.sprite.x, dy = this.player.body.y - item.sprite.y;
-        const rr = (item.data.def.radius || 8) + 13;
-        if (!this.player.dead && dx * dx + dy * dy <= rr * rr) this.applyHit(item, this.player);
+        for (const target of this.friendlyTargetsProvider() || []) {
+          if (!actorAlive(target)) continue;
+          const node = actorNode(target);
+          const dx = node.x - item.sprite.x, dy = node.y - item.sprite.y;
+          const targetRadius = target.isPlayer ? 13 : 18;
+          const rr = (item.data.def.radius || 8) + targetRadius;
+          if (dx * dx + dy * dy <= rr * rr) { this.applyHit(item, target); break; }
+        }
       } else {
         for (const enemy of this.enemies) {
           if (!enemy.sprite.active || enemy.state === 'dying') continue;

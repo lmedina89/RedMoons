@@ -1,7 +1,15 @@
 import { ENEMY_ABILITY_DEFS } from '../data/abilities.js';
 import { LayeredCharacter, createActorEquipmentState } from './LayeredCharacter.js';
+import { areHostile } from '../data/factions.js';
 
 const ACTION_FRAMES = Object.freeze({ slash: 6, spellcast: 7, thrust: 8, shoot: 13, hurt: 6, attack: 6 });
+
+function actorNode(actor) { return actor?.body || actor?.sprite || null; }
+function actorAlive(actor) {
+  const node = actorNode(actor);
+  return Boolean(actor && node && actor.dead !== true && actor.state !== 'dying' && actor.state !== 'dead' && node.active !== false);
+}
+
 
 function weightedEntry(entries = []) {
   const valid = entries.filter(entry => entry && Number(entry.weight) > 0);
@@ -36,6 +44,11 @@ export class Enemy {
     this.index = index;
     this.callbacks = callbacks;
     this.combat = null;
+    this.faction = definition.faction || 'monster';
+    this.target = null;
+    this.playerContributionDamage = 0;
+    this.lastPlayerContributionAt = 0;
+    this.lastDamageTeam = null;
     this.layered = Boolean(definition.layered);
     this.visualSpec = definition;
     if (this.layered) {
@@ -100,6 +113,7 @@ export class Enemy {
     this.currentAbility = null;
     this.abilityStartedAt = 0;
     this.abilityTriggered = false;
+    this.abilityTargetRef = null;
   }
 
   respawn(time) {
@@ -115,6 +129,10 @@ export class Enemy {
     this.sprite.setPosition(this.homeX, this.homeY).setActive(true).setVisible(!this.layered).clearTint();
     this.sprite.body.enable = true;
     this.hp = this.def.maxHp;
+    this.playerContributionDamage = 0;
+    this.lastPlayerContributionAt = 0;
+    this.lastDamageTeam = null;
+    this.target = null;
     this.deathStartedAt = 0;
     this.deathEndsAt = 0;
     this.hurtUntil = 0;
@@ -155,18 +173,21 @@ export class Enemy {
     return null;
   }
 
-  beginAbility(ability, player, time) {
+  beginAbility(ability, target, time) {
+    const node = actorNode(target);
+    if (!node) return;
     this.currentAbility = ability;
     this.abilityStartedAt = time;
     this.abilityTriggered = false;
-    this.abilityTargetX = player.body.x;
-    this.abilityTargetY = player.body.y;
+    this.abilityTargetRef = target;
+    this.abilityTargetX = node.x;
+    this.abilityTargetY = node.y;
     this.state = 'ability';
     this.stateUntil = time + ability.windupMs;
     this.abilityCooldowns.set(ability.id, time + ability.cooldownMs);
     this.sprite.setVelocity(0);
     this.setDirection(this.abilityTargetX - this.sprite.x, this.abilityTargetY - this.sprite.y);
-    this.callbacks.beginAbility?.(this, ability);
+    this.callbacks.beginAbility?.(this, ability, target);
   }
 
   updateAbility(time) {
@@ -176,12 +197,12 @@ export class Enemy {
     const progress = Math.max(0, Math.min(0.999999, elapsed / Math.max(1, ability.windupMs)));
     if (!this.abilityTriggered && progress >= (ability.triggerAt ?? 0.6)) {
       this.abilityTriggered = true;
-      this.callbacks.triggerAbility?.(this, ability, this.abilityTargetX, this.abilityTargetY);
+      this.callbacks.triggerAbility?.(this, ability, this.abilityTargetX, this.abilityTargetY, this.abilityTargetRef);
     }
     if (time >= this.stateUntil) {
       if (!this.abilityTriggered) {
         this.abilityTriggered = true;
-        this.callbacks.triggerAbility?.(this, ability, this.abilityTargetX, this.abilityTargetY);
+        this.callbacks.triggerAbility?.(this, ability, this.abilityTargetX, this.abilityTargetY, this.abilityTargetRef);
       }
       this.clearAbility();
       this.state = 'recover';
@@ -189,7 +210,7 @@ export class Enemy {
     }
   }
 
-  update(time, delta, player) {
+  update(time, delta, player, potentialTargets = null) {
     if (this.state === 'dying') { this.updateDeath(time); return; }
     if (!this.sprite.active) {
       if (this.respawnAt && time >= this.respawnAt) this.respawn(time);
@@ -215,15 +236,33 @@ export class Enemy {
       this.sprite.setVelocity(0);
     }
 
-    const dx = player.body.x - this.sprite.x;
-    const dy = player.body.y - this.sprite.y;
-    const distanceSq = dx * dx + dy * dy;
+    // Keep enemy simulation camera/player scoped for iPhone performance, but
+    // choose combat targets from faction-hostile actors inside that active area.
+    const playerNode = actorNode(player);
+    const playerDx = (playerNode?.x ?? this.sprite.x) - this.sprite.x;
+    const playerDy = (playerNode?.y ?? this.sprite.y) - this.sprite.y;
     const activeRangeSq = 720 * 720;
-    if (distanceSq > activeRangeSq && this.state !== 'return') {
+    if (playerDx * playerDx + playerDy * playerDy > activeRangeSq && this.state !== 'return') {
       this.sprite.setVelocity(0);
       if (this.layered) this.renderVisual('idle', 0, null);
       return;
     }
+
+    const candidates = (potentialTargets?.length ? potentialTargets : [player])
+      .filter(target => actorAlive(target) && areHostile(this, target));
+    let target = null;
+    let bestDistanceSq = Infinity;
+    for (const candidate of candidates) {
+      const node = actorNode(candidate);
+      const dx = node.x - this.sprite.x, dy = node.y - this.sprite.y;
+      const d2 = dx * dx + dy * dy;
+      if (d2 < bestDistanceSq) { target = candidate; bestDistanceSq = d2; }
+    }
+    this.target = target;
+    const targetNode = actorNode(target);
+    const dx = targetNode ? targetNode.x - this.sprite.x : 0;
+    const dy = targetNode ? targetNode.y - this.sprite.y : 0;
+    const distanceSq = targetNode ? dx * dx + dy * dy : Infinity;
 
     this.animClock += delta;
     if (this.state === 'ability') {
@@ -233,38 +272,38 @@ export class Enemy {
 
     if (time >= this.nextThink && this.state !== 'ability') {
       this.nextThink = time + 110;
-      const distance = Math.sqrt(distanceSq);
+      const distance = targetNode ? Math.sqrt(distanceSq) : Infinity;
       const homeDx = this.homeX - this.sprite.x;
       const homeDy = this.homeY - this.sprite.y;
       const homeDistance = Math.hypot(homeDx, homeDy);
       if (homeDistance > this.def.leashRange) this.state = 'return';
       if (this.state === 'idle' && time >= this.stateUntil) { this.state = 'patrol'; this.stateUntil = time + 1000 + Math.random() * 1600; }
-      if ((this.state === 'idle' || this.state === 'patrol') && distance < this.def.detectRange && !player.dead) { this.state = 'detect'; this.stateUntil = time + 220; }
-      if (this.state === 'detect' && time >= this.stateUntil) this.state = 'chase';
+      if ((this.state === 'idle' || this.state === 'patrol') && targetNode && distance < this.def.detectRange) { this.state = 'detect'; this.stateUntil = time + 220; }
+      if (this.state === 'detect' && time >= this.stateUntil) this.state = targetNode ? 'chase' : 'idle';
 
-      if (this.state === 'chase' && !player.dead) {
+      if (this.state === 'chase' && targetNode) {
         const ability = this.availableAbility(time, distance);
-        if (ability) this.beginAbility(ability, player, time);
+        if (ability) this.beginAbility(ability, target, time);
         else if (distance <= this.def.attackRange) { this.state = 'attack'; this.stateUntil = time + this.def.attackCooldown; this.attackApplied = false; }
       }
       if (this.state === 'attack' && !this.attackApplied && time >= this.stateUntil - this.def.attackCooldown * 0.48) {
         this.attackApplied = true;
-        if (distance <= this.def.attackRange + 18) this.callbacks.hitPlayer(this.def.attack, this.sprite.x, this.sprite.y, this);
+        if (targetNode && distance <= this.def.attackRange + 18) this.callbacks.hitTarget?.(target, this.def.attack, this.sprite.x, this.sprite.y, this);
       }
       if (this.state === 'attack' && time >= this.stateUntil) { this.state = 'recover'; this.stateUntil = time + this.def.recoverMs; }
-      if (this.state === 'recover' && time >= this.stateUntil) { this.state = Math.random() < 0.34 ? 'reposition' : 'chase'; this.stateUntil = time + 420; }
-      if (this.state === 'reposition' && time >= this.stateUntil) this.state = 'chase';
+      if (this.state === 'recover' && time >= this.stateUntil) { this.state = targetNode && Math.random() < 0.34 ? 'reposition' : (targetNode ? 'chase' : 'idle'); this.stateUntil = time + 420; }
+      if (this.state === 'reposition' && time >= this.stateUntil) this.state = targetNode ? 'chase' : 'idle';
       if (this.state === 'return' && homeDistance < 18) { this.state = 'idle'; this.stateUntil = time + 900; }
 
       let vx = 0, vy = 0;
       const speed = this.def.speed * (this.combat?.statuses.moveMultiplier(this) ?? 1);
-      if (this.state === 'chase') { const inv = distance ? 1 / distance : 0; vx = dx * inv * speed; vy = dy * inv * speed; }
+      if (this.state === 'chase' && targetNode) { const inv = distance ? 1 / distance : 0; vx = dx * inv * speed; vy = dy * inv * speed; }
       else if (this.state === 'return') { const inv = homeDistance ? 1 / homeDistance : 0; vx = homeDx * inv * speed; vy = homeDy * inv * speed; }
       else if (this.state === 'patrol') {
         const angle = this.index * 1.7 + time * 0.0005;
         vx = Math.cos(angle) * speed * 0.35; vy = Math.sin(angle) * speed * 0.35;
         if (time >= this.stateUntil) { this.state = 'idle'; this.stateUntil = time + 700 + Math.random() * 900; }
-      } else if (this.state === 'reposition') {
+      } else if (this.state === 'reposition' && targetNode) {
         const inv = distance ? 1 / distance : 0; vx = -dy * inv * speed * 0.65; vy = dx * inv * speed * 0.65;
       }
       if (this.state !== 'ability') this.sprite.setVelocity(vx, vy);
@@ -308,6 +347,19 @@ export class Enemy {
     this.sprite.setTexture(texture).setFrame(sourceRow * columns + frameInRow)
       .setOrigin(0.5, actionAttacking ? (spec.attackOriginY || this.def.attackOriginY || this.def.originY || 0.7) : (spec.originY || this.def.originY || 0.7))
       .setDepth(this.sprite.y);
+  }
+
+  recordDamageContribution(team, amount, time) {
+    this.lastDamageTeam = team || null;
+    if (team === 'player') {
+      this.playerContributionDamage += Math.max(0, Number(amount) || 0);
+      this.lastPlayerContributionAt = time;
+    }
+  }
+
+  playerRewardEligible(time, windowMs = 12000) {
+    const threshold = Math.max(1, Math.min(12, Math.ceil(this.def.maxHp * 0.10)));
+    return this.playerContributionDamage >= threshold && time - this.lastPlayerContributionAt <= windowMs;
   }
 
   takeResolvedDamage(amount, sourceX, sourceY, time, options = {}) {

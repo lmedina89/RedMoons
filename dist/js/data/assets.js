@@ -99,6 +99,19 @@ export const ASSET_DEFS = [
   { key: 'golem-attack', path: `${E}golem-attack.png`, frameWidth: 64, frameHeight: 96 },
   { key: 'golem-death', path: `${E}golem-death.png`, frameWidth: 64, frameHeight: 64 },
 
+  // v0.1.3.2.2 ArchAngel Azrael field-test runtime crops. The original
+  // 832x3456 user-supplied ULPC expanded sheet remains in source-assets; only
+  // the action blocks used by his live AI are uploaded to the mobile GPU.
+  ...[
+    ['spellcast', 7], ['thrust', 8], ['slash', 6], ['shoot', 13],
+    ['idle', 2], ['jump', 5], ['emote', 3], ['run', 8],
+    ['combat-idle', 2], ['backslash', 13], ['halfslash', 6]
+  ].map(([action, frames]) => ({
+    key: `azrael-${action}`, path: `assets/npcs/azrael/azrael-${action}.png`,
+    frameWidth: 64, frameHeight: 64, frames
+  })),
+  { key: 'azrael-hurt', path: 'assets/npcs/azrael/azrael-hurt.png', frameWidth: 64, frameHeight: 64, frames: 6 },
+
   { key: 'skeleton-walk', path: `${E}skeleton-walk.png`, frameWidth: 64, frameHeight: 64 },
   { key: 'skeleton-slash', path: `${E}skeleton-slash.png`, frameWidth: 64, frameHeight: 64 },
   { key: 'skeleton-bow-shoot', path: `${E}skeleton-bow-shoot.png`, frameWidth: 64, frameHeight: 64 },

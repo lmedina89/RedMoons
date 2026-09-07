@@ -7,7 +7,8 @@ const FX_COLORS = Object.freeze({
   guard: 0xe7b85d,
   earth: 0xc99558,
   heal: 0x72d78a,
-  essence: 0xa98cff
+  essence: 0xa98cff,
+  celestial: 0xffe88a
 });
 
 export class FxManager {
@@ -15,7 +16,7 @@ export class FxManager {
     this.scene = scene;
     this.makeTextures();
     this.pools = new Map();
-    for (const key of ['physical', 'fire', 'blueflame', 'poison', 'shadow', 'guard', 'earth', 'heal', 'essence']) {
+    for (const key of ['physical', 'fire', 'blueflame', 'poison', 'shadow', 'guard', 'earth', 'heal', 'essence', 'celestial']) {
       this.pools.set(key, Array.from({ length: 12 }, () => scene.add.sprite(0, 0, `fx-${key}`).setVisible(false).setDepth(8600)));
     }
     this.indices = new Map();
@@ -34,6 +35,15 @@ export class FxManager {
     makeOrb('projectile-poison', FX_COLORS.poison, 5);
     makeOrb('projectile-blueflame', FX_COLORS.blueflame, 5);
     makeOrb('projectile-shadow', FX_COLORS.shadow, 6);
+    if (!this.scene.textures.exists('projectile-celestial')) {
+      const g = this.scene.add.graphics();
+      g.fillStyle(0xfff7c2, 0.16).fillCircle(16, 16, 15);
+      g.fillStyle(FX_COLORS.celestial, 0.48).fillCircle(16, 16, 11);
+      g.fillStyle(0xffffff, 0.92).fillCircle(16, 16, 5);
+      g.lineStyle(2, 0xd9fbff, 0.86).strokeEllipse(16, 16, 27, 10);
+      g.lineStyle(1, 0xffffff, 0.62).lineBetween(4, 16, 28, 16).lineBetween(16, 4, 16, 28);
+      g.generateTexture('projectile-celestial', 32, 32).destroy();
+    }
     if (!this.scene.textures.exists('projectile-arrow')) {
       const g = this.scene.add.graphics();
       g.lineStyle(2, 0xe7d5ad, 1).lineBetween(3, 12, 19, 12);
@@ -134,6 +144,88 @@ export class FxManager {
         this.scene.time.delayedCall(i * 16, () => this.burst(x + Math.cos(angle) * 48, y + Math.sin(angle) * 48, 'earth', 0.72));
       }
     }
+  }
+
+  celestialSigil(x, y, radius = 74, duration = 760) {
+    const g = this.scene.add.graphics().setDepth(8440);
+    const started = this.scene.time.now;
+    const timer = this.scene.time.addEvent({ delay: 32, loop: true, callback: () => {
+      if (!g.active) return;
+      const p = Math.min(1, (this.scene.time.now - started) / Math.max(1, duration));
+      const pulse = 0.72 + Math.sin(p * Math.PI * 5) * 0.08;
+      g.clear();
+      g.lineStyle(2.5, 0xffe88a, (0.52 + p * 0.35) * pulse).strokeCircle(x, y, radius);
+      g.lineStyle(1.5, 0xdffcff, 0.50 + p * 0.30).strokeCircle(x, y, radius * (0.56 + p * 0.08));
+      g.lineStyle(2, 0xfff6c8, 0.45 + p * 0.35);
+      for (let i = 0; i < 8; i += 1) {
+        const a = i * Math.PI / 4 + p * 0.32;
+        const r0 = radius * 0.64, r1 = radius * 0.94;
+        g.lineBetween(x + Math.cos(a) * r0, y + Math.sin(a) * r0, x + Math.cos(a) * r1, y + Math.sin(a) * r1);
+      }
+      // Simple wing-like mirrored glyphs give the field a celestial signature
+      // without shipping another texture or expensive particle system.
+      g.lineStyle(2, 0xdffcff, 0.52 + p * 0.30);
+      g.beginPath(); g.moveTo(x - 8, y); g.lineTo(x - 30, y - 13); g.lineTo(x - 47, y - 4); g.lineTo(x - 28, y + 4); g.lineTo(x - 45, y + 14); g.strokePath();
+      g.beginPath(); g.moveTo(x + 8, y); g.lineTo(x + 30, y - 13); g.lineTo(x + 47, y - 4); g.lineTo(x + 28, y + 4); g.lineTo(x + 45, y + 14); g.strokePath();
+      if (p >= 1) { timer.remove(false); if (g.active) g.destroy(); }
+    }});
+    return { destroy: () => { timer.remove(false); if (g.active) g.destroy(); } };
+  }
+
+  celestialStrike(x, y, facing = [0, 1], range = 110) {
+    const g = this.scene.add.graphics().setDepth(8560);
+    const angle = Math.atan2(facing[1], facing[0]);
+    const half = 0.74;
+    g.lineStyle(11, 0xffe88a, 0.70);
+    g.beginPath(); g.arc(x, y, range * 0.76, angle - half, angle + half, false); g.strokePath();
+    g.lineStyle(3, 0xe8fdff, 0.96);
+    g.beginPath(); g.arc(x, y, range * 0.86, angle - half * 0.94, angle + half * 0.94, false); g.strokePath();
+    for (const offset of [-0.65, -0.22, 0.22, 0.65]) {
+      const a = angle + half * offset;
+      this.burst(x + Math.cos(a) * range * 0.72, y + Math.sin(a) * range * 0.72, 'celestial', 0.58);
+    }
+    this.scene.tweens.add({ targets: g, alpha: 0, duration: 260, onComplete: () => g.destroy() });
+  }
+
+  celestialWingBurst(x, y, facing = [0, 1], scale = 1) {
+    const angle = Math.atan2(facing[1], facing[0]);
+    const g = this.scene.add.graphics().setDepth(8540);
+    g.lineStyle(4, 0xe7fdff, 0.86);
+    for (const side of [-1, 1]) {
+      const a = angle + side * Math.PI * 0.52;
+      g.beginPath();
+      g.moveTo(x, y - 4);
+      g.lineTo(x + Math.cos(a - side * 0.30) * 38 * scale, y + Math.sin(a - side * 0.30) * 25 * scale);
+      g.lineTo(x + Math.cos(a) * 62 * scale, y + Math.sin(a) * 40 * scale);
+      g.lineTo(x + Math.cos(a + side * 0.26) * 43 * scale, y + Math.sin(a + side * 0.26) * 31 * scale);
+      g.strokePath();
+    }
+    this.ring(x, y, 56 * scale, 'celestial', 260);
+    this.burst(x, y - 12, 'celestial', 1.35 * scale);
+    this.scene.tweens.add({ targets: g, alpha: 0, duration: 260, onComplete: () => g.destroy() });
+  }
+
+  celestialImpact(x, y, radius = 92, intensity = 1) {
+    this.ring(x, y, radius, 'celestial', 420);
+    this.scene.time.delayedCall(55, () => this.ring(x, y, radius * 0.68, 'celestial', 340));
+    this.burst(x, y - 8, 'celestial', 2.0 * intensity);
+    const count = Math.min(12, 7 + Math.round(intensity * 3));
+    for (let i = 0; i < count; i += 1) {
+      const angle = i / count * Math.PI * 2 + (i % 2) * 0.18;
+      const r = radius * (0.35 + (i % 3) * 0.18);
+      this.scene.time.delayedCall((i % 4) * 18, () => this.burst(x + Math.cos(angle) * r, y + Math.sin(angle) * r, i % 3 === 0 ? 'heal' : 'celestial', 0.65 + intensity * 0.18));
+    }
+  }
+
+  heavenfallImpact(x, y, radius = 176) {
+    const flash = this.scene.add.graphics().setDepth(8580);
+    flash.fillStyle(0xfff7c8, 0.52).fillCircle(x, y, radius * 0.48);
+    flash.lineStyle(6, 0xffffff, 0.86).lineBetween(x, y - radius * 1.1, x, y + radius * 0.28);
+    flash.lineStyle(3, 0xdffcff, 0.82).lineBetween(x - 12, y - radius, x - 3, y + radius * 0.12);
+    flash.lineStyle(3, 0xffe88a, 0.82).lineBetween(x + 13, y - radius, x + 4, y + radius * 0.12);
+    this.scene.tweens.add({ targets: flash, alpha: 0, duration: 300, ease: 'Quad.out', onComplete: () => flash.destroy() });
+    this.celestialImpact(x, y, radius, 1.45);
+    this.scene.time.delayedCall(85, () => this.celestialImpact(x, y, radius * 0.72, 0.9));
   }
 
   impact(kind, x, y) { this.burst(x, y, kind, 0.95); }

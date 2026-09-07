@@ -1,5 +1,21 @@
 # Changelog
 
+## v0.1.3.2.2 — ArchAngel Azrael Field Test
+
+- Temporarily placed **ARCHANGEL AZRAEL — Lv. ???** in Scorched Outskirts as a live field-test actor; canonical story placement remains intentionally undecided.
+- Added a reusable faction/relationship layer. Player + celestial actors are friendly; monsters are hostile to both, allowing NPC-vs-monster combat without special-casing the player.
+- Added real Azrael combat stats (internal Level 99, 18,000 HP, 420 attack, 240 defense, high resistances/stagger resistance). He is deliberately **not invulnerable** and takes resolved damage/statuses through the shared combat pipeline.
+- Harvested compact 64×64 action strips from `HoodedAzrael.png` for runtime use while preserving the full 832×3456 source outside `dist/`. Run is used as glide; Jump as wing-burst/lift; spellcast/emote/shoot/backslash/halfslash drive the mythic combat presentation.
+- Added custom cluster-aware Azrael AI with home vigil, hostile-only target acquisition, glide pursuit, wing-assisted engage, melee/ranged choice, orbit/reposition cadence and automatic retargeting.
+- Added four celestial field-test abilities: **Celestial Strike**, **Wing Burst**, **Judgment Blast** and **Heavenfall**.
+- Added reusable celestial FX language: radiant arcs, halo/sigil fields, mirrored wing glyphs, sacred burst particles, light-beam impacts, radial knockback and distance-gated screen shake.
+- Added a unique celestial-mythic nameplate with hidden `Lv. ???`, live HP bar and a replaceable halo/wing emblem slot for the later bespoke SVG crest.
+- Generalized enemy melee/abilities/projectiles so monsters may target either the player or a hostile friendly actor, including Azrael; friendly/celestial attacks never route damage to the player.
+- Added contribution-gated rewards so Azrael-only kills cannot grant player XP, ash, loot, recovery drops or quest progress.
+- Added debug helpers for teleporting near Azrael and exposing his AI state/action/target/HP/internal level.
+- Kept `Assassin.png` source-staged only to isolate the Azrael test from a simultaneous new enemy-AI variable.
+- Preserved the v0.1.3.2.1.2 mobile HUD/Cleave/recovery fixes, map identities and save schema 2.
+
 ## v0.1.3.2.1.2 — Final Combat HUD Tightening
 
 - Shifted the complete combat-control wheel slightly farther right and down within the iPhone landscape safe area.

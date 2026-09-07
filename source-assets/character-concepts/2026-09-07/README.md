@@ -21,7 +21,7 @@ The skeletal demon bodies are specifically intended to reuse compatible LPC armo
 
 - `heavenly-and-unique/TransupOrHolyKnight.png` — special/unique humanoid NPC candidate; **not** the player transformation.
 - `heavenly-and-unique/Truetrans.png` — preserved winged humanoid character source; **not** the player transformation after the 2026-09-07 reclassification. Candidate for a Heavenly Castle NPC/guard/named character or other future role.
-- `heavenly-and-unique/HoodedAzrael.png` — canonical **ArchAngel Azrael** source. Azrael is a unique mythic/celestial NPC, never a generic spawn and never a player transformation. His normal presentation is planned around hover/glide/wing-burst movement and an expanded combat moveset. His public level presentation is intentionally obscured (`Lv. ???`). The full source is staged here for the upcoming field-test build; v0.1.3.2.1 does not preload it at runtime.
+- `heavenly-and-unique/HoodedAzrael.png` — canonical **ArchAngel Azrael** source. Azrael is a unique mythic/celestial NPC, never a generic spawn and never a player transformation. His normal presentation is planned around hover/glide/wing-burst movement and an expanded combat moveset. His public level presentation is intentionally obscured (`Lv. ???`). v0.1.3.2.2 harvests compact action-specific runtime crops for the temporary field test while this full authoring sheet remains source-only and is never preloaded directly.
 
 Human-bodied winged sources should generally bias toward Heavenly Castle NPCs, guards, commanders, named characters or related factions; exact story roles remain flexible except for ArchAngel Azrael, whose unique role is now reserved.
 

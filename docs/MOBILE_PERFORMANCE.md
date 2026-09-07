@@ -1,6 +1,16 @@
-# Mobile Performance — v0.1.3.2.1
+# Mobile Performance — v0.1.3.2.2
 
-> v0.1.3.2.1 reduces the right-side DOM control footprint, adds only two tiny inline SVG flask glyphs, keeps combat range graphics behind `?debug=1`, and does not preload the staged full Azrael/Assassin sheets.
+## Azrael field-test budget
+
+The full 832×3456 Azrael authoring sheet is never preloaded by gameplay. The Cinder package loads compact 64×64 action crops only (spellcast, thrust, slash, shoot, hurt, idle, jump, emote, run, combat-idle, backslash and halfslash). The full source stays under `source-assets/`.
+
+Azrael's frequent light/glide particles reuse the existing `FxManager` sprite pools. Larger celestial sigils/rings/beams are short-lived Graphics objects and major attacks are cooldown-limited. Judgment Blast uses the shared fixed projectile pool (44 entries in this build). Screen shake is distance-gated against the player's position, so distant autonomous fighting does not repeatedly shake the camera.
+
+Enemy simulation remains player-distance-gated; Azrael's test home is intentionally inside the normal Scorched Outskirts activity area so the user can observe him without expanding the global AI budget. His visual glide crosses low terrain props instead of adding pathfinding or expensive obstacle avoidance. True aerial navigation is deferred.
+
+The release gate remains physical iPhone Safari. Stress the build around clustered Heavenfall casts, repeated Judgment projectiles, several simultaneous enemies, camera shake on/off, Safari background/return and a 10–15 minute continuous fight. Watch for Graphics/tween accumulation, WebAudio loss, frame pacing changes and projectile/particle leftovers.
+
+
 
 The recovery release adds no new texture atlases or source art to the runtime preload. Recovery markers/FX are procedural Phaser graphics, audio uses the existing procedural WebAudio manager, and consumables are data/inventory entries. Stackable supplies reduce inventory DOM/card pressure compared with one instance per flask. Passive recovery performs only a small nearby-hostile scan using the already bounded active enemy set and does not introduce a separate high-frequency timer.
 

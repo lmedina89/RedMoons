@@ -18,9 +18,13 @@ export class StatusController {
     const def = STATUS_DEFS[statusId];
     if (!target || !def) return false;
     const now = this.scene.time.now;
+    const statusResistance = Math.max(0, Math.min(0.98, Number(target?.def?.statusResistances?.[statusId]) || 0));
+    if (statusId !== 'stagger' && statusResistance > 0 && Math.random() < statusResistance) return false;
     if (statusId === 'stagger' && now < (this.staggerImmuneUntil.get(target) || 0)) return false;
     if (statusId === 'stagger') {
-      const resistance = [...(this.byTarget.get(target)?.values() || [])].reduce((best, effect) => Math.max(best, effect.def.staggerResistance || 0), 0);
+      const effectResistance = [...(this.byTarget.get(target)?.values() || [])].reduce((best, effect) => Math.max(best, effect.def.staggerResistance || 0), 0);
+      const innateResistance = Math.max(0, Math.min(0.98, Number(target?.def?.staggerResistance) || 0));
+      const resistance = Math.max(effectResistance, innateResistance);
       if (resistance > 0 && Math.random() < resistance) return false;
     }
     const bucket = this.bucket(target);
@@ -51,8 +55,10 @@ export class StatusController {
           while (time >= effect.nextTickAt && effect.nextTickAt < effect.endsAt) {
             const sourcePower = Number(effect.source.power) || 0;
             const base = (effect.def.flatDamage || 0) + sourcePower * (effect.def.powerScale || 0);
-            if (target.body) this.resolver.damagePlayer(target, base * effect.stacks, { type: effect.def.damageType, sourceX: effect.source.x, sourceY: effect.source.y, impact: id === 'burn' ? 'fire' : 'poison' });
-            else this.resolver.damageEnemy(target, base * effect.stacks, { type: effect.def.damageType, sourceX: effect.source.x, sourceY: effect.source.y, impact: id === 'burn' ? 'fire' : 'poison' });
+            this.resolver.damageTarget(target, base * effect.stacks, {
+              type: effect.def.damageType, sourceX: effect.source.x, sourceY: effect.source.y,
+              impact: id === 'burn' ? 'fire' : 'poison', sourceTeam: effect.source.team || 'enemy'
+            });
             effect.nextTickAt += effect.def.tickMs;
           }
         }

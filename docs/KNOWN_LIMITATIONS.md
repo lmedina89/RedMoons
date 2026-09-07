@@ -1,11 +1,21 @@
-# Known Limitations — v0.1.3.2.1
+# Known Limitations — v0.1.3.2.2
 
-## v0.1.3.2.1 hotfix limits
+## v0.1.3.2.2 field-test limits
+
+- Azrael's Scorched Outskirts placement is **temporary QA staging**, not final story canon. Dialogue, quest role and permanent location remain intentionally undefined.
+- His current halo/wing seal is a procedural nameplate motif/reserved emblem slot, not the final bespoke SVG celestial crest.
+- Azrael visually hovers/glides but does not use full aerial pathfinding. His compact proxy stays world-bounded and intentionally crosses low terrain props to avoid ground-walker snagging during this test.
+- The first four-skill kit is a field-test combat vocabulary, not final balance. Selected celestial concepts may later inspire player endgame holy-route skills, but Azrael's strongest signature presentation should remain uniquely mythic.
+- Enemy threat/aggro is still deliberately lightweight; there is no formal taunt/threat table yet. Monsters select the nearest valid faction-hostile candidate within their existing detect/leash rules.
+- Contribution-gated shared kills use a recent-damage window/threshold rather than a full multiplayer-style contribution ledger. It exists to prevent Azrael AFK farming, not to define final companion reward design.
+- `Assassin.png` is still source-only. The hostile Assassin archetype/AI is not spawned in v0.1.3.2.2 so Azrael can be evaluated against already-understood enemy behavior.
+- Physical iPhone Safari validation is still required for live animation timing, screen-shake feel, effect density, WebAudio resume and autonomous AI behavior.
+
+
+## Inherited HUD/recovery limits
 
 - The radial/fan HUD is validated structurally and remains subject to physical iPhone Safari feel/readability testing.
 - `Combat Ranges` is diagnostics-only and is available only under `?debug=1`; normal builds keep combat/collision overlays off.
-- ArchAngel Azrael and the Assassin are source-staged only in this hotfix. Their full 832×3456 sheets are intentionally excluded from `dist/` until compact runtime actions are harvested for v0.1.3.2.2.
-- Azrael's mythic nameplate/emblem, NPC-vs-monster faction AI and flashy celestial skill effects are planned for the next field-test build rather than partially implemented here.
 
 - Recovery balance is foundation tuning, not final economy balance. Flask prices, drop rates, cooldowns and passive regeneration should be adjusted after longer physical-device/dungeon playtests.
 - Cinder Rations are intentionally interrupted by combat and are not a combat-healing substitute. There is no antidote/cleanse consumable, resurrection item or dedicated healing skill yet.

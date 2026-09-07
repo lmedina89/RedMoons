@@ -1,4 +1,8 @@
 export const PROJECTILE_DEFS = Object.freeze({
+  celestial_judgment: Object.freeze({
+    id: 'celestial_judgment', speed: 430, lifetimeMs: 1500, radius: 13, texture: 'projectile-celestial',
+    damageType: 'celestial', trail: 'celestial', impact: 'celestial', knockback: 210, wallCollision: true
+  }),
   toxic_spit: Object.freeze({
     id: 'toxic_spit', speed: 190, lifetimeMs: 1800, radius: 9, texture: 'projectile-poison',
     damageType: 'poison', trail: 'poison', impact: 'poison', wallCollision: true

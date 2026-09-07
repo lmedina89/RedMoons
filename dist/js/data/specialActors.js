@@ -1,0 +1,67 @@
+export const AZRAEL_DEF = Object.freeze({
+  id: 'npc_archangel_azrael',
+  name: 'Azrael',
+  title: 'ArchAngel',
+  displayName: 'ArchAngel Azrael',
+  faction: 'celestial',
+  tier: 'mythic',
+  unique: true,
+  internalLevel: 99,
+  levelDisplay: '???',
+
+  // These are intentionally real combat stats, not an invulnerability flag.
+  // Current low-level mobs can still chip him for minimum damage while future
+  // mythic enemies can meaningfully threaten him through the normal resolver.
+  maxHp: 18000,
+  attack: 420,
+  defense: 240,
+  resistances: Object.freeze({ fire: 0.60, poison: 0.70, shadow: 0.48, celestial: 0.22 }),
+  statusResistances: Object.freeze({ poison: 0.90, burn: 0.78, slow: 0.90 }),
+  staggerResistance: 0.92,
+
+  scale: 1.38,
+  speed: 158,
+  glideSpeed: 176,
+  wingBurstSpeed: 330,
+  senseRange: 520,
+  leashRange: 610,
+  preferredRange: 92,
+  home: Object.freeze({ mapId: 'map_cinder_region', x: 1190, y: 590 }),
+  respawnMs: 12000,
+
+  assets: Object.freeze({
+    spellcast: 'azrael-spellcast',
+    thrust: 'azrael-thrust',
+    slash: 'azrael-slash',
+    shoot: 'azrael-shoot',
+    hurt: 'azrael-hurt',
+    idle: 'azrael-idle',
+    jump: 'azrael-jump',
+    emote: 'azrael-emote',
+    run: 'azrael-run',
+    combatIdle: 'azrael-combat-idle',
+    backslash: 'azrael-backslash',
+    halfslash: 'azrael-halfslash'
+  }),
+
+  abilities: Object.freeze({
+    celestialStrike: Object.freeze({
+      id: 'azrael_celestial_strike', name: 'Celestial Strike', range: 112, arcDegrees: 118,
+      damageMultiplier: 0.82, knockback: 165, cooldownMs: 720, windupMs: 430, triggerAt: 0.52, recoverMs: 230
+    }),
+    wingBurst: Object.freeze({
+      id: 'azrael_wing_burst', name: 'Wing Burst', range: 300, impactRadius: 92,
+      damageMultiplier: 0.72, knockback: 250, cooldownMs: 2500, windupMs: 240, dashMs: 430, recoverMs: 300
+    }),
+    judgmentBlast: Object.freeze({
+      id: 'azrael_judgment_blast', name: 'Judgment Blast', range: 390, minRange: 118,
+      damageMultiplier: 0.96, cooldownMs: 2350, windupMs: 730, triggerAt: 0.58, recoverMs: 360,
+      projectileId: 'celestial_judgment'
+    }),
+    heavenfall: Object.freeze({
+      id: 'azrael_heavenfall', name: 'Heavenfall', radius: 176, targetClusterRadius: 150,
+      damageMultiplier: 1.34, knockback: 390, cooldownMs: 7600, windupMs: 1220, triggerAt: 0.78, recoverMs: 700,
+      minCluster: 3
+    })
+  })
+});

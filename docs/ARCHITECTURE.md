@@ -1,6 +1,29 @@
-# Architecture — v0.1.3.2.1
+# Architecture — v0.1.3.2.2
 
-> v0.1.3.2.1 keeps save schema 2 and adds no new persistent runtime subsystem. HUD geometry remains DOM/CSS; interaction hints reuse WorldScene gameplay priority; combat-range diagnostics live in CombatSystem and are gated by `DEBUG`. ArchAngel Azrael/Assassin remain source-only until the next runtime-harvesting pass.
+## v0.1.3.2.2 faction combat and special-actor boundary
+
+`data/factions.js` is now the shared relationship contract for actors. The player and celestial faction are friendly; monsters are hostile to both. `Enemy` receives a candidate target set and selects only faction-hostile live actors, while `CombatResolver.damageTarget()` routes resolved damage to player, ordinary enemy, or friendly/special actor paths. This keeps ArchAngel Azrael inside the real combat model instead of giving him a bespoke immunity exception.
+
+`entities/Azrael.js` is intentionally a unique controller rather than a generic NPC subclass. His world physics proxy remains compact and world-bounded while the visible sprite hovers above it. The controller uses the supplied run action as glide locomotion, jump as wing-burst startup, combat-idle/idle for hovering, shoot for Judgment Blast, spellcast/emote for Heavenfall, and rotates multiple melee blocks for Celestial Strike. His current Scorched Outskirts home point is a temporary field-test harness, not canonical story placement.
+
+`CombatSystem` owns reusable ally ability resolution, celestial AoE/cone damage, radial knockback and distance-gated camera shake. `ProjectileManager` remains pooled and now accepts a friendly-target provider so enemy projectiles can collide with either the player or Azrael. Celestial projectiles are still resolved against enemies only.
+
+Enemy reward contribution is tracked separately from damage resolution. Player damage records recent material contribution; celestial damage does not. `WorldScene.onEnemyDied()` gates quest credit, XP, ash and loot behind that contribution check, so an autonomous high-level ally cannot become an AFK farming engine.
+
+Azrael's visible `Lv. ???` is presentation only. His internal level and extreme stats are data values in `specialActors.js`; incoming attacks still pass through defense/resistance/status rules and reduce real HP.
+
+
+> v0.1.3.2.2 keeps save schema 2 while adding non-persistent faction-aware friendly combat and the temporary ArchAngel Azrael field-test actor. Azrael is map-scoped runtime simulation state; he is intentionally not serialized. His compact action crops load only with the Cinder Region. `Assassin.png` remains source-only.
+
+## v0.1.3.2.2 faction-aware mythic actor foundation
+
+`data/factions.js` owns symmetric relationship rules instead of embedding actor-name checks in combat. `Enemy` chooses the nearest live hostile from the current friendly-combatant set, while Azrael queries only faction-hostile enemies. `CombatResolver.damageTarget()` routes shared damage to Player, friendly actors or enemies, and projectile/status source teams preserve attribution through delayed effects. This lets later guards, companions and faction encounters reuse the same contract.
+
+`Azrael` deliberately separates a compact invisible Arcade body from the 64×64 visual sprite. The body remains 2D and world-bounded; the visible sprite receives a small hover offset and uses the Expanded-LPC run action as glide. This sells wing-assisted flight without introducing aerial pathfinding. The field-test actor is not saved and respawns at his temporary vigil if genuinely defeated.
+
+Azrael's AI is throttled, home/leash constrained and cluster-aware. It selects between a short celestial cone, wing-burst engage, pooled ranged projectile and group-biased radial Heavenfall. `CombatSystem` exposes generic ally cone/radial/projectile hooks rather than putting damage calculations inside the actor. Camera shake uses player-distance falloff. FX are short-lived procedural graphics plus the existing pooled sprite bursts.
+
+Reward attribution is recorded before synchronous enemy death callbacks. `Enemy.playerRewardEligible()` requires recent player contribution; therefore an Azrael solo kill exits before quest/XP/currency/loot handling. This prevents the temporary friendly NPC from becoming an AFK progression source while preserving shared-fight rewards.
 
 ## Recovery and stackable consumables
 
