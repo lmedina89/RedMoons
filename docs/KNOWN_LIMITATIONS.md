@@ -1,4 +1,4 @@
-# Known limitations — v0.1.2
+# Known limitations — v0.1.2.1
 
 - Set definitions/names exist, but **set bonuses are not active yet**. They are reserved for the later loot/progression milestone.
 - Guild IDs and recruitable/adventurer NPC metadata are scaffolding only. Guild creation/joining, ranks, contribution, alliances, guild wars and sieges are not active yet.

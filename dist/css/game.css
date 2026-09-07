@@ -70,8 +70,11 @@ button:active { transform: translateY(1px); filter: brightness(1.25); }
 .round-button.attack { width: 98px; height: 98px; border: 3px solid #b54b2d; background: radial-gradient(circle at 40% 32%, #a9432a, #4c1d15 70%); box-shadow: 0 0 0 5px #1b0b087d, 0 7px 18px #0009; color: #ffe0a3; text-transform: uppercase; }
 .round-button.secondary { background: radial-gradient(circle at 40% 32%, #66513e, #2c1d18 70%); border: 2px solid #927156; }
 
-#toast-stack { position: absolute; z-index: 80; left: 50%; bottom: calc(var(--safe-bottom) + 128px); transform: translateX(-50%); width: min(340px, 42vw); min-height: 0; display: block; pointer-events: none; }
+#toast-stack { position: absolute; z-index: 80; left: 50%; bottom: calc(var(--safe-bottom) + 128px); transform: translateX(-50%); width: min(340px, 42vw); min-height: 0; display: block; pointer-events: none; transition: opacity .12s ease; }
+#toast-stack.routine { left: auto; right: calc(var(--safe-right) + 10px); top: calc(var(--safe-top) + 96px); bottom: auto; transform: none; width: min(230px, 31vw); }
 .toast { padding: 6px 10px; background: rgba(20, 10, 8, .9); border: 1px solid #78422c; border-left: 3px solid var(--gold); box-shadow: 0 3px 12px #0009; text-align: center; font: 700 .72rem/1.15 Arial, sans-serif; white-space: normal; animation: toast-in .15s ease-out; }
+#toast-stack.routine .toast { padding: 5px 8px; background: rgba(20, 10, 8, .56); border-color: rgba(120, 66, 44, .52); border-left-width: 2px; box-shadow: 0 2px 8px #0005; text-align: right; font-size: .63rem; font-weight: 600; opacity: .82; }
+#toast-stack.routine .toast.muted { opacity: .62; }
 .toast.quest { border-left-color: #bd78df; }.toast.level { border-left-color: #ffd451; color: #ffe397; }.toast.danger { border-left-color: #ff5144; }.toast.magic { border-left-color: #65a7ff; }.toast.noble { border-left-color: #d98cff; }
 @keyframes toast-in { from { opacity: 0; transform: translateY(12px); } }
 .overlay-card { position: absolute; z-index: 60; left: 50%; bottom: calc(var(--safe-bottom) + 18px); transform: translateX(-50%); width: min(640px, 68vw); padding: 14px 16px; background: linear-gradient(135deg, #1d100dee, #39211bee); border: 1px solid #8b543b; border-left: 5px solid #c4743e; box-shadow: 0 8px 30px #000c; }

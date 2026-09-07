@@ -1,5 +1,16 @@
 # Changelog
 
+## v0.1.2.1 — Collision & Toast Hotfix
+
+- Rebuilt Cinder Refuge perimeter collision from the same `REFUGE_WALLS` data used to draw the visible walls, eliminating art/physics drift.
+- Widened the east refuge opening substantially so touch players can leave town without lining up with a narrow hidden gate.
+- Removed redundant invisible outer-map blockers and the unrepresented Bone Road blocker; Arcade world bounds now own the true world edge.
+- Restricted static collision to visible refuge wall segments and visible building footprints only. Decorative props, roads, rocks and scenery do not create hidden collision.
+- Added green collider outlines under `?debug=1` so every static blocker can be visually audited on-device.
+- Moved routine/muted/combat notifications out of the center of the playfield to a compact upper-right surface with much lower opacity; quest/level/danger notices retain stronger centered presentation.
+- Increased empty-swing feedback cooldown so repeated attack taps do not repeatedly call attention to the same low-value message.
+- Preserved save schema 1 and all v0.1.2 content, enemy/NPC loadouts and world data.
+
 ## v0.1.2 — Cinder Refuge & World/Enemy Variety Foundation
 
 - Replaced the player base with the supplied red-haired full-combat LPC export while preserving layered equipment and the four-hit sword profile.

@@ -1,8 +1,8 @@
-# Hell RPG v0.1.2 — Cinder Refuge & World/Enemy Variety Foundation
+# Hell RPG v0.1.2.1 — Collision & Toast Hotfix
 
 Ashfall Foundation is an original, mobile-first single-player pixel action RPG built with Phaser 3, JavaScript and HTML/CSS. Its progression/combat philosophy is inspired by the feel of classic grind-heavy MMORPGs, while all Hell RPG names, world content and implementation remain original.
 
-v0.1.2 is the first world-variety milestone. It keeps save schema 1 and builds directly on v0.1.1.5.
+v0.1.2.1 is a narrow stabilization hotfix built directly on v0.1.2. It keeps save schema 1 and preserves the world/enemy-variety milestone while correcting traversal and routine notification UX.
 
 ## What is new in v0.1.2
 

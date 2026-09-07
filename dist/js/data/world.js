@@ -46,19 +46,38 @@ export const SPAWN_REGIONS = Object.freeze([
   { id: 'spawn_captain', enemyId: 'enemy_bone_captain', x: 2390, y: 560, width: 90, height: 120, count: 1, respawnMs: 24000 }
 ]);
 
-export const COLLIDERS = Object.freeze([
-  { id: 'north-cliff', x: 1280, y: 18, width: 2560, height: 36 },
-  { id: 'south-cliff', x: 1280, y: 1262, width: 2560, height: 36 },
-  { id: 'west-wall', x: 18, y: 640, width: 36, height: 1280 },
-  { id: 'east-fog', x: 2542, y: 640, width: 36, height: 1280 },
-  // Refuge perimeter leaves a broad east gate centered around y=610.
-  { id: 'refuge-north', x: 350, y: 38, width: 640, height: 26 },
-  { id: 'refuge-south', x: 350, y: 1000, width: 640, height: 26 },
-  { id: 'refuge-east-a', x: 700, y: 280, width: 24, height: 500 },
-  { id: 'refuge-east-b', x: 700, y: 910, width: 24, height: 180 },
-  ...BUILDING_DEFS.map(building => ({ id: `building-${building.id}`, ...building.collider })),
-  { id: 'road-bones', x: 2050, y: 410, width: 85, height: 150 }
+export const REFUGE_WALLS = Object.freeze([
+  // Visual wall geometry is the collision source of truth. The east opening is
+  // deliberately broad so touch players can leave town without hunting for a
+  // narrow invisible gate.
+  { id: 'refuge-north', x1: 46, y1: 52, x2: 690, y2: 52, thickness: 10 },
+  { id: 'refuge-south', x1: 46, y1: 990, x2: 690, y2: 990, thickness: 10 },
+  { id: 'refuge-west', x1: 46, y1: 52, x2: 46, y2: 990, thickness: 10 },
+  { id: 'refuge-east-north', x1: 690, y1: 52, x2: 690, y2: 390, thickness: 10 },
+  { id: 'refuge-east-south', x1: 690, y1: 860, x2: 690, y2: 990, thickness: 10 }
 ]);
+
+const wallCollider = wall => {
+  const horizontal = wall.y1 === wall.y2;
+  return {
+    id: wall.id,
+    source: 'visible-wall',
+    x: (wall.x1 + wall.x2) / 2,
+    y: (wall.y1 + wall.y2) / 2,
+    width: horizontal ? Math.abs(wall.x2 - wall.x1) : wall.thickness,
+    height: horizontal ? wall.thickness : Math.abs(wall.y2 - wall.y1)
+  };
+};
+
+// Only visibly represented town walls and building footprints receive static
+// collision. World edges are already enforced by Arcade world bounds, and
+// decorative rocks/road props intentionally never create hidden blockers.
+export const COLLIDERS = Object.freeze([
+  ...REFUGE_WALLS.map(wallCollider),
+  ...BUILDING_DEFS.map(building => ({ id: `building-${building.id}`, source: 'building', ...building.collider }))
+]);
+
+
 
 export const PROP_DEFS = Object.freeze([
   // Deliberate refuge greenery instead of a grid of trees through buildings.

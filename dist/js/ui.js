@@ -336,6 +336,9 @@ export class UIManager {
     if (this.toastElement && now < this.toastVisibleUntil && priority < this.toastPriority) return;
 
     const stack = $('#toast-stack');
+    const routine = priority <= 2;
+    stack.classList.toggle('routine', routine);
+    stack.classList.toggle('important', !routine);
     const element = this.toastElement || document.createElement('div');
     clearTimeout(this.toastTimer);
     element.className = `toast ${tone}`;

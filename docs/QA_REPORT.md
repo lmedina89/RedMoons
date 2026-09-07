@@ -1,4 +1,6 @@
-# v0.1.2 QA report — Cinder Refuge & World/Enemy Variety Foundation
+# v0.1.2.1 QA report — Collision & Toast Hotfix
+
+Hotfix focus: verify the refuge east opening is freely traversable, every static blocker corresponds to visible wall/building geometry, `?debug=1` outlines all blockers, and routine toasts no longer occupy the center of combat.
 
 ## Automated checks completed
 

@@ -2,7 +2,7 @@ import { ASSET_DEFS } from '../data/assets.js';
 import { ENEMY_DEFS } from '../data/enemies.js';
 import { ITEM_DEFS } from '../data/items.js';
 import { NPC_DEFS } from '../data/npcs.js';
-import { BUILDING_DEFS, COLLIDERS, PROP_DEFS, SPAWN_REGIONS, TOWN_PROP_DEFS, ZONES } from '../data/world.js';
+import { BUILDING_DEFS, COLLIDERS, PROP_DEFS, REFUGE_WALLS, SPAWN_REGIONS, TOWN_PROP_DEFS, ZONES } from '../data/world.js';
 import { DEBUG, GAME_VERSION, PLAYER_START, RARITY, TILE_SIZE, WORLD_HEIGHT, WORLD_WIDTH } from '../config.js';
 import { gameEvents } from '../core/EventBus.js';
 import { actionInput } from '../systems/ActionInput.js';
@@ -101,14 +101,10 @@ export class WorldScene extends Phaser.Scene {
     roads.lineStyle(28, 0x6f4a32, 0.38).lineBetween(340, 610, 340, 170);
     roads.fillStyle(0x76513a, 0.4).fillCircle(340, 610, 96);
 
-    // Simple refuge perimeter. The opening at the east bridge is intentionally
-    // wide for touch movement and future NPC traffic.
-    worldArt.lineStyle(10, 0x493127, 0.95)
-      .lineBetween(46, 52, 690, 52)
-      .lineBetween(46, 990, 690, 990)
-      .lineBetween(46, 52, 46, 990)
-      .lineBetween(690, 52, 690, 505)
-      .lineBetween(690, 715, 690, 990);
+    // Draw refuge walls from the exact same data used to build collision.
+    // This prevents visible art and physics from drifting apart over time.
+    worldArt.lineStyle(10, 0x493127, 0.95);
+    for (const wall of REFUGE_WALLS) worldArt.lineBetween(wall.x1, wall.y1, wall.x2, wall.y2);
 
     for (let i = 0; i < 95; i += 1) {
       const x = 720 + ((i * 193) % 1810);
@@ -143,6 +139,11 @@ export class WorldScene extends Phaser.Scene {
     for (const collider of COLLIDERS) {
       const body = this.obstacles.create(collider.x, collider.y, 'solid').setDisplaySize(collider.width, collider.height).setAlpha(0.001).refreshBody();
       body.colliderId = collider.id;
+      body.colliderSource = collider.source;
+    }
+    if (DEBUG) {
+      const collisionDebug = this.add.graphics().setDepth(15000).lineStyle(2, 0x38ff76, 0.72);
+      for (const collider of COLLIDERS) collisionDebug.strokeRect(collider.x - collider.width / 2, collider.y - collider.height / 2, collider.width, collider.height);
     }
     this.enemyGroup = this.physics.add.group({ allowGravity: false, immovable: false });
   }

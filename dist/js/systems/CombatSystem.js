@@ -62,7 +62,7 @@ export class CombatSystem {
         this.effects.burst(enemy.sprite.x, enemy.sprite.y - 12);
       }
     }
-    if (!hitCount) this.events.emit('toast', { text: 'Your blade cuts only ash.', tone: 'muted', short: true, cooldownMs: 1800 });
+    if (!hitCount) this.events.emit('toast', { text: 'Your blade cuts only ash.', tone: 'muted', short: true, cooldownMs: 2400 });
   }
 }
 
