@@ -1,0 +1,14 @@
+Hell RPG v0.1.4.2 — compact hostile-character runtime crops
+
+Runtime files:
+- dist/assets/enemies/hostile-human/ash-assassin-walk.png
+- dist/assets/enemies/hostile-human/ash-assassin-slash.png
+  Source: source-assets/character-concepts/2026-09-07/human-hostile/Assassin.png
+
+- dist/assets/enemies/demon/demon-scout-walk.png
+- dist/assets/enemies/demon/demon-scout-slash.png
+  Source: source-assets/character-concepts/2026-09-07/demon-castle/DemonBase.png
+
+These are deterministic rectangular walk/slash crops from user-provided project source art. Full 832x3456 authoring sheets remain outside dist/. Exact matching upstream license/credit records are not currently present in the project, so these derivatives are DEVELOPMENT-AUTHORIZED / ATTRIBUTION HOLD and must not be treated as commercially cleared until provenance is resolved.
+
+See docs/ASSET_USAGE_AND_CREDITS.md.

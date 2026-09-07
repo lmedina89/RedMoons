@@ -49,7 +49,15 @@ export class CombatSystem {
     this.audio = new AudioManager(scene, state);
     this.resolver = new CombatResolver(scene, state, this.damageNumbers, this.fx, this.audio, {
       playerDamaged: amount => { this.scene.recovery?.markCombat(); this.scene.afterPlayerDamage?.(amount); },
-      enemyDamaged: (_amount, _enemy, options) => { if ((options?.sourceTeam || 'player') === 'player') this.scene.recovery?.markCombat(); }
+      enemyDamaged: (_amount, enemy, options) => {
+        const sourceTeam = options?.sourceTeam || 'player';
+        if (sourceTeam === 'player') this.scene.recovery?.markCombat();
+        const sourceActor = sourceTeam === 'player' ? this.player : (sourceTeam === 'celestial' ? this.scene.azrael : null);
+        if (sourceActor) {
+          enemy?.forceEncounterAggro?.(sourceActor, this.scene.time.now);
+          enemy?.alertEncounter?.(sourceActor, this.scene.time.now);
+        }
+      }
     });
     this.statuses = new StatusController(scene, this.resolver, this.fx);
     this.resolver.setStatusController(this.statuses);

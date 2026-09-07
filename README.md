@@ -1,6 +1,23 @@
-# Hell RPG v0.1.4.1 — Cinder Region Expansion & Refuge Rebuild
+# Hell RPG v0.1.4.2 — Living Wilds: Monster Families & Encounter Ecology
 
-Built directly from the physically tested **v0.1.4.0 World Collision & Cinder Region Layout Foundation**. Save schema remains **2** and the localStorage key remains `hellrpg.ashfall.save.v1`.
+Built directly from the physically approved **v0.1.4.1 Cinder Region Expansion & Refuge Rebuild**. Save schema remains **2** and the localStorage key remains `hellrpg.ashfall.save.v1`.
+
+## v0.1.4.2 Living Wilds: Monster Families & Encounter Ecology
+
+This release turns the v0.1.4.1 geography into a **data-driven encounter ecology** without increasing the established Cinder Wilds live-actor ceiling. The Wilds remain capped at **35 ordinary enemy actor slots**; richness comes from family composition, group behavior, authored patrols, proximity ambushes, hostile humanoid loadouts and offscreen sleeping rather than brute-force population growth.
+
+- Every live spawn now references an `encounterId`, archetype and activation range. The active vocabulary covers **roam, pack, patrol, guard, ritual and ambush** encounters across ten family definitions.
+- Related members can **alert as a local group** when one is engaged. Group alert is radius-bounded so fighting one pack does not chain-pull an entire biome.
+- Patrol encounters can follow authored waypoint loops. Ambush encounters remain dormant and faint until the player crosses their local trigger radius, then wake and alert the appropriate nearby group.
+- **Ash Scavengers** and **Ironbound Raiders** are new layered hostile-human families assembled from the existing LPC humanoid/equipment library. Scavengers use a rough, mismatched equipment pool; Ironbound Raiders use a deliberately narrower armored palette. Equipment is rolled once per spawn and persists until that actor respawns.
+- A rare **Ashblade Stalker** uses compact walk/slash crops harvested from the preserved `Assassin.png` source concept. A small **Ashwing Legion Scout** patrol uses compact crops from the preserved `DemonBase.png` concept, giving First-Light Scar an active Demon Legion recon presence without changing Azrael's AI or seven-skill kit.
+- Area populations now communicate habitat: Causeway toll gangs, Emberfields raiders/imp packs, Cinderwood web/stalker ambushes, Fallen Watch deadguard/salvage crews, Ashgrave ritual groups, Bone Road mixed military patrols and Hollow spider nests/ambushes.
+- Distant ordinary enemies enter a lightweight **sleep state** outside their spawn-defined activation range. Layered actors do not keep re-rendering every animation step while sleeping, protecting the larger-map iPhone budget.
+- Existing wall collision, melee line-of-sight blocking, player/enemy no-shove behavior, map dimensions/transitions, Refuge rebuild and save schema are preserved.
+- Azrael remains mechanically frozen. His controller, ability data, VFX/audio and Sanctuary/Azrael smoke contracts are unchanged from v0.1.4.1. `CombatSystem` only gained encounter-alert routing so a monster struck by the player or a celestial can wake its own local group.
+
+See `docs/WORLD_FOUNDATION.md` for the v0.1.4.2 physical iPhone encounter/ecology test route.
+
 
 ## v0.1.4.1 Cinder Region Expansion & Refuge Rebuild
 

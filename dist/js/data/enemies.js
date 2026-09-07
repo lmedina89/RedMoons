@@ -141,6 +141,73 @@ export const ENEMY_DEFS = Object.freeze({
     ]
   },
 
+
+  enemy_ash_scavenger: {
+    id: 'enemy_ash_scavenger', name: 'Ash Scavenger', family: 'human', subfaction: 'ash_scavengers', role: 'raider', level: 2,
+    maxHp: 56, attack: 10, defense: 2, speed: 75, detectRange: 290, attackRange: 49, leashRange: 430, attackCooldown: 1100, recoverMs: 390,
+    xp: 36, currency: [2, 7], layered: true, baseVisual: 'npc_olive_base', walkFrames: 9, attackFrames: 6, scale: 0.98,
+    equipmentPool: {
+      weapon: [{ itemId: 'weapon_rustblade', weight: 18 }, { itemId: 'weapon_arming_sword', weight: 28 }, { itemId: 'weapon_brass_arming_sword', weight: 18 }, { itemId: 'weapon_copper_arming_sword', weight: 14 }, { itemId: 'weapon_katana_npc', weight: 8 }, { itemId: null, weight: 14 }],
+      offhand: [{ itemId: 'offhand_wood_guard', weight: 16 }, { itemId: null, weight: 84 }],
+      head: [{ itemId: 'head_chain_coif', weight: 18 }, { itemId: 'head_bronze_revised', weight: 14 }, { itemId: null, weight: 68 }],
+      chest: [{ itemId: 'chest_wayfarer', weight: 34 }, { itemId: 'chest_cinderhide', weight: 34 }, { itemId: 'chest_silver_legion', weight: 5 }, { itemId: null, weight: 27 }],
+      shoulders: [{ itemId: 'shoulders_leather_revised', weight: 24 }, { itemId: null, weight: 76 }],
+      legs: [{ itemId: 'legs_ash_pants', weight: 58 }, { itemId: null, weight: 42 }],
+      hands: [{ itemId: 'hands_hide_wraps', weight: 50 }, { itemId: null, weight: 50 }],
+      feet: [{ itemId: 'feet_road_boots', weight: 45 }, { itemId: 'feet_leather_revised', weight: 20 }, { itemId: null, weight: 35 }]
+    },
+    loot: [
+      { itemId: 'weapon_brass_arming_sword', chance: 0.026, rarityWeights: basicLoot },
+      { itemId: 'weapon_copper_arming_sword', chance: 0.022, rarityWeights: basicLoot },
+      { itemId: 'feet_leather_revised', chance: 0.032, rarityWeights: basicLoot },
+      { itemId: 'shoulders_leather_revised', chance: 0.026, rarityWeights: basicLoot }
+    ]
+  },
+
+  enemy_ironbound_raider: {
+    id: 'enemy_ironbound_raider', name: 'Ironbound Raider', family: 'human', subfaction: 'ironbound_raiders', role: 'bruiser', level: 4,
+    maxHp: 98, attack: 16, defense: 6, speed: 67, detectRange: 320, attackRange: 53, leashRange: 475, attackCooldown: 1220, recoverMs: 430,
+    xp: 74, currency: [6, 13], layered: true, baseVisual: 'npc_olive_base', walkFrames: 9, attackFrames: 6, scale: 1.04,
+    equipmentPool: {
+      weapon: [{ itemId: 'weapon_bronze_arming_sword', weight: 30 }, { itemId: 'weapon_iron_arming_sword', weight: 32 }, { itemId: 'weapon_steel_arming_sword', weight: 13 }, { itemId: 'weapon_katana_npc', weight: 10 }, { itemId: 'weapon_arming_sword', weight: 15 }],
+      offhand: [{ itemId: 'offhand_wood_guard', weight: 46 }, { itemId: null, weight: 54 }],
+      head: [{ itemId: 'head_iron_revised', weight: 30 }, { itemId: 'head_bronze_revised', weight: 32 }, { itemId: 'head_chain_coif', weight: 20 }, { itemId: null, weight: 18 }],
+      chest: [{ itemId: 'chest_silver_legion', weight: 30 }, { itemId: 'chest_ash_plate', weight: 22 }, { itemId: 'chest_cinderhide', weight: 28 }, { itemId: null, weight: 20 }],
+      shoulders: [{ itemId: 'shoulders_legion', weight: 30 }, { itemId: 'shoulders_leather_revised', weight: 24 }, { itemId: null, weight: 46 }],
+      legs: [{ itemId: 'legs_iron_greaves', weight: 48 }, { itemId: 'legs_ash_pants', weight: 22 }, { itemId: null, weight: 30 }],
+      hands: [{ itemId: 'hands_iron', weight: 44 }, { itemId: 'hands_legion', weight: 16 }, { itemId: null, weight: 40 }],
+      feet: [{ itemId: 'feet_iron', weight: 42 }, { itemId: 'feet_revised', weight: 18 }, { itemId: 'feet_road_boots', weight: 15 }, { itemId: null, weight: 25 }]
+    },
+    loot: [
+      { itemId: 'head_bronze_revised', chance: 0.042, rarityWeights: goodLoot },
+      { itemId: 'weapon_iron_arming_sword', chance: 0.030, rarityWeights: goodLoot },
+      { itemId: 'chest_silver_legion', chance: 0.024, rarityWeights: goodLoot },
+      { itemId: 'hands_legion', chance: 0.028, rarityWeights: goodLoot }
+    ]
+  },
+
+  enemy_ash_assassin: {
+    id: 'enemy_ash_assassin', name: 'Ashblade Stalker', family: 'human', subfaction: 'ash_scavengers', role: 'assassin', rare: true, level: 5,
+    maxHp: 92, attack: 18, defense: 4, speed: 108, detectRange: 360, attackRange: 52, leashRange: 500, attackCooldown: 850, recoverMs: 270,
+    xp: 112, currency: [10, 18], walkTexture: 'ash-assassin-walk', attackTexture: 'ash-assassin-slash', walkFrames: 9, attackFrames: 6, scale: 1.02, originY: 0.69,
+    loot: [
+      { itemId: 'weapon_steel_arming_sword', chance: 0.050, rarityWeights: goodLoot },
+      { itemId: 'feet_leather_revised', chance: 0.070, rarityWeights: goodLoot },
+      { itemId: 'shoulders_leather_revised', chance: 0.055, rarityWeights: goodLoot }
+    ]
+  },
+
+  enemy_demon_scout: {
+    id: 'enemy_demon_scout', name: 'Ashwing Legion Scout', family: 'demon', subfaction: 'demon_legion', role: 'vanguard', level: 5,
+    maxHp: 122, attack: 18, defense: 5, speed: 86, detectRange: 350, attackRange: 54, leashRange: 510, attackCooldown: 1020, recoverMs: 330,
+    xp: 105, currency: [9, 17], walkTexture: 'demon-scout-walk', attackTexture: 'demon-scout-slash', walkFrames: 9, attackFrames: 6, scale: 1.08, originY: 0.69,
+    loot: [
+      { itemId: 'weapon_iron_arming_sword', chance: 0.036, rarityWeights: goodLoot },
+      { itemId: 'head_iron_revised', chance: 0.030, rarityWeights: goodLoot },
+      { itemId: 'chest_silver_legion', chance: 0.024, rarityWeights: goodLoot }
+    ]
+  },
+
   enemy_ash_skeleton: {
     id: 'enemy_ash_skeleton', name: 'Ash Skeleton', family: 'skeleton', level: 3, maxHp: 58, attack: 11, defense: 3,
     speed: 62, detectRange: 275, attackRange: 48, leashRange: 420, attackCooldown: 1250, recoverMs: 520,

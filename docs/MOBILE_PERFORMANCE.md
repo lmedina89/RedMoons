@@ -1,4 +1,15 @@
-# Mobile Performance — v0.1.4.1
+# Mobile Performance — v0.1.4.2
+
+
+## v0.1.4.2 ecology budget
+
+The larger v0.1.4.1 map is **not** populated by increasing the live-enemy ceiling. Cinder Wilds remains capped at **35 ordinary enemy actor slots** and Ashfall Hollow at 5. Encounter richness comes from role/family composition and bounded behaviors rather than more simultaneous actors.
+
+Each spawn defines an `activationRange`. Ordinary enemies outside that range enter a lightweight sleep path; movement/decision work is skipped and layered humanoids do not keep rebuilding visible animation frames while distant. Ambush actors remain dormant until their smaller `ambushRange` is crossed. Group alerting is local/radius-bounded, and patrols use short fixed waypoint arrays rather than pathfinding/navmesh searches.
+
+The two new source-concept characters ship as only four compact runtime sheets (walk/slash for Assassin and Demon Scout). Their full 832×3456 authoring sheets remain under `source-assets/` and are never preloaded by the production runtime. Layered human raiders reuse already-resident NPC/equipment textures rather than adding full bespoke sheets per outfit.
+
+Physical iPhone Safari still decides whether 35 active actor objects plus the wider map feel smooth after long traversal. If device testing exposes pressure, first reduce activation ranges/visible layered encounters or make spawn instances more aggressively inactive; do **not** simply lower visual quality globally or add a heavier nav system.
 
 ## v0.1.4.1 larger-map and asset-reuse budget
 

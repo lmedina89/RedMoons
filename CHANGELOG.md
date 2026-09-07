@@ -1,5 +1,17 @@
 # Changelog
 
+## v0.1.4.2 — Living Wilds: Monster Families & Encounter Ecology
+
+- Activated the staged monster-family/encounter architecture with 21 local encounter definitions and six behavior archetypes: roam, pack, patrol, guard, ritual and ambush.
+- Added radius-bounded encounter-group alerting, authored patrol waypoint loops and true proximity-triggered dormant ambushes.
+- Added Ash Scavenger and Ironbound Raider hostile-human definitions using the existing layered LPC body/equipment pipeline with faction-coherent randomized loadouts.
+- Added rare Ashblade Stalker and Ashwing Legion Scout runtime crops derived from preserved source-only Assassin/DemonBase concepts.
+- Reauthored Wilds/Hollow spawn rows around area ecology while preserving the Wilds hard ceiling at 35 ordinary enemy actor slots.
+- Added distance-based ordinary-enemy sleeping; offscreen layered actors stop per-frame visual animation work until reactivated.
+- Kept map scale/transitions, save schema 2, collision/navigation and Azrael's seven-skill/Sanctuary behavior intact.
+- Added `tests/encounter-ecology-smoke.mjs` and expanded structural validation for encounter references, patrol geometry, ambush triggers, human loadout pools, Demon Legion presence and population budget.
+
+
 ## v0.1.4.1 — Cinder Region Expansion & Refuge Rebuild
 
 - Built directly from v0.1.4.0; save schema remains 2 and the existing localStorage identity is preserved.

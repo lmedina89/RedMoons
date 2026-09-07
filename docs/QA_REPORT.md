@@ -1,4 +1,15 @@
-# QA Report — v0.1.4.1 Cinder Region Expansion & Refuge Rebuild
+# QA Report — v0.1.4.2 Living Wilds: Monster Families & Encounter Ecology
+
+
+## v0.1.4.2 automated/static scope
+
+`npm run check` now runs structural validation plus Azrael, Sanctuary, world-navigation and encounter-ecology smoke suites. The ecology suite validates all family/archetype/encounter references, area ownership, activation ranges, ambush trigger radii, patrol waypoint containment/collider safety, layered hostile-human loadout depth, rare Assassin use, Demon Legion use, mixed Bone Road patrol roles, mixed Ashgrave ritual roles and the **35-slot Wilds population ceiling**.
+
+All project JS/MJS files also pass `node --check`. Runtime crop dimensions are validated at 64×64 frame geometry: Assassin/Demon walk sheets are 9 frames × 4 directions and slash sheets are 6 frames × 4 directions. Manual pixel inspection confirmed the harvested direction rows and attack poses are coherent.
+
+A Chromium/Playwright live-browser pass was attempted in the build environment, but local/file navigation is blocked by the environment administrator (`ERR_BLOCKED_BY_ADMINISTRATOR`). Therefore no automated interactive browser playthrough is claimed for v0.1.4.2; physical iPhone Safari remains the release gate for animation alignment, group feel and frame pacing.
+
+The regression gate compares the current worktree against v0.1.4.1: all pre-existing runtime/source art should remain byte-identical, with only four new compact character runtime crops permitted. Azrael controller/ability/special-actor/VFX/audio files and Azrael/Sanctuary smoke tests are expected to remain byte-identical; `CombatSystem` is intentionally changed only for encounter-alert routing.
 
 ## v0.1.4.1 automated/static scope
 

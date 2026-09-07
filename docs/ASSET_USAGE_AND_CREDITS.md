@@ -9,6 +9,18 @@ v0.1.1.1 also includes user-supplied Universal LPC generator exports created on 
 This document separates assets with supplied attribution from assets whose matching generator credit export is still missing. An attribution hold means the file may be used in this private/development build as requested, but it should not be treated as cleared for a commercial/store release until its exact generator credits are captured and reviewed.
 
 
+
+## v0.1.4.2 hostile-character runtime crops
+
+Four compact runtime animation sheets are deterministic rectangular crops from user-provided concept sheets already preserved under `source-assets/character-concepts/2026-09-07/`:
+
+- `dist/assets/enemies/hostile-human/ash-assassin-walk.png` and `ash-assassin-slash.png` derive from `human-hostile/Assassin.png`.
+- `dist/assets/enemies/demon/demon-scout-walk.png` and `demon-scout-slash.png` derive from `demon-castle/DemonBase.png`.
+
+Only the verified LPC-style walk (rows 8–11) and slash (rows 12–15) bands are shipped at runtime; the 832×3456 authoring sheets remain source-only. These crops introduce no new authorship claim. Exact matching upstream license/credit records for the two concept sheets are not present in the project tree, so the runtime derivatives remain **development-authorized / attribution hold** until provenance is resolved before commercial/store distribution.
+
+Ash Scavenger and Ironbound Raider visuals introduce no new external sheets: they reuse the existing `npc_olive_base` plus already-preserved NPC-compatible item/equipment layers through weighted data-driven loadouts.
+
 ## v0.1.4.1 workshop-derived environment props
 
 The preserved user-supplied source sheets `source-assets/world/workshops/lpc-revised-blacksmith.png`, `lpc-revised-woodshop.png` and `lpc-revised-tailor.png` are now used more effectively without shipping the full authoring sheets. Seven compact transparent crops are stored under `dist/assets/world/props/` for Refuge: forge, smith tools, smith racks, carpentry bench, wood toolboard, loom and textile display.

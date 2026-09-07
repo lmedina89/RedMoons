@@ -1,5 +1,18 @@
-# Architecture — v0.1.4.1
+# Architecture — v0.1.4.2
 
+
+
+## v0.1.4.2 encounter-ecology boundary
+
+`data/encounters.js` is now active runtime content rather than planning vocabulary. `MONSTER_FAMILY_DEFS` describes family identity/roles, `ENCOUNTER_GROUP_ARCHETYPES` defines reusable behavior categories, and `ENCOUNTER_DEFS` owns local group metadata such as area, alert radius, activation range and optional ambush semantics. `data/world.js` spawn rows reference those IDs and own physical spawn rectangles plus optional patrol paths.
+
+`Enemy` remains the individual actor controller. Each instance receives encounter identity, archetype, activation/ambush ranges and patrol state from its spawn. It can sleep when distant, wake from an ambush, follow authored waypoints, or accept forced group aggro. It does not know global encounter membership; `WorldScene.alertEncounterGroup()` performs the radius-bounded lookup among live members that share an `encounterId`. This keeps group behavior reusable without a heavyweight encounter-director object or navmesh.
+
+Layered hostile humans reuse the existing `LayeredCharacter` + `createActorEquipmentState()` pipeline with `equipmentPolicy: 'npc'`. Each enemy definition owns weighted item pools by slot; a loadout is rolled at spawn/respawn and then rendered through the same verified NPC-compatible layers used elsewhere. Faction identity is therefore expressed by data pools rather than bespoke actor classes.
+
+Compact non-layered characters such as Ashblade Stalker and Ashwing Legion Scout use explicit runtime walk/slash crops harvested from preserved 832×3456 source concepts. Their source sheets remain outside `dist/`; map asset resolution only loads the compact crops for maps that actually spawn them.
+
+`CombatSystem` continues to own damage resolution. Its only ecology responsibility is to tell an ordinary enemy to alert its local encounter when player/celestial damage establishes hostility. Azrael code is not coupled to encounter definitions.
 
 ## v0.1.4.1 map split, regional scale and asset-palette boundary
 

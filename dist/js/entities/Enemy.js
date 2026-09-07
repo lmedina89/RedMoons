@@ -103,6 +103,15 @@ export class Enemy {
     this.worldDetourUntil = 0;
     this.worldDetourSign = index % 2 ? 1 : -1;
     this.navigationDisengageUntil = 0;
+    // Encounter-ecology state. Spawn rows may share encounterId so one member
+    // can alert its local group without coupling unrelated populations.
+    this.encounterId = spawn.encounterId || spawn.id;
+    this.encounterArchetype = spawn.archetype || 'roam';
+    this.activationRange = Math.max(480, Number(spawn.activationRange) || 900);
+    this.ambushRange = Math.max(80, Number(spawn.ambushRange) || 150);
+    this.dormant = false;
+    this.patrolWaypointIndex = 0;
+    this.nextEncounterAlertAt = 0;
     this.respawn(0);
   }
 
@@ -117,6 +126,54 @@ export class Enemy {
     this.actorState = createActorEquipmentState(this.loadout);
     this.visual.refreshEquipment(this.actorState);
     this.visual.direction = this.direction;
+  }
+
+  setPresentationAlpha(value) {
+    if (this.layered) this.visual?.setAlpha(value);
+    else this.sprite?.setAlpha(value);
+  }
+
+  wakeFromAmbush(target = null, time = 0) {
+    if (!this.dormant) return false;
+    this.dormant = false;
+    this.setPresentationAlpha(1);
+    if (target) this.target = target;
+    this.state = target ? 'detect' : 'idle';
+    this.stateUntil = time + (target ? 90 : 300);
+    return true;
+  }
+
+  forceEncounterAggro(target, time) {
+    if (!target || !this.sprite.active || this.state === 'dying' || this.state === 'dead') return;
+    this.wakeFromAmbush(target, time);
+    this.target = target;
+    if (!['attack', 'ability'].includes(this.state)) {
+      this.state = 'detect';
+      this.stateUntil = Math.min(this.stateUntil || (time + 100), time + 100);
+    }
+    this.navigationDisengageUntil = 0;
+  }
+
+  alertEncounter(target, time) {
+    if (!target || time < this.nextEncounterAlertAt) return;
+    this.nextEncounterAlertAt = time + 650;
+    this.callbacks.alertEncounter?.(this, target, time);
+  }
+
+  patrolVelocity(speed) {
+    const path = this.spawn.patrolPath;
+    if (!Array.isArray(path) || !path.length) return null;
+    this.patrolWaypointIndex %= path.length;
+    const waypoint = path[this.patrolWaypointIndex];
+    const dx = Number(waypoint?.[0]) - this.sprite.x;
+    const dy = Number(waypoint?.[1]) - this.sprite.y;
+    const distance = Math.hypot(dx, dy);
+    if (!Number.isFinite(distance)) return null;
+    if (distance < 34) {
+      this.patrolWaypointIndex = (this.patrolWaypointIndex + 1) % path.length;
+      return { vx: 0, vy: 0 };
+    }
+    return { vx: dx / distance * speed * 0.48, vy: dy / distance * speed * 0.48 };
   }
 
   clearAbility() {
@@ -164,10 +221,14 @@ export class Enemy {
     this.worldDetourUntil = 0;
     this.worldDetourSign = this.index % 2 ? 1 : -1;
     this.navigationDisengageUntil = 0;
+    this.dormant = this.encounterArchetype === 'ambush';
+    this.patrolWaypointIndex = this.index % Math.max(1, this.spawn.patrolPath?.length || 1);
+    this.nextEncounterAlertAt = 0;
     this.combat?.statuses.clear(this);
     this.applyLoadout();
     this.visual?.setVisible(true);
     this.visual?.clearTint();
+    this.setPresentationAlpha(this.dormant ? 0.18 : 1);
     this.renderVisual('idle', 0, null);
   }
 
@@ -287,15 +348,27 @@ export class Enemy {
       this.sprite.setVelocity(0);
     }
 
-    // Keep enemy simulation camera/player scoped for iPhone performance, but
-    // choose combat targets from faction-hostile actors inside that active area.
+    // Keep enemy simulation player-scoped for iPhone performance. v0.1.4.2
+    // makes the radius spawn/encounter driven so large exterior maps can carry
+    // more ecology without every offscreen actor thinking every frame.
     const playerNode = actorNode(player);
     const playerDx = (playerNode?.x ?? this.sprite.x) - this.sprite.x;
     const playerDy = (playerNode?.y ?? this.sprite.y) - this.sprite.y;
-    const activeRangeSq = 720 * 720;
-    if (playerDx * playerDx + playerDy * playerDy > activeRangeSq && this.state !== 'return') {
+    const playerDistanceSq = playerDx * playerDx + playerDy * playerDy;
+    const activeRangeSq = this.activationRange * this.activationRange;
+    if (this.dormant) {
+      if (playerDistanceSq > this.ambushRange * this.ambushRange) {
+        this.sprite.setVelocity(0);
+        if (this.layered) this.renderVisual('idle', 0, null);
+        return;
+      }
+      this.wakeFromAmbush(player, time);
+      this.alertEncounter(player, time);
+    }
+    if (playerDistanceSq > activeRangeSq && this.state !== 'return' && this.state !== 'chase' && this.state !== 'attack' && this.state !== 'ability') {
       this.sprite.setVelocity(0);
-      if (this.layered) this.renderVisual('idle', 0, null);
+      // Do not animate/render layered actors while sleeping; Phaser camera
+      // culling handles drawing and this return bounds JavaScript work.
       return;
     }
 
@@ -340,7 +413,11 @@ export class Enemy {
       }
       if (homeDistance > this.def.leashRange && this.state !== 'obstructed') this.state = 'return';
       if (this.state === 'idle' && time >= this.stateUntil) { this.state = 'patrol'; this.stateUntil = time + 1000 + Math.random() * 1600; }
-      if ((this.state === 'idle' || this.state === 'patrol') && time >= this.navigationDisengageUntil && targetNode && distance < this.def.detectRange) { this.state = 'detect'; this.stateUntil = time + 220; }
+      if ((this.state === 'idle' || this.state === 'patrol') && time >= this.navigationDisengageUntil && targetNode && distance < this.def.detectRange) {
+        this.state = 'detect';
+        this.stateUntil = time + 220;
+        this.alertEncounter(target, time);
+      }
       if (this.state === 'detect' && time >= this.stateUntil) this.state = targetNode ? 'chase' : 'idle';
 
       if (this.state === 'chase' && targetNode) {
@@ -362,9 +439,15 @@ export class Enemy {
       if (this.state === 'chase' && targetNode) { const inv = distance ? 1 / distance : 0; vx = dx * inv * speed; vy = dy * inv * speed; }
       else if (this.state === 'return') { const inv = homeDistance ? 1 / homeDistance : 0; vx = homeDx * inv * speed; vy = homeDy * inv * speed; }
       else if (this.state === 'patrol') {
-        const angle = this.index * 1.7 + time * 0.0005;
-        vx = Math.cos(angle) * speed * 0.35; vy = Math.sin(angle) * speed * 0.35;
-        if (time >= this.stateUntil) { this.state = 'idle'; this.stateUntil = time + 700 + Math.random() * 900; }
+        const route = this.patrolVelocity(speed);
+        if (route) { vx = route.vx; vy = route.vy; }
+        else {
+          const angle = this.index * 1.7 + time * 0.0005;
+          vx = Math.cos(angle) * speed * 0.35; vy = Math.sin(angle) * speed * 0.35;
+        }
+        // Route patrols persist instead of dropping into idle after one second;
+        // ambient roamers retain the old idle/patrol breathing rhythm.
+        if (!this.spawn.patrolPath && time >= this.stateUntil) { this.state = 'idle'; this.stateUntil = time + 700 + Math.random() * 900; }
       } else if (this.state === 'reposition' && targetNode) {
         const inv = distance ? 1 / distance : 0; vx = -dy * inv * speed * 0.65; vy = dx * inv * speed * 0.65;
       }

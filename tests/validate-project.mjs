@@ -15,7 +15,7 @@ const { EQUIPMENT_SET_DEFS, ITEM_DEFS } = await import('../dist/js/data/items.js
 const { CONSUMABLE_EFFECT_DEFS, MERCHANT_SUPPLY_DEFS, QUICK_CONSUMABLE_SLOTS, RECOVERY_DROP_TABLE } = await import('../dist/js/data/consumables.js');
 const { NPC_DEFS, NPC_GUILD_SEEDS } = await import('../dist/js/data/npcs.js');
 const { AREA_DEFS, BUILDING_DEFS, COLLIDERS, DEFAULT_MAP_ID, FALLEN_WATCH_WALLS, HOLLOW_COLLIDERS, HOLLOW_WALLS, MAP_DEFS, MAP_TRANSITIONS, RECOVERY_POINTS, REFUGE_WALLS, SPAWN_REGIONS, WILDS_STRUCTURE_COLLIDERS, ZONES } = await import('../dist/js/data/world.js');
-const { MONSTER_FAMILY_DEFS, ENCOUNTER_GROUP_ARCHETYPES } = await import('../dist/js/data/encounters.js');
+const { MONSTER_FAMILY_DEFS, ENCOUNTER_GROUP_ARCHETYPES, ENCOUNTER_DEFS } = await import('../dist/js/data/encounters.js');
 const { QUEST_DEFS } = await import('../dist/js/data/quests.js');
 const { SKILL_DEFS, DEFAULT_SKILL_SLOTS, normalizeSkillState, resolvedSkillDef } = await import('../dist/js/data/skills.js');
 const { STATUS_DEFS } = await import('../dist/js/data/statuses.js');
@@ -69,8 +69,8 @@ assert.ok(combatSource.includes('cooldownMs: 2400'), 'Empty-swing combat feedbac
 assert.ok(worldSource.includes('queueKillReward') && worldSource.includes('delayedCall(320'), 'Horde kill rewards must be batched');
 assert.ok(layeredSource.includes('ROOT_X') && layeredSource.includes('baseAsset') && layeredSource.includes("equipmentPolicy === 'player'"), 'Renderer must stabilize revised root motion and support actor-specific bases/equipment policies');
 assert.ok(!html.includes('90_user_generated'), 'Prototype-only generator assets must not ship');
-assert.equal(GAME_VERSION, '0.1.4.1', 'Regional scale/refuge rebuild version must be v0.1.4.1');
-assert.ok(html.includes('v0.1.4.1'), 'Build shell must identify v0.1.4.1');
+assert.equal(GAME_VERSION, '0.1.4.2', 'Living Wilds encounter ecology version must be v0.1.4.2');
+assert.ok(html.includes('v0.1.4.2'), 'Build shell must identify v0.1.4.2');
 assert.ok(html.includes('id="start-screen"') && html.includes('id="continue-game"') && html.includes('id="new-game"') && html.includes('id="load-game"'), 'Start menu must expose Continue, New Game and Load Save');
 assert.ok(html.includes('data-quick-consumable="health"') && html.includes('data-quick-consumable="essence"'), 'Mobile HUD must expose dedicated HP and Essence quick-use controls');
 assert.ok(html.includes('class="flask-glyph"') && cssSource.includes('#skill-button-0') && cssSource.includes('#skill-button-1') && cssSource.includes('#skill-button-2'), 'Combat hotfix must expose recognizable flask glyphs and absolute radial skill positions');
@@ -90,7 +90,7 @@ assert.ok(saveSource.includes('loadExisting()') && saveSource.includes('summary(
 assert.ok(cssSource.includes('overflow-x: auto') && cssSource.includes('left: calc(var(--safe-left)') && cssSource.includes('flex: 0 0 auto'), 'Debug tray must stay inside safe-area bounds and scroll horizontally on iPhone');
 assert.ok(worldSource.includes('transitionToMap') && worldSource.includes('buildAshfallHollow'), 'WorldScene must support separate map transitions');
 assert.match(worldSource, /this\.player\.respawn\(this\.player\.body\.x, this\.player\.body\.y\);[\s\S]{0,400}this\.transitionToMap\(DEFAULT_MAP_ID, 'cinder_start'\)/, 'Off-map death must restore HP locally before the prepared Refuge transition');
-assert.ok(!worldSource.includes('releaseAssetsNotNeededForMap('), 'v0.1.4.1 must not eagerly evict textures during the WebKit-sensitive Scene handoff');
+assert.ok(!worldSource.includes('releaseAssetsNotNeededForMap('), 'v0.1.4.2 must not eagerly evict textures during the WebKit-sensitive Scene handoff');
 assert.ok(!assetResolverSource.includes('releaseAssetsNotNeededForMap'), 'Unsafe eager texture-eviction helper must not remain exposed in the hotfix resolver API');
 assert.ok(worldSource.includes('recoverPlayerVisual') && worldSource.includes('this.player.restoreVisual()'), 'WorldScene must explicitly reconstruct and verify the layered player after map handoff');
 assert.ok(playerSource.includes('restoreVisual()') && layeredSource.includes('missingTextureKeys') && layeredSource.includes('restore('), 'Player renderer must expose deterministic visual restoration/integrity checks');
@@ -279,6 +279,16 @@ for (const spawn of SPAWN_REGIONS) {
   assert.ok(area, `${spawn.id} must reference a valid intended local area`);
   assert.equal(area.mapId, spawn.mapId || DEFAULT_MAP_ID, `${spawn.id} area/map metadata must agree`);
 }
+for (const spawn of SPAWN_REGIONS) {
+  assert.ok(spawn.encounterId && ENCOUNTER_DEFS[spawn.encounterId], `${spawn.id} must reference a live encounter definition`);
+  assert.equal(ENCOUNTER_DEFS[spawn.encounterId].areaId, spawn.areaId, `${spawn.id} encounter must belong to its local area`);
+  assert.ok(ENCOUNTER_GROUP_ARCHETYPES[spawn.archetype], `${spawn.id} must use a known encounter archetype`);
+  assert.ok(Number(spawn.activationRange) >= 480, `${spawn.id} must expose a bounded activation range`);
+}
+for (const id of ['enemy_ash_scavenger', 'enemy_ironbound_raider', 'enemy_ash_assassin', 'enemy_demon_scout']) assert.ok(ENEMY_DEFS[id], `Living Wilds must include ${id}`);
+assert.ok(ENEMY_DEFS.enemy_ash_scavenger.layered && ENEMY_DEFS.enemy_ironbound_raider.layered, 'Human hostile groups must use layered LPC equipment');
+assert.ok(SPAWN_REGIONS.some(spawn => spawn.enemyId === 'enemy_ash_assassin'), 'The staged Assassin source must now power a compact live rare encounter');
+assert.ok(SPAWN_REGIONS.some(spawn => spawn.enemyId === 'enemy_demon_scout'), 'DemonBase source must now seed a live Demon Legion patrol');
 assert.ok(SPAWN_REGIONS.some(spawn => spawn.mapId === 'map_ashfall_hollow' && spawn.enemyId === 'enemy_mire_spider'), 'Previously staged Mire Spider must now inhabit the separate cave map');
 for (const enemy of Object.values(ENEMY_DEFS)) for (const drop of enemy.loot) {
   const item = ITEM_DEFS[drop.itemId];
@@ -931,4 +941,4 @@ const normalizedWrongSlot = saveManager.validate(wrongSlotSave);
 assert.equal(normalizedWrongSlot.equipment.head, null, 'Wrong-slot saved equipment must be discarded');
 assert.equal(normalizedWrongSlot.equipment.weapon, 'i_000001', 'Valid weapon reference must survive normalization');
 
-console.log(`Validated ${ASSET_DEFS.length} assets, ${Object.keys(ITEM_DEFS).length} items, ${Object.keys(ENEMY_DEFS).length} enemies, ${Object.keys(NPC_DEFS).length} NPCs, ${BUILDING_DEFS.length} refuge buildings, ${COLLIDERS.length} visible-source colliders, ${Object.keys(QUEST_DEFS).length} quests, ${Object.keys(SKILL_DEFS).length} player skills, ${Object.keys(ENEMY_ABILITY_DEFS).length} enemy abilities, v0.1.4.1 Cinder Region Expansion & Refuge Rebuild, shared player/enemy world solids, obstruction steering, eight Cinder sub-areas, habitat/group seeds, inherited Sanctuary of the First Light, seven-skill paced AI, ancient celestial AoE/healing VFX, faction combat, knockback/shake, contribution-gated rewards, v0.1.3.2.1.2 final combat-HUD tightening, staged Azrael/Assassin source sheets, v0.1.3.2 recovery/consumables, stackable supplies, sanctuary/merchant recovery, v0.1.3.1 combat polish, true run/spear thrust, skill-rank hooks, expanded LPC actions, pooled projectiles, statuses/FX/audio, stable Cinder/Hollow streaming, combo-safe starter clothes, and save schema ${SAVE_VERSION}.`);
+console.log(`Validated ${ASSET_DEFS.length} assets, ${Object.keys(ITEM_DEFS).length} items, ${Object.keys(ENEMY_DEFS).length} enemies, ${Object.keys(NPC_DEFS).length} NPCs, ${BUILDING_DEFS.length} refuge buildings, ${COLLIDERS.length} visible-source colliders, ${Object.keys(QUEST_DEFS).length} quests, ${Object.keys(SKILL_DEFS).length} player skills, ${Object.keys(ENEMY_ABILITY_DEFS).length} enemy abilities, v0.1.4.2 Living Wilds encounter ecology, grouped aggro, authored patrols, proximity ambushes, layered hostile humans, Demon Legion scouts, bounded offscreen simulation, preserved v0.1.4.1 region scale/refuge rebuild, inherited Sanctuary of the First Light, seven-skill paced Azrael AI, faction combat, knockback/shake, contribution-gated rewards, recovery/consumables, stable map streaming, and save schema ${SAVE_VERSION}.`);

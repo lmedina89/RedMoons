@@ -1,5 +1,16 @@
-# Known Limitations — v0.1.4.1
+# Known Limitations — v0.1.4.2
 
+
+
+## v0.1.4.2 Living Wilds limits
+
+- Encounter ecology is a first systemic pass, not final population balance. The 35-slot Wilds budget is deliberately conservative and should be tuned only after physical iPhone traversal/combat testing.
+- Group coordination currently means local aggro sharing plus authored patrol movement; there is no tactical formation solver, squad cover system, healer AI, flanking planner or shared threat table yet.
+- Ambush enemies use proximity wake/dormancy rather than bespoke burrow/climb/invisibility animations. Their presentation should be judged on device before more ambush archetypes are added.
+- Hostile-human equipment is faction-coherent but intentionally limited to currently verified NPC-compatible LPC layers. Hair/face variation and broader civilian clothing pools can expand later as compatible runtime layers are verified.
+- `Assassin.png` and `DemonBase.png` now contribute compact development runtime crops. Exact source-license/attribution records for those user-provided concept sheets are not present in the project and remain on attribution hold before commercial/store release.
+- First-Light Scar currently introduces hostile Demon Legion scouts but still does **not** add lesser friendly celestial soldiers. Azrael remains the only live celestial combatant in this milestone.
+- Full browser automation could not be executed in the current build container because Chromium navigation is administrator-blocked; physical iPhone Safari remains the release gate.
 
 ## v0.1.4.1 expansion/rebuild limits
 

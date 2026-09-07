@@ -91,6 +91,14 @@ export const ASSET_DEFS = [
 
   { key: 'goblin-walk', path: `${E}goblin-walk.png`, frameWidth: 64, frameHeight: 64 },
   { key: 'goblin-attack', path: `${E}goblin-attack.png`, frameWidth: 64, frameHeight: 64 },
+
+  // v0.1.4.2 compact hostile-faction crops harvested from preserved 832×3456
+  // source sheets. The authoring sheets remain source-only; runtime receives
+  // only the walk/slash blocks used by the generic Enemy controller.
+  { key: 'ash-assassin-walk', path: `${E}hostile-human/ash-assassin-walk.png`, frameWidth: 64, frameHeight: 64 },
+  { key: 'ash-assassin-slash', path: `${E}hostile-human/ash-assassin-slash.png`, frameWidth: 64, frameHeight: 64 },
+  { key: 'demon-scout-walk', path: `${E}demon/demon-scout-walk.png`, frameWidth: 64, frameHeight: 64 },
+  { key: 'demon-scout-slash', path: `${E}demon/demon-scout-slash.png`, frameWidth: 64, frameHeight: 64 },
   ...['cave-spider', 'ember-spider', 'frost-spider', 'mire-spider'].flatMap(key => [
     { key: `${key}-walk`, path: `${E}${key}-walk.png`, frameWidth: 64, frameHeight: 64 },
     { key: `${key}-attack`, path: `${E}${key}-attack.png`, frameWidth: 64, frameHeight: 64 }

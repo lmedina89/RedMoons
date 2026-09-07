@@ -1,4 +1,27 @@
-# v0.1.4.1 Cinder Region Expansion — Physical Test Route
+# v0.1.4.2 Living Wilds — Physical Test Route
+
+No automated interactive iPhone/browser playthrough is claimed. Use `?debug=1` for direct encounter teleports. Save schema remains 2.
+
+## v0.1.4.2 encounter/ecology test route
+
+1. **Ash Scavenger:** use `?debug=1` → `Near Ash Scavenger`. Check that nearby scavengers can look materially different because their clothing/armor/weapons are rolled from the same rough faction pool. Hit one member and confirm the nearby toll-gang member reacts without distant Causeway enemies chain-pulling.
+2. **Ironbound Raider:** teleport near the Raider and confirm the visual reads more armored/organized than a scavenger. Fight beside walls/props and re-check the v0.1.4.0 collision/no-shove rules.
+3. **Ashblade Stalker:** teleport near the Assassin. It should begin dormant/faint, wake only at close approach, then use the compact hooded slash presentation. Verify it does not appear as a giant full authoring sheet or misaligned frames.
+4. **Cinderwood spider ambush:** approach the web area naturally. Dormant spiders should wake at local proximity instead of aggroing from an entire screen away.
+5. **Emberfields Goblin patrol:** watch for the raid party moving through its waypoint loop. Pull one member and verify the local encounter reacts while unrelated packs remain independent.
+6. **First-Light Demon Scouts:** teleport `Near Demon Scout`, then travel toward Azrael. Scouts should patrol First-Light Scar and can naturally become involved with Azrael through existing faction hostility. Azrael's seven-skill behavior/Sanctuary must remain unchanged.
+7. **Fallen Watch:** test the deadguard, human salvage crew and Emberweb nest as separate local encounters. Confirm wall collision still prevents enemies from phasing/meleeing through visible stone.
+8. **Ashgrave Bone Rite:** approach the ritual group and confirm the skeleton guards + Gravecaller behave as one local encounter without pulling the entire basin.
+9. **Bone Road patrol:** observe the Spearman/Archer/Slate Revenant shared patrol route. It should feel like a mixed military patrol, not three unrelated wanderers. Check that the separate Gilded Road Guard/Captain groups do not automatically join from unreasonable distance.
+10. **Ashfall Hollow:** verify the normal cave-spider nest versus the proximity Mire-spider ambush. Enter/exit the map afterward to confirm transition state remains stable.
+11. **Performance traversal:** spend 10–15 minutes moving from Refuge through the full Wilds, waking/fighting several encounters. Watch for cumulative stutter, delayed controls, missing layered textures or Safari reloads. The Wilds intentionally remains capped at 35 ordinary actor slots.
+12. Save/reload in Wilds after seeing randomized human gear. Exact individual enemy loadouts are runtime spawn state and are not promised as persistent save data; player/map progression must remain stable.
+
+**Approval question:** do the Wilds now feel populated by believable local groups/factions while remaining readable and smooth, or does any encounter feel too empty, too chain-reactive, visually inconsistent or too expensive on iPhone?
+
+---
+
+## Historical v0.1.4.1 scale/map-split gate
 
 This release is the scale/map-split/art-composition gate before deeper monster-family population work. Save schema remains 2. No automated interactive iPhone/browser playthrough is claimed.
 

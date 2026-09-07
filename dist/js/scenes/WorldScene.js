@@ -1,4 +1,5 @@
 import { ENEMY_DEFS } from '../data/enemies.js';
+import { encounterForId } from '../data/encounters.js';
 import { MERCHANT_SUPPLY_DEFS, RECOVERY_DROP_TABLE } from '../data/consumables.js';
 import { ITEM_DEFS } from '../data/items.js';
 import { NPC_DEFS } from '../data/npcs.js';
@@ -581,12 +582,28 @@ ${point.label || 'Use'}`, {
       beginAbility: (enemy, ability, target) => this.combat?.beginEnemyAbility(enemy, ability, target, enemy.abilityTargetX, enemy.abilityTargetY),
       triggerAbility: (enemy, ability, targetX, targetY, target) => this.combat?.triggerEnemyAbility(enemy, ability, targetX, targetY, target),
       damageNumber: (x, y, amount, hostile) => this.combat?.damageNumbers.show(x, y, amount, hostile),
+      alertEncounter: (enemy, target, time) => this.alertEncounterGroup(enemy, target, time),
       died: enemy => this.onEnemyDied(enemy)
     };
     for (const spawn of SPAWN_REGIONS) {
       if ((spawn.mapId || DEFAULT_MAP_ID) !== this.currentMap.id) continue;
       const def = ENEMY_DEFS[spawn.enemyId];
       for (let i = 0; i < spawn.count; i += 1) this.enemies.push(new Enemy(this, this.enemyGroup, def, spawn, i, callbacks));
+    }
+  }
+
+  alertEncounterGroup(source, target, time = this.time.now) {
+    const encounterId = source?.encounterId;
+    if (!encounterId || !target) return;
+    const encounter = encounterForId(encounterId);
+    const radius = Math.max(80, Number(encounter?.alertRadius) || 260);
+    const radiusSq = radius * radius;
+    for (const ally of this.enemies || []) {
+      if (ally === source || ally.encounterId !== encounterId || !ally.sprite?.active) continue;
+      const dx = ally.sprite.x - source.sprite.x;
+      const dy = ally.sprite.y - source.sprite.y;
+      if (dx * dx + dy * dy > radiusSq) continue;
+      ally.forceEncounterAggro(target, time);
     }
   }
 
@@ -897,6 +914,10 @@ ${point.label || 'Use'}`, {
     if (action === 'imp') moveNear(this.enemies.find(enemy => enemy.sprite.active && enemy.def.id === 'enemy_cinder_imp')?.sprite);
     if (action === 'blight') moveNear(this.enemies.find(enemy => enemy.sprite.active && enemy.def.id === 'enemy_blight_imp')?.sprite);
     if (action === 'goblin') moveNear(this.enemies.find(enemy => enemy.sprite.active && enemy.def.id === 'enemy_ash_goblin')?.sprite);
+    if (action === 'scavenger') moveNear(this.enemies.find(enemy => enemy.sprite.active && enemy.def.id === 'enemy_ash_scavenger')?.sprite);
+    if (action === 'raider') moveNear(this.enemies.find(enemy => enemy.sprite.active && enemy.def.id === 'enemy_ironbound_raider')?.sprite);
+    if (action === 'assassin') moveNear(this.enemies.find(enemy => enemy.sprite.active && enemy.def.id === 'enemy_ash_assassin')?.sprite);
+    if (action === 'demonscout') moveNear(this.enemies.find(enemy => enemy.sprite.active && enemy.def.id === 'enemy_demon_scout')?.sprite);
     if (action === 'spider') moveNear(this.enemies.find(enemy => enemy.sprite.active && enemy.def.id === 'enemy_cave_spider')?.sprite);
     if (action === 'blueflame') moveNear(this.enemies.find(enemy => enemy.sprite.active && enemy.def.id === 'enemy_blueflame_imp')?.sprite);
     if (action === 'emberweb') moveNear(this.enemies.find(enemy => enemy.sprite.active && enemy.def.id === 'enemy_ember_spider')?.sprite);
