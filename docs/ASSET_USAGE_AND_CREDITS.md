@@ -144,3 +144,25 @@ The supplied Cave3 sheet has two roles that are kept explicit: a preserved devel
 
 This layout is intentional: future harvesting can continue from the preserved source library while GitHub Pages serves only the assets the game is allowed/intended to request. Existing attribution caveats and upstream license obligations remain unchanged.
 
+
+## 2026-09-07 user-created Demon / Heavenly / transformation concepts
+
+The following user-supplied full 832×3456 RGBA LPC-style sheets are preserved under `source-assets/character-concepts/2026-09-07/` and are **not runtime assets in v0.1.2.4.2**:
+
+- `player-transformation/Transformation.png` — authoritative future player transformation source.
+- `demon-castle/DemonBase.png`
+- `demon-castle/RedDemon.png`
+- `demon-castle/TanDemon.png`
+- `demon-castle/DemonLordFlesh.png`
+- `heavenly-and-unique/Truetrans.png`
+- `heavenly-and-unique/TransupOrHolyKnight.png`
+
+The user created/provided these sheets for this project. Their final gameplay roles remain project-defined. Current intent is to use winged skeletal bodies as Demon Castle bases that can receive modular equipment/loadouts, while human-bodied winged characters bias toward Heavenly Castle NPC/guard/unique-character roles. Only `Transformation.png` is designated for the future player transformation. Full sheets remain source-only; future gameplay should harvest only the action-specific crops actually required.
+
+### v0.1.2.4.2 starter-trouser runtime overlay
+
+`dist/assets/player/revised/starter-trousers-{walk,slash,backslash,halfslash}.png` is a deterministic compact overlay derived from the user's existing `protagonist-red-*` revised runtime poses. It recolors only the lower-body pose pixels into a dark ash-cloth trouser presentation so the saved Level-1 `Ashcloth Trousers` item can remain aligned through the existing four-hit combo. It introduces no new external artwork or license dependency.
+
+### v0.1.2.4.2 starter-handwrap runtime overlay
+
+`dist/assets/player/revised/starter-wraps-{walk,slash,backslash,halfslash}.png` is a deterministic recolor of the already-verified revised `legion-gloves-*` runtime pose layer. Geometry/alpha are unchanged; only visible RGB values are remapped to a worn brown leather-wrap palette so the Level-1 `Hide Handwraps` read as beginner gear instead of bright metal gloves. This introduces no new external artwork or license dependency.

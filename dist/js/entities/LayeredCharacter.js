@@ -53,6 +53,10 @@ export class LayeredCharacter {
       if (this.equipmentPolicy === 'player') {
         if (def.playerEquipReady === false || def.npcOnly) return null;
         if (slot === 'weapon' && def.playerCombatReady === false) return null;
+        // Some saved low-level item IDs are shared with NPC loadouts. Player-only
+        // revised-combo art keeps those IDs/save semantics intact without forcing
+        // revised player geometry onto classic NPC/skeleton renderers.
+        return def.playerVisual || def.visual || null;
       }
       return def.visual || null;
     };
@@ -125,6 +129,26 @@ export class LayeredCharacter {
       if (oversized) layer.sprite.setOrigin(0.5, 0.595).setScale(this.scale);
       else layer.sprite.setOrigin(0.5, 0.69).setScale(this.scale);
     }
+  }
+
+  missingTextureKeys(requestedAction = 'idle') {
+    const missing = [];
+    for (const layer of this.layers.values()) {
+      if (!layer.asset) continue;
+      const resolved = this.resolveAnimation(layer.asset, requestedAction);
+      if (!resolved) continue;
+      const textureKey = layer.asset[resolved.animation.source];
+      if (textureKey && !this.scene.textures.exists(textureKey)) missing.push(textureKey);
+    }
+    return [...new Set(missing)];
+  }
+
+  restore(x = this.x, y = this.y, baseDepth = y) {
+    this.refreshEquipment();
+    this.setAlpha(1);
+    this.clearTint();
+    this.render(x, y, 'idle', 0, baseDepth);
+    return this.missingTextureKeys('idle');
   }
 
   setAlpha(value) { for (const layer of this.layers.values()) layer.sprite.setAlpha(value); }

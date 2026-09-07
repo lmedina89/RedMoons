@@ -114,10 +114,17 @@ export class Player {
     this.visual.setAlpha(1);
   }
 
+  restoreVisual() {
+    this.body.setVisible(false).setActive(true);
+    this.visual.restore(this.body.x, this.body.y, this.body.y);
+    return this.visual.missingTextureKeys('idle');
+  }
+
   refreshEquipment() {
     this.currentAttack = null;
     this.comboExpiresAt = 0;
     this.currentProfileId = null;
     this.visual.refreshEquipment();
+    this.restoreVisual();
   }
 }

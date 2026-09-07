@@ -9,7 +9,7 @@ import { CombatSystem } from '../systems/CombatSystem.js';
 import { DialogueSystem } from '../systems/DialogueSystem.js';
 import { InventorySystem, pickRarity } from '../systems/InventorySystem.js';
 import { QuestSystem } from '../systems/QuestSystem.js';
-import { assetDefsForMap, ensureItemVisualAssets, prepareMapAssets, queueAssetDefs, releaseAssetsNotNeededForMap } from '../systems/AssetResolver.js';
+import { assetDefsForMap, ensureItemVisualAssets, prepareMapAssets, queueAssetDefs } from '../systems/AssetResolver.js';
 import { derivedStats, grantXp } from '../systems/StatsSystem.js';
 import { Enemy } from '../entities/Enemy.js';
 import { NPC } from '../entities/NPC.js';
@@ -41,6 +41,10 @@ export class WorldScene extends Phaser.Scene {
     this.dialogueSystem = new DialogueSystem(this.state, this.inventory);
     actionInput.bind(this);
     this.player = new Player(this, this.state, actionInput, attack => this.combat.playerAttack(attack));
+    // Rebuild the layered player presentation explicitly on every Scene start.
+    // Physical iPhone Safari testing exposed a WebKit/Phaser transition case
+    // where the physics proxy survived but layered sprites could remain hidden.
+    this.player.restoreVisual();
     this.physics.add.collider(this.player.body, this.obstacles);
     // Enemy contact is handled by combat range, not Arcade body separation.
     // Dynamic enemy colliders could physically shove the player after input
@@ -75,10 +79,13 @@ export class WorldScene extends Phaser.Scene {
     this.emitState();
     this.cameras.main.fadeIn(150, 12, 6, 4);
     gameEvents.emit('ready', { version: GAME_VERSION });
-    // The previous map's sprites have now been destroyed and the destination
-    // objects are alive, so stale registered textures can be released safely.
-    // Never remove source-map textures while active sprites still reference them.
-    this.time.delayedCall(0, () => releaseAssetsNotNeededForMap(this, this.state, this.currentMap.id));
+    // v0.1.2.4.2 intentionally retains textures that have already been loaded
+    // during this browser session. Map-scoped loading still prevents unopened
+    // regions from loading at startup, but WebKit device testing showed that
+    // eager TextureManager eviction during Scene restarts could invalidate the
+    // freshly rebuilt player layer stack. Safe cache eviction can return later
+    // behind a device-tested handoff boundary; reliability wins for this hotfix.
+    this.time.delayedCall(16, () => this.recoverPlayerVisual());
     if (!this.state.worldFlags.introToastShown && this.currentMap.id === DEFAULT_MAP_ID) {
       this.state.worldFlags.introToastShown = true;
       gameEvents.emit('toast', { text: 'Find Warden Vesra at Warden Hall in Cinder Refuge.', tone: 'quest' });
@@ -287,6 +294,22 @@ export class WorldScene extends Phaser.Scene {
       gameEvents.emit('map-loading', { active: false, name: destination.name, value: 1 });
       this.scene.restart();
     });
+  }
+
+  async recoverPlayerVisual() {
+    if (!this.player || !this.scene.isActive()) return;
+    const missing = this.player.restoreVisual();
+    if (!missing.length) return;
+    console.warn('[Ashfall] Player visual textures missing after map handoff; recovering.', missing);
+    try {
+      await prepareMapAssets(this, this.state, this.currentMap.id);
+      if (!this.scene.isActive() || !this.player) return;
+      const stillMissing = this.player.restoreVisual();
+      if (stillMissing.length) throw new Error(`Player visual recovery incomplete: ${stillMissing.join(', ')}`);
+    } catch (error) {
+      console.warn('[Ashfall] Player visual recovery failed.', error);
+      gameEvents.emit('toast', { text: 'Player visuals could not be restored. Reload once and report this build.', tone: 'danger' });
+    }
   }
 
   createEnemies() {

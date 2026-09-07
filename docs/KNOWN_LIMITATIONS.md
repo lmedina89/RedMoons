@@ -1,8 +1,8 @@
-## v0.1.2.4.1 hotfix validation note
+# Known limitations — v0.1.2.4.2
 
-The v0.1.2.4 Safari blank-map transition was repaired by preparing/verifying destination textures before state commit and deferring source-texture release until destination creation. The available headless Chromium environment cannot navigate localhost because of an administrative policy, so repeated live transition validation must still be completed on physical iPhone Safari before promotion to the next baseline.
+## v0.1.2.4.2 validation note
 
-# Known limitations — v0.1.2.4.1
+The disappearing-player defect was observed on physical iPhone Safari and cannot be considered closed until repeated no-refresh Cinder ↔ Hollow travel passes on that device. Automated/static validation can prove the asset and recovery paths exist but cannot substitute for the WebKit release gate. The staged `Transformation.png` and Demon/Heavenly character sheets are source-only concepts; transformation mechanics and expanded action harvesting are deliberately deferred.
 
 ## Current gameplay/system limits
 
@@ -18,7 +18,7 @@ The v0.1.2.4 Safari blank-map transition was repaired by preparing/verifying des
 ## Animation/art limits
 
 - Ashstone Golem uses its supplied seven-frame death sheet, currently mapped to the sheet's single verified collapse row for every facing.
-- Starter Wayfarer/Ashcloth/Hide/Road clothing is player-ready for the current renderer and uses existing slash-fallback behavior when the player performs newer extended sword-combo actions that do not have dedicated clothing art.
+- Starter Wayfarer/Ashcloth/Hide/Road clothing now uses revised full-combo-compatible presentation layers for walk, slash, one-handed slash, backslash and halfslash. The Level-1 item IDs/stats are unchanged; the physical iPhone release gate must still confirm the visual stack stays aligned in live play.
 - The supplied Wolf source PSD remains inactive; its animation atlas needs a verified export/crop pass.
 - Several user-supplied enemy/humanoid/building assets still require complete final attribution collection before store/commercial distribution. Development authorization does not replace upstream license obligations.
 

@@ -50,20 +50,25 @@ assert.ok(combatSource.includes('cooldownMs: 2400'), 'Empty-swing combat feedbac
 assert.ok(worldSource.includes('queueKillReward') && worldSource.includes('delayedCall(320'), 'Horde kill rewards must be batched');
 assert.ok(layeredSource.includes('ROOT_X') && layeredSource.includes('baseAsset') && layeredSource.includes("equipmentPolicy === 'player'"), 'Renderer must stabilize revised root motion and support actor-specific bases/equipment policies');
 assert.ok(!html.includes('90_user_generated'), 'Prototype-only generator assets must not ship');
-assert.ok(html.includes('v0.1.2.4.1'), 'Build shell must identify v0.1.2.4.1');
+assert.ok(html.includes('v0.1.2.4.2'), 'Build shell must identify v0.1.2.4.2');
 assert.ok(html.includes('id="start-screen"') && html.includes('id="continue-game"') && html.includes('id="new-game"') && html.includes('id="load-game"'), 'Start menu must expose Continue, New Game and Load Save');
 assert.ok(html.includes('id="map-loading-overlay"') && uiSource.includes("gameEvents.on('map-loading'"), 'Map transitions must expose a visible loading state');
 assert.ok(mainSource.includes('loadExisting()') && mainSource.includes('saveManager.reset()') && mainSource.includes('confirm-new-game'), 'Main boot flow must preserve Continue/Load and require explicit overwrite confirmation for an existing single-slot save');
 assert.ok(saveSource.includes('loadExisting()') && saveSource.includes('summary(state)'), 'Save manager must expose non-destructive slot inspection for the title menu');
 assert.ok(cssSource.includes('overflow-x: auto') && cssSource.includes('left: calc(var(--safe-left)') && cssSource.includes('flex: 0 0 auto'), 'Debug tray must stay inside safe-area bounds and scroll horizontally on iPhone');
-assert.ok(worldSource.includes('transitionToMap') && worldSource.includes('buildAshfallHollow') && worldSource.includes('releaseAssetsNotNeededForMap'), 'WorldScene must support separate map transitions and asset release');
+assert.ok(worldSource.includes('transitionToMap') && worldSource.includes('buildAshfallHollow'), 'WorldScene must support separate map transitions');
+assert.ok(!worldSource.includes('releaseAssetsNotNeededForMap('), 'v0.1.2.4.2 must not eagerly evict textures during the WebKit-sensitive Scene handoff');
+assert.ok(!assetResolverSource.includes('releaseAssetsNotNeededForMap'), 'Unsafe eager texture-eviction helper must not remain exposed in the hotfix resolver API');
+assert.ok(worldSource.includes('recoverPlayerVisual') && worldSource.includes('this.player.restoreVisual()'), 'WorldScene must explicitly reconstruct and verify the layered player after map handoff');
+assert.ok(playerSource.includes('restoreVisual()') && layeredSource.includes('missingTextureKeys') && layeredSource.includes('restore('), 'Player renderer must expose deterministic visual restoration/integrity checks');
+assert.ok(layeredSource.includes('def.playerVisual || def.visual'), 'Player renderer must support player-only revised visual overrides without changing NPC art');
+assert.ok(assetResolverSource.includes("policy === 'player' ? (item.playerVisual || item.visual)"), 'Asset resolver must load playerVisual for player equipment while keeping NPC mappings separate');
 assert.ok(assetResolverSource.includes('prepareMapAssets') && worldSource.includes('await prepareMapAssets'), 'Destination map textures must be prepared explicitly before Scene restart');
 const prepareIndex = worldSource.indexOf('await prepareMapAssets');
 const commitIndex = worldSource.indexOf('this.state.player.mapId = destination.id', prepareIndex);
 const restartIndex = worldSource.indexOf('this.scene.restart()', prepareIndex);
-const releaseAfterCreateIndex = worldSource.indexOf('this.time.delayedCall(0, () => releaseAssetsNotNeededForMap');
 assert.ok(prepareIndex >= 0 && commitIndex > prepareIndex && restartIndex > commitIndex, 'Transition order must prepare destination assets before committing state and restarting');
-assert.ok(releaseAfterCreateIndex >= 0, 'Old registered textures must be released only after the destination Scene has created its objects');
+assert.ok(worldSource.includes('textures already been loaded') || worldSource.includes('retains textures'), 'Transition hotfix must document session-retained texture caching');
 assert.ok(worldSource.includes('if (this.transitioning)'), 'WorldScene must freeze source-map updates during map fade so destination coordinates are not overwritten');
 assert.ok(worldSource.includes("this.textures.exists('solid')"), 'Generated helper textures must be reused safely across scene restarts');
 assert.ok(actionInputSource.includes('unbind()'), 'ActionInput must expose restart-safe keyboard handler cleanup');
@@ -166,8 +171,19 @@ assert.deepEqual(
 for (const itemId of ['chest_wayfarer', 'legs_ash_pants', 'hands_hide_wraps', 'feet_road_boots']) {
   assert.equal(ITEM_DEFS[itemId].playerEquipReady, true, `${itemId} must be player-equippable starter gear`);
   assert.equal(ITEM_DEFS[itemId].npcOnly, false, `${itemId} must no longer be NPC-only`);
-  assert.ok(assetDefsForItem(itemId).length >= 2, `${itemId} must resolve real runtime walk/slash art`);
+  assert.equal(ITEM_DEFS[itemId].animationClass, 'full_combo', `${itemId} must use full-combo starter presentation`);
+  assert.ok(assetDefsForItem(itemId).length >= 4, `${itemId} must resolve walk/slash/backslash/halfslash runtime art`);
 }
+assert.deepEqual(
+  ['chest_wayfarer', 'legs_ash_pants', 'hands_hide_wraps', 'feet_road_boots'].map(id => ITEM_DEFS[id].playerVisual),
+  ['chest_starter_revised', 'legs_starter_revised', 'hands_starter_revised', 'feet_starter_revised'],
+  'Starter item IDs must remain save-compatible while redirecting the player to combo-safe visuals'
+);
+assert.deepEqual(
+  ['chest_wayfarer', 'legs_ash_pants', 'hands_hide_wraps', 'feet_road_boots'].map(id => ITEM_DEFS[id].visual),
+  ['chest_wayfarer', 'legs_ash', 'hands_hide', 'feet_road'],
+  'NPC/shared starter item IDs must retain classic visual mappings instead of receiving player-only revised geometry'
+);
 
 for (const def of Object.values(ITEM_DEFS)) {
   if (!def.visual) continue;
@@ -193,7 +209,11 @@ for (const [key, expected] of Object.entries({
   'cave-spider-walk': [384, 256], 'cave-spider-attack': [256, 256],
   'ember-spider-walk': [384, 256], 'frost-spider-walk': [384, 256], 'mire-spider-walk': [384, 256],
   'golem-walk': [448, 256], 'golem-attack': [448, 384], 'golem-death': [448, 128],
-  'cave3-set': [768, 512]
+  'cave3-set': [768, 512],
+  'starter-trousers-walk': [576, 256], 'starter-trousers-slash': [384, 256],
+  'starter-trousers-backslash': [832, 256], 'starter-trousers-halfslash': [384, 256],
+  'starter-wraps-walk': [576, 256], 'starter-wraps-slash': [384, 256],
+  'starter-wraps-backslash': [832, 256], 'starter-wraps-halfslash': [384, 256]
 })) {
   const def = assetByKey.get(key);
   assert.ok(def, `Missing runtime asset definition ${key}`);
@@ -223,6 +243,18 @@ async function recursiveNames(dir) {
 assert.ok(!(await recursiveNames(path.join(dist, 'assets'))).some(file => file.toLowerCase().endsWith('.psd')), 'Photoshop source files must never ship in runtime dist/assets');
 assert.ok(!(await recursiveNames(path.join(dist, 'assets'))).some(file => file.includes('source-exports')), 'Development source exports must not live inside shipping dist/assets');
 assert.ok((await recursiveNames(path.join(root, 'source-assets'))).length > 20, 'Development source art must be preserved outside dist rather than deleted');
+const conceptRoot = path.join(root, 'source-assets/character-concepts/2026-09-07');
+for (const file of [
+  'player-transformation/Transformation.png',
+  'demon-castle/DemonBase.png', 'demon-castle/RedDemon.png', 'demon-castle/TanDemon.png', 'demon-castle/DemonLordFlesh.png',
+  'heavenly-and-unique/Truetrans.png', 'heavenly-and-unique/TransupOrHolyKnight.png', 'README.md', 'SHA256SUMS.txt'
+]) await access(path.join(conceptRoot, file));
+for (const file of await recursiveNames(conceptRoot)) {
+  if (!file.toLowerCase().endsWith('.png')) continue;
+  const size = await pngSize(file);
+  assert.deepEqual([size.width, size.height], [832, 3456], `${file} must preserve the full LPC source sheet`);
+}
+assert.ok(!(await recursiveNames(path.join(dist, 'assets'))).some(file => file.includes('Transformation.png') || file.includes('Truetrans.png')), 'Future full character concept sheets must not ship in runtime dist/assets');
 const cinderAssetKeys = new Set(assetDefsForMap(createDefaultState(), DEFAULT_MAP_ID).map(asset => asset.key));
 const hollowAssetKeys = new Set(assetDefsForMap(createDefaultState(), 'map_ashfall_hollow').map(asset => asset.key));
 assert.ok(cinderAssetKeys.has('adobe-workshop') && !cinderAssetKeys.has('cave3-set'), 'Cinder map package must not preload cave-only world art');
@@ -331,7 +363,7 @@ assert.deepEqual(WEAPON_COMBAT_PROFILES.sword_four_hit.attacks.map(attack => att
 assert.deepEqual(WEAPON_COMBAT_PROFILES.sword_four_hit.attacks.map(attack => attack.frames), [6, 7, 12, 6]);
 assert.ok(WEAPON_COMBAT_PROFILES.sword_four_hit.comboWindowMs >= 500, 'Four-hit combo needs a usable continuation window');
 
-const fullComboLayers = ['player_red_base', 'head_iron_revised', 'head_bronze_revised', 'shoulders_leather_revised', 'chest_legion', 'chest_silver_legion', 'chest_steel_plate', 'hands_legion', 'feet_leather_revised', 'wings_red_bat'];
+const fullComboLayers = ['player_red_base', 'chest_starter_revised', 'legs_starter_revised', 'hands_starter_revised', 'feet_starter_revised', 'head_iron_revised', 'head_bronze_revised', 'shoulders_leather_revised', 'chest_legion', 'chest_silver_legion', 'chest_steel_plate', 'hands_legion', 'feet_leather_revised', 'wings_red_bat'];
 for (const layerKey of fullComboLayers) {
   const layer = LAYER_ASSETS[layerKey];
   const geometry = ANIMATION_GEOMETRIES[layer.geometry];
@@ -559,4 +591,4 @@ const normalizedWrongSlot = saveManager.validate(wrongSlotSave);
 assert.equal(normalizedWrongSlot.equipment.head, null, 'Wrong-slot saved equipment must be discarded');
 assert.equal(normalizedWrongSlot.equipment.weapon, 'i_000001', 'Valid weapon reference must survive normalization');
 
-console.log(`Validated ${ASSET_DEFS.length} assets, ${Object.keys(ITEM_DEFS).length} items, ${Object.keys(ENEMY_DEFS).length} enemies, ${Object.keys(NPC_DEFS).length} NPCs, ${BUILDING_DEFS.length} refuge buildings, ${COLLIDERS.length} visible-source colliders, ${Object.keys(QUEST_DEFS).length} quests, v0.1.2.4.1 Safari map streaming/save-menu hotfix, scrollable diagnostics, corrected Goblin facing, equipped starter clothes, Golem death animation, separate Ashfall Hollow map, map-scoped/lazy texture loading, preserved source art outside dist, collision preservation, player-safe loot, four-hit combat geometry, hardened mobile movement, inventory recovery, and save schema 1.`);
+console.log(`Validated ${ASSET_DEFS.length} assets, ${Object.keys(ITEM_DEFS).length} items, ${Object.keys(ENEMY_DEFS).length} enemies, ${Object.keys(NPC_DEFS).length} NPCs, ${BUILDING_DEFS.length} refuge buildings, ${COLLIDERS.length} visible-source colliders, ${Object.keys(QUEST_DEFS).length} quests, v0.1.2.4.2 player-transition/starter-visual recovery, scrollable diagnostics, corrected Goblin facing, combo-safe starter clothes, Golem death animation, separate Ashfall Hollow map, map-scoped/lazy texture loading, preserved source art outside dist, collision preservation, player-safe loot, four-hit combat geometry, hardened mobile movement, inventory recovery, and save schema 1.`);

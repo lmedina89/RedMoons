@@ -31,6 +31,13 @@ export const ASSET_DEFS = [
     { key: `${key}-backslash`, path: `${R}${key}-backslash.png`, frameWidth: 64, frameHeight: 64 },
     { key: `${key}-halfslash`, path: `${R}${key}-halfslash.png`, frameWidth: 64, frameHeight: 64 }
   ]),
+  // v0.1.2.4.2 combo-safe starter trouser overlay. It is derived from the
+  // exact revised player poses, so beginner clothing no longer shifts when the
+  // sword combo changes from slash to one-handed/backslash/halfslash actions.
+  ...['walk', 'slash', 'backslash', 'halfslash'].flatMap(action => [
+    { key: `starter-trousers-${action}`, path: `${R}starter-trousers-${action}.png`, frameWidth: 64, frameHeight: 64 },
+    { key: `starter-wraps-${action}`, path: `${R}starter-wraps-${action}.png`, frameWidth: 64, frameHeight: 64 }
+  ]),
   ...['legion-chest', 'legion-gloves', 'iron-helmet', 'red-bat-wings', 'bronze-helmet', 'leather-shoulders', 'leather-boots', 'silver-legion', 'steel-plate'].flatMap(key => [
     { key: `${key}-walk`, path: `${R}${key}-walk.png`, frameWidth: 64, frameHeight: 64 },
     { key: `${key}-slash`, path: `${R}${key}-slash.png`, frameWidth: 64, frameHeight: 64 },
@@ -180,6 +187,16 @@ export const LAYER_ASSETS = Object.freeze({
   body: { walk: 'revised-body-walk', slash: 'revised-body-slash', backslash: 'revised-body-backslash', halfslash: 'revised-body-halfslash', geometry: 'revised64' },
   hair: { walk: 'hair-walk', slash: 'hair-slash', geometry: 'classic', attackFallback: 'slash' },
 
+  // Beginner presentation aliases intentionally reuse verified revised-combat
+  // layers. The item IDs/names stay low-level and save-compatible while the
+  // visuals remain synchronized through the full four-hit sword chain.
+  chest_starter_revised: { walk: 'legion-chest-walk', slash: 'legion-chest-slash', backslash: 'legion-chest-backslash', halfslash: 'legion-chest-halfslash', geometry: 'revised64' },
+  legs_starter_revised: { walk: 'starter-trousers-walk', slash: 'starter-trousers-slash', backslash: 'starter-trousers-backslash', halfslash: 'starter-trousers-halfslash', geometry: 'revised64' },
+  hands_starter_revised: { walk: 'starter-wraps-walk', slash: 'starter-wraps-slash', backslash: 'starter-wraps-backslash', halfslash: 'starter-wraps-halfslash', geometry: 'revised64' },
+  feet_starter_revised: { walk: 'leather-boots-walk', slash: 'leather-boots-slash', backslash: 'leather-boots-backslash', halfslash: 'leather-boots-halfslash', geometry: 'revised64' },
+
+  // Legacy classic-animation layers are retained for NPCs/source compatibility,
+  // but player starter items no longer point at them.
   chest_wayfarer: { walk: 'shirt-walk', slash: 'shirt-slash', geometry: 'classic', attackFallback: 'slash' },
   chest_leather: { walk: 'leather-walk', slash: 'leather-slash', geometry: 'classic', attackFallback: 'slash' },
   chest_plate: { walk: 'plate-chest-walk', slash: 'plate-chest-slash', geometry: 'classic', attackFallback: 'slash' },

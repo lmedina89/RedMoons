@@ -24,10 +24,10 @@ function addVisual(keys, visual) {
   addLayer(keys, `${visual}_fg`);
 }
 
-function addItem(keys, itemId) {
+function addItem(keys, itemId, policy = 'npc') {
   const item = itemId && ITEM_DEFS[itemId];
   if (!item) return;
-  addVisual(keys, item.visual);
+  addVisual(keys, policy === 'player' ? (item.playerVisual || item.visual) : item.visual);
 }
 
 function addEnemy(keys, enemy) {
@@ -58,7 +58,7 @@ function mapIdForSpawn(spawn) { return spawn.mapId || DEFAULT_MAP_ID; }
 
 export function assetDefsForItem(itemId) {
   const keys = new Set();
-  addItem(keys, itemId);
+  addItem(keys, itemId, 'player');
   return [...keys].map(key => ASSET_BY_KEY.get(key));
 }
 
@@ -72,7 +72,7 @@ export function assetDefsForMap(state, requestedMapId = null) {
   const inventoryById = new Map((state?.inventory || []).map(item => [item.instanceId, item]));
   for (const instanceId of Object.values(state?.equipment || {})) {
     const instance = inventoryById.get(instanceId);
-    if (instance) addItem(keys, instance.itemId);
+    if (instance) addItem(keys, instance.itemId, 'player');
   }
 
   for (const spawn of SPAWN_REGIONS) {
@@ -140,13 +140,6 @@ export async function ensureItemVisualAssets(scene, itemId) {
   return ensureAssetDefs(scene, assetDefsForItem(itemId));
 }
 
-export function releaseAssetsNotNeededForMap(scene, state, destinationMapId) {
-  const keep = new Set(assetDefsForMap(state, destinationMapId).map(asset => asset.key));
-  for (const asset of ASSET_DEFS) {
-    if (keep.has(asset.key) || !scene.textures.exists(asset.key)) continue;
-    scene.textures.remove(asset.key);
-  }
-}
 
 export function mapAssetSummary(state, mapId) {
   const map = MAP_DEFS[mapId] || MAP_DEFS[DEFAULT_MAP_ID];

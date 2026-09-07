@@ -1,8 +1,8 @@
-## v0.1.2.4.1 transition memory policy
+# Mobile Performance Considerations — v0.1.2.4.2
 
-For reliability, destination textures may briefly coexist with the source-map package during travel. This temporary overlap is intentional: destination assets are verified first, the destination Scene is created, and only then are stale source-map textures released. The short-lived overlap trades a small transition-time memory peak for a much safer Safari lifecycle.
+## v0.1.2.4.2 transition memory policy
 
-# Mobile Performance Considerations — v0.1.2.4.1
+Map assets remain **lazy by first visit**, but textures already loaded during the current browser session are retained. Physical iPhone Safari testing showed that eager TextureManager eviction during Phaser Scene restarts could leave the newly constructed player layer stack without usable textures even though the map itself rendered. Current two-map memory remains manageable, so reliability takes precedence over aggressive eviction in this hotfix. A later cache-eviction policy must be device-tested behind a clean scene handoff before reintroduction.
 
 Hell RPG remains designed first around iPhone-landscape constraints rather than treating mobile optimization as a final cleanup pass.
 
@@ -59,7 +59,7 @@ Moving a source file out of `dist/` does not mean losing it.
 
 Do not solve world expansion by continually increasing the Cinder Region dimensions. Caves, dungeons, interiors, distant regions, guild spaces and major future towns should normally be separate maps with map-owned actor and texture packages.
 
-When transitioning, the scene releases registered textures not needed by the destination package before restarting into the new map. This creates a foundation for much larger total world content without requiring every region to remain resident simultaneously.
+When transitioning, the destination package is loaded only when needed. In v0.1.2.4.2, textures already visited during the current browser session remain cached instead of being evicted during the Phaser Scene restart, because physical iPhone testing exposed a WebKit-sensitive player-visual failure at that boundary. This still prevents *unvisited* regions from loading up front. A later bounded cache/eviction layer can be reintroduced only after it passes the same physical-device transition gate.
 
 ## Next performance steps when needed
 

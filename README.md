@@ -1,88 +1,56 @@
-# Hell RPG v0.1.2.4.1 — Map Streaming & Save Menu Hotfix
+# Hell RPG v0.1.2.4.2 — Player Transition & Starter Visual Recovery
 
-Ashfall Foundation is an original, mobile-first single-player pixel action RPG built with Phaser 3, JavaScript and HTML/CSS. Its progression/combat philosophy is inspired by the feel of classic grind-heavy MMORPGs while Hell RPG's names, world content and implementation remain original.
+This hotfix is built directly from v0.1.2.4.1 and keeps **save schema 1**. Its release gate is the user's physical iPhone Safari because both repaired problems were found there.
 
-v0.1.2.4.1 is a narrowly scoped hotfix built directly on v0.1.2.4. It keeps **save schema 1** and all v0.1.2.4 world/content work, while repairing the live Safari map-asset handoff found during physical iPhone testing and adding an explicit single-slot Continue / New Game / Load Save startup flow.
+## What changed
 
-## What is new in v0.1.2.4.1
+### Player survives map transitions visually
+The destination map is still prepared before transition state is committed. v0.1.2.4.2 changes only the post-load cache policy: textures already loaded in this browser session are retained rather than eagerly removed during Scene restarts. The player layer stack is explicitly reconstructed on Scene creation and checked again after the first frame. If required visual textures are unexpectedly missing, the current package is re-prepared and the player visual is rebuilt.
 
-- Destination map textures are now **prepared and verified before map state is committed or the Phaser Scene restarts**.
-- Old map textures are released only after the destination Scene has created its objects. If destination preparation fails, the transition is cancelled safely and the player remains on the current map.
-- A visible map-loading overlay reports the destination-package handoff instead of allowing a silent blank interval.
-- Page load now presents **Continue**, **New Game**, and **Load Save**. New Game requires confirmation before overwriting an existing single-slot save.
-- Load Save displays Level, current map, ash and the preserved last-save timestamp before loading the slot.
-- Save validation now preserves schema-1 `savedAt` and prior `gameVersion` metadata for accurate slot presentation.
+This intentionally trades a modest amount of session memory for transition reliability. Unvisited maps still are **not** loaded at startup.
 
-## Carried forward from v0.1.2.4
+### Level-1 clothes no longer use slash-only legacy visuals
+Fresh characters keep the familiar starter item names and stats:
 
-- Added a **data-driven map registry** with stable map IDs, entry-point IDs and two-way transition records.
-- Preserved the original **2560×1280 Cinder Region** unchanged in physical size rather than extending it into a giant monolithic world.
-- Added **Ashfall Hollow**, a separate 1024×768 cave map reached from the Scorched Outskirts with **Use** and returned through its southern exit.
-- Ashfall Hollow has its own walls/collision, cave presentation and a small Cave Spider/Mire Spider population. Mire Spider is now naturally placed rather than debug-only.
-- Added **map-scoped asset resolution**. World startup loads the current map's world art, local actors and required equipment visuals instead of blindly preloading every registered texture.
-- Inventory equipment visuals can be **lazy-loaded when equipped**, allowing future equipment expansion without forcing every player-ready sheet into every map package.
-- On map transition, destination assets are prepared first; runtime assets no longer required are released only after the destination scene is safely alive.
-- Moved preserved source/export artwork out of shipping `dist/assets` into top-level `source-assets/`. **No source art was deleted.** Runtime `dist/` now contains only assets intended to be served by the game plus licenses/credits.
-- Fixed the iPhone `?debug=1` diagnostics tray so it is safe-area bounded and horizontally swipeable instead of disappearing beyond the viewport.
-- Corrected **Ash Goblin Raider facing** with a data-driven direction-row mapping; the AI movement itself was not reversed.
-- New characters now begin wearing a complete low-level outfit: **Wayfarer Shirt, Ashcloth Trousers, Hide Handwraps and Road Boots**, plus the existing Ashen Arming Sword.
-- Those four starter clothes are now player-ready Level-1 gear. Existing saves are **not** force-dressed or overwritten.
-- Added shared optional enemy death-animation support and wired **Ashstone Golem** to its supplied seven-frame death sheet instead of disappearing immediately on defeat.
-- Debug diagnostics now include direct **Map: Refuge** and **Map: Hollow** helpers.
+- Wayfarer Shirt
+- Ashcloth Trousers
+- Hide Handwraps
+- Road Boots
+- Ashen Arming Sword
 
-## World structure rule
+The four clothing items now use player-only full-combo-compatible revised visuals; NPC/enemy loadouts that share those item IDs keep their original classic presentation. `Ashcloth Trousers` includes a compact revised-combat overlay generated from the exact player poses, and `Hide Handwraps` use a brown low-level recolor of the verified revised glove poses. Both remain aligned through slash → one-handed slash → backslash → halfslash. Existing saves keep their equipment choices; the visual fix follows the same item IDs, so a returning character wearing the old starter items benefits automatically.
 
-Hell RPG should not grow by continuously enlarging one map. Nearby exterior spaces may remain continuous, but caves, dungeons, building interiors, distant regions, guild areas and future towns can be separate maps connected by roads, gates, doors, cave mouths or portals. Each map owns its bounds, zones, population, transition points and world-art asset package.
+### Future Demon / Heavenly / transformation art is preserved
+The newly supplied 832×3456 LPC-style sheets are source-only under:
 
-This keeps the game world expandable without requiring an iPhone to hold every region and actor in memory simultaneously.
+`source-assets/character-concepts/2026-09-07/`
 
-## Collision policy
+`Transformation.png` is the only sheet currently designated as the future **player transformation**. The other uploaded sheets are preserved for future Demon Castle mobs/elites/bosses or Heavenly Castle/unique NPCs. No transformation feature is activated in this release.
 
-The v0.1.2.2 visible-source rule remains authoritative in the Cinder Region: only visible refuge wall segments and visible building footprints create static blockers. Decorative rocks, plants, roads and scenery remain non-blocking.
+## Existing systems preserved
 
-Ashfall Hollow follows the same principle: its static colliders are generated from its visible rock-wall definitions, with a visible southern opening aligned to the return transition.
+- Cinder Region + Ashfall Hollow separate-map architecture
+- Continue / New Game / Load Save single-slot flow
+- map-loading overlay and prepare-before-commit transition safety
+- horizontally swipeable diagnostics tray
+- corrected Ash Goblin facing
+- Ashstone Golem death animation
+- save schema 1 compatibility
+- data-driven items/enemies/NPCs/quests/maps
+- compact runtime crops with full source art kept outside `dist/`
 
-## Playable loop
+## Physical iPhone release gate
 
-Start in Cinder Refuge, locate Warden Vesra at Warden Hall, move east into the Scorched Outskirts, fight multiple enemy families, collect player-compatible loot, gain XP/stat points and push toward Bone Road. A cave entrance in the Scorched Outskirts now leads to Ashfall Hollow as the first proof of the multi-map architecture.
+1. Start/Continue in Cinder and confirm the full Level-1 outfit is visible.
+2. Perform the complete four-hit sword chain facing all four directions; clothes must not shift independently from the body.
+3. Cinder → Hollow → Cinder → Hollow → Cinder without Safari refresh; player must remain visible every time.
+4. Save in Hollow, reload the page, Continue, and confirm both map and player appear immediately.
+5. Save in Cinder, reload, Continue, and repeat.
+6. Remove/equip starter gear and verify returning saves are not force-dressed.
+7. Switch apps/background Safari during a 10–15 minute session and verify input, player visibility and map rendering remain stable.
 
-Touch controls are designed first for iPhone landscape. Keyboard controls are also available: WASD/arrows move, Shift runs, Space attacks, E interacts, I opens Inventory, C opens Character and Q opens Quests.
+## Debug
+Append `?debug=1` to the GitHub Pages URL. The diagnostics tray is horizontally swipeable and includes direct `Map: Refuge` / `Map: Hollow` travel buttons.
 
-## Development diagnostics
-
-Append `?debug=1` to the URL. The diagnostics tray is horizontally swipeable on narrow landscape screens and includes enemy teleports, map-transition helpers, gear regression helpers, Wings unlock and collision visualization.
-
-## Run locally
-
-```bash
-python3 -m http.server 8080 --directory dist
-```
-
-Then open `http://localhost:8080/`.
-
-No build step or runtime CDN is required; Phaser 3.90.0 is vendored under `dist/vendor/`.
-
-## Checks
-
-```bash
-npm run check
-find dist/js -name '*.js' -print0 | xargs -0 -n1 node --check
-```
-
-The validator covers runtime/source asset separation, per-map asset packages, map transitions, visible-source collision, save normalization, starter equipment, Goblin facing, Golem death geometry, enemy/NPC/item references, player-safe loot and existing four-hit equipment animation invariants.
-
-## Save compatibility
-
-`saveVersion` remains **1**. Older schema-1 saves without map metadata normalize to `map_cinder_region`; valid current-map positions are preserved and clamped to that map's bounds. Map-aware saves persist stable `mapId`/`entryPointId` values. Existing equipment choices remain untouched.
-
-## Asset preservation
-
-Development/source artwork is preserved under `source-assets/`, including the previous LPC source exports and staged workshop sheets. Runtime crops and assets used by the game remain under `dist/assets/`. License/credit records stay in `dist/assets/licenses/` and the project documentation.
-
-The supplied Wolf PSD remains preserved/deferred until its irregular animation layout receives a verified runtime export rather than a guessed one.
-
-## GitHub Pages
-
-The ZIP is repo-root ready. Extract its contents directly into the repository root. The root launcher forwards to `dist/`, and relative asset paths remain compatible with GitHub project Pages.
-
-See `docs/ARCHITECTURE.md`, `docs/ASSET_USAGE_AND_CREDITS.md`, `docs/MOBILE_PERFORMANCE.md`, `docs/KNOWN_LIMITATIONS.md`, `docs/QA_REPORT.md`, and `CHANGELOG.md`.
+## Source-art policy
+Development/source artwork is preserved under `source-assets/`. Runtime art under `dist/assets/` should remain curated and action-specific. Never delete useful source sheets merely to reduce the shipping build; move them out of `dist/` instead.

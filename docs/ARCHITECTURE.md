@@ -1,6 +1,12 @@
-## Map-transition lifecycle invariant (v0.1.2.4.1)
+# Architecture — v0.1.2.4.2
 
-A live map switch must follow this order: **freeze input → prepare/verify destination assets → commit destination map/entry/coordinates → save → restart/fade into destination → release stale source-map textures after destination objects exist**. A failed package preparation must leave source-map state untouched. This ordering exists specifically to avoid WebKit/Safari blank-world races during Scene restart and texture release.
+## Map-transition lifecycle invariant (v0.1.2.4.2)
+
+A transition prepares/verifies the destination package while the source map is still active, commits map/entry coordinates only after success, saves, fades, then restarts WorldScene. Loaded textures are retained for the browser session. On destination create the player layered stack is explicitly rebuilt and a delayed integrity pass can re-prepare the current map assets if required textures are missing. This intentionally separates **map package loading** from future **texture cache eviction** so WebKit reliability can be proven first.
+
+## Player visual compatibility
+
+Player gear may be marked `full_combo` only when its visual layer supplies real populated frames for walk, standard slash, one-handed/backslash source and halfslash across all four directions. v0.1.2.4.2 moves the Level-1 starter outfit onto that invariant while preserving the old item IDs. Shared starter item IDs can now expose a `playerVisual` override: player rendering/asset resolution uses the revised-combo presentation while NPC/enemy loadouts keep their existing classic `visual` mapping.
 
 # Architecture Summary
 
@@ -73,7 +79,7 @@ Equipment set definitions live beside items as data-only metadata. `setId`/`gear
 
 `data/world.js` now separates **maps** from **zones**. A map owns world dimensions, renderer identity, entry points, zone membership and world-art asset keys. A zone remains gameplay metadata such as name, level band, hostility and biome. This allows several gameplay zones to share one exterior map while caves/interiors/distant regions use separate maps.
 
-`MAP_TRANSITIONS` links a source map/position to a destination `mapId` + stable `entryPointId`. `WorldScene` stores the destination identity in the player state, saves, fades out, releases unneeded registered textures and restarts. Scene initialization/preload then resolves the new active map from the persisted state. The first implementation connects `map_cinder_region` and `map_ashfall_hollow` in both directions.
+`MAP_TRANSITIONS` links a source map/position to a destination `mapId` + stable `entryPointId`. `WorldScene` freezes source-map input, prepares and verifies the destination texture package, then commits the destination identity/entry coordinates, saves, fades out and restarts. Scene initialization resolves the active map from persisted state and explicitly reconstructs the layered player. v0.1.2.4.2 keeps already-loaded textures cached for the current browser session instead of evicting them during the restart; this is a deliberate WebKit reliability hotfix, not a return to global startup preloading. The first implementation connects `map_cinder_region` and `map_ashfall_hollow` in both directions.
 
 Save schema remains 1. `SaveManager` treats missing/invalid map metadata as the Cinder Region and clamps positions against the selected map bounds. This lets older saves migrate safely without a broad schema rewrite. Existing equipment slots are also preserved rather than force-populating the new starter clothes.
 
@@ -82,4 +88,3 @@ Save schema remains 1. `SaveManager` treats missing/invalid map metadata as the 
 Development/source artwork is no longer stored under served `dist/assets/source-exports`. It is preserved under top-level `source-assets/`; only curated runtime assets and distribution license records belong under `dist/assets`.
 
 The enemy renderer also now accepts definition-specific directional row maps for non-LPC sheets. This fixes assets such as the supplied Goblin without contaminating AI direction logic. Optional non-layered death metadata (`deathTexture`, frame geometry/timing and row mapping) allows an enemy to enter a short `dying` presentation state before becoming inactive; Ashstone Golem is the first live use.
-

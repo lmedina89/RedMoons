@@ -1,5 +1,27 @@
 # Changelog
 
+## v0.1.2.4.2 — Player Transition & Starter Visual Recovery
+
+### Physical-iPhone repairs
+- Removed eager runtime-texture eviction during live map handoffs. Map packages are still loaded on demand, but once a texture has been loaded it remains cached for the current browser session. This avoids the WebKit/Phaser texture-lifecycle case that could leave only the cyan player physics proxy visible after Cinder ↔ Ashfall Hollow transitions.
+- Added an explicit layered-player visual rebuild on every WorldScene create plus a delayed integrity check/recovery pass. If required player textures are unexpectedly missing, the current map package is re-prepared and the visual stack is rebuilt rather than silently leaving an invisible character.
+- Kept the v0.1.2.4.1 prepare-before-commit transition invariant: destination assets must still finish loading before map state is changed.
+
+### Combo-safe Level-1 starter presentation
+- Kept the same save-compatible starter item IDs and low Level-1 stats, but redirected their visuals away from legacy slash-only layers.
+- `Wayfarer Shirt` now uses a revised-combat synchronized dark beginner tunic presentation.
+- `Ashcloth Trousers` now uses a new compact revised-combat trouser overlay derived from the exact player pose crops for walk/slash/backslash/halfslash.
+- `Hide Handwraps` now uses a compact brown leather-wrap recolor of the verified full-combo glove poses, while `Road Boots` reuse the verified revised leather-boot layer.
+- Existing saves that already own/equip these starter item IDs automatically benefit from the corrected visuals without force-equipping anything they had removed.
+- Legacy classic clothing assets remain preserved for NPC/future use; they are no longer the default player starter presentation.
+- Added a player-only `playerVisual` override path so shared starter item IDs can use revised-combo art on the player while NPC/enemy loadouts keep their original classic geometry.
+
+### Future character-content staging
+- Preserved the user's 2026-09-07 full 832×3456 LPC-style character sheets under `source-assets/character-concepts/2026-09-07/`; none are preloaded or shipped under `dist/`.
+- `Transformation.png` is the authoritative future player transformation source. No transformation mechanics are enabled in this hotfix.
+- Winged skeletal sheets are staged for future Demon Castle mobs/elites/bosses with modular armor/loadouts. Winged humanoid sheets are staged primarily for Heavenly Castle/unique NPC use.
+- `TransupOrHolyKnight.png` and `Truetrans.png` are explicitly not treated as the player transformation.
+
 ## v0.1.2.4.1 — Map Streaming & Save Menu Hotfix
 
 - Repaired the physical-iPhone Safari blank-world transition found in v0.1.2.4 by explicitly preparing and verifying the destination map's texture package before committing destination state or restarting the Phaser scene.
