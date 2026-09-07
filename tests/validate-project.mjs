@@ -11,8 +11,9 @@ const { GAME_VERSION } = await import('../dist/js/config.js');
 const { ANIMATION_GEOMETRIES, ASSET_DEFS, LAYER_ASSETS } = await import('../dist/js/data/assets.js');
 const { WEAPON_COMBAT_PROFILES } = await import('../dist/js/data/combat.js');
 const { ENEMY_DEFS } = await import('../dist/js/data/enemies.js');
-const { ITEM_DEFS } = await import('../dist/js/data/items.js');
+const { EQUIPMENT_SET_DEFS, ITEM_DEFS } = await import('../dist/js/data/items.js');
 const { NPC_DEFS } = await import('../dist/js/data/npcs.js');
+const { BUILDING_DEFS, SPAWN_REGIONS, ZONES } = await import('../dist/js/data/world.js');
 const { QUEST_DEFS } = await import('../dist/js/data/quests.js');
 const { createDefaultState } = await import('../dist/js/core/GameState.js');
 const { SaveManager } = await import('../dist/js/core/SaveManager.js');
@@ -40,18 +41,34 @@ assert.ok(uiSource.includes('activeMovePointerId') && uiSource.includes('lostpoi
 assert.ok(actionInputSource.includes('setTouchMovement') && actionInputSource.includes('resetTouchMovement') && actionInputSource.includes('>= 0.08'), 'ActionInput must own normalized touch movement and deadzone state');
 assert.ok(combatSource.includes('cooldownMs: 1800'), 'Empty-swing combat feedback must be rate-limited');
 assert.ok(worldSource.includes('queueKillReward') && worldSource.includes('delayedCall(320'), 'Horde kill rewards must be batched');
-assert.ok(layeredSource.includes('ROOT_X') && layeredSource.includes("this.setAsset('hair', null)"), 'Renderer must stabilize revised root motion and suppress incompatible hair');
+assert.ok(layeredSource.includes('ROOT_X') && layeredSource.includes('baseAsset') && layeredSource.includes("equipmentPolicy === 'player'"), 'Renderer must stabilize revised root motion and support actor-specific bases/equipment policies');
 assert.ok(!html.includes('90_user_generated'), 'Prototype-only generator assets must not ship');
-assert.ok(html.includes('v0.1.1.5'), 'Build shell must identify v0.1.1.5');
+assert.ok(html.includes('v0.1.2'), 'Build shell must identify v0.1.2');
 assert.ok(worldSource.includes('playerLootEligible') && worldSource.includes('actionInput.setTouchMovement'), 'WorldScene must enforce player-loot eligibility and route touch vectors through ActionInput');
 assert.ok(worldSource.includes('startFollow(this.player.body, true, 1, 1)'), 'Camera must track the player without delayed catch-up that looks like reverse sliding');
 assert.ok(!worldSource.includes('this.physics.add.collider(this.player.body, this.enemyGroup)'), 'Enemies must not physically shove the player through dynamic body separation');
 assert.ok(worldSource.includes("command.type === 'dropItem' || command.type === 'destroyItem'"), 'WorldScene must handle inventory drop/destroy commands');
 assert.ok(uiSource.includes('touchend') && uiSource.includes('capture: true') && uiSource.includes('Confirm Destroy'), 'Mobile input and discard confirmation must be hardened in the UI');
-assert.ok(worldSource.includes("action === 'gear115'") && html.includes('Add 0.1.1.5 Gear'), 'Debug build must expose the v0.1.1.5 gear regression helper');
+assert.ok(worldSource.includes("action === 'gear115'") && html.includes('Add 0.1.2 Gear'), 'Debug build must expose the v0.1.1.5 gear regression helper');
 
 const ids = groups => Object.values(groups).map(value => value.id);
 for (const registry of [ITEM_DEFS, ENEMY_DEFS, NPC_DEFS, QUEST_DEFS]) assert.equal(new Set(ids(registry)).size, ids(registry).length, 'Stable content IDs must be unique');
+assert.ok(BUILDING_DEFS.length >= 5, 'Cinder Refuge must contain a real multi-building settlement layout');
+assert.ok(ZONES.every(zone => Array.isArray(zone.levelRange) && typeof zone.safe === 'boolean' && Array.isArray(zone.eventTags)), 'Zones must expose future-proof level/safety/event metadata');
+assert.ok(Object.keys(ENEMY_DEFS).length >= 7, 'World variety foundation should ship several real enemy archetypes/variants');
+assert.ok(Object.values(ENEMY_DEFS).filter(enemy => enemy.layered).length >= 4, 'Skeleton family should use layered equipment-bearing actors');
+for (const enemy of Object.values(ENEMY_DEFS)) {
+  for (const itemId of Object.values(enemy.fixedLoadout || {})) assert.ok(ITEM_DEFS[itemId], `${enemy.id} fixed loadout references unknown item ${itemId}`);
+  for (const entries of Object.values(enemy.equipmentPool || {})) for (const entry of entries) if (entry.itemId) assert.ok(ITEM_DEFS[entry.itemId], `${enemy.id} equipment pool references unknown item ${entry.itemId}`);
+}
+for (const npc of Object.values(NPC_DEFS)) {
+  assert.ok(typeof npc.npcType === 'string' && typeof npc.activityState === 'string' && Object.prototype.hasOwnProperty.call(npc, 'guildId'), `${npc.id} must expose persistent-adventurer/guild-ready metadata`);
+  for (const itemId of Object.values(npc.loadout || {})) assert.ok(ITEM_DEFS[itemId], `${npc.id} loadout references unknown item ${itemId}`);
+}
+assert.ok(NPC_DEFS.npc_wanderer.recruitable && NPC_DEFS.npc_wanderer.baseVisual === 'npc_olive_base', 'Sable should seed the future recruitable adventurer system with the new humanoid base');
+assert.equal(LAYER_ASSETS.player_red_base.geometry, 'revised64', 'Red-haired protagonist must be the active full-combat base asset');
+assert.ok(Object.keys(EQUIPMENT_SET_DEFS).length >= 3 && EQUIPMENT_SET_DEFS.set_legion_remnant?.name, 'Named equipment-set metadata must exist without activating bonuses yet');
+assert.ok(SPAWN_REGIONS.some(spawn => spawn.enemyId === 'enemy_carrion_beast') && SPAWN_REGIONS.some(spawn => spawn.enemyId === 'enemy_bloodbone'), 'New enemy families must actually be spawned in the world');
 for (const enemy of Object.values(ENEMY_DEFS)) for (const drop of enemy.loot) {
   const item = ITEM_DEFS[drop.itemId];
   assert.ok(item, `Enemy loot references unknown item ${drop.itemId}`);
@@ -189,7 +206,7 @@ assert.deepEqual(WEAPON_COMBAT_PROFILES.sword_four_hit.attacks.map(attack => att
 assert.deepEqual(WEAPON_COMBAT_PROFILES.sword_four_hit.attacks.map(attack => attack.frames), [6, 7, 12, 6]);
 assert.ok(WEAPON_COMBAT_PROFILES.sword_four_hit.comboWindowMs >= 500, 'Four-hit combo needs a usable continuation window');
 
-const fullComboLayers = ['body', 'head_iron_revised', 'head_bronze_revised', 'shoulders_leather_revised', 'chest_legion', 'chest_silver_legion', 'chest_steel_plate', 'hands_legion', 'feet_leather_revised', 'wings_red_bat'];
+const fullComboLayers = ['player_red_base', 'head_iron_revised', 'head_bronze_revised', 'shoulders_leather_revised', 'chest_legion', 'chest_silver_legion', 'chest_steel_plate', 'hands_legion', 'feet_leather_revised', 'wings_red_bat'];
 for (const layerKey of fullComboLayers) {
   const layer = LAYER_ASSETS[layerKey];
   const geometry = ANIMATION_GEOMETRIES[layer.geometry];
@@ -204,7 +221,7 @@ for (const layerKey of fullComboLayers) {
       // Modular LPC layers may intentionally be transparent for an isolated
       // pose (e.g. a glove pixel layer when the hand is fully occluded). An
       // entire missing action/direction, however, must fail validation.
-      const minimum = layerKey === 'body' ? animation.sequence.length : Math.max(1, animation.sequence.length - 1);
+      const minimum = layerKey === 'player_red_base' ? animation.sequence.length : Math.max(1, animation.sequence.length - 1);
       assert.ok(populated >= minimum, `${layerKey}/${action} direction ${direction} has only ${populated}/${animation.sequence.length} populated source frames`);
     }
   }
@@ -365,4 +382,4 @@ const normalizedWrongSlot = saveManager.validate(wrongSlotSave);
 assert.equal(normalizedWrongSlot.equipment.head, null, 'Wrong-slot saved equipment must be discarded');
 assert.equal(normalizedWrongSlot.equipment.weapon, 'i_000001', 'Valid weapon reference must survive normalization');
 
-console.log(`Validated ${ASSET_DEFS.length} assets, ${Object.keys(ITEM_DEFS).length} items, ${Object.keys(ENEMY_DEFS).length} enemies, ${Object.keys(NPC_DEFS).length} NPCs, ${Object.keys(QUEST_DEFS).length} quests, v0.1.1.5 full-combo gear expansion, three arming-sword palettes, future rarity/glow metadata, four-hit combat geometry, strict player/NPC animation compatibility, hardened touch movement, no enemy body shove, singleton/rate-limited toasts, player-safe loot tables, drop/destroy inventory recovery, root stabilization, batched horde rewards, 12-slot equipment, wing gating, stat aggregation, and save schema 1.`);
+console.log(`Validated ${ASSET_DEFS.length} assets, ${Object.keys(ITEM_DEFS).length} items, ${Object.keys(ENEMY_DEFS).length} enemies, ${Object.keys(NPC_DEFS).length} NPCs, ${BUILDING_DEFS.length} refuge buildings, ${Object.keys(QUEST_DEFS).length} quests, v0.1.2 red-haired protagonist, layered NPC/skeleton loadouts, enemy-family expansion, zone metadata, named-set scaffolding, player-safe loot, four-hit combat geometry, hardened mobile movement, inventory recovery, and save schema 1.`);

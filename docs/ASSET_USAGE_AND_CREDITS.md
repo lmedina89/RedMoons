@@ -99,3 +99,19 @@ Before an App Store / Play Store / commercial release:
 4. Re-run an asset provenance audit after any new tileset, building pack, enemy pack or equipment export is added.
 
 This organization note is not legal advice.
+
+## v0.1.2 world/enemy/humanoid development assets
+
+The following user-supplied source files are preserved under `dist/assets/source-exports/2026-09-06/world-enemy-v012/` and processed into compact runtime crops where appropriate:
+
+- Red haired guy.png — active player base.
+- Olive skinned NPC mustache.png — Sable/future adventurer base.
+- Beast zombie.png — Carrion Beast runtime walk/slash.
+- Zombie boar wings(1).png — Rotwing Ravager runtime walk/slash.
+- Zombie slate skeleton.png — Slate Revenant layered base.
+- Red skeleton.png — Bloodbone layered base.
+- Yellow skeleton.png — Gilded Ossuary Guard layered base.
+- adobe.png / adobe6.png — Cinder Refuge building source. Included `adobe-credit.txt` is preserved.
+- Castle2_set.png — Cinder Refuge prop source; exact final source/license attribution still needs collection.
+
+The user authorized use during development before final credit collection. Missing attribution is tracked as a release-readiness limitation and should be resolved before commercial/store distribution.

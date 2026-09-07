@@ -1,3 +1,27 @@
+import { LayeredCharacter, createActorEquipmentState } from './LayeredCharacter.js';
+
+function weightedChoice(entries = []) {
+  const valid = entries.filter(entry => entry && Number(entry.weight) > 0);
+  const total = valid.reduce((sum, entry) => sum + Number(entry.weight), 0);
+  if (!total) return null;
+  let roll = Math.random() * total;
+  for (const entry of valid) {
+    roll -= Number(entry.weight);
+    if (roll <= 0) return entry.itemId || null;
+  }
+  return valid.at(-1)?.itemId || null;
+}
+
+function rollLoadout(definition) {
+  if (definition.fixedLoadout) return { ...definition.fixedLoadout };
+  const loadout = {};
+  for (const [slot, entries] of Object.entries(definition.equipmentPool || {})) {
+    const itemId = weightedChoice(entries);
+    if (itemId) loadout[slot] = itemId;
+  }
+  return loadout;
+}
+
 export class Enemy {
   constructor(scene, group, definition, spawn, index, callbacks) {
     this.scene = scene;
@@ -6,8 +30,19 @@ export class Enemy {
     this.spawn = spawn;
     this.index = index;
     this.callbacks = callbacks;
-    this.sprite = scene.physics.add.sprite(0, 0, definition.walkTexture, 0).setScale((definition.scale || 1) * 1.25).setOrigin(0.5, 0.7);
-    this.sprite.body.setSize(24, 28).setOffset(20, 28);
+    this.layered = Boolean(definition.layered);
+    if (this.layered) {
+      this.sprite = scene.physics.add.sprite(0, 0, 'solid').setAlpha(0.001).setDisplaySize(25, 30);
+      this.sprite.body.setSize(18, 22).setOffset(0, 4);
+      this.actorState = createActorEquipmentState({});
+      this.visual = new LayeredCharacter(scene, 0, 0, this.actorState, (definition.scale || 1) * 1.3, {
+        baseAsset: definition.baseVisual || 'enemy_skeleton_base',
+        equipmentPolicy: 'npc'
+      });
+    } else {
+      this.sprite = scene.physics.add.sprite(0, 0, definition.walkTexture, 0).setScale((definition.scale || 1) * 1.25).setOrigin(0.5, 0.7);
+      this.sprite.body.setSize(24, 28).setOffset(20, 28);
+    }
     this.sprite.enemyRef = this;
     group.add(this.sprite);
     this.state = 'idle';
@@ -20,7 +55,16 @@ export class Enemy {
     this.attackApplied = false;
     this.respawnAt = 0;
     this.animClock = Math.random() * 500;
+    this.loadout = {};
     this.respawn(0);
+  }
+
+  applyLoadout() {
+    if (!this.layered) return;
+    this.loadout = rollLoadout(this.def);
+    this.actorState = createActorEquipmentState(this.loadout);
+    this.visual.refreshEquipment(this.actorState);
+    this.visual.direction = this.direction;
   }
 
   respawn(time) {
@@ -35,11 +79,22 @@ export class Enemy {
     this.state = 'idle';
     this.stateUntil = time + 450 + Math.random() * 800;
     this.sprite.setVelocity(0);
+    this.applyLoadout();
+    this.visual?.setVisible(true);
+    this.visual?.clearTint();
+    this.renderVisual('idle', 0, null);
   }
 
   setDirection(vx, vy) {
     if (Math.abs(vx) > Math.abs(vy)) this.direction = vx < 0 ? 1 : 3;
     else if (vy) this.direction = vy < 0 ? 0 : 2;
+    if (this.visual) this.visual.direction = this.direction;
+  }
+
+  renderVisual(action, frameStep, progress = null) {
+    if (!this.layered || !this.visual || !this.sprite.active) return;
+    this.visual.direction = this.direction;
+    this.visual.render(this.sprite.x, this.sprite.y, action, frameStep, this.sprite.y, progress);
   }
 
   update(time, delta, player) {
@@ -51,7 +106,11 @@ export class Enemy {
     const dy = player.body.y - this.sprite.y;
     const distanceSq = dx * dx + dy * dy;
     const activeRangeSq = 720 * 720;
-    if (distanceSq > activeRangeSq && this.state !== 'return') { this.sprite.setVelocity(0); return; }
+    if (distanceSq > activeRangeSq && this.state !== 'return') {
+      this.sprite.setVelocity(0);
+      if (this.layered) this.renderVisual('idle', 0, null);
+      return;
+    }
 
     this.animClock += delta;
     if (time >= this.nextThink) {
@@ -89,8 +148,23 @@ export class Enemy {
     }
 
     const attacking = this.state === 'attack';
+    if (this.layered) {
+      if (attacking) {
+        const progress = Math.max(0, Math.min(0.999999, 1 - Math.max(0, this.stateUntil - time) / this.def.attackCooldown));
+        const frame = Math.min(5, Math.floor(progress * 6));
+        this.renderVisual('slash', frame, progress);
+      } else {
+        const moving = Math.hypot(this.sprite.body.velocity.x, this.sprite.body.velocity.y) > 2;
+        const frame = moving ? Math.floor(this.animClock / 130) % 8 : 0;
+        this.renderVisual(moving ? 'walk' : 'idle', frame, null);
+      }
+      return;
+    }
+
     const columns = attacking ? this.def.attackFrames : this.def.walkFrames;
-    const frameInRow = attacking ? Math.min(columns - 1, Math.floor((1 - Math.max(0, this.stateUntil - time) / this.def.attackCooldown) * columns)) : Math.floor(this.animClock / 130) % columns;
+    const frameInRow = attacking
+      ? Math.min(columns - 1, Math.floor((1 - Math.max(0, this.stateUntil - time) / this.def.attackCooldown) * columns))
+      : Math.floor(this.animClock / 130) % columns;
     this.sprite.setTexture(attacking ? this.def.attackTexture : this.def.walkTexture).setFrame(this.direction * columns + frameInRow).setDepth(this.sprite.y);
   }
 
@@ -101,8 +175,14 @@ export class Enemy {
     this.state = 'recover';
     this.stateUntil = time + 210;
     const angle = Phaser.Math.Angle.Between(sourceX, sourceY, this.sprite.x, this.sprite.y);
-    this.sprite.setVelocity(Math.cos(angle) * 150, Math.sin(angle) * 150).setTintFill(0xffffff);
-    this.scene.time.delayedCall(85, () => this.sprite.active && this.sprite.clearTint());
+    this.sprite.setVelocity(Math.cos(angle) * 150, Math.sin(angle) * 150);
+    if (this.layered) this.visual.setTintFill(0xffffff);
+    else this.sprite.setTintFill(0xffffff);
+    this.scene.time.delayedCall(85, () => {
+      if (!this.sprite.active) return;
+      if (this.layered) this.visual.clearTint();
+      else this.sprite.clearTint();
+    });
     this.callbacks.damageNumber(this.sprite.x, this.sprite.y - 38, damage, false);
     if (this.hp <= 0) this.die(time);
     return true;
@@ -112,7 +192,7 @@ export class Enemy {
     this.callbacks.died(this);
     this.sprite.setVelocity(0).setActive(false).setVisible(false);
     this.sprite.body.enable = false;
+    this.visual?.setVisible(false);
     this.respawnAt = time + this.spawn.respawnMs;
   }
 }
-

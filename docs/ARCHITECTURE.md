@@ -55,3 +55,13 @@ The validator reconstructs a safe state, clamps numeric values, filters unknown 
 `ActionInput` exposes movement, run, attack and interact actions independently from their source. Keyboard and touch controls feed the same commands. Attack input can remain queued through the current swing, allowing the next combo action to begin after recovery rather than requiring frame-perfect taps.
 
 Menus pause player control but do not own simulation data; they issue commands through the shared event bus. Character Overview reads the same stat breakdown used by gameplay. Inventory and Character read the same explicit 12-slot equipment map, including the locked Wing presentation.
+
+## v0.1.2 actor/loadout foundation
+
+`LayeredCharacter` is now actor-agnostic. It accepts a selectable base visual and an equipment policy. The player uses the full-combat red-haired base and strict player-compatible equipment policy; town NPCs and Skeleton-family enemies use the same renderer with NPC policy so legacy walk/slash-compatible gear can be reused safely.
+
+Skeleton loadouts are defined in `data/enemies.js` as weighted per-slot pools. A loadout is rolled once in `Enemy.respawn()` and remains stable until death/despawn. Named enemies may specify a fixed signature loadout. This is intentionally definition-driven so later humanoid enemies, adventurers and guild members can share the same concept.
+
+NPC definitions now include stable future-facing identity/activity/guild fields without implementing guild logic. Zone records likewise expose level ranges, safety/hostility, biome, event tags and dungeon hooks.
+
+Equipment set definitions live beside items as data-only metadata. `setId`/`gearFamily` can be authored before the bonus evaluator exists, avoiding a later item-schema rewrite.

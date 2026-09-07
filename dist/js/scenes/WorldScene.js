@@ -2,7 +2,7 @@ import { ASSET_DEFS } from '../data/assets.js';
 import { ENEMY_DEFS } from '../data/enemies.js';
 import { ITEM_DEFS } from '../data/items.js';
 import { NPC_DEFS } from '../data/npcs.js';
-import { COLLIDERS, PROP_DEFS, SPAWN_REGIONS, ZONES } from '../data/world.js';
+import { BUILDING_DEFS, COLLIDERS, PROP_DEFS, SPAWN_REGIONS, TOWN_PROP_DEFS, ZONES } from '../data/world.js';
 import { DEBUG, GAME_VERSION, PLAYER_START, RARITY, TILE_SIZE, WORLD_HEIGHT, WORLD_WIDTH } from '../config.js';
 import { gameEvents } from '../core/EventBus.js';
 import { actionInput } from '../systems/ActionInput.js';
@@ -63,7 +63,7 @@ export class WorldScene extends Phaser.Scene {
     this.updateZone();
     this.emitState();
     gameEvents.emit('ready', { version: GAME_VERSION });
-    gameEvents.emit('toast', { text: 'Find Warden Vesra in Cinder Refuge.', tone: 'quest' });
+    gameEvents.emit('toast', { text: 'Find Warden Vesra at Warden Hall in Cinder Refuge.', tone: 'quest' });
   }
 
   makeRuntimeTextures() {
@@ -86,28 +86,56 @@ export class WorldScene extends Phaser.Scene {
     this.groundLayer = map.createLayer(0, tiles, 0, 0).setDepth(-1000);
 
     const worldArt = this.add.graphics().setDepth(-700);
-    worldArt.fillStyle(0x251513, 0.76).fillRect(0, 0, 720, WORLD_HEIGHT);
-    worldArt.fillStyle(0x4c261c, 0.72).fillRect(1940, 0, 620, WORLD_HEIGHT);
-    worldArt.fillStyle(0x160c0b, 0.9).fillRect(1930, 0, 18, WORLD_HEIGHT);
-    worldArt.lineStyle(5, 0x755039, 1).strokeRoundedRect(90, 242, 540, 668, 28);
-    worldArt.fillStyle(0x39201b, 1).fillRoundedRect(148, 286, 176, 132, 18);
-    worldArt.fillStyle(0x9b4f2a, 1).fillTriangle(144, 310, 328, 310, 236, 246);
-    worldArt.fillStyle(0x321d18, 1).fillRoundedRect(360, 314, 170, 122, 18);
-    worldArt.fillStyle(0x6e3425, 1).fillTriangle(354, 334, 538, 334, 446, 270);
-    worldArt.lineStyle(8, 0x39231c, 1).lineBetween(680, 250, 680, 520).lineBetween(680, 700, 680, 910);
-    worldArt.fillStyle(0x201312, 0.8).fillRect(1960, 470, 560, 260);
-    worldArt.lineStyle(7, 0x72503a, 0.9).lineBetween(1940, 600, 2560, 600);
+    worldArt.fillStyle(0x261713, 0.38).fillRect(0, 0, 720, WORLD_HEIGHT);
+    worldArt.fillStyle(0x4c261c, 0.58).fillRect(1940, 0, 620, WORLD_HEIGHT);
+    worldArt.fillStyle(0x160c0b, 0.86).fillRect(1930, 0, 18, WORLD_HEIGHT);
+
+    // Cinder Refuge streets: broad readable paths connect the east gate to
+    // every important structure without hard-coding movement logic.
+    const roads = this.add.graphics().setDepth(-760);
+    roads.lineStyle(48, 0x6f4a32, 0.48).lineBetween(690, 610, 340, 610);
+    roads.lineStyle(34, 0x6f4a32, 0.42).lineBetween(340, 610, 250, 430);
+    roads.lineStyle(34, 0x6f4a32, 0.42).lineBetween(340, 610, 525, 485);
+    roads.lineStyle(34, 0x6f4a32, 0.42).lineBetween(340, 610, 180, 790);
+    roads.lineStyle(34, 0x6f4a32, 0.42).lineBetween(340, 610, 505, 790);
+    roads.lineStyle(28, 0x6f4a32, 0.38).lineBetween(340, 610, 340, 170);
+    roads.fillStyle(0x76513a, 0.4).fillCircle(340, 610, 96);
+
+    // Simple refuge perimeter. The opening at the east bridge is intentionally
+    // wide for touch movement and future NPC traffic.
+    worldArt.lineStyle(10, 0x493127, 0.95)
+      .lineBetween(46, 52, 690, 52)
+      .lineBetween(46, 990, 690, 990)
+      .lineBetween(46, 52, 46, 990)
+      .lineBetween(690, 52, 690, 505)
+      .lineBetween(690, 715, 690, 990);
 
     for (let i = 0; i < 95; i += 1) {
-      const x = 700 + ((i * 193) % 1830);
+      const x = 720 + ((i * 193) % 1810);
       const y = 50 + ((i * 107) % 1160);
       const frame = [0, 3, 6, 9, 12, 15, 18][i % 7];
-      this.add.sprite(x, y, 'grass-dirt', frame).setAlpha(0.36).setDepth(-850).setScale(1 + (i % 3) * 0.35);
+      this.add.sprite(x, y, 'grass-dirt', frame).setAlpha(0.34).setDepth(-850).setScale(1 + (i % 3) * 0.35);
     }
-    for (const prop of PROP_DEFS) this.add.sprite(prop.x, prop.y, prop.texture, prop.frame).setScale(prop.scale || 1).setDepth(prop.y - 2).setAlpha(prop.x < 720 ? 0.78 : 1);
-    this.add.image(705, 610, 'bridge').setScale(0.65).setDepth(600).setAlpha(0.82);
 
-    this.add.text(335, 190, 'CINDER REFUGE', { fontFamily: 'Georgia, serif', fontSize: '21px', color: '#f3c77b', stroke: '#170c0a', strokeThickness: 5, letterSpacing: 3 }).setOrigin(0.5).setDepth(1000);
+    for (const building of BUILDING_DEFS) {
+      const image = this.add.image(building.x, building.y, building.texture)
+        .setOrigin(0.5, 0.82)
+        .setScale(building.scale || 1)
+        .setFlipX(Boolean(building.flipX))
+        .setDepth(building.y + (building.depthOffset || -20));
+      image.buildingId = building.id;
+      if (['refuge_forge', 'refuge_warden_hall', 'refuge_inn', 'refuge_storehouse'].includes(building.id)) {
+        this.add.text(building.x, building.y + 18, building.name, {
+          fontFamily: 'Georgia, serif', fontSize: '10px', color: '#e7c58f', stroke: '#170c0a', strokeThickness: 3
+        }).setOrigin(0.5).setDepth(building.y + 120);
+      }
+    }
+
+    for (const prop of PROP_DEFS) this.add.sprite(prop.x, prop.y, prop.texture, prop.frame).setScale(prop.scale || 1).setDepth(prop.y - 2).setAlpha(prop.x < 720 ? 0.9 : 1);
+    for (const prop of TOWN_PROP_DEFS) this.add.sprite(prop.x, prop.y, prop.texture, prop.frame).setScale(prop.scale || 1).setDepth(prop.y + 2);
+    this.add.image(710, 610, 'bridge').setScale(0.64).setDepth(600).setAlpha(0.9);
+
+    this.add.text(350, 72, 'CINDER REFUGE', { fontFamily: 'Georgia, serif', fontSize: '21px', color: '#f3c77b', stroke: '#170c0a', strokeThickness: 5, letterSpacing: 3 }).setOrigin(0.5).setDepth(1000);
     this.add.text(1270, 105, 'SCORCHED OUTSKIRTS', { fontFamily: 'Georgia, serif', fontSize: '18px', color: '#d89a62', stroke: '#170c0a', strokeThickness: 5, letterSpacing: 2 }).setOrigin(0.5).setDepth(1000);
     this.add.text(2200, 330, 'BONE ROAD', { fontFamily: 'Georgia, serif', fontSize: '20px', color: '#d4c1ad', stroke: '#170c0a', strokeThickness: 5, letterSpacing: 4 }).setOrigin(0.5).setDepth(1000);
 
@@ -306,6 +334,11 @@ export class WorldScene extends Phaser.Scene {
     if (action === 'vesra') moveNear(this.npcs.find(npc => npc.def.id === 'npc_vesra'));
     if (action === 'merchant') moveNear(this.npcs.find(npc => npc.def.id === 'npc_merchant'));
     if (action === 'imp') moveNear(this.enemies.find(enemy => enemy.sprite.active && enemy.def.family === 'imp')?.sprite);
+    if (action === 'carrion') moveNear(this.enemies.find(enemy => enemy.sprite.active && enemy.def.id === 'enemy_carrion_beast')?.sprite);
+    if (action === 'rotwing') moveNear(this.enemies.find(enemy => enemy.sprite.active && enemy.def.id === 'enemy_rotwing_ravager')?.sprite);
+    if (action === 'slate') moveNear(this.enemies.find(enemy => enemy.sprite.active && enemy.def.id === 'enemy_slate_revenant')?.sprite);
+    if (action === 'bloodbone') moveNear(this.enemies.find(enemy => enemy.sprite.active && enemy.def.id === 'enemy_bloodbone')?.sprite);
+    if (action === 'gilded') moveNear(this.enemies.find(enemy => enemy.sprite.active && enemy.def.id === 'enemy_gilded_guard')?.sprite);
     if (action === 'boss') moveNear(this.enemies.find(enemy => enemy.sprite.active && enemy.def.named)?.sprite);
     if (action === 'heart') this.dropLoot(this.player.body.x + 28, this.player.body.y, this.inventory.createItem('quest_ember_heart', 'normal'));
     if (action === 'noble') this.inventory.add(this.inventory.createItem('head_warden', 'noble'));

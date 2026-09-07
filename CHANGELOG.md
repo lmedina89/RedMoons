@@ -1,5 +1,19 @@
 # Changelog
 
+## v0.1.2 — Cinder Refuge & World/Enemy Variety Foundation
+
+- Replaced the player base with the supplied red-haired full-combat LPC export while preserving layered equipment and the four-hit sword profile.
+- Rebuilt Cinder Refuge as a six-building data-driven settlement using the supplied adobe building art plus castle props, paths and a wider touch-friendly east gate.
+- Added level/safety/hostility/biome/event/dungeon-hook metadata to zones for later progression, events and guild systems.
+- Added Carrion Beast, Rotwing Ravager, Slate Revenant, Bloodbone Reaver and Gilded Ossuary Guard enemy definitions and spawn regions.
+- Converted skeleton-family enemies to layered actors that roll weighted legacy/player-ready equipment once per spawn; Captain Ossivar uses a fixed signature loadout.
+- Converted refuge NPC presentation to the same layered-equipment renderer. Sable now uses the supplied olive-skinned humanoid base and carries future recruitable-adventurer/guild-ready metadata.
+- Added persistent NPC data hooks (`npcType`, `level`, `combatRole`, `guildId`, `recruitable`, `activityState`, `homeZone`) without activating guild simulation yet.
+- Added data-only named equipment-set scaffolding for Gravesworn Legion, Ashrunner Leathers and Steel Bastion; set bonuses remain intentionally inactive until the later loot/progression milestone.
+- Preserved strict player-loot eligibility, Drop/Destroy recovery, singleton/rate-limited toasts, immediate camera follow and hardened iOS joystick lifecycle handling.
+- Preserved save schema 1.
+- User-supplied v0.1.2 art is preserved with known credits where available; remaining attribution is explicitly pending for a future store/commercial release pass.
+
 ## v0.1.1.5 — Player Gear Pool Expansion
 
 - Added seven newly verified, full-combo player gear definitions: Bronze War Helm, Ashhide Shoulders, Ashrunner Leather Boots, Silver Legion Cuirass, Steel Bastion Plate, Brass Arming Sword and Iron Arming Sword.

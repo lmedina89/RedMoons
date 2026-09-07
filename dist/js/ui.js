@@ -1,4 +1,4 @@
-import { ITEM_DEFS } from './data/items.js';
+import { EQUIPMENT_SET_DEFS, ITEM_DEFS } from './data/items.js';
 import { QUEST_DEFS } from './data/quests.js';
 import { DEBUG, RARITY } from './config.js';
 import { gameEvents } from './core/EventBus.js';
@@ -215,6 +215,8 @@ export class UIManager {
     const gate = def.equipGate && !this.snapshot.state.worldFlags?.[def.equipGate] ? `<p class="requirements">Locked: ${def.gateLabel || 'advanced progression'}.</p>` : '';
     const playerReady = def.playerEquipReady !== false && !def.npcOnly && !(def.slot === 'weapon' && def.playerCombatReady === false);
     const animation = def.slot ? `<p>Player animation: ${playerReady ? (def.combatProfile === 'sword_four_hit' ? 'Full 4-hit sword combo' : def.animationClass === 'full_combo' ? 'Full combo compatible' : 'Player compatible') : 'NPC / legacy only'}</p>` : '';
+    const setDef = def.setId ? EQUIPMENT_SET_DEFS[def.setId] : null;
+    const setInfo = setDef ? `<p class="requirements">Set: <strong>${setDef.name}</strong> • bonuses planned for the progression/loot milestone.</p>` : '';
     const equippedItemId = this.snapshot.state.equipment[def.slot];
     const equippedItem = this.snapshot.state.inventory.find(candidate => candidate.instanceId === equippedItemId);
     const compare = equippedItem && equippedItem.instanceId !== item.instanceId ? this.comparisonText(item, equippedItem) : '';
@@ -225,7 +227,7 @@ export class UIManager {
     const destroyLabel = pending === 'destroy' ? 'Confirm Destroy' : 'Destroy';
     const discardControls = `<div class="item-discard-actions"><button type="button" data-item-action="drop" data-instance-id="${item.instanceId}" ${protectedQuest ? 'disabled' : ''}>${protectedQuest ? 'Drop (Quest)' : dropLabel}</button><button type="button" class="danger-action" data-item-action="destroy" data-instance-id="${item.instanceId}" ${protectedQuest ? 'disabled' : ''}>${protectedQuest ? 'Destroy (Quest)' : destroyLabel}</button>${pending ? '<button type="button" class="muted-action" data-item-action-cancel>Cancel</button>' : ''}</div>`;
     const discardNote = protectedQuest ? '<p class="requirements">Quest item protected: it cannot be dropped or destroyed while it is needed for progression.</p>' : pending ? `<p class="discard-warning">Tap <strong>Confirm ${pending === 'drop' ? 'Drop' : 'Destroy'}</strong> again to continue.${equipped ? ' This will also unequip the item.' : ''}</p>` : '';
-    return `<h3 style="color:${rarity.color}">${def.name}</h3><span class="rarity-label" style="color:${rarity.color}">${rarity.label}</span><p>${def.slot ? this.slotLabel(def.slot).toUpperCase() : 'QUEST ITEM'} • Enhancement +${item.enhancement || 0} • Value ${def.value}</p><ul>${stats}</ul><p class="requirements">Base requirements: ${requirements}</p>${gate}${animation}${compare}<footer class="item-main-actions">${equipControl}</footer>${discardControls}${discardNote}`;
+    return `<h3 style="color:${rarity.color}">${def.name}</h3><span class="rarity-label" style="color:${rarity.color}">${rarity.label}</span><p>${def.slot ? this.slotLabel(def.slot).toUpperCase() : 'QUEST ITEM'} • Enhancement +${item.enhancement || 0} • Value ${def.value}</p><ul>${stats}</ul><p class="requirements">Base requirements: ${requirements}</p>${gate}${animation}${setInfo}${compare}<footer class="item-main-actions">${equipControl}</footer>${discardControls}${discardNote}`;
   }
 
   comparisonText(item, equippedItem) {

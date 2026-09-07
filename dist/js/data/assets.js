@@ -25,6 +25,12 @@ export const ASSET_DEFS = [
   { key: 'revised-body-slash', path: `${R}body-slash.png`, frameWidth: 64, frameHeight: 64 },
   { key: 'revised-body-backslash', path: `${R}body-backslash.png`, frameWidth: 64, frameHeight: 64 },
   { key: 'revised-body-halfslash', path: `${R}body-halfslash.png`, frameWidth: 64, frameHeight: 64 },
+  ...['protagonist-red', 'npc-olive'].flatMap(key => [
+    { key: `${key}-walk`, path: `${R}${key}-walk.png`, frameWidth: 64, frameHeight: 64 },
+    { key: `${key}-slash`, path: `${R}${key}-slash.png`, frameWidth: 64, frameHeight: 64 },
+    { key: `${key}-backslash`, path: `${R}${key}-backslash.png`, frameWidth: 64, frameHeight: 64 },
+    { key: `${key}-halfslash`, path: `${R}${key}-halfslash.png`, frameWidth: 64, frameHeight: 64 }
+  ]),
   ...['legion-chest', 'legion-gloves', 'iron-helmet', 'red-bat-wings', 'bronze-helmet', 'leather-shoulders', 'leather-boots', 'silver-legion', 'steel-plate'].flatMap(key => [
     { key: `${key}-walk`, path: `${R}${key}-walk.png`, frameWidth: 64, frameHeight: 64 },
     { key: `${key}-slash`, path: `${R}${key}-slash.png`, frameWidth: 64, frameHeight: 64 },
@@ -53,6 +59,10 @@ export const ASSET_DEFS = [
   { key: 'imp-death', path: `${E}imp-death.png`, frameWidth: 64, frameHeight: 64 },
   { key: 'skeleton-walk', path: `${E}skeleton-walk.png`, frameWidth: 64, frameHeight: 64 },
   { key: 'skeleton-slash', path: `${E}skeleton-slash.png`, frameWidth: 64, frameHeight: 64 },
+  ...['beast-zombie', 'rotwing-zombie', 'slate-skeleton', 'blood-skeleton', 'gilded-skeleton'].flatMap(key => [
+    { key: `${key}-walk`, path: `${E}${key}-walk.png`, frameWidth: 64, frameHeight: 64 },
+    { key: `${key}-slash`, path: `${E}${key}-slash.png`, frameWidth: 64, frameHeight: 64 }
+  ]),
   { key: 'terrain-dirt', path: `${W}dirt.png`, image: true },
   { key: 'grass-dirt', path: `${W}grass-dirt.png`, frameWidth: 32, frameHeight: 32 },
   { key: 'rocks-cliffs', path: `${W}rocks-cliffs.png`, frameWidth: 32, frameHeight: 32 },
@@ -61,7 +71,11 @@ export const ASSET_DEFS = [
   { key: 'tall-grass', path: `${W}tall-grass.png`, frameWidth: 32, frameHeight: 32 },
   { key: 'bridge', path: `${W}bridge.png`, image: true },
   { key: 'dungeon-elements', path: `${W}dungeon-elements.png`, frameWidth: 32, frameHeight: 32 },
-  { key: 'fire', path: `${W}fire.png`, frameWidth: 32, frameHeight: 64 }
+  { key: 'fire', path: `${W}fire.png`, frameWidth: 32, frameHeight: 64 },
+  { key: 'castle2-set', path: `${W}castle2-set.png`, frameWidth: 32, frameHeight: 32 },
+  { key: 'adobe-house-tower', path: `${W}buildings/adobe_house_tower.png`, image: true },
+  { key: 'adobe-house-east', path: `${W}buildings/adobe_house_east.png`, image: true },
+  { key: 'adobe-workshop', path: `${W}buildings/adobe_workshop.png`, image: true }
 ];
 
 const range = (start, end) => Object.freeze(Array.from({ length: end - start + 1 }, (_, i) => start + i));
@@ -116,7 +130,21 @@ export const ANIMATION_GEOMETRIES = Object.freeze({
 });
 
 export const LAYER_ASSETS = Object.freeze({
-  // The base body uses the new LPC Revised animation coverage.
+  // Actor bases. The player now uses the user's full-combat red-haired LPC
+  // export as one synchronized base layer (body + face + hair). NPC/enemy
+  // bases remain selectable so the same layered renderer can power future
+  // adventurers and equipment-bearing skeletons.
+  player_red_base: { walk: 'protagonist-red-walk', slash: 'protagonist-red-slash', backslash: 'protagonist-red-backslash', halfslash: 'protagonist-red-halfslash', geometry: 'revised64' },
+  npc_olive_base: { walk: 'npc-olive-walk', slash: 'npc-olive-slash', backslash: 'npc-olive-backslash', halfslash: 'npc-olive-halfslash', geometry: 'revised64' },
+  npc_classic_body: { walk: 'body-walk', slash: 'body-slash', geometry: 'classic', attackFallback: 'slash' },
+  npc_classic_hair: { walk: 'hair-walk', slash: 'hair-slash', geometry: 'classic', attackFallback: 'slash' },
+  enemy_skeleton_base: { walk: 'skeleton-walk', slash: 'skeleton-slash', geometry: 'classic', attackFallback: 'slash' },
+  enemy_slate_skeleton_base: { walk: 'slate-skeleton-walk', slash: 'slate-skeleton-slash', geometry: 'classic', attackFallback: 'slash' },
+  enemy_blood_skeleton_base: { walk: 'blood-skeleton-walk', slash: 'blood-skeleton-slash', geometry: 'classic', attackFallback: 'slash' },
+  enemy_gilded_skeleton_base: { walk: 'gilded-skeleton-walk', slash: 'gilded-skeleton-slash', geometry: 'classic', attackFallback: 'slash' },
+
+  // Backwards alias used by older code/tools; player rendering explicitly asks
+  // for player_red_base in v0.1.2.
   body: { walk: 'revised-body-walk', slash: 'revised-body-slash', backslash: 'revised-body-backslash', halfslash: 'revised-body-halfslash', geometry: 'revised64' },
   hair: { walk: 'hair-walk', slash: 'hair-slash', geometry: 'classic', attackFallback: 'slash' },
 

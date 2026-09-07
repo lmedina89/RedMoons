@@ -1,11 +1,6 @@
 import { ANIMATION_GEOMETRIES, LAYER_ASSETS } from '../data/assets.js';
 import { ITEM_DEFS } from '../data/items.js';
 
-// LPC Revised one-handed attacks translate the drawn feet inside the 64px
-// source cell even though the player's physics body is stationary. These
-// measured integer offsets keep the planted position visually stable while
-// preserving the actual attack pose. Every equipped layer receives the same
-// correction so compatible gear remains registered to the body.
 const ROOT_X = Object.freeze({
   slash: Object.freeze([[0,0,0,0,-1,-1],[0,2,1,1,1,1],[0,0,1,-1,-1,-1],[0,-2,-1,-1,-1,-1]]),
   slash1h: Object.freeze([[-1,0,1,1,1,1,0],[-2,1,3,3,3,3,1],[0,0,-3,-3,-3,-3,0],[2,-1,-3,-3,-3,-3,-1]]),
@@ -13,14 +8,30 @@ const ROOT_X = Object.freeze({
   halfslash1h: Object.freeze([[-1,0,0,0,0,0],[-2,1,5,6,6,1],[0,0,-1,-1,-1,0],[2,-1,-5,-6,-6,-1]])
 });
 
+export function createActorEquipmentState(loadout = {}) {
+  const equipment = { head: null, shoulders: null, chest: null, legs: null, hands: null, feet: null, weapon: null, offhand: null, wings: null };
+  const inventory = [];
+  let n = 0;
+  for (const [slot, itemId] of Object.entries(loadout || {})) {
+    if (!itemId || !ITEM_DEFS[itemId] || !Object.prototype.hasOwnProperty.call(equipment, slot)) continue;
+    const instanceId = `actor_${slot}_${n++}`;
+    inventory.push({ instanceId, itemId, rarity: 'normal', enhancement: 0, modifiers: {} });
+    equipment[slot] = instanceId;
+  }
+  return { inventory, equipment };
+}
+
 export class LayeredCharacter {
-  constructor(scene, x, y, state, scale = 1.45) {
+  constructor(scene, x, y, state, scale = 1.45, options = {}) {
     this.scene = scene;
     this.state = state;
     this.scale = scale;
     this.x = x;
     this.y = y;
     this.direction = 2;
+    this.baseAsset = options.baseAsset || 'player_red_base';
+    this.hairAsset = options.hairAsset || null;
+    this.equipmentPolicy = options.equipmentPolicy || 'player';
     this.layers = new Map();
     this.layerOrder = ['wings', 'weaponBg', 'shieldBg', 'body', 'feet', 'legs', 'chest', 'shoulders', 'hands', 'head', 'hair', 'shieldFg', 'weaponFg'];
     for (let i = 0; i < this.layerOrder.length; i += 1) {
@@ -32,25 +43,28 @@ export class LayeredCharacter {
     this.refreshEquipment();
   }
 
-  refreshEquipment() {
-    const byId = new Map(this.state.inventory.map(item => [item.instanceId, item]));
+  refreshEquipment(nextState = null) {
+    if (nextState) this.state = nextState;
+    const byId = new Map((this.state?.inventory || []).map(item => [item.instanceId, item]));
     const visual = slot => {
-      const item = byId.get(this.state.equipment[slot]);
+      const item = byId.get(this.state?.equipment?.[slot]);
       const def = item ? ITEM_DEFS[item.itemId] : null;
-      return def && def.playerEquipReady !== false && !def.npcOnly ? def.visual : null;
+      if (!def) return null;
+      if (this.equipmentPolicy === 'player') {
+        if (def.playerEquipReady === false || def.npcOnly) return null;
+        if (slot === 'weapon' && def.playerCombatReady === false) return null;
+      }
+      return def.visual || null;
     };
-    this.setAsset('body', 'body');
+    this.setAsset('body', this.baseAsset);
     this.setAsset('wings', visual('wings'));
     this.setAsset('feet', visual('feet'));
     this.setAsset('legs', visual('legs'));
     this.setAsset('chest', visual('chest'));
     this.setAsset('shoulders', visual('shoulders'));
     this.setAsset('hands', visual('hands'));
-    const head = visual('head');
-    this.setAsset('head', head);
-    // Classic hair has no revised 1H combo frames; keep it off the player
-    // until a matching full-combat hair export is supplied.
-    this.setAsset('hair', null);
+    this.setAsset('head', visual('head'));
+    this.setAsset('hair', this.hairAsset);
     const weapon = visual('weapon');
     this.setAsset('weaponBg', weapon ? `${weapon}_bg` : null);
     this.setAsset('weaponFg', weapon ? `${weapon}_fg` : null);
@@ -97,9 +111,6 @@ export class LayeredCharacter {
       if (!texture) { layer.sprite.setVisible(false); continue; }
       const row = animation.rows[this.direction];
       const sequence = animation.sequence || [0];
-      // Full-coverage layers use the exact source step. Limited armor uses an
-      // explicit fallback attack, so scale that fallback across the *whole*
-      // requested swing instead of racing to its last frame and freezing.
       const fallbackProgress = frameProgress !== null && resolved.action !== requestedAction;
       const rawStep = fallbackProgress
         ? Math.floor(Math.max(0, Math.min(0.999999, frameProgress)) * sequence.length)
@@ -118,6 +129,7 @@ export class LayeredCharacter {
 
   setAlpha(value) { for (const layer of this.layers.values()) layer.sprite.setAlpha(value); }
   setTint(color) { for (const layer of this.layers.values()) if (layer.asset) layer.sprite.setTint(color); }
+  setTintFill(color) { for (const layer of this.layers.values()) if (layer.asset) layer.sprite.setTintFill(color); }
   clearTint() { for (const layer of this.layers.values()) layer.sprite.clearTint(); }
   setVisible(value) { for (const layer of this.layers.values()) if (layer.asset) layer.sprite.setVisible(value); }
   destroy() { for (const layer of this.layers.values()) layer.sprite.destroy(); }

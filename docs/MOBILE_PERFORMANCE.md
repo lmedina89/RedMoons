@@ -15,3 +15,7 @@
 - The page prevents document scrolling and limits `touch-action: none` to the game surface and direct controls; scrollable modal content retains vertical pan behavior.
 
 Future larger zones should introduce spatial buckets and chunk-owned actor activation before increasing map dimensions substantially. Future projectile-heavy skills should use a capped projectile pool and per-skill collision masks. Enemy equipment in v0.1.2 should reuse shared weapon textures rather than loading duplicate textures per enemy instance.
+
+## v0.1.2 variety budget
+
+New full LPC source exports are never preloaded directly. Runtime uses only cropped walk/slash or required full-combo regions. Skeleton equipment reuses already-loaded layered textures instead of baking a unique sheet per loadout. Enemy AI retains the existing active-range early-out, and the initial world-variety population is intentionally kept to a few dozen actors rather than MMO-scale counts.
