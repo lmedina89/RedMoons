@@ -45,7 +45,7 @@ export const ASSET_DEFS = [
   { key: 'arming-sword-slash', path: `${R}arming-sword-slash.png`, frameWidth: 128, frameHeight: 128, oversized: true },
   { key: 'arming-sword-backslash', path: `${R}arming-sword-backslash.png`, frameWidth: 128, frameHeight: 128, oversized: true },
   { key: 'arming-sword-halfslash', path: `${R}arming-sword-halfslash.png`, frameWidth: 128, frameHeight: 128, oversized: true },
-  ...['iron-arming-sword', 'brass-arming-sword'].flatMap(key => [
+  ...['iron-arming-sword', 'brass-arming-sword', 'bronze-arming-sword', 'copper-arming-sword', 'steel-arming-sword', 'gold-arming-sword', 'ceramic-arming-sword'].flatMap(key => [
     { key: `${key}-walk`, path: `${R}${key}-walk.png`, frameWidth: 64, frameHeight: 64 },
     { key: `${key}-slash`, path: `${R}${key}-slash.png`, frameWidth: 128, frameHeight: 128, oversized: true },
     { key: `${key}-backslash`, path: `${R}${key}-backslash.png`, frameWidth: 128, frameHeight: 128, oversized: true },
@@ -57,6 +57,27 @@ export const ASSET_DEFS = [
   { key: 'imp-walk', path: `${E}imp-walk.png`, frameWidth: 64, frameHeight: 64 },
   { key: 'imp-attack', path: `${E}imp-attack.png`, frameWidth: 64, frameHeight: 64 },
   { key: 'imp-death', path: `${E}imp-death.png`, frameWidth: 64, frameHeight: 64 },
+
+  // v0.1.2.3 curated Imp color/loadout variants. Each family rolls one
+  // presentation per spawn instead of loading the entire source pack into play.
+  ...[
+    'imp-red-sword', 'imp-red-sword-shield', 'imp-red-pitchfork',
+    'imp-green-pitchfork', 'imp-green-pitchfork-shield', 'imp-green-sword',
+    'imp-blue-sword', 'imp-blue-sword-shield', 'imp-blue-pitchfork'
+  ].flatMap(key => [
+    { key: `${key}-walk`, path: `${E}${key}-walk.png`, frameWidth: 64, frameHeight: 64 },
+    { key: `${key}-attack`, path: `${E}${key}-attack.png`, frameWidth: 64, frameHeight: 64 }
+  ]),
+
+  { key: 'goblin-walk', path: `${E}goblin-walk.png`, frameWidth: 64, frameHeight: 64 },
+  { key: 'goblin-attack', path: `${E}goblin-attack.png`, frameWidth: 64, frameHeight: 64 },
+  ...['cave-spider', 'ember-spider', 'frost-spider', 'mire-spider'].flatMap(key => [
+    { key: `${key}-walk`, path: `${E}${key}-walk.png`, frameWidth: 64, frameHeight: 64 },
+    { key: `${key}-attack`, path: `${E}${key}-attack.png`, frameWidth: 64, frameHeight: 64 }
+  ]),
+  { key: 'golem-walk', path: `${E}golem-walk.png`, frameWidth: 64, frameHeight: 64 },
+  { key: 'golem-attack', path: `${E}golem-attack.png`, frameWidth: 64, frameHeight: 96 },
+
   { key: 'skeleton-walk', path: `${E}skeleton-walk.png`, frameWidth: 64, frameHeight: 64 },
   { key: 'skeleton-slash', path: `${E}skeleton-slash.png`, frameWidth: 64, frameHeight: 64 },
   ...['beast-zombie', 'rotwing-zombie', 'slate-skeleton', 'blood-skeleton', 'gilded-skeleton'].flatMap(key => [
@@ -73,6 +94,14 @@ export const ASSET_DEFS = [
   { key: 'dungeon-elements', path: `${W}dungeon-elements.png`, frameWidth: 32, frameHeight: 32 },
   { key: 'fire', path: `${W}fire.png`, frameWidth: 32, frameHeight: 64 },
   { key: 'castle2-set', path: `${W}castle2-set.png`, frameWidth: 32, frameHeight: 32 },
+  { key: 'adobe2-set', path: `${W}adobe2-set.png`, frameWidth: 32, frameHeight: 32 },
+  { key: 'mushrooms', path: `${W}mushrooms.png`, frameWidth: 32, frameHeight: 32 },
+  { key: 'bush-evergreen', path: `${W}bush-evergreen.png`, frameWidth: 32, frameHeight: 32 },
+  { key: 'bush-seasonal', path: `${W}bush-seasonal.png`, frameWidth: 32, frameHeight: 32 },
+  { key: 'pine-tree-large', path: `${W}pine-tree-large.png`, image: true },
+  { key: 'pine-tree-cluster', path: `${W}pine-tree-cluster.png`, image: true },
+  // Cave/workshop sheets are staged in the repo but intentionally not preloaded
+  // until an enterable cave/interior actually references them.
   { key: 'adobe-house-tower', path: `${W}buildings/adobe_house_tower.png`, image: true },
   { key: 'adobe-house-east', path: `${W}buildings/adobe_house_east.png`, image: true },
   { key: 'adobe-workshop', path: `${W}buildings/adobe_workshop.png`, image: true }
@@ -177,6 +206,11 @@ export const LAYER_ASSETS = Object.freeze({
   weapon_arming_sword_fg: { walk: 'arming-sword-walk', slash: 'arming-sword-slash', backslash: 'arming-sword-backslash', halfslash: 'arming-sword-halfslash', geometry: 'armingSword', oversizedSources: ['slash', 'backslash', 'halfslash'] },
   weapon_iron_arming_sword_fg: { walk: 'iron-arming-sword-walk', slash: 'iron-arming-sword-slash', backslash: 'iron-arming-sword-backslash', halfslash: 'iron-arming-sword-halfslash', geometry: 'armingSword', oversizedSources: ['slash', 'backslash', 'halfslash'] },
   weapon_brass_arming_sword_fg: { walk: 'brass-arming-sword-walk', slash: 'brass-arming-sword-slash', backslash: 'brass-arming-sword-backslash', halfslash: 'brass-arming-sword-halfslash', geometry: 'armingSword', oversizedSources: ['slash', 'backslash', 'halfslash'] },
+  weapon_bronze_arming_sword_fg: { walk: 'bronze-arming-sword-walk', slash: 'bronze-arming-sword-slash', backslash: 'bronze-arming-sword-backslash', halfslash: 'bronze-arming-sword-halfslash', geometry: 'armingSword', oversizedSources: ['slash', 'backslash', 'halfslash'] },
+  weapon_copper_arming_sword_fg: { walk: 'copper-arming-sword-walk', slash: 'copper-arming-sword-slash', backslash: 'copper-arming-sword-backslash', halfslash: 'copper-arming-sword-halfslash', geometry: 'armingSword', oversizedSources: ['slash', 'backslash', 'halfslash'] },
+  weapon_steel_arming_sword_fg: { walk: 'steel-arming-sword-walk', slash: 'steel-arming-sword-slash', backslash: 'steel-arming-sword-backslash', halfslash: 'steel-arming-sword-halfslash', geometry: 'armingSword', oversizedSources: ['slash', 'backslash', 'halfslash'] },
+  weapon_gold_arming_sword_fg: { walk: 'gold-arming-sword-walk', slash: 'gold-arming-sword-slash', backslash: 'gold-arming-sword-backslash', halfslash: 'gold-arming-sword-halfslash', geometry: 'armingSword', oversizedSources: ['slash', 'backslash', 'halfslash'] },
+  weapon_ceramic_arming_sword_fg: { walk: 'ceramic-arming-sword-walk', slash: 'ceramic-arming-sword-slash', backslash: 'ceramic-arming-sword-backslash', halfslash: 'ceramic-arming-sword-halfslash', geometry: 'armingSword', oversizedSources: ['slash', 'backslash', 'halfslash'] },
   weapon_katana_npc_fg: { walk: 'katana-walk', slash: 'katana-slash', geometry: 'katanaNpc128', oversizedSources: ['walk', 'slash'], attackFallback: 'slash' },
   shield_wood_bg: { texture: 'wood-shield-bg', geometry: 'expanded64', attackFallback: 'slash' },
   shield_wood_fg: { texture: 'wood-shield-fg', geometry: 'expanded64', attackFallback: 'slash' }

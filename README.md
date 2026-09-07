@@ -1,30 +1,27 @@
-# Hell RPG v0.1.2.2 — Actor Collision & Reward Recovery Hotfix
+# Hell RPG v0.1.2.3 — Asset & World Variety Expansion
 
 Ashfall Foundation is an original, mobile-first single-player pixel action RPG built with Phaser 3, JavaScript and HTML/CSS. Its progression/combat philosophy is inspired by the feel of classic grind-heavy MMORPGs, while all Hell RPG names, world content and implementation remain original.
 
-v0.1.2.2 is a narrow stabilization hotfix built directly on v0.1.2.1. It keeps save schema 1 and fixes oversized invisible actor collision proxies, cleans up collision diagnostics, and replaces old NPC-only player rewards/debug grants with full-combo player-compatible gear.
+v0.1.2.3 is a controlled content-variety pass built directly on the v0.1.2.2 collision/reward hotfix. It keeps **save schema 1** and deliberately preserves the corrected collision model while expanding monsters, NPC adventurers and environmental dressing.
 
-## What is new in v0.1.2.2
+## What is new in v0.1.2.3
 
-- Fixed the root cause of the remaining invisible “force fields”: the player and layered enemies used a 2×2 invisible physics texture that was visually scaled before `body.setSize()`, causing Arcade Physics to multiply the intended body dimensions into huge rectangles. Actor proxies now remain unscaled and use compact foot-area bodies.
-- `?debug=1` now uses targeted collision diagnostics instead of Phaser's global body overlay: static blockers are green, the player's actual movement footprint is cyan, and enemy footprints are faint magenta.
-- The debug helmet helper now grants a **Magic Bronze War Helm** and raises only the minimum test requirements needed to equip it. It no longer grants the NPC-only Warden Helm.
-- Quest equipment rewards are now player-compatible: A Heart Still Burning awards Magic Ashrunner Leather Boots, and The Bone Road Warden awards a Noble Iron War Helm.
-- Save loading converts legacy player-held Warden Helms and Cinderhide Jerkins from those older rewards into compatible replacements while preserving item instance, rarity, enhancement, and modifiers.
-- Save schema remains 1.
+- **16 enemy definitions** now cover several early families and variants rather than relying mainly on Imp/Skeleton repetition.
+- Cinder, Blight and Blueflame Imps each roll from weighted sword/pitchfork/shield visual combinations once per spawn.
+- Added **Ash Goblin Raider**, **Cave Spider**, **Ember Spider**, **Paleweb Spider**, **Mire Spider** (staged for a later matching zone) and the larger **Ashstone Golem** elite.
+- Four Spider palettes were harvested as compact runtime sheets from the supplied 11-variant pack.
+- Added **Renn**, an Emberbound Bone Hunter, and **Doran**, a recruitable Road Seeker, as additional persistent-adventurer seeds.
+- Added the data-only **Emberbound** NPC guild seed; there is still no active guild gameplay in this release.
+- Added Adobe-2 props and selected evergreen/seasonal bushes and mushrooms from the existing Core library. These are visual scenery only and create **no collision**.
+- Harvested five additional full-combo Arming Sword material palettes already present in the Organized library: **Copper, Bronze, Steel, Ceramic and Gilded**. They are real player/NPC-compatible variants and are distributed through level-appropriate loot/loadout pools.
+- Added compact precomposed **pine tree / pine cluster** scenery harvested from the existing 4-season pack without adding physics bodies.
+- The supplied Cave3 and revised Workshop tilesets are staged under `dist/assets/world/` but are not preloaded until an actual cave/interior map uses them.
+- The supplied Wolf PSD is intentionally **not** shipped as runtime art yet. Its source layout needs a verified export/crop before gameplay integration.
+- `?debug=1` includes direct teleports to the new live enemy families.
 
-## What is new in v0.1.2
+## Collision policy
 
-- The supplied **red-haired full-combat LPC character** is now the player base. Walk, standard slash, one-handed slash, backslash and halfslash all use synchronized source coverage.
-- Cinder Refuge is now a real data-driven settlement with **six buildings**, connected paths, a wide east gate, a forge, Warden Hall, inn, storehouse, homes and settlement props.
-- Zone definitions now expose level ranges, safety/hostility, biome, event tags and future dungeon hooks instead of being only rectangles/names.
-- Added new enemy visuals and definitions: **Carrion Beast, Rotwing Ravager, Slate Revenant, Bloodbone Reaver and Gilded Ossuary Guard**, alongside Cinder Imps, Ash Skeletons and Captain Ossivar.
-- Skeleton-family enemies now use the shared layered actor renderer and roll **weighted weapon/armor/offhand loadouts once per spawn**. Named Captain Ossivar uses a fixed signature loadout.
-- Old/limited player gear is now useful as NPC/skeleton equipment even when it remains blocked from normal player loot.
-- Refuge NPCs now use layered equipment loadouts. Sable uses the supplied olive-skinned humanoid base and is marked as a future recruitable adventurer.
-- NPC definitions already carry `npcType`, `level`, `combatRole`, `guildId`, `recruitable`, `activityState` and `homeZone` hooks for the later simulated-MMO/guild system.
-- Added named equipment-set metadata scaffolding for **Gravesworn Legion**, **Ashrunner Leathers** and **Steel Bastion**. Bonuses are deliberately data-only/planned in this release and do not affect combat yet.
-- Existing v0.1.1.5 rarity/glow metadata, Drop/Destroy inventory recovery, player-safe loot filtering and mobile movement hardening remain intact.
+v0.1.2.3 does **not** broaden static collision. The v0.1.2.2 rule remains authoritative: only visible Cinder Refuge wall segments and visible building footprints block the player. Decorative rocks, plants, mushrooms, Adobe-2 props, roads and other scenery remain non-blocking.
 
 ## Playable loop
 
@@ -34,7 +31,7 @@ Touch controls are designed first for iPhone landscape. Keyboard controls are al
 
 ## Development diagnostics
 
-Append `?debug=1` to the URL. The diagnostics panel includes teleports to the new enemy families, the v0.1.2 gear helper, Wings unlock and other regression helpers.
+Append `?debug=1` to the URL. The diagnostics panel includes teleports to the new enemy families, the player gear regression helper, Wings unlock and other regression helpers.
 
 ## Run locally
 

@@ -1,15 +1,19 @@
 import { LayeredCharacter, createActorEquipmentState } from './LayeredCharacter.js';
 
-function weightedChoice(entries = []) {
+function weightedEntry(entries = []) {
   const valid = entries.filter(entry => entry && Number(entry.weight) > 0);
   const total = valid.reduce((sum, entry) => sum + Number(entry.weight), 0);
   if (!total) return null;
   let roll = Math.random() * total;
   for (const entry of valid) {
     roll -= Number(entry.weight);
-    if (roll <= 0) return entry.itemId || null;
+    if (roll <= 0) return entry;
   }
-  return valid.at(-1)?.itemId || null;
+  return valid.at(-1) || null;
+}
+
+function weightedChoice(entries = []) {
+  return weightedEntry(entries)?.itemId || null;
 }
 
 function rollLoadout(definition) {
@@ -31,6 +35,7 @@ export class Enemy {
     this.index = index;
     this.callbacks = callbacks;
     this.layered = Boolean(definition.layered);
+    this.visualSpec = definition;
     if (this.layered) {
       this.sprite = scene.physics.add.sprite(0, 0, 'solid').setVisible(false);
       // Keep layered actors on an unscaled helper sprite. Scaling the 2x2
@@ -43,8 +48,12 @@ export class Enemy {
         equipmentPolicy: 'npc'
       });
     } else {
-      this.sprite = scene.physics.add.sprite(0, 0, definition.walkTexture, 0).setScale((definition.scale || 1) * 1.25).setOrigin(0.5, 0.7);
-      this.sprite.body.setSize(24, 28).setOffset(20, 28);
+      this.visualSpec = this.rollVisualSpec();
+      this.sprite = scene.physics.add.sprite(0, 0, this.visualSpec.walkTexture, 0)
+        .setScale((definition.scale || 1) * 1.25)
+        .setOrigin(0.5, definition.originY || 0.7);
+      const body = definition.body || {};
+      this.sprite.body.setSize(body.width || 24, body.height || 28).setOffset(body.offsetX ?? 20, body.offsetY ?? 28);
     }
     this.sprite.enemyRef = this;
     group.add(this.sprite);
@@ -62,6 +71,11 @@ export class Enemy {
     this.respawn(0);
   }
 
+  rollVisualSpec() {
+    const choice = weightedEntry(this.def.visualPool || []);
+    return choice ? { ...this.def, ...choice } : this.def;
+  }
+
   applyLoadout() {
     if (!this.layered) return;
     this.loadout = rollLoadout(this.def);
@@ -76,6 +90,12 @@ export class Enemy {
     const usableH = Math.max(1, this.spawn.height - margin * 2);
     this.homeX = this.spawn.x + margin + ((this.index * 137 + Math.random() * 71) % usableW);
     this.homeY = this.spawn.y + margin + ((this.index * 83 + Math.random() * 53) % usableH);
+    if (!this.layered) {
+      this.visualSpec = this.rollVisualSpec();
+      this.sprite.setTexture(this.visualSpec.walkTexture, 0)
+        .setOrigin(0.5, this.def.originY || 0.7)
+        .setScale((this.def.scale || 1) * 1.25);
+    }
     this.sprite.setPosition(this.homeX, this.homeY).setActive(true).setVisible(!this.layered).clearTint();
     this.sprite.body.enable = true;
     this.hp = this.def.maxHp;
@@ -164,11 +184,17 @@ export class Enemy {
       return;
     }
 
-    const columns = attacking ? this.def.attackFrames : this.def.walkFrames;
+    const spec = this.visualSpec || this.def;
+    const columns = attacking ? spec.attackFrames : spec.walkFrames;
     const frameInRow = attacking
       ? Math.min(columns - 1, Math.floor((1 - Math.max(0, this.stateUntil - time) / this.def.attackCooldown) * columns))
-      : Math.floor(this.animClock / 130) % columns;
-    this.sprite.setTexture(attacking ? this.def.attackTexture : this.def.walkTexture).setFrame(this.direction * columns + frameInRow).setDepth(this.sprite.y);
+      : Math.floor(this.animClock / (spec.frameMs || 130)) % columns;
+    const texture = attacking ? spec.attackTexture : spec.walkTexture;
+    this.sprite
+      .setTexture(texture)
+      .setFrame(this.direction * columns + frameInRow)
+      .setOrigin(0.5, attacking ? (spec.attackOriginY || this.def.attackOriginY || this.def.originY || 0.7) : (spec.originY || this.def.originY || 0.7))
+      .setDepth(this.sprite.y);
   }
 
   takeDamage(amount, sourceX, sourceY, time) {

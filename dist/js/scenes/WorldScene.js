@@ -337,12 +337,18 @@ export class WorldScene extends Phaser.Scene {
     if (action === 'level') grantXp(this.state, 650);
     if (action === 'vesra') moveNear(this.npcs.find(npc => npc.def.id === 'npc_vesra'));
     if (action === 'merchant') moveNear(this.npcs.find(npc => npc.def.id === 'npc_merchant'));
-    if (action === 'imp') moveNear(this.enemies.find(enemy => enemy.sprite.active && enemy.def.family === 'imp')?.sprite);
+    if (action === 'imp') moveNear(this.enemies.find(enemy => enemy.sprite.active && enemy.def.id === 'enemy_cinder_imp')?.sprite);
+    if (action === 'blight') moveNear(this.enemies.find(enemy => enemy.sprite.active && enemy.def.id === 'enemy_blight_imp')?.sprite);
+    if (action === 'goblin') moveNear(this.enemies.find(enemy => enemy.sprite.active && enemy.def.id === 'enemy_ash_goblin')?.sprite);
+    if (action === 'spider') moveNear(this.enemies.find(enemy => enemy.sprite.active && enemy.def.id === 'enemy_cave_spider')?.sprite);
+    if (action === 'blueflame') moveNear(this.enemies.find(enemy => enemy.sprite.active && enemy.def.id === 'enemy_blueflame_imp')?.sprite);
+    if (action === 'emberweb') moveNear(this.enemies.find(enemy => enemy.sprite.active && enemy.def.id === 'enemy_ember_spider')?.sprite);
     if (action === 'carrion') moveNear(this.enemies.find(enemy => enemy.sprite.active && enemy.def.id === 'enemy_carrion_beast')?.sprite);
     if (action === 'rotwing') moveNear(this.enemies.find(enemy => enemy.sprite.active && enemy.def.id === 'enemy_rotwing_ravager')?.sprite);
     if (action === 'slate') moveNear(this.enemies.find(enemy => enemy.sprite.active && enemy.def.id === 'enemy_slate_revenant')?.sprite);
     if (action === 'bloodbone') moveNear(this.enemies.find(enemy => enemy.sprite.active && enemy.def.id === 'enemy_bloodbone')?.sprite);
     if (action === 'gilded') moveNear(this.enemies.find(enemy => enemy.sprite.active && enemy.def.id === 'enemy_gilded_guard')?.sprite);
+    if (action === 'golem') moveNear(this.enemies.find(enemy => enemy.sprite.active && enemy.def.id === 'enemy_ashstone_golem')?.sprite);
     if (action === 'boss') moveNear(this.enemies.find(enemy => enemy.sprite.active && enemy.def.named)?.sprite);
     if (action === 'heart') this.dropLoot(this.player.body.x + 28, this.player.body.y, this.inventory.createItem('quest_ember_heart', 'normal'));
     if (action === 'magichelm') {
@@ -355,11 +361,16 @@ export class WorldScene extends Phaser.Scene {
     if (action === 'gear115') {
       // Make the development gear immediately testable without requiring a
       // full progression grind. This helper exists only when ?debug=1.
-      this.state.player.level = Math.max(this.state.player.level, 6);
+      this.state.player.level = Math.max(this.state.player.level, 7);
       this.state.player.stats.str = Math.max(this.state.player.stats.str, 13);
-      this.state.player.stats.dex = Math.max(this.state.player.stats.dex, 8);
+      this.state.player.stats.dex = Math.max(this.state.player.stats.dex, 9);
       this.state.player.stats.vit = Math.max(this.state.player.stats.vit, 7);
-      const ids = ['weapon_brass_arming_sword', 'weapon_iron_arming_sword', 'head_bronze_revised', 'head_iron_revised', 'shoulders_leather_revised', 'chest_silver_legion', 'chest_legion', 'chest_steel_plate', 'hands_legion', 'feet_leather_revised'];
+      const ids = [
+        'weapon_brass_arming_sword', 'weapon_copper_arming_sword', 'weapon_bronze_arming_sword',
+        'weapon_iron_arming_sword', 'weapon_steel_arming_sword', 'weapon_ceramic_arming_sword', 'weapon_gold_arming_sword',
+        'head_bronze_revised', 'head_iron_revised', 'shoulders_leather_revised',
+        'chest_silver_legion', 'chest_legion', 'chest_steel_plate', 'hands_legion', 'feet_leather_revised'
+      ];
       for (const itemId of ids) if (!this.state.inventory.some(item => item.itemId === itemId)) this.inventory.add(this.inventory.createItem(itemId, 'normal'));
     }
     if (action === 'wings') {

@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict';
-import { access, readFile, stat } from 'node:fs/promises';
+import { access, readFile, readdir, stat } from 'node:fs/promises';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { inflateSync } from 'node:zlib';
@@ -12,7 +12,7 @@ const { ANIMATION_GEOMETRIES, ASSET_DEFS, LAYER_ASSETS } = await import('../dist
 const { WEAPON_COMBAT_PROFILES } = await import('../dist/js/data/combat.js');
 const { ENEMY_DEFS } = await import('../dist/js/data/enemies.js');
 const { EQUIPMENT_SET_DEFS, ITEM_DEFS } = await import('../dist/js/data/items.js');
-const { NPC_DEFS } = await import('../dist/js/data/npcs.js');
+const { NPC_DEFS, NPC_GUILD_SEEDS } = await import('../dist/js/data/npcs.js');
 const { BUILDING_DEFS, COLLIDERS, REFUGE_WALLS, SPAWN_REGIONS, ZONES } = await import('../dist/js/data/world.js');
 const { QUEST_DEFS } = await import('../dist/js/data/quests.js');
 const { createDefaultState } = await import('../dist/js/core/GameState.js');
@@ -47,7 +47,7 @@ assert.ok(combatSource.includes('cooldownMs: 2400'), 'Empty-swing combat feedbac
 assert.ok(worldSource.includes('queueKillReward') && worldSource.includes('delayedCall(320'), 'Horde kill rewards must be batched');
 assert.ok(layeredSource.includes('ROOT_X') && layeredSource.includes('baseAsset') && layeredSource.includes("equipmentPolicy === 'player'"), 'Renderer must stabilize revised root motion and support actor-specific bases/equipment policies');
 assert.ok(!html.includes('90_user_generated'), 'Prototype-only generator assets must not ship');
-assert.ok(html.includes('v0.1.2.2'), 'Build shell must identify v0.1.2.2');
+assert.ok(html.includes('v0.1.2.3'), 'Build shell must identify v0.1.2.3');
 assert.ok(worldSource.includes('playerLootEligible') && worldSource.includes('actionInput.setTouchMovement'), 'WorldScene must enforce player-loot eligibility and route touch vectors through ActionInput');
 assert.ok(worldSource.includes('startFollow(this.player.body, true, 1, 1)'), 'Camera must track the player without delayed catch-up that looks like reverse sliding');
 assert.ok(!worldSource.includes('this.physics.add.collider(this.player.body, this.enemyGroup)'), 'Enemies must not physically shove the player through dynamic body separation');
@@ -56,7 +56,7 @@ assert.ok(enemySource.includes("physics.add.sprite(0, 0, 'solid').setVisible(fal
 assert.ok(mainSource.includes('debug: false') && worldSource.includes('drawDynamicCollisionDebug') && worldSource.includes('0x38d7ff') && worldSource.includes('0xff4bd8'), 'Debug mode must use targeted collision overlays instead of Phaser global body clutter');
 assert.ok(worldSource.includes("command.type === 'dropItem' || command.type === 'destroyItem'"), 'WorldScene must handle inventory drop/destroy commands');
 assert.ok(uiSource.includes('touchend') && uiSource.includes('capture: true') && uiSource.includes('Confirm Destroy'), 'Mobile input and discard confirmation must be hardened in the UI');
-assert.ok(worldSource.includes("action === 'gear115'") && html.includes('Add 0.1.2 Gear'), 'Debug build must expose the v0.1.1.5 gear regression helper');
+assert.ok(worldSource.includes("action === 'gear115'") && html.includes('Add Gear Test Set'), 'Debug build must expose the player-gear regression helper');
 assert.ok(worldSource.includes("action === 'magichelm'") && worldSource.includes("createItem('head_bronze_revised', 'magic')") && html.includes('Add Magic Bronze Helm') && !html.includes('Add Noble Helm'), 'Debug helmet helper must grant player-compatible Magic Bronze War Helm');
 
 const ids = groups => Object.values(groups).map(value => value.id);
@@ -68,11 +68,18 @@ const eastNorth = REFUGE_WALLS.find(wall => wall.id === 'refuge-east-north');
 const eastSouth = REFUGE_WALLS.find(wall => wall.id === 'refuge-east-south');
 assert.ok(eastSouth.y1 - eastNorth.y2 >= 400, 'Refuge east exit must remain broadly touch-traversable');
 assert.ok(COLLIDERS.every(collider => ['visible-wall', 'building'].includes(collider.source)), 'Every static collider must correspond to visible wall/building geometry');
+assert.equal(COLLIDERS.length, REFUGE_WALLS.length + BUILDING_DEFS.length, 'Asset-variety pass must not introduce any extra static colliders');
 assert.ok(!COLLIDERS.some(collider => ['north-cliff', 'south-cliff', 'west-wall', 'east-fog', 'road-bones'].includes(collider.id)), 'Unrepresented/redundant invisible world blockers must not return');
 assert.ok(worldSource.includes('for (const wall of REFUGE_WALLS) worldArt.lineBetween') && worldSource.includes('collisionDebug.strokeRect'), 'Visible refuge wall art and debug collider audit must share collision data');
 assert.ok(ZONES.every(zone => Array.isArray(zone.levelRange) && typeof zone.safe === 'boolean' && Array.isArray(zone.eventTags)), 'Zones must expose future-proof level/safety/event metadata');
-assert.ok(Object.keys(ENEMY_DEFS).length >= 7, 'World variety foundation should ship several real enemy archetypes/variants');
+assert.ok(Object.keys(ENEMY_DEFS).length >= 16, 'Asset variety expansion should ship a broad early enemy roster');
 assert.ok(Object.values(ENEMY_DEFS).filter(enemy => enemy.layered).length >= 4, 'Skeleton family should use layered equipment-bearing actors');
+for (const id of ['enemy_cinder_imp', 'enemy_blight_imp', 'enemy_blueflame_imp']) {
+  assert.ok(Array.isArray(ENEMY_DEFS[id].visualPool) && ENEMY_DEFS[id].visualPool.length >= 3, `${id} must expose weighted visual/loadout variety`);
+}
+for (const id of ['enemy_ash_goblin', 'enemy_cave_spider', 'enemy_ember_spider', 'enemy_frost_spider', 'enemy_mire_spider', 'enemy_ashstone_golem']) assert.ok(ENEMY_DEFS[id], `Missing v0.1.2.3 enemy ${id}`);
+assert.ok(NPC_DEFS.npc_bone_hunter && NPC_DEFS.npc_road_seeker, 'Asset variety pass must add additional persistent adventurer NPC seeds');
+assert.ok(NPC_GUILD_SEEDS.guild_emberbound?.name === 'Emberbound', 'Emberbound must exist as a future NPC-guild seed');
 for (const enemy of Object.values(ENEMY_DEFS)) {
   for (const itemId of Object.values(enemy.fixedLoadout || {})) assert.ok(ITEM_DEFS[itemId], `${enemy.id} fixed loadout references unknown item ${itemId}`);
   for (const entries of Object.values(enemy.equipmentPool || {})) for (const entry of entries) if (entry.itemId) assert.ok(ITEM_DEFS[entry.itemId], `${enemy.id} equipment pool references unknown item ${entry.itemId}`);
@@ -85,6 +92,8 @@ assert.ok(NPC_DEFS.npc_wanderer.recruitable && NPC_DEFS.npc_wanderer.baseVisual 
 assert.equal(LAYER_ASSETS.player_red_base.geometry, 'revised64', 'Red-haired protagonist must be the active full-combat base asset');
 assert.ok(Object.keys(EQUIPMENT_SET_DEFS).length >= 3 && EQUIPMENT_SET_DEFS.set_legion_remnant?.name, 'Named equipment-set metadata must exist without activating bonuses yet');
 assert.ok(SPAWN_REGIONS.some(spawn => spawn.enemyId === 'enemy_carrion_beast') && SPAWN_REGIONS.some(spawn => spawn.enemyId === 'enemy_bloodbone'), 'New enemy families must actually be spawned in the world');
+for (const id of ['enemy_blight_imp', 'enemy_blueflame_imp', 'enemy_ash_goblin', 'enemy_cave_spider', 'enemy_ember_spider', 'enemy_frost_spider', 'enemy_ashstone_golem']) assert.ok(SPAWN_REGIONS.some(spawn => spawn.enemyId === id), `${id} must appear in a real spawn region`);
+assert.ok(SPAWN_REGIONS.reduce((sum, spawn) => sum + spawn.count, 0) <= 40, 'Expanded enemy ecosystem must remain within the mobile-conscious baseline population budget');
 for (const enemy of Object.values(ENEMY_DEFS)) for (const drop of enemy.loot) {
   const item = ITEM_DEFS[drop.itemId];
   assert.ok(item, `Enemy loot references unknown item ${drop.itemId}`);
@@ -92,7 +101,7 @@ for (const enemy of Object.values(ENEMY_DEFS)) for (const drop of enemy.loot) {
   assert.equal(playerLootEligible, true, `Enemy loot must not expose NPC/legacy-only gear: ${drop.itemId}`);
 }
 assert.ok(ENEMY_DEFS.enemy_cinder_imp.loot.some(drop => drop.itemId === 'quest_ember_heart'), 'Quest loot must remain eligible even when normal legacy gear is blocked');
-for (const itemId of ['feet_leather_revised', 'shoulders_leather_revised', 'weapon_brass_arming_sword', 'head_bronze_revised', 'chest_silver_legion', 'weapon_iron_arming_sword', 'chest_steel_plate']) assert.ok(Object.values(ENEMY_DEFS).some(enemy => enemy.loot.some(drop => drop.itemId === itemId)), `New player gear must be reachable from a loot table: ${itemId}`);
+for (const itemId of ['feet_leather_revised', 'shoulders_leather_revised', 'weapon_brass_arming_sword', 'weapon_copper_arming_sword', 'weapon_bronze_arming_sword', 'weapon_iron_arming_sword', 'weapon_steel_arming_sword', 'weapon_ceramic_arming_sword', 'weapon_gold_arming_sword', 'head_bronze_revised', 'chest_silver_legion', 'chest_steel_plate']) assert.ok(Object.values(ENEMY_DEFS).some(enemy => enemy.loot.some(drop => drop.itemId === itemId)), `New player gear must be reachable from a loot table: ${itemId}`);
 for (const itemId of ['weapon_brass_arming_sword', 'weapon_iron_arming_sword', 'head_bronze_revised', 'shoulders_leather_revised', 'chest_silver_legion', 'chest_steel_plate', 'feet_leather_revised']) {
   const item = ITEM_DEFS[itemId];
   assert.equal(item.playerEquipReady, true, `${itemId} must be player-ready`);
@@ -129,6 +138,38 @@ const pngSize = async file => {
   assert.equal(buffer.toString('ascii', 1, 4), 'PNG', `${file} is not a PNG`);
   return { width: buffer.readUInt32BE(16), height: buffer.readUInt32BE(20) };
 };
+
+for (const [key, expected] of Object.entries({
+  'goblin-walk': [512, 256], 'goblin-attack': [192, 256],
+  'cave-spider-walk': [384, 256], 'cave-spider-attack': [256, 256],
+  'ember-spider-walk': [384, 256], 'frost-spider-walk': [384, 256], 'mire-spider-walk': [384, 256],
+  'golem-walk': [448, 256], 'golem-attack': [448, 384]
+})) {
+  const def = assetByKey.get(key);
+  assert.ok(def, `Missing runtime asset definition ${key}`);
+  const size = await pngSize(path.join(dist, def.path));
+  assert.deepEqual([size.width, size.height], expected, `${key} has unexpected runtime crop dimensions`);
+}
+for (const key of ['imp-red-sword-walk', 'imp-red-sword-shield-walk', 'imp-red-pitchfork-walk', 'imp-green-pitchfork-walk', 'imp-green-pitchfork-shield-walk', 'imp-green-sword-walk', 'imp-blue-sword-walk', 'imp-blue-sword-shield-walk', 'imp-blue-pitchfork-walk']) assert.ok(assetByKey.has(key), `Missing harvested Imp variant ${key}`);
+for (const key of ['adobe2-set', 'mushrooms', 'bush-evergreen', 'bush-seasonal', 'pine-tree-large', 'pine-tree-cluster']) assert.ok(assetByKey.has(key), `Missing expanded world asset ${key}`);
+const stagedFiles = [
+  path.join(dist, 'assets/world/staged/cave3.png'),
+  path.join(dist, 'assets/world/workshops/lpc-revised-blacksmith.png'),
+  path.join(dist, 'assets/world/workshops/lpc-revised-tailor.png'),
+  path.join(dist, 'assets/world/workshops/lpc-revised-woodshop.png')
+];
+for (const file of stagedFiles) await access(file);
+assert.ok(!ASSET_DEFS.some(asset => asset.path.includes('/staged/') || asset.path.includes('/workshops/')), 'Cave/workshop source sheets should stay staged and out of mobile preloads until a map actually uses them');
+async function recursiveNames(dir) {
+  const entries = await readdir(dir, { withFileTypes: true });
+  const names = [];
+  for (const entry of entries) {
+    const full = path.join(dir, entry.name);
+    if (entry.isDirectory()) names.push(...await recursiveNames(full)); else names.push(full);
+  }
+  return names;
+}
+assert.ok(!(await recursiveNames(path.join(dist, 'assets'))).some(file => file.toLowerCase().endsWith('.psd')), 'Photoshop source files must never ship in runtime dist/assets');
 for (const [layerKey, layer] of Object.entries(LAYER_ASSETS)) {
   const geometry = ANIMATION_GEOMETRIES[layer.geometry];
   assert.ok(geometry, `Layer ${layerKey} references unknown geometry ${layer.geometry}`);
@@ -257,7 +298,7 @@ for (const layerKey of ['shoulders_legion', 'feet_revised']) {
   assert.equal(layer.attackFallback, 'slash', `${layerKey} must explicitly declare its revised-attack fallback`);
   assert.equal(ANIMATION_GEOMETRIES[layer.geometry].slash1h, undefined, `${layerKey} must not pretend to contain unsupported revised attacks`);
 }
-for (const layerKey of ['weapon_arming_sword_fg', 'weapon_brass_arming_sword_fg', 'weapon_iron_arming_sword_fg']) {
+for (const layerKey of ['weapon_arming_sword_fg', 'weapon_brass_arming_sword_fg', 'weapon_iron_arming_sword_fg', 'weapon_bronze_arming_sword_fg', 'weapon_copper_arming_sword_fg', 'weapon_steel_arming_sword_fg', 'weapon_ceramic_arming_sword_fg', 'weapon_gold_arming_sword_fg']) {
   const armingLayer = LAYER_ASSETS[layerKey];
   const armingGeometry = ANIMATION_GEOMETRIES[armingLayer.geometry];
   for (const action of ['walk', 'slash', 'slash1h', 'backslash1h', 'halfslash1h']) {
@@ -269,6 +310,22 @@ for (const layerKey of ['weapon_arming_sword_fg', 'weapon_brass_arming_sword_fg'
     }
   }
 }
+// v0.1.2.3 new enemy sheets must contain real artwork in every frame used by the
+// generic four-direction enemy renderer.
+for (const [walkKey, attackKey, walkFrames, attackFrames] of [
+  ['goblin-walk', 'goblin-attack', 8, 3],
+  ['cave-spider-walk', 'cave-spider-attack', 6, 4],
+  ['ember-spider-walk', 'ember-spider-attack', 6, 4],
+  ['frost-spider-walk', 'frost-spider-attack', 6, 4],
+  ['mire-spider-walk', 'mire-spider-attack', 6, 4],
+  ['golem-walk', 'golem-attack', 7, 7]
+]) {
+  for (let direction = 0; direction < 4; direction += 1) {
+    for (let frame = 0; frame < walkFrames; frame += 1) assert.ok(await frameHasAlpha(walkKey, direction, frame), `${walkKey} direction ${direction} frame ${frame} is empty`);
+    for (let frame = 0; frame < attackFrames; frame += 1) assert.ok(await frameHasAlpha(attackKey, direction, frame), `${attackKey} direction ${direction} frame ${frame} is empty`);
+  }
+}
+
 const katanaLayer = LAYER_ASSETS.weapon_katana_npc_fg;
 assert.ok(katanaLayer, 'Katana must be staged as a concrete NPC visual rather than an unused source export');
 const katanaGeometry = ANIMATION_GEOMETRIES[katanaLayer.geometry];
@@ -424,4 +481,4 @@ const normalizedWrongSlot = saveManager.validate(wrongSlotSave);
 assert.equal(normalizedWrongSlot.equipment.head, null, 'Wrong-slot saved equipment must be discarded');
 assert.equal(normalizedWrongSlot.equipment.weapon, 'i_000001', 'Valid weapon reference must survive normalization');
 
-console.log(`Validated ${ASSET_DEFS.length} assets, ${Object.keys(ITEM_DEFS).length} items, ${Object.keys(ENEMY_DEFS).length} enemies, ${Object.keys(NPC_DEFS).length} NPCs, ${BUILDING_DEFS.length} refuge buildings, ${COLLIDERS.length} visible-source colliders, ${Object.keys(QUEST_DEFS).length} quests, v0.1.2.2 actor-collision/reward-recovery hotfix, red-haired protagonist, layered NPC/skeleton loadouts, enemy-family expansion, zone metadata, named-set scaffolding, player-safe loot, four-hit combat geometry, hardened mobile movement, inventory recovery, and save schema 1.`);
+console.log(`Validated ${ASSET_DEFS.length} assets, ${Object.keys(ITEM_DEFS).length} items, ${Object.keys(ENEMY_DEFS).length} enemies, ${Object.keys(NPC_DEFS).length} NPCs, ${BUILDING_DEFS.length} refuge buildings, ${COLLIDERS.length} visible-source colliders, ${Object.keys(QUEST_DEFS).length} quests, v0.1.2.3 asset/world variety expansion, weighted Imp visuals, Goblin/Spider/Golem families, additional adventurer seeds, expanded world props, staged cave/workshops, collision preservation, player-safe loot, four-hit combat geometry, hardened mobile movement, inventory recovery, and save schema 1.`);

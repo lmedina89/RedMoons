@@ -46,6 +46,28 @@ export const NPC_DEFS = Object.freeze({
       { conditions: [{ type: 'previousConversationAtLeast', value: 1 }, { type: 'playerLevelAtLeast', value: 3 }], text: 'Still walking east? Then remember: skeletons hear straight roads better than soft ground.' },
       { conditions: [], text: 'Bone Road begins where the wind stops carrying voices back to town.' }
     ]
+  },
+  npc_bone_hunter: {
+    id: 'npc_bone_hunter', name: 'Renn', role: 'Bone Hunter', x: 355, y: 865,
+    npcType: 'adventurer', level: 7, combatRole: 'vanguard', guildId: 'guild_emberbound', recruitable: false, activityState: 'resting_between_hunts', homeZone: 'zone_cinder_refuge',
+    baseVisual: 'npc_classic_body', hairVisual: 'npc_classic_hair',
+    loadout: { head: 'head_chain_coif', chest: 'chest_cinderhide', hands: 'hands_iron', feet: 'feet_iron', weapon: 'weapon_steel_arming_sword', offhand: 'offhand_wood_guard' },
+    route: [{ x: 355, y: 865 }, { x: 395, y: 845 }, { x: 430, y: 880 }, { x: 370, y: 900 }], speed: 22,
+    dialogue: [
+      { conditions: [{ type: 'playerLevelAtLeast', value: 6 }], text: 'Blueflame imps are worse than the red kind. Same grin, smarter feet. Do not let the shielded ones stall you for the pack.' },
+      { conditions: [], text: 'The Emberbound hunt in pairs when Bone Road is loud. I am waiting on mine.' }
+    ]
+  },
+  npc_road_seeker: {
+    id: 'npc_road_seeker', name: 'Doran', role: 'Road Seeker', x: 150, y: 545,
+    npcType: 'adventurer', level: 4, combatRole: 'striker', guildId: null, recruitable: true, activityState: 'studying_routes', homeZone: 'zone_cinder_refuge',
+    baseVisual: 'npc_olive_base', hairVisual: null,
+    loadout: { head: 'head_bronze_revised', shoulders: 'shoulders_legion', chest: 'chest_wayfarer', feet: 'feet_road_boots', weapon: 'weapon_copper_arming_sword' },
+    route: [{ x: 150, y: 545 }, { x: 185, y: 570 }, { x: 170, y: 615 }, { x: 135, y: 585 }], speed: 24,
+    dialogue: [
+      { conditions: [{ type: 'worldFlag', key: 'bone_road_open', value: true }], text: 'Ossivar fell? Then I picked the right week to stop pretending I was ready for Bone Road.' },
+      { conditions: [], text: 'I mark where the hunters return from, not where they leave. The difference keeps maps honest.' }
+    ]
   }
 });
 
@@ -53,5 +75,6 @@ export const NPC_DEFS = Object.freeze({
 // but NPC membership can already reference stable IDs without a later schema
 // rewrite.
 export const NPC_GUILD_SEEDS = Object.freeze({
-  guild_cinder_watch: { id: 'guild_cinder_watch', name: 'Cinder Watch', status: 'world_lore_only', emblem: 'watch_flame_future' }
+  guild_cinder_watch: { id: 'guild_cinder_watch', name: 'Cinder Watch', status: 'world_lore_only', emblem: 'watch_flame_future' },
+  guild_emberbound: { id: 'guild_emberbound', name: 'Emberbound', status: 'world_lore_only', emblem: 'split_ember_future' }
 });

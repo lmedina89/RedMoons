@@ -1,5 +1,22 @@
 # Changelog
 
+## v0.1.2.3 — Asset & World Variety Expansion
+
+- Expanded the early enemy ecosystem to 16 definitions without increasing collision complexity or changing save schema 1.
+- Harvested the existing LPC Imp archive into red, green and blue Imp families with weighted sword, pitchfork and shield visual/loadout combinations that roll once per spawn.
+- Added Ash Goblin Raider, Cave Spider, Ember Spider, Paleweb Spider, Mire Spider and Ashstone Golem definitions using compact runtime PNG crops; Mire Spider remains staged/debug-ready for a later matching zone rather than overcrowding the current map.
+- Added four curated Spider palettes from the supplied 11-variant pack and retained the larger source library outside runtime preloads.
+- Added two more persistent adventurer NPC seeds (Renn of the Emberbound and recruitable Doran) using the existing layered humanoid/equipment framework.
+- Added an `Emberbound` NPC-guild seed as data only; guild mechanics remain intentionally inactive.
+- Added Adobe-2 settlement props plus selected evergreen bushes, seasonal bushes and mushroom scenery harvested from the existing 4-season/Core library. Decorative scenery remains non-colliding.
+- Harvested Copper, Bronze, Steel, Ceramic and Gilded full-combo Arming Sword palettes from the existing Organized library and added them as player-ready material variants with level-appropriate drops and Skeleton loadout use.
+- Added precomposed pine-tree and pine-cluster scenery from the existing 4-season pack; these remain purely decorative and do not expand collision.
+- Staged the supplied LPC cave structural sheet and revised blacksmith/tailor/woodshop tiles under `dist/assets/world/` for later mapped interiors/caves, but deliberately excludes them from current preload lists.
+- Preserved the v0.1.2.2 collision model unchanged: only visible refuge walls and building footprints create static blockers.
+- Staged the supplied Wolf PSD for a later verified export rather than guessing at its irregular source animation layout; no PSD/source-authoring file ships in `dist/assets`.
+- Expanded `?debug=1` teleports for the new live enemy families.
+- Added validation for new enemy runtime crop dimensions, weighted Imp pools, actual spawn coverage, mobile-conscious population cap, staged-vs-preloaded assets, additional NPC/guild seeds, and accidental PSD shipping.
+
 
 ## v0.1.2.2 — Actor Collision & Reward Recovery Hotfix
 

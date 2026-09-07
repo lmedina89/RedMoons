@@ -115,3 +115,23 @@ The following user-supplied source files are preserved under `dist/assets/source
 - Castle2_set.png — Cinder Refuge prop source; exact final source/license attribution still needs collection.
 
 The user authorized use during development before final credit collection. Missing attribution is tracked as a release-readiness limitation and should be resolved before commercial/store distribution.
+
+## v0.1.2.3 asset-variety staging
+
+- Runtime enemy crops were added for selected supplied Goblin, Spider and Golem art plus red/green/blue LPC Imp variants harvested from the pre-existing Core archive.
+- `adobe2-set.png`, evergreen/seasonal bushes and mushrooms are used as non-colliding runtime scenery.
+- `world/staged/cave3.png` and the revised blacksmith/tailor/woodshop sheets are preserved for later map/interior work but are intentionally absent from the current preload registry.
+- Source-authoring PSDs (including the supplied Wolf/Goblin source PSDs) are **not shipped in `dist/assets`**. The Goblin was converted to compact runtime PNGs; the Wolf remains deferred until its animation layout is verified rather than guessed.
+- Development use was explicitly authorized by the user before final credit collection. Missing/unknown attribution remains a release-readiness task and must be resolved before any commercial/store release.
+
+
+## v0.1.2.3 variety sources
+
+Development/runtime additions in this pass come from two places:
+
+- Existing organized LPC sources already preserved by the project: Imp color/loadout variants, 4-season vegetation/pines and additional Expanded Arming Sword material palettes.
+- User-supplied LPC/OpenGameArt-derived Goblin, Spider, Golem, Adobe-2, Cave3 and revised Workshop source assets.
+
+Only compact PNG runtime sheets/crops are preloaded. Cave/workshop full tilesheets are staged for future mapped interiors, and the supplied Wolf PSD is deliberately not shipped in runtime assets until a verified export is produced.
+
+The user explicitly authorized development use without completing the final attribution pass now. Exact attribution/license verification remains a release-readiness checklist item before App Store/Play Store/commercial distribution; this development decision does not erase upstream license obligations.

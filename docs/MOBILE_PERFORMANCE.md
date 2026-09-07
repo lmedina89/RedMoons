@@ -19,3 +19,7 @@ Future larger zones should introduce spatial buckets and chunk-owned actor activ
 ## v0.1.2 variety budget
 
 New full LPC source exports are never preloaded directly. Runtime uses only cropped walk/slash or required full-combo regions. Skeleton equipment reuses already-loaded layered textures instead of baking a unique sheet per loadout. Enemy AI retains the existing active-range early-out, and the initial world-variety population is intentionally kept to a few dozen actors rather than MMO-scale counts.
+
+## v0.1.2.3 variety budget
+
+The content-variety pass keeps the live baseline enemy population capped by validation rather than loading every available source variant. Large PSD/source archives are excluded from `dist/assets`; runtime enemies use cropped PNG sheets, and cave/workshop source sheets are not preloaded until needed. Decorative variety does not add physics bodies. Expanded sword materials reuse identical animation geometry, and pine art is precomposed into two small runtime images rather than assembling the source tilesheet every frame.

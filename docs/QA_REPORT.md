@@ -1,37 +1,34 @@
-# v0.1.2.1 QA report — Collision & Toast Hotfix
+# v0.1.2.3 QA report — Asset & World Variety Expansion
 
-Hotfix focus: verify the refuge east opening is freely traversable, every static blocker corresponds to visible wall/building geometry, `?debug=1` outlines all blockers, and routine toasts no longer occupy the center of combat.
+Release focus: expand visual/content variety while preserving the proven v0.1.2.2 collision model, save schema 1, player-safe loot rules and mobile-conscious actor budget.
 
 ## Automated checks completed
 
-- All runtime asset paths resolve.
-- All JS/MJS files pass `node --check`.
-- Project validator passes red-haired full-combat base coverage, item/enemy/NPC references, weighted skeleton loadout references, player-safe loot filtering, named-set metadata, six refuge buildings, future-ready zone metadata, inventory Drop/Destroy behavior and save schema 1 normalization.
-- New LPC runtime crops are compact animation slices rather than full 832×3456 sheets, keeping the mobile runtime texture footprint bounded.
+- All runtime asset paths resolve and all JS/MJS files pass `node --check`.
+- Project validator covers 16 enemy definitions, weighted Imp visual pools, Goblin/Spider/Golem frame population, six NPCs, player-safe loot, named-set scaffolding, save schema 1 normalization and the full four-hit protagonist/equipment animation geometry.
+- All eight live full-combo Arming Sword presentation families (Ashen/Silver source plus Brass, Iron, Copper, Bronze, Steel, Ceramic and Gilded) are checked for real pixels in every required direction/action frame.
+- New environment scenery is precomposed/cropped for runtime and creates no physics bodies.
+- Static collision remains exactly five visible refuge wall segments + six visible building footprints; no additional collision was introduced by this variety pass.
+- Cave/workshop source sheets remain staged and are excluded from mobile preloads.
+- PSD authoring sources are excluded from `dist/assets`.
 
 ## Physical iPhone regression checklist
 
-1. Load an existing v0.1.1.5 save and confirm level, inventory, equipment, quests and position survive.
-2. Confirm the player is the red-haired character in idle/walk and through all four sword attacks in every facing.
-3. Equip Bronze/Iron helmets, Ashhide Shoulders, Legion/Silver Legion/Steel chest pieces, Legion Gloves, Ashrunner Boots and each Arming Sword palette; watch for layer drift/clipping.
-4. Walk through Cinder Refuge. Confirm all six buildings render, paths/gate are readable and invisible building colliders do not trap the player.
-5. Confirm Torren, Ilyan, Vesra and Sable visibly wear different loadouts. Verify dialogue interaction remains reachable.
-6. Use `?debug=1` to visit Imp, Carrion, Rotwing, Slate, Bloodbone, Gilded and Captain enemies.
-7. Kill/respawn Skeleton variants repeatedly and confirm their visible gear can change only on respawn, not during one life.
-8. Confirm skeleton equipment never causes the player to be physically shoved; combat remains range-driven.
-9. Confirm only player-compatible equipment appears as new normal loot even when an enemy visibly wears legacy/NPC-only gear.
-10. Fill the inventory, then test Drop and Destroy including equipped items and quest-item protection.
-11. Perform the long-right-movement Safari regression: hold/release joystick, multi-touch Attack + movement, drag outside joystick, app-switch, return, orientation/visibility changes. No phantom sliding should remain.
-12. Save/reload after fighting new enemy families and with new gear equipped.
+1. Load an existing v0.1.2.2 save and verify level, inventory, equipment, quests, ash and position.
+2. Re-test Cinder Refuge center and east exit first. No new scenery should create a force field or hidden blocker.
+3. Use `?debug=1` and confirm the cyan player footprint remains compact; static green boxes should still correspond only to visible walls/buildings.
+4. Use **Add Gear Test Set** and equip every Arming Sword material. Run the full four-hit combo facing up/left/down/right and watch for missing weapon frames.
+5. Visit Cinder, Blight and Blueflame Imps repeatedly and verify color/loadout combinations remain stable for one life and reroll on respawn.
+6. Visit Ash Goblin Raider and verify walk + attack facings in all four directions.
+7. Visit Cave/Ember/Paleweb/Mire Spider variants and verify all four-direction movement/attacks; Mire is debug-only until a matching biome exists.
+8. Visit Ashstone Golem and verify its larger 64×96 attack frames do not jump, crop or reverse vertical facing.
+9. Pull mixed enemy groups and watch for frame drops, stuck AI, excessive overlap or any return of physical player shoving.
+10. Kill/respawn Skeleton families repeatedly; verify the expanded material sword pool and older NPC equipment produce noticeably varied soldiers.
+11. Walk the whole current map and confirm new bushes, mushrooms, Adobe-2 details and pine scenery render cleanly without blocking movement.
+12. Save/reload after obtaining one of the new sword materials and verify it remains equipable/rendered correctly.
+13. Fill inventory and repeat Drop/Destroy/quest-item protection regression.
+14. Run a 10–15 minute Safari session with movement + combat + app switching to catch lifecycle/performance regressions.
 
 ## Known manual-only areas
 
-Browser rendering, exact art alignment, touch feel, Safari lifecycle behavior and performance under a real horde still require physical-device observation. Automated validation cannot certify visual taste or iOS event delivery.
-
-
-## v0.1.2.2 targeted regression
-
-- Walk through Cinder Refuge center, east gate, every building approach, Scorched Outskirts and Bone Road with `?debug=1`. Green boxes must match visible static blockers; the cyan player footprint must stay compact around the feet.
-- Spawn several layered skeleton variants; faint-magenta enemy footprints must remain compact and must not shove the player.
-- Use Add Magic Bronze Helm and verify it equips after the helper grants minimum requirements.
-- Verify old saves containing Warden Helm/Cinderhide reward instances normalize to player-compatible replacements.
+Exact visual taste, iPhone touch feel, Safari lifecycle behavior, sprite layering and sustained GPU/memory behavior remain physical-device checks. The Wolf PSD is intentionally not live until its irregular source atlas receives a verified normalization pass.

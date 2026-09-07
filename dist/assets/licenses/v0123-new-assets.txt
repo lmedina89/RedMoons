@@ -1,0 +1,15 @@
+Hell RPG v0.1.2.3 development asset notes
+
+This development pass uses user-supplied LPC/OpenGameArt-derived Goblin, Spider, Golem,
+Adobe-2, Cave3 and revised Workshop art plus already-preserved project source assets.
+
+The Wolf PSD is intentionally not a runtime asset in v0.1.2.3: its source atlas is irregular
+and requires a clean, verified export/normalization pass before gameplay integration.
+
+Additional Arming Sword material palettes, Imp variants and 4-season vegetation/pines were
+harvested from the project's previously organized LPC source library.
+
+The user authorized development use without completing the final attribution pass now.
+Do not treat this note as final licensing clearance. Exact per-asset authors, license choices,
+source URLs and required attribution text remain a release-readiness task before any
+commercial/App Store/Play Store distribution.

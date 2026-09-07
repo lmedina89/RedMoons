@@ -1,4 +1,4 @@
-# Known limitations — v0.1.2.1
+# Known limitations — v0.1.2.3
 
 - Set definitions/names exist, but **set bonuses are not active yet**. They are reserved for the later loot/progression milestone.
 - Guild IDs and recruitable/adventurer NPC metadata are scaffolding only. Guild creation/joining, ranks, contribution, alliances, guild wars and sieges are not active yet.
@@ -13,3 +13,10 @@
 ## v0.1.2.2 collision note
 
 Actor collision proxies now use unscaled 2x2 helper sprites with compact foot-area Arcade bodies. Do not reintroduce `setDisplaySize()` on `solid` actor proxies before `body.setSize()`, because Arcade body dimensions inherit GameObject scale.
+
+## v0.1.2.3
+
+- The Wolf source PSD is intentionally not active yet; its animation atlas needs a verified export/crop pass.
+- Mire Spider is defined and runtime-ready but not placed in the current three-zone map; it is reserved for a later wet/cave biome rather than overcrowding Bone Road.
+- Cave and workshop sheets are staged assets, not enterable interiors/dungeons yet.
+- Goblin, Spider and Golem currently use the existing simple melee AI. Distinct ranged/caster/charge/status behaviors wait for the shared v0.1.3 skill/status framework.

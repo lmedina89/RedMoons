@@ -32,18 +32,33 @@ export const TOWN_PROP_DEFS = Object.freeze([
   { texture: 'castle2-set', frame: 255, x: 345, y: 800, scale: 1.15 }, // well/brazier-like round prop
   { texture: 'castle2-set', frame: 128, x: 595, y: 450, scale: 0.9 },
   { texture: 'castle2-set', frame: 129, x: 135, y: 825, scale: 0.95 },
-  { texture: 'castle2-set', frame: 219, x: 565, y: 820, scale: 0.9 }
+  { texture: 'castle2-set', frame: 219, x: 565, y: 820, scale: 0.9 },
+  { texture: 'adobe2-set', frame: 68, x: 392, y: 602, scale: 1.0 },
+  { texture: 'adobe2-set', frame: 150, x: 548, y: 340, scale: 1.0 },
+  { texture: 'adobe2-set', frame: 67, x: 247, y: 355, scale: 0.95 }
 ]);
 
 export const SPAWN_REGIONS = Object.freeze([
-  { id: 'spawn_imp_south', enemyId: 'enemy_cinder_imp', x: 800, y: 520, width: 430, height: 560, count: 7, respawnMs: 6500 },
-  { id: 'spawn_carrion_north', enemyId: 'enemy_carrion_beast', x: 980, y: 130, width: 520, height: 380, count: 5, respawnMs: 7600 },
-  { id: 'spawn_rotwing_south', enemyId: 'enemy_rotwing_ravager', x: 1250, y: 700, width: 470, height: 400, count: 3, respawnMs: 9000 },
-  { id: 'spawn_skeleton_edge', enemyId: 'enemy_ash_skeleton', x: 1550, y: 180, width: 380, height: 850, count: 4, respawnMs: 9000 },
-  { id: 'spawn_slate_road', enemyId: 'enemy_slate_revenant', x: 1980, y: 160, width: 300, height: 520, count: 3, respawnMs: 10500 },
-  { id: 'spawn_bloodbone_road', enemyId: 'enemy_bloodbone', x: 2180, y: 650, width: 300, height: 450, count: 3, respawnMs: 12000 },
-  { id: 'spawn_gilded_guard', enemyId: 'enemy_gilded_guard', x: 2260, y: 180, width: 220, height: 360, count: 2, respawnMs: 15000 },
-  { id: 'spawn_captain', enemyId: 'enemy_bone_captain', x: 2390, y: 560, width: 90, height: 120, count: 1, respawnMs: 24000 }
+  // Scorched Outskirts: several small hunting pockets instead of one repeated
+  // monster carpet. Total population stays mobile-conscious while silhouettes
+  // and loadouts vary much more.
+  { id: 'spawn_cinder_imp_south', enemyId: 'enemy_cinder_imp', x: 770, y: 560, width: 350, height: 500, count: 4, respawnMs: 6500 },
+  { id: 'spawn_blight_imp_north', enemyId: 'enemy_blight_imp', x: 785, y: 145, width: 360, height: 300, count: 3, respawnMs: 7000 },
+  { id: 'spawn_goblin_north', enemyId: 'enemy_ash_goblin', x: 1060, y: 165, width: 350, height: 330, count: 3, respawnMs: 7600 },
+  { id: 'spawn_cave_spider_south', enemyId: 'enemy_cave_spider', x: 1060, y: 735, width: 340, height: 300, count: 3, respawnMs: 7200 },
+  { id: 'spawn_carrion_mid', enemyId: 'enemy_carrion_beast', x: 1350, y: 130, width: 340, height: 330, count: 3, respawnMs: 8000 },
+  { id: 'spawn_rotwing_south', enemyId: 'enemy_rotwing_ravager', x: 1430, y: 730, width: 330, height: 330, count: 2, respawnMs: 9200 },
+  { id: 'spawn_blueflame_edge', enemyId: 'enemy_blueflame_imp', x: 1650, y: 500, width: 250, height: 330, count: 2, respawnMs: 9800 },
+  { id: 'spawn_ember_spider_edge', enemyId: 'enemy_ember_spider', x: 1690, y: 155, width: 205, height: 285, count: 2, respawnMs: 9800 },
+  { id: 'spawn_skeleton_edge', enemyId: 'enemy_ash_skeleton', x: 1770, y: 800, width: 160, height: 300, count: 3, respawnMs: 9400 },
+
+  // Bone Road: fewer but more dangerous encounters.
+  { id: 'spawn_slate_road', enemyId: 'enemy_slate_revenant', x: 1980, y: 150, width: 240, height: 410, count: 2, respawnMs: 10800 },
+  { id: 'spawn_bloodbone_road', enemyId: 'enemy_bloodbone', x: 2110, y: 675, width: 230, height: 350, count: 2, respawnMs: 12200 },
+  { id: 'spawn_gilded_guard', enemyId: 'enemy_gilded_guard', x: 2290, y: 165, width: 190, height: 300, count: 1, respawnMs: 15500 },
+  { id: 'spawn_paleweb_road', enemyId: 'enemy_frost_spider', x: 1985, y: 780, width: 190, height: 270, count: 1, respawnMs: 13000 },
+  { id: 'spawn_ashstone_golem', enemyId: 'enemy_ashstone_golem', x: 2290, y: 820, width: 190, height: 220, count: 1, respawnMs: 22000 },
+  { id: 'spawn_captain', enemyId: 'enemy_bone_captain', x: 2390, y: 545, width: 90, height: 120, count: 1, respawnMs: 24000 }
 ]);
 
 export const REFUGE_WALLS = Object.freeze([
@@ -85,8 +100,31 @@ export const PROP_DEFS = Object.freeze([
   { texture: 'tree-trunks', frame: 6, x: 635, y: 215, scale: 1.6 },
   { texture: 'tree-trunks', frame: 9, x: 80, y: 925, scale: 1.7 },
   { texture: 'tree-trunks', frame: 3, x: 625, y: 945, scale: 1.65 },
-  ...Array.from({ length: 24 }, (_, i) => ({ texture: 'rocks-grass', frame: (i * 3) % 18, x: 790 + (i % 6) * 190, y: 100 + Math.floor(i / 6) * 320, scale: 1.15 + (i % 3) * 0.12 })),
-  ...Array.from({ length: 12 }, (_, i) => ({ texture: 'rocks-cliffs', frame: (i * 5) % 24, x: 1980 + (i % 3) * 190, y: 90 + Math.floor(i / 3) * 300, scale: 1.35 })),
+
+  // Additional 4-season vegetation harvested from the existing Core archive.
+  // These are scenery only and never create collision.
+  ...[
+    { texture: 'bush-evergreen', frame: 3, x: 845, y: 230, scale: 1.25 },
+    { texture: 'bush-evergreen', frame: 4, x: 1015, y: 1045, scale: 1.15 },
+    { texture: 'bush-evergreen', frame: 5, x: 1325, y: 540, scale: 1.2 },
+    { texture: 'bush-seasonal', frame: 12, x: 1535, y: 270, scale: 1.0 },
+    { texture: 'bush-seasonal', frame: 13, x: 1835, y: 1060, scale: 0.95 },
+    { texture: 'bush-seasonal', frame: 15, x: 2045, y: 1080, scale: 0.9 },
+    { texture: 'bush-seasonal', frame: 16, x: 2390, y: 1030, scale: 0.9 },
+    { texture: 'mushrooms', frame: 3, x: 1160, y: 505, scale: 0.9 },
+    { texture: 'mushrooms', frame: 18, x: 1225, y: 530, scale: 0.9 },
+    { texture: 'mushrooms', frame: 21, x: 1710, y: 430, scale: 0.9 },
+    { texture: 'mushrooms', frame: 23, x: 2010, y: 900, scale: 0.9 },
+    { texture: 'mushrooms', frame: 25, x: 2215, y: 410, scale: 0.9 },
+    { texture: 'pine-tree-large', x: 930, y: 1120, scale: 1.05 },
+    { texture: 'pine-tree-large', x: 1470, y: 1145, scale: 0.92 },
+    { texture: 'pine-tree-cluster', x: 1780, y: 1125, scale: 0.72 },
+    { texture: 'pine-tree-large', x: 2075, y: 1160, scale: 0.92 },
+    { texture: 'pine-tree-cluster', x: 2410, y: 1135, scale: 0.70 }
+  ],
+
+  ...Array.from({ length: 20 }, (_, i) => ({ texture: 'rocks-grass', frame: (i * 3) % 18, x: 790 + (i % 5) * 220, y: 100 + Math.floor(i / 5) * 320, scale: 1.12 + (i % 3) * 0.12 })),
+  ...Array.from({ length: 10 }, (_, i) => ({ texture: 'rocks-cliffs', frame: (i * 5) % 24, x: 1980 + (i % 3) * 190, y: 90 + Math.floor(i / 3) * 300, scale: 1.30 })),
   { texture: 'dungeon-elements', frame: 64, x: 2010, y: 555, scale: 1.5 },
   { texture: 'dungeon-elements', frame: 65, x: 2055, y: 555, scale: 1.5 }
 ]);
