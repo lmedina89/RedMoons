@@ -1,4 +1,13 @@
-# Hell RPG v0.1.4.4.5.3 — Debug Battle Arena & Spectator Controls
+# Hell RPG v0.1.4.4.5.3.1 — Debug Panel Docking Hotfix
+
+## v0.1.4.4.5.3.1 Debug Panel Docking Hotfix
+
+- The full `?debug=1` battle selector still opens at its normal large setup size.
+- Tap **Minimize** in the debug header to collapse it into a small **DEBUG ›** tab docked mostly off the left edge of the screen. Tap that tab to restore the full selector.
+- Minimizing is presentation-only: staged combatants, arena HOLD/LIVE state, God Mode and active fights continue without reset.
+- This hotfix does not alter combat, summons, assets, production Warfront population, save schema or progression.
+
+Physical iPhone Safari remains the release gate.
 
 
 ## v0.1.4.4.5.3 Debug Battle Arena & Spectator Controls

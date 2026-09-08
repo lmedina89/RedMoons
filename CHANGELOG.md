@@ -1,5 +1,13 @@
 # Changelog
 
+## v0.1.4.4.5.3.1 — Debug Panel Docking Hotfix
+
+- Added an explicit **Minimize** control to the `?debug=1` panel after physical iPhone testing showed the full battle-arena selector obscured too much of the battlefield.
+- Minimized mode collapses all debug sections and slides the panel almost entirely off the left edge, leaving only a touch-friendly **DEBUG ›** reopen tab.
+- Collapsing/reopening is UI-only: staged arena actors, HOLD/LIVE state, God Mode, summons and combat continue unchanged.
+- Preserved every v0.1.4.4.5.3 battle-arena summon/control, save-isolation rule, reward bypass, actor cap, combat balance and production Warfront population.
+- Save schema remains 2; no artwork or gameplay assets changed.
+
 ## v0.1.4.4.5.3 — Debug Battle Arena & Spectator Controls
 
 - Rebuilt the `?debug=1` menu into categorized arena, faction-summon, named-field-test, world-test and legacy diagnostic sections for iPhone-friendly testing.

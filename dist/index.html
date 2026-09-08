@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <meta name="theme-color" content="#120907">
-  <meta name="description" content="Hell RPG v0.1.4.4.5.3 — Debug Battle Arena & Spectator Controls, a mobile-first pixel action RPG.">
+  <meta name="description" content="Hell RPG v0.1.4.4.5.3.1 — Debug Panel Docking Hotfix, a mobile-first pixel action RPG.">
   <title>Hell RPG — Ashfall Foundation</title>
   <link rel="stylesheet" href="css/game.css">
 </head>
@@ -43,7 +43,7 @@
             <button type="button" id="confirm-new-game" class="danger-button">Overwrite & Start</button>
           </div>
         </section>
-        <small class="start-version">v0.1.4.4.5.3 • save schema 2</small>
+        <small class="start-version">v0.1.4.4.5.3.1 • save schema 2</small>
       </div>
     </section>
 
@@ -130,7 +130,7 @@
 
     <aside id="rotate-advisory" aria-live="polite"><span aria-hidden="true">↻</span><strong>Rotate to landscape</strong><small>Ashfall is designed first for iPhone landscape.</small></aside>
     <aside id="debug-panel" class="hidden" aria-label="Development diagnostics">
-      <div class="debug-head"><strong>DEBUG CONTROL</strong><span id="debug-arena-status">Arena inactive</span></div>
+      <div class="debug-head"><strong>DEBUG CONTROL</strong><span id="debug-arena-status">Arena inactive</span><button type="button" id="debug-panel-toggle" class="debug-panel-toggle" aria-expanded="true" aria-controls="debug-panel">Minimize</button></div>
       <details open class="debug-section debug-arena-section">
         <summary>Arena Controls</summary>
         <div class="debug-strip">
@@ -244,7 +244,7 @@
         </div>
       </details>
     </aside>
-    <div id="build-label">v0.1.4.4.5.3 • save schema 2</div>
+    <div id="build-label">v0.1.4.4.5.3.1 • save schema 2</div>
   </main>
 
   <script src="vendor/phaser.min.js"></script>

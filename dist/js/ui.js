@@ -30,10 +30,12 @@ export class UIManager {
     this.toastVisibleUntil = 0;
     this.toastPriority = -1;
     this.toastCooldowns = new Map();
+    this.debugPanelMinimized = false;
     this.bindEvents();
     this.bindTouchControls();
     if (DEBUG) {
       $('#debug-panel').classList.remove('hidden');
+      $('#debug-panel-toggle')?.addEventListener('click', () => this.setDebugPanelMinimized(!this.debugPanelMinimized));
       document.querySelectorAll('[data-debug]').forEach(button => button.addEventListener('click', () => gameEvents.emit('command', { type: 'debug', action: button.dataset.debug })));
     }
   }
@@ -208,6 +210,18 @@ export class UIManager {
     if (DEBUG) this.renderDebugControls();
   }
 
+  setDebugPanelMinimized(minimized) {
+    this.debugPanelMinimized = Boolean(minimized);
+    const panel = $('#debug-panel');
+    const toggle = $('#debug-panel-toggle');
+    panel?.classList.toggle('debug-minimized', this.debugPanelMinimized);
+    if (toggle) {
+      toggle.textContent = this.debugPanelMinimized ? 'DEBUG ›' : 'Minimize';
+      toggle.setAttribute('aria-expanded', String(!this.debugPanelMinimized));
+      toggle.setAttribute('aria-label', this.debugPanelMinimized ? 'Open debug controls' : 'Minimize debug controls');
+    }
+  }
+
   renderDebugControls() {
     const debug = this.snapshot?.debug || {};
     const arena = debug.arena || { active: false, hold: true, total: 0, celestial: 0, infernal: 0, maxActors: 14 };
@@ -225,6 +239,8 @@ export class UIManager {
     if (status) status.textContent = arena.active
       ? `Arena • C ${arena.celestial} vs I ${arena.infernal} • ${arena.total}/${arena.maxActors} • ${arena.hold ? 'HOLD' : 'LIVE'}`
       : `Arena inactive • God ${debug.godMode ? 'ON' : 'OFF'}`;
+    const panelToggle = $('#debug-panel-toggle');
+    if (panelToggle && status) panelToggle.title = status.textContent;
     document.querySelectorAll('[data-arena-only]').forEach(button => { button.disabled = !arena.active; });
   }
 
