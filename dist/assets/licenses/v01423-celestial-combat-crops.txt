@@ -1,0 +1,18 @@
+Hell RPG v0.1.4.2.3 — Celestial Combat Foundation runtime crops
+
+Runtime files:
+- dist/assets/enemies/celestial/base-angel-walk.png
+- dist/assets/enemies/celestial/base-angel-slash.png
+  Source: source-assets/character-concepts/2026-09-07/heavenly-and-unique/BaseAngel.png
+
+- dist/assets/enemies/celestial/heavenly-knight-walk.png
+- dist/assets/enemies/celestial/heavenly-knight-slash.png
+  Source: source-assets/character-concepts/2026-09-07/heavenly-and-unique/HeavenlyKnight.png
+
+These are deterministic rectangular walk/slash crops from user-provided project source art. Full authoring sheets remain outside dist/ and are not preloaded directly. Exact matching upstream license/credit records are not currently present in the project, so these derivatives are DEVELOPMENT-AUTHORIZED / ATTRIBUTION HOLD and must not be treated as commercially cleared until provenance is resolved.
+
+The same 2026-09-07 intake preserves LailaniAngel.png, LexiAngel.png, DemonMythical.png and AncientDemonLord.png as source-only fixed-gear named/mythical concepts. v0.1.4.2.3 does not derive or ship runtime art from those four sheets.
+
+Sentinel armor/weapon overlays reuse already-preserved LPC equipment assets; no new external equipment source was introduced by this release.
+
+See docs/ASSET_USAGE_AND_CREDITS.md.

@@ -58,7 +58,7 @@ for (const transition of MAP_TRANSITIONS) {
 
 const firstLight = AREA_DEFS.find(area => area.id === 'area_first_light_scar');
 assert.ok(firstLight && pointInRectArea(firstLight, AZRAEL_DEF.home.x, AZRAEL_DEF.home.y), 'Azrael must physically inhabit the First-Light Scar area');
-assert.ok(firstLight.encounter.families.some(entry => entry.id === 'celestial'), 'First-Light Scar must reserve future celestial family identity');
+assert.ok(firstLight.encounter.families.some(entry => entry.id === 'celestial'), 'First-Light Scar must include celestial family identity');
 
 for (const area of AREA_DEFS) {
   for (const family of area.encounter?.families || []) assert.ok(MONSTER_FAMILY_DEFS[family.id], `${area.id} references unknown monster family ${family.id}`);

@@ -1,6 +1,6 @@
 # 2026-09-07 Demon / Heavenly / Transformation Character Concepts
 
-These full 832×3456 RGBA Universal-LPC-style sheets are **development/source artwork only**. They are preserved outside `dist/` and are not preloaded by the mobile game.
+These full RGBA Universal-LPC-style sheets are **development/source artwork first**. Most use 832×3456 geometry; Lailani/Lexi use a larger 1536×4224 authoring layout. They are preserved outside `dist/` and are not preloaded by the mobile game.
 
 ## Authoritative player transformation source
 
@@ -13,12 +13,18 @@ No transformation gameplay is activated in v0.1.2.4.3. This file is staged only.
 - `demon-castle/DemonBase.png` — winged skeletal demon base; strong candidate for modular Demon Castle soldiers with armor/weapon loadouts.
 - `demon-castle/RedDemon.png` — red winged skeletal demon variant; candidate for a separate legion/rank/elite family.
 - `demon-castle/TanDemon.png` — tan/bone winged skeletal demon variant; candidate for another legion/rank/elite family.
-- `demon-castle/DemonLordFlesh.png` — preserved Demon Castle character/boss/elite source; final role TBD.
+- `demon-castle/DemonLordFlesh.png` — **Fleshborn Ravager** elite/heavy Demon Legion source.
+- `demon-castle/DemonMythical.png` — reserved named mythical demon; fixed appearance/gear; source-only.
+- `demon-castle/AncientDemonLord.png` — reserved Ancient Demon Lord near Azrael's power tier; fixed appearance/gear; source-only.
 
 The skeletal demon bodies are specifically intended to reuse compatible LPC armor, helmets, weapons, shields, robes and later skill animations so Demon Castle can field distinct equipment sets rather than one repeated sprite.
 
 ## Heavenly / unique character source pool
 
+- `heavenly-and-unique/BaseAngel.png` — common angel body + white wings; reusable layered troop base.
+- `heavenly-and-unique/HeavenlyKnight.png` — fixed armored common Heavenly Guardian archetype.
+- `heavenly-and-unique/LailaniAngel.png` — reserved named high/mythical angel near Azrael tier; fixed gear; source-only.
+- `heavenly-and-unique/LexiAngel.png` — reserved named high/mythical angel near Azrael tier; fixed gear; source-only.
 - `heavenly-and-unique/TransupOrHolyKnight.png` — special/unique humanoid NPC candidate; **not** the player transformation.
 - `heavenly-and-unique/Truetrans.png` — preserved winged humanoid character source; **not** the player transformation after the 2026-09-07 reclassification. Candidate for a Heavenly Castle NPC/guard/named character or other future role.
 - `heavenly-and-unique/HoodedAzrael.png` — canonical **ArchAngel Azrael** source. Azrael is a unique mythic/celestial NPC, never a generic spawn and never a player transformation. His normal presentation is planned around hover/glide/wing-burst movement and an expanded combat moveset. His public level presentation is intentionally obscured (`Lv. ???`). v0.1.3.2.2 harvests compact action-specific runtime crops for the temporary field test while this full authoring sheet remains source-only and is never preloaded directly.

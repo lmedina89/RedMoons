@@ -1,6 +1,27 @@
-# Hell RPG v0.1.4.2.2 — Demon Combat Foundation
+# Hell RPG v0.1.4.2.4 — Faction Warfare Hardening
 
-Built directly from the physically tested **v0.1.4.2.1 Refuge Geometry & Building Integrity Hotfix**. Save schema remains **2** and the localStorage key remains `hellrpg.ashfall.save.v1`.
+
+## v0.1.4.2.4 Faction Warfare Hardening
+
+This release stress-hardens autonomous celestial/infernal combat before the future portal warfront. Normal Cinder Wilds remain capped at 35 spawned actors. When `?debug=1` is active, an additional eight Demon Legion reinforcements are instantiated in First-Light Scar so the existing four-role patrol becomes a 12-demon pressure force against the First-Light Sentinels, Heavenly Guardian and Azrael. The debug tray includes **Faction War Test** for direct placement.
+
+Faction combat now has bounded nearby same-faction assist, local pursuit territory, stable committed basic-attack targeting, post-fight support healing, lost-target recovery and cancellation of melee/dash abilities whose required target disappears. These changes are intentionally reusable for later outposts and the dedicated angel-vs-demon portal battlefield.
+
+Built directly from **v0.1.4.2.2 Demon Combat Foundation**. Save schema remains **2** and the localStorage key remains `hellrpg.ashfall.save.v1`.
+
+## v0.1.4.2.3 Celestial Combat Foundation
+
+This release activates the first ordinary celestial soldiers beneath Azrael while keeping the newly supplied named/mythical character sheets source-only for later handcrafted passes.
+
+- **First-Light Sentinels** use `BaseAngel` as a reusable white-winged layered body and roll one of three coherent celestial soldier sets rather than random individual armor pieces.
+- **Heavenly Guardian** uses the supplied fully armored `HeavenlyKnight` appearance as a fixed heavy common-angel archetype.
+- The common family uses restrained holy abilities: **Radiant Strike**, **Lumen Bolt**, **Judgment Pulse**, and Guardian **Grace of Light** support healing. These effects are intentionally smaller/cleaner than Azrael's mythic kit.
+- Faction-aware targeting is now shared across ordinary actors and pooled projectiles. Player/celestials are friendly; monsters/celestials are hostile. This allows autonomous angel↔demon combat without making common angels accidentally attack the player or receive player/Azrael friendly fire.
+- First-Light Scar now fields **two Sentinels and one Guardian** around Azrael opposite the existing Demon Legion patrol. The total Wilds actor budget remains exactly **35**.
+- Azrael remains a bespoke special actor. His controller and seven-skill definition are unchanged; his offensive targeting now safely excludes friendly common angels, while Sanctuary can heal them normally.
+- `LailaniAngel`, `LexiAngel`, `DemonMythical`, and `AncientDemonLord` are preserved only as full source sheets. They are reserved for named/mythical bespoke combat passes and are not generic troop art.
+
+For physical verification, use `?debug=1` and the **Near First-Light Sentinel / Near Heavenly Guardian** buttons. Confirm the player cannot hurt them, they do not attack the player, demons and angels engage each other when in range, Lumen Bolt stops on walls, the Guardian's heal supports friendly units, and ordinary celestial VFX remain visibly below Azrael's spectacle.
 
 ## v0.1.4.2.2 Demon Combat Foundation
 

@@ -198,3 +198,23 @@ Ordinary Demon Legion actors now share one data-driven combat path rather than b
 Elite humanoid/creature variation can now use `loadoutPresets`: weighted complete loadout records are rolled once per spawn before ordinary per-slot equipment pools. Fleshborn is the first use and deliberately chooses coherent full armor sets. `AssetResolver` expands every possible preset dependency into the active map texture package before scene commit, so a later random roll cannot request an unloaded layer.
 
 This is intended to become the shared faction pattern: common demons inherit infernal family abilities, common angels later inherit a Celestial Ability Family, elites add a small number of stronger/unique actions, and named mythical beings remain bespoke special actors.
+
+
+## v0.1.4.2.3 celestial ability-family and faction-targeting contract
+
+Common celestials intentionally reuse the ordinary `Enemy` runtime so faction armies can scale without a bespoke controller class per soldier. `Enemy.faction` and the shared relation table determine legal targets; `WorldScene.combatants()` exposes nearby player/generic actors/Azrael to the combat layer. `CombatSystem.hostileTargetsFor(actor)` and `friendlyTargetsFor(actor)` then gate melee, AoE, support and projectile behavior.
+
+`ProjectileManager` no longer assumes that `team === enemy` means "hit the player" and every other projectile means "hit all enemies." Projectiles carry their actual `sourceActor`, and the provided hostile-target function resolves legal victims from faction relations. This is required for autonomous angel↔demon battles and is the foundation for the future portal warfront.
+
+`BaseAngel` is a baked body+white-wing source that accepts existing compatible LPC equipment. Common Sentinels roll from weighted **complete curated presets** so their armor reads coherently. `HeavenlyKnight` is a fixed baked heavy common-angel visual and is not passed through random equipment. Named mythical sheets remain fixed-gear source-only characters and should eventually use bespoke special-actor controllers/kits rather than common-family randomization.
+
+Common celestial ability shapes remain deliberately generic/data-driven: `melee_reach` (Radiant Strike), `projectile` (Lumen Bolt), `radial_aoe` (Judgment Pulse), and `friendly_heal` (Grace of Light). Named mythical beings and Azrael remain outside this ordinary family ceiling.
+
+
+## v0.1.4.2.4 faction-warfare hardening contract
+
+- Production spawn data remains in `SPAWN_REGIONS`; stress-only reinforcements live in `DEBUG_SPAWN_REGIONS` and are instantiated only under `?debug=1`.
+- Encounter-wide alerting remains the first layer. Selected First-Light encounters may also expose `assistRadius`/`assistCap` for bounded same-faction help across neighboring encounter groups.
+- Generic actors only acquire hostile targets whose position remains inside the actor's home-centered pursuit territory (`leashRange + pursuitMargin`).
+- A committed basic attack retains its chosen live target through the windup. Melee/dash abilities cancel if their required target disappears; projectile/radial casts may complete against their already-telegraphed location.
+- Lost targets transition actors back toward their local home/formation instead of leaving stale chase states.

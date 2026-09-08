@@ -43,6 +43,7 @@ export class FxManager {
     makeOrb('projectile-hellfire', FX_COLORS.hellfire, 6);
     makeOrb('projectile-ashbone', FX_COLORS.ashbone, 5);
     makeOrb('projectile-blood', FX_COLORS.blood, 6);
+    makeOrb('projectile-lumen', FX_COLORS.celestial, 5);
     if (!this.scene.textures.exists('projectile-celestial')) {
       const g = this.scene.add.graphics();
       g.fillStyle(0xfff7c2, 0.16).fillCircle(16, 16, 15);

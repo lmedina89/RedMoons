@@ -1,4 +1,13 @@
-# QA Report — v0.1.4.2.2 Demon Combat Foundation
+# QA Report — v0.1.4.2.4 Faction Warfare Hardening
+
+
+## v0.1.4.2.4 automated/static scope
+
+`npm run check` now includes `tests/celestial-combat-smoke.mjs` in addition to all inherited structural, Azrael, Sanctuary, navigation, ecology, building-integrity and demon-combat suites. The celestial suite validates BaseAngel/HeavenlyKnight compact crop geometry, coherent Sentinel equipment presets, the four shared celestial abilities, wall-blocked Lumen Bolt, First-Light celestial population, the 35-slot Wilds ceiling, faction-safe player attacks, celestial projectile source attribution, Guardian friendly healing and debug field-test hooks.
+
+Shared `CombatSystem`/`ProjectileManager` targeting is intentionally changed from team-name branches to source-actor faction relationships. Regression requirements therefore include: player attacks ignore common celestials; common celestials target monsters; monsters target common celestials; Azrael attacks ignore celestial allies; Sanctuary remains able to heal player/Azrael/common celestial actors; and Demon Combat tests continue to pass unchanged in behavior.
+
+The four newly supplied named/mythical sheets are source-only and are not considered live gameplay in this QA pass. Physical iPhone Safari remains the visual/interaction release gate; no automated iPhone playthrough is claimed.
 
 ## v0.1.4.2.2 automated/static scope
 
@@ -206,3 +215,11 @@ Automated checks can establish structural correctness but cannot substitute for 
 - Use `Near Spearman`; verify visible spear, line telegraph, thrust animation, sidestep avoidance and recovery in all facings.
 - Verify status chips, cooldown sweep and rank badges remain readable without obstructing Attack/Use.
 - Continue a v0.1.3 schema-2 save with no `skills.ranks`; all unlocked skills should appear at Rank 1.
+
+## Faction warfare stress-specific checks
+
+- Normal Cinder Wilds spawn budget remains 35.
+- `?debug=1` adds exactly eight First-Light Demon Legion reinforcements (two each Abyss/Hellfire/Ashbone/Fleshborn).
+- Debug reinforcement rectangles are validated inside First-Light Scar and outside static solids.
+- Target replacement, pursuit-bound filtering, bounded faction assist and debug-only spawn instantiation are covered by `tests/faction-warfare-smoke.mjs`.
+- Physical iPhone Safari remains the release gate for actual battle readability, frame pacing and Azrael-vs-warband feel.

@@ -12,7 +12,7 @@ export const MONSTER_FAMILY_DEFS = Object.freeze({
   rotwing: Object.freeze({ id: 'rotwing', name: 'Rotwing Ravagers', ecology: 'corrupted_beast', roles: ['flanker', 'elite'] }),
   skeleton: Object.freeze({ id: 'skeleton', name: 'Ossuary Dead', ecology: 'undead', roles: ['vanguard', 'ranged', 'caster', 'elite', 'captain'] }),
   construct: Object.freeze({ id: 'construct', name: 'Ashstone Constructs', ecology: 'construct', roles: ['bruiser', 'guardian'] }),
-  celestial: Object.freeze({ id: 'celestial', name: 'First-Light Celestials', ecology: 'celestial', roles: ['vanguard', 'support', 'elite'], future: true })
+  celestial: Object.freeze({ id: 'celestial', name: 'First-Light Celestials', ecology: 'celestial', roles: ['vanguard', 'guardian', 'support', 'elite'] })
 });
 
 export const ENCOUNTER_GROUP_ARCHETYPES = Object.freeze({
@@ -33,7 +33,9 @@ export const ENCOUNTER_DEFS = Object.freeze({
   enc_cinderwood_web: Object.freeze({ id: 'enc_cinderwood_web', areaId: 'area_cinderwood', archetype: 'ambush', label: 'Cinderwood Web Ambush', alertRadius: 270, activationRange: 850, ambushRange: 155 }),
   enc_cinderwood_carrion: Object.freeze({ id: 'enc_cinderwood_carrion', areaId: 'area_cinderwood', archetype: 'pack', label: 'Carrion Feeding Pack', alertRadius: 250, activationRange: 900 }),
   enc_cinderwood_stalker: Object.freeze({ id: 'enc_cinderwood_stalker', areaId: 'area_cinderwood', archetype: 'ambush', label: 'Ashblade Stalker', alertRadius: 180, activationRange: 850, ambushRange: 175, rare: true }),
-  enc_firstlight_demon_patrol: Object.freeze({ id: 'enc_firstlight_demon_patrol', areaId: 'area_first_light_scar', archetype: 'patrol', label: 'Ashwing Legion War Patrol', alertRadius: 390, activationRange: 1050 }),
+  enc_firstlight_demon_patrol: Object.freeze({ id: 'enc_firstlight_demon_patrol', areaId: 'area_first_light_scar', archetype: 'patrol', label: 'Ashwing Legion War Patrol', alertRadius: 390, activationRange: 1050, assistRadius: 290, assistCap: 3 }),
+  enc_firstlight_debug_warband: Object.freeze({ id: 'enc_firstlight_debug_warband', areaId: 'area_first_light_scar', archetype: 'guard', label: 'Debug Demon Warband', alertRadius: 470, activationRange: 1200, assistRadius: 420, assistCap: 5, debugOnly: true }),
+  enc_firstlight_celestial_guard: Object.freeze({ id: 'enc_firstlight_celestial_guard', areaId: 'area_first_light_scar', archetype: 'guard', label: 'First-Light Vanguard', alertRadius: 360, activationRange: 1050, assistRadius: 290, assistCap: 3 }),
   enc_fallen_watch_carrion: Object.freeze({ id: 'enc_fallen_watch_carrion', areaId: 'area_fallen_watch', archetype: 'pack', label: 'Watchyard Carrion Pack', alertRadius: 250, activationRange: 900 }),
   enc_fallen_watch_guard: Object.freeze({ id: 'enc_fallen_watch_guard', areaId: 'area_fallen_watch', archetype: 'guard', label: 'Fallen Watch Deadguard', alertRadius: 320, activationRange: 980 }),
   enc_fallen_watch_raiders: Object.freeze({ id: 'enc_fallen_watch_raiders', areaId: 'area_fallen_watch', archetype: 'guard', label: 'Ironbound Salvage Crew', alertRadius: 300, activationRange: 980 }),

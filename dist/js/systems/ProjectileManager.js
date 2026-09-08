@@ -7,7 +7,7 @@ function actorAlive(actor) {
 }
 
 export class ProjectileManager {
-  constructor(scene, resolver, statuses, fx, audio, player, enemies, size = 40, friendlyTargetsProvider = null) {
+  constructor(scene, resolver, statuses, fx, audio, player, enemies, size = 40, hostileTargetsProvider = null) {
     this.scene = scene;
     this.resolver = resolver;
     this.statuses = statuses;
@@ -15,7 +15,7 @@ export class ProjectileManager {
     this.audio = audio;
     this.player = player;
     this.enemies = enemies;
-    this.friendlyTargetsProvider = friendlyTargetsProvider || (() => [player]);
+    this.hostileTargetsProvider = hostileTargetsProvider || (() => []);
     this.items = Array.from({ length: size }, () => ({
       sprite: scene.physics.add.sprite(-200, -200, 'projectile-arrow').setActive(false).setVisible(false).setDepth(8400),
       data: null,
@@ -37,7 +37,7 @@ export class ProjectileManager {
     sprite.body.enable = true; sprite.setVelocity(vx, vy);
     item.data = { ...payload, def, expiresAt: this.scene.time.now + def.lifetimeMs };
     item.lastTrailAt = 0;
-    this.audio.play(projectileId === 'celestial_judgment' ? 'judgment_blast' : projectileId === 'bone_arrow' ? 'arrow' : def.damageType === 'fire' ? 'fire' : def.damageType === 'poison' ? 'poison' : 'shadow');
+    this.audio.play(projectileId === 'celestial_judgment' ? 'judgment_blast' : projectileId === 'lumen_bolt' ? 'celestial_strike' : projectileId === 'bone_arrow' ? 'arrow' : def.damageType === 'fire' ? 'fire' : def.damageType === 'poison' ? 'poison' : 'shadow');
     return true;
   }
 
@@ -56,11 +56,9 @@ export class ProjectileManager {
     const options = {
       type: data.def.damageType, sourceX: data.x, sourceY: data.y, impact: data.def.impact,
       knockback: data.knockback || data.def.knockback || 0,
-      sourceTeam: data.team
+      sourceTeam: data.team, sourceActor: data.sourceActor || null
     };
-    const amount = data.team === 'enemy'
-      ? this.resolver.damageTarget(target, data.damage, options)
-      : this.resolver.damageEnemy(target, data.damage, options);
+    const amount = this.resolver.damageTarget(target, data.damage, options);
     if (amount && data.status && Math.random() <= (data.status.chance ?? 1)) {
       this.statuses.apply(target, data.status.id, {
         power: data.sourcePower || data.damage, x: data.x, y: data.y, team: data.team
@@ -85,22 +83,13 @@ export class ProjectileManager {
         item.lastTrailAt = time;
         this.fx.trail(item.sprite.x, item.sprite.y, item.data.def.trail || item.data.def.damageType);
       }
-      if (item.data.team === 'enemy') {
-        for (const target of this.friendlyTargetsProvider() || []) {
-          if (!actorAlive(target)) continue;
-          const node = actorNode(target);
-          const dx = node.x - item.sprite.x, dy = node.y - item.sprite.y;
-          const targetRadius = target.isPlayer ? 13 : 18;
-          const rr = (item.data.def.radius || 8) + targetRadius;
-          if (dx * dx + dy * dy <= rr * rr) { this.applyHit(item, target); break; }
-        }
-      } else {
-        for (const enemy of this.enemies) {
-          if (!enemy.sprite.active || enemy.state === 'dying') continue;
-          const dx = enemy.sprite.x - item.sprite.x, dy = enemy.sprite.y - item.sprite.y;
-          const rr = (item.data.def.radius || 8) + 18;
-          if (dx * dx + dy * dy <= rr * rr) { this.applyHit(item, enemy); break; }
-        }
+      for (const target of this.hostileTargetsProvider(item.data.sourceActor, item.data.team) || []) {
+        if (!actorAlive(target)) continue;
+        const node = actorNode(target);
+        const dx = node.x - item.sprite.x, dy = node.y - item.sprite.y;
+        const targetRadius = target.isPlayer ? 13 : 18;
+        const rr = (item.data.def.radius || 8) + targetRadius;
+        if (dx * dx + dy * dy <= rr * rr) { this.applyHit(item, target); break; }
       }
     }
   }

@@ -10,6 +10,22 @@ This document separates assets with supplied attribution from assets whose match
 
 
 
+## v0.1.4.2.3 Celestial Combat Foundation source/runtime art
+
+Four compact runtime sheets are deterministic action-band crops from two user-provided full concept sheets:
+
+- `dist/assets/enemies/celestial/base-angel-walk.png` / `base-angel-slash.png` derive from `source-assets/character-concepts/2026-09-07/heavenly-and-unique/BaseAngel.png`.
+- `dist/assets/enemies/celestial/heavenly-knight-walk.png` / `heavenly-knight-slash.png` derive from `source-assets/character-concepts/2026-09-07/heavenly-and-unique/HeavenlyKnight.png`.
+
+`BaseAngel` keeps its white wings baked into the base crop and uses already-preserved LPC equipment layers for curated common-Sentinel sets. `HeavenlyKnight` keeps its supplied full armor baked into the runtime crop.
+
+The same source intake also preserves `LailaniAngel.png`, `LexiAngel.png`, `DemonMythical.png`, and `AncientDemonLord.png` outside `dist/` only. They are reserved as fixed-gear named/mythical characters and are **not** runtime-loaded by this release.
+
+Exact matching upstream license/credit records for these newly supplied concept sheets are not currently present in the project tree. The common-angel runtime derivatives therefore remain **development-authorized / attribution hold**, and the source-only named sheets must likewise have provenance resolved before commercial/store distribution. No authorship claim is created by cropping or staging these files.
+
+See `dist/assets/licenses/v01423-celestial-combat-crops.txt`.
+
+
 ## v0.1.4.2.2 Demon Combat Foundation runtime crops
 
 Six compact runtime sheets are deterministic rectangular crops from three user-provided Demon Castle concept sheets already preserved under `source-assets/character-concepts/2026-09-07/demon-castle/`:

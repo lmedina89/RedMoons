@@ -70,6 +70,6 @@ for (const token of ['activationRange', 'dormant', 'wakeFromAmbush', 'forceEncou
   assert.ok(enemySource.includes(token), `Enemy runtime must implement ${token}`);
 }
 assert.ok(worldSource.includes('alertEncounterGroup'), 'WorldScene must coordinate local encounter aggro');
-assert.ok(worldSource.includes("action === 'scavenger'") && worldSource.includes("action === 'assassin'") && worldSource.includes("action === 'demonscout'") && worldSource.includes("action === 'fleshborn'"), 'Debug mode should expose ecology and Demon Combat actors for field testing');
+assert.ok(worldSource.includes("action === 'scavenger'") && worldSource.includes("action === 'assassin'") && worldSource.includes("action === 'demonscout'") && worldSource.includes("action === 'fleshborn'") && worldSource.includes("action === 'sentinel'") && worldSource.includes("action === 'guardian'"), 'Debug mode should expose ecology, Demon Combat, and common celestial actors for field testing');
 
 console.log(`Encounter ecology smoke passed: ${Object.keys(ENCOUNTER_DEFS).length} groups, ${Object.keys(MONSTER_FAMILY_DEFS).length} families, ${wildPopulation} Wilds actor slots.`);

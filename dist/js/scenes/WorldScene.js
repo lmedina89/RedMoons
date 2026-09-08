@@ -1,10 +1,11 @@
 import { ENEMY_DEFS } from '../data/enemies.js';
+import { areFriendly, areHostile } from '../data/factions.js';
 import { encounterForId } from '../data/encounters.js';
 import { MERCHANT_SUPPLY_DEFS, RECOVERY_DROP_TABLE } from '../data/consumables.js';
 import { ITEM_DEFS } from '../data/items.js';
 import { NPC_DEFS } from '../data/npcs.js';
 import { AZRAEL_DEF } from '../data/specialActors.js';
-import { AREA_DEFS, BUILDING_DEFS, COLLIDERS, DEFAULT_MAP_ID, FALLEN_WATCH_WALLS, HOLLOW_COLLIDERS, HOLLOW_WALLS, MAP_TRANSITIONS, PROP_DEFS, RECOVERY_POINTS, REFUGE_WALLS, SPAWN_REGIONS, TOWN_PROP_DEFS, ZONES, mapForId } from '../data/world.js';
+import { AREA_DEFS, BUILDING_DEFS, COLLIDERS, DEBUG_SPAWN_REGIONS, DEFAULT_MAP_ID, FALLEN_WATCH_WALLS, HOLLOW_COLLIDERS, HOLLOW_WALLS, MAP_TRANSITIONS, PROP_DEFS, RECOVERY_POINTS, REFUGE_WALLS, SPAWN_REGIONS, TOWN_PROP_DEFS, ZONES, mapForId } from '../data/world.js';
 import { DEBUG, GAME_VERSION, PLAYER_START, RARITY, TILE_SIZE, WORLD_HEIGHT, WORLD_WIDTH } from '../config.js';
 import { gameEvents } from '../core/EventBus.js';
 import { actionInput } from '../systems/ActionInput.js';
@@ -586,7 +587,8 @@ ${point.label || 'Use'}`, {
       alertEncounter: (enemy, target, time) => this.alertEncounterGroup(enemy, target, time),
       died: enemy => this.onEnemyDied(enemy)
     };
-    for (const spawn of SPAWN_REGIONS) {
+    const spawnRows = DEBUG ? [...SPAWN_REGIONS, ...DEBUG_SPAWN_REGIONS] : SPAWN_REGIONS;
+    for (const spawn of spawnRows) {
       if ((spawn.mapId || DEFAULT_MAP_ID) !== this.currentMap.id) continue;
       const def = ENEMY_DEFS[spawn.enemyId];
       for (let i = 0; i < spawn.count; i += 1) this.enemies.push(new Enemy(this, this.enemyGroup, def, spawn, i, callbacks));
@@ -606,6 +608,26 @@ ${point.label || 'Use'}`, {
       if (dx * dx + dy * dy > radiusSq) continue;
       ally.forceEncounterAggro(target, time);
     }
+    this.alertFactionAllies(source, target, time, encounter);
+  }
+
+  alertFactionAllies(source, target, time, encounter = null) {
+    const assistRadius = Math.max(0, Number(encounter?.assistRadius) || 0);
+    if (!assistRadius || !source?.sprite?.active || !areHostile(source, target)) return;
+    const assistCap = Math.max(1, Math.min(6, Number(encounter?.assistCap) || 2));
+    const radiusSq = assistRadius * assistRadius;
+    const candidates = [];
+    for (const ally of this.enemies || []) {
+      if (ally === source || ally.encounterId === source.encounterId || !ally.sprite?.active) continue;
+      if (!areFriendly(source, ally) || !areHostile(ally, target)) continue;
+      const dx = ally.sprite.x - source.sprite.x;
+      const dy = ally.sprite.y - source.sprite.y;
+      const d2 = dx * dx + dy * dy;
+      if (d2 > radiusSq) continue;
+      candidates.push({ ally, d2 });
+    }
+    candidates.sort((a, b) => a.d2 - b.d2);
+    for (const { ally } of candidates.slice(0, assistCap)) ally.forceEncounterAggro(target, time);
   }
 
   createNPCs() {
@@ -622,10 +644,14 @@ ${point.label || 'Use'}`, {
     // hover/glide and should cross rocks instead of snagging like a walker.
   }
 
-  friendlyCombatants() {
-    const actors = [this.player];
+  combatants() {
+    const actors = [this.player, ...(this.enemies || [])];
     if (this.azrael && !this.azrael.dead) actors.push(this.azrael);
-    return actors;
+    return actors.filter(Boolean);
+  }
+
+  friendlyCombatants() {
+    return this.combatants().filter(actor => actor === this.player || areFriendly(this.player, actor));
   }
 
   createLootPool() {
@@ -918,10 +944,19 @@ ${point.label || 'Use'}`, {
     if (action === 'scavenger') moveNear(this.enemies.find(enemy => enemy.sprite.active && enemy.def.id === 'enemy_ash_scavenger')?.sprite);
     if (action === 'raider') moveNear(this.enemies.find(enemy => enemy.sprite.active && enemy.def.id === 'enemy_ironbound_raider')?.sprite);
     if (action === 'assassin') moveNear(this.enemies.find(enemy => enemy.sprite.active && enemy.def.id === 'enemy_ash_assassin')?.sprite);
+    if (action === 'warband') {
+      if (this.currentMap.id !== 'map_cinder_wilds') { this.transitionToMap('map_cinder_wilds', 'first_light_test'); return; }
+      this.player.body.setPosition(3380, 920);
+      this.player.visual.direction = 0;
+      gameEvents.emit('toast', { text: 'Faction stress test: 12 Demon Legion troops vs First-Light defenders + Azrael.', tone: 'muted', short: true });
+      return;
+    }
     if (action === 'demonscout') moveNear(this.enemies.find(enemy => enemy.sprite.active && enemy.def.id === 'enemy_demon_scout')?.sprite);
     if (action === 'hellfire') moveNear(this.enemies.find(enemy => enemy.sprite.active && enemy.def.id === 'enemy_hellfire_demon')?.sprite);
     if (action === 'ashbone') moveNear(this.enemies.find(enemy => enemy.sprite.active && enemy.def.id === 'enemy_ashbone_demon')?.sprite);
     if (action === 'fleshborn') moveNear(this.enemies.find(enemy => enemy.sprite.active && enemy.def.id === 'enemy_fleshborn_demon')?.sprite);
+    if (action === 'sentinel') moveNear(this.enemies.find(enemy => enemy.sprite.active && enemy.def.id === 'enemy_celestial_footsoldier')?.sprite);
+    if (action === 'guardian') moveNear(this.enemies.find(enemy => enemy.sprite.active && enemy.def.id === 'enemy_heavenly_guardian')?.sprite);
     if (action === 'spider') moveNear(this.enemies.find(enemy => enemy.sprite.active && enemy.def.id === 'enemy_cave_spider')?.sprite);
     if (action === 'blueflame') moveNear(this.enemies.find(enemy => enemy.sprite.active && enemy.def.id === 'enemy_blueflame_imp')?.sprite);
     if (action === 'emberweb') moveNear(this.enemies.find(enemy => enemy.sprite.active && enemy.def.id === 'enemy_ember_spider')?.sprite);
@@ -1087,8 +1122,8 @@ ${point.label || 'Use'}`, {
     if (DEBUG) this.drawDynamicCollisionDebug();
     if (actionInput.consumeInteract()) this.interact();
     this.azrael?.update(time, delta, this.enemies);
-    const friendlyTargets = this.friendlyCombatants();
-    for (const enemy of this.enemies) enemy.update(time, delta, this.player, friendlyTargets);
+    const combatants = this.combatants();
+    for (const enemy of this.enemies) enemy.update(time, delta, this.player, combatants);
     for (const npc of this.npcs) npc.update(time, delta, this.player);
     this.updateZone();
     this.updateArea();

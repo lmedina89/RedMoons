@@ -1,5 +1,30 @@
 # Changelog
 
+## v0.1.4.2.4 — Faction Warfare Hardening
+
+- Preserves the v0.1.4.2.3 Celestial Combat Foundation and v0.1.4.2.2 Demon Combat Foundation while hardening shared faction battles.
+- Adds **8 debug-only Demon Legion reinforcements** in First-Light Scar (`?debug=1`), yielding a 12-demon stress force when combined with the normal four-role patrol. Normal gameplay remains at the established 35-actor Cinder Wilds ceiling.
+- Adds a **Faction War Test** diagnostic button that moves the player between the Demon Legion pressure line and First-Light defenders/Azrael.
+- Adds bounded same-faction reinforcement assist for First-Light encounters; nearby allied groups may help, but assist radius and count are capped to prevent map-wide chain aggro.
+- Lets celestial support actors use their friendly heal during short no-target lulls so a surviving formation can recover between waves.
+- Hardens target lifecycle: committed basic attacks keep their intended target, dead/despawned targets are replaced cleanly, melee/dash abilities cancel when their required target disappears, and actors recover to formation rather than getting stuck in chase.
+- Adds local pursuit-bound filtering so faction fights cannot drag combatants indefinitely across the expanded map.
+- Save schema remains 2.
+
+## v0.1.4.2.3 — Celestial Combat Foundation
+
+- Added the first live common celestial troop family without activating the four reserved named/mythical source characters.
+- Added **First-Light Sentinel** using the new `BaseAngel` source as a reusable white-winged layered body with three curated coherent celestial armor/weapon presets.
+- Added **Heavenly Guardian** using the supplied `HeavenlyKnight` sheet as a fixed heavy common-angel archetype; its baked armor is preserved rather than randomized.
+- Added four restrained shared celestial abilities: **Radiant Strike**, **Lumen Bolt**, **Judgment Pulse**, and the Guardian support cast **Grace of Light**.
+- Added a compact wall-blocked Lumen Bolt projectile/VFX and modest common-angel holy effects intentionally below Azrael/mythical spectacle.
+- Generalized shared combat and pooled projectile targeting around actual faction relationships/source actors. Player, common celestials and Azrael are mutually safe; celestial and monster actors can autonomously damage one another.
+- Azrael's cone/radial/projectile targeting now explicitly ignores friendly common celestial actors while Sanctuary automatically recognizes/heals them.
+- Added a live First-Light celestial guard group (two Sentinels + one Guardian) opposite the existing four-role Demon Legion patrol while keeping the exact **35-slot Cinder Wilds actor ceiling** by reallocating duplicate spawn slots.
+- Added `?debug=1` teleports for **Near First-Light Sentinel** and **Near Heavenly Guardian**, plus `tests/celestial-combat-smoke.mjs` covering faction safety, healing, runtime crops, coherent loadouts, Lumen wall collision and population budget.
+- Staged the user-provided `LailaniAngel`, `LexiAngel`, `DemonMythical`, and `AncientDemonLord` full source sheets for later bespoke mythic passes only; none are live or preloaded at runtime.
+- Save schema remains **2**; Refuge geometry, Living Wilds ecology, Demon Combat Foundation, Azrael's seven-skill data/controller and current map dimensions/transitions are preserved.
+
 ## v0.1.4.2.2 — Demon Combat Foundation
 
 - Added a shared Demon Legion combat-family foundation for the black **Abyss Ashwing**, red **Hellfire Ashwing**, tan **Ashbone Ashwing**, and elite **Fleshborn Ravager**.

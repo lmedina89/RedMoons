@@ -1,4 +1,15 @@
-# Known Limitations — v0.1.4.2.2
+# Known Limitations — v0.1.4.2.4
+
+
+## v0.1.4.2.4 Faction Warfare Hardening limits
+
+- This is the first common-celestial combat pass, not final angel roster/balance. Only First-Light Sentinel and Heavenly Guardian are live common archetypes; Herald/support specialists and broader equipment sets can expand after device testing.
+- Common celestial VFX are intentionally restrained so ordinary troops do not dilute Azrael or future named mythical character spectacle.
+- The shared faction layer currently models player/celestial friendship and monster/celestial hostility. More nuanced human/undead/warfront faction relations remain future work.
+- Guardian **Grace of Light** is a modest local support heal, not a replacement for Azrael's much larger Sanctuary of the First Light.
+- `BaseAngel.png` and `HeavenlyKnight.png` are user-provided source art whose exact upstream license/credit records are not currently present; their compact runtime crops remain **development-authorized / attribution hold** until provenance is resolved before commercial/store distribution.
+- `LailaniAngel.png`, `LexiAngel.png`, `DemonMythical.png`, and `AncientDemonLord.png` remain source-only and are intentionally not activated or preloaded in this release. Their fixed gear/appearance is reserved for later bespoke named/mythical kits.
+- Physical iPhone Safari remains the release gate for layered Sentinel alignment, Guardian animation, autonomous angel↔demon readability, support pacing and frame performance.
 
 ## v0.1.4.2.2 Demon Combat Foundation limits
 

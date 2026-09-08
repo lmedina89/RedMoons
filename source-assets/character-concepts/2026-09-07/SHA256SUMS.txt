@@ -1,8 +1,14 @@
+a5755bebff4c606f22acc0f4014f2e64d2003b6e1d10c48e4702c25a601b0fca  source-assets/character-concepts/2026-09-07/demon-castle/AncientDemonLord.png
 fa40503b92305713a3804e6a43e1eed315920332ef3671568ed5ac949a0ac969  source-assets/character-concepts/2026-09-07/demon-castle/DemonBase.png
 0174b0438cd58889f0bec8d296ea6d4c707d27306cf8ea4b75ba1c77261c1f52  source-assets/character-concepts/2026-09-07/demon-castle/DemonLordFlesh.png
+e94df5b29806acd9ccb72331dc32e25e4c22bdd09599060ed2e71845c15f0288  source-assets/character-concepts/2026-09-07/demon-castle/DemonMythical.png
 dd93f30567aeafcff7ba191fb02093c8988fd76ebf719cd0d8f2d2aa9682ae28  source-assets/character-concepts/2026-09-07/demon-castle/RedDemon.png
 33547ab9f5d5a96f01d1c9fbab87718a4209669b6cb874718b5f9377eeeee630  source-assets/character-concepts/2026-09-07/demon-castle/TanDemon.png
+306550794881596eb8661d5ccfa10299d50f24c12c3f4beba3c01f3b6e0c3a18  source-assets/character-concepts/2026-09-07/heavenly-and-unique/BaseAngel.png
+bd451ac36d309de212c2b9e411238d17ea14c4b37f529dcf387a09123a27b99b  source-assets/character-concepts/2026-09-07/heavenly-and-unique/HeavenlyKnight.png
 6907acbc93ed168b1219486a3c019e9cba61f21b25e235b53f618552b4035732  source-assets/character-concepts/2026-09-07/heavenly-and-unique/HoodedAzrael.png
+a504c3c43f1b24db98fc0d3fd36be1fa044429a91ad4353a94e6e365235366de  source-assets/character-concepts/2026-09-07/heavenly-and-unique/LailaniAngel.png
+bc6ba8f8b042791a5567cdbd4bef0ba9944d49fac5855db772e6fbaddc0b9eaf  source-assets/character-concepts/2026-09-07/heavenly-and-unique/LexiAngel.png
 f4a82e44aa5b66d731c60df3cd018aac6e75c560daf7572ffbd890ba7de38438  source-assets/character-concepts/2026-09-07/heavenly-and-unique/TransupOrHolyKnight.png
 25f20814bf438dc68272c02c5823b11ffa065d44fa70a4954dff9b451b18e0ca  source-assets/character-concepts/2026-09-07/heavenly-and-unique/Truetrans.png
 eea1f082662f92cd69b400cc20d2edc675079866559d32cbd71e03383d1bd25a  source-assets/character-concepts/2026-09-07/human-hostile/Assassin.png

@@ -197,6 +197,29 @@ export const ENEMY_DEFS = Object.freeze({
     ]
   },
 
+  enemy_celestial_footsoldier: {
+    id: 'enemy_celestial_footsoldier', name: 'First-Light Sentinel', family: 'celestial', variant: 'sentinel',
+    faction: 'celestial', subfaction: 'first_light_host', role: 'vanguard', level: 6,
+    maxHp: 156, attack: 19, defense: 7, speed: 84, detectRange: 370, attackRange: 58, leashRange: 520, attackCooldown: 1040, recoverMs: 330,
+    abilities: ['radiant_strike', 'lumen_bolt', 'judgment_pulse'],
+    xp: 0, currency: [0, 0], layered: true, baseVisual: 'enemy_base_angel_base', walkFrames: 9, attackFrames: 6, scale: 1.08,
+    loadoutPresets: [
+      { id: 'silver_watch', weight: 38, loadout: { head: 'head_iron_revised', shoulders: 'shoulders_legion', chest: 'chest_silver_legion', hands: 'hands_legion', feet: 'feet_revised', weapon: 'weapon_gold_arming_sword' } },
+      { id: 'sunsteel_patrol', weight: 34, loadout: { head: 'head_iron_revised', shoulders: 'shoulders_leather_revised', chest: 'chest_steel_plate', hands: 'hands_legion', feet: 'feet_leather_revised', weapon: 'weapon_steel_arming_sword' } },
+      { id: 'first_light_line', weight: 28, loadout: { shoulders: 'shoulders_legion', chest: 'chest_legion', hands: 'hands_legion', feet: 'feet_revised', weapon: 'weapon_arming_sword' } }
+    ],
+    loot: []
+  },
+
+  enemy_heavenly_guardian: {
+    id: 'enemy_heavenly_guardian', name: 'Heavenly Guardian', family: 'celestial', variant: 'guardian',
+    faction: 'celestial', subfaction: 'first_light_host', role: 'guardian', level: 7,
+    maxHp: 238, attack: 22, defense: 12, speed: 70, detectRange: 390, attackRange: 62, leashRange: 540, attackCooldown: 1120, recoverMs: 370,
+    abilities: ['grace_of_light', 'radiant_strike', 'judgment_pulse'],
+    xp: 0, currency: [0, 0], walkTexture: 'heavenly-knight-walk', attackTexture: 'heavenly-knight-slash', walkFrames: 9, attackFrames: 6,
+    scale: 1.12, originY: 0.69, loot: []
+  },
+
   enemy_demon_scout: {
     id: 'enemy_demon_scout', name: 'Abyss Ashwing', family: 'demon', variant: 'abyss', subfaction: 'demon_legion', role: 'vanguard', level: 5,
     maxHp: 122, attack: 18, defense: 5, speed: 86, detectRange: 350, attackRange: 58, leashRange: 510, attackCooldown: 1020, recoverMs: 330,

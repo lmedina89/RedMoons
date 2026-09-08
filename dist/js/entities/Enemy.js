@@ -162,6 +162,38 @@ export class Enemy {
     this.callbacks.alertEncounter?.(this, target, time);
   }
 
+  targetWithinPursuitBounds(target) {
+    const node = actorNode(target);
+    if (!node) return false;
+    const margin = Math.max(40, Number(this.spawn.pursuitMargin) || 96);
+    const fromHome = Math.hypot(node.x - this.homeX, node.y - this.homeY);
+    const fromActor = Math.hypot(node.x - this.sprite.x, node.y - this.sprite.y);
+    // Route patrols may legitimately meet an opponent away from their exact
+    // randomized spawn home. Allow that local contact, while the existing
+    // homeDistance leash still prevents the pursuer itself from leaving its
+    // authored territory indefinitely.
+    return fromHome <= this.def.leashRange + margin || fromActor <= this.def.detectRange + margin;
+  }
+
+  selectCombatTarget(potentialTargets, player) {
+    // Hold the target through a committed basic attack so a closer actor cannot
+    // steal the hit midway through its windup. Ability casts already keep their
+    // own abilityTargetRef. Outside committed attacks, choose the closest live
+    // hostile that is still inside this actor's local pursuit territory.
+    if (this.state === 'attack' && actorAlive(this.target) && areHostile(this, this.target) && this.targetWithinPursuitBounds(this.target)) return this.target;
+    const candidates = (potentialTargets?.length ? potentialTargets : [player])
+      .filter(target => actorAlive(target) && areHostile(this, target) && this.targetWithinPursuitBounds(target));
+    let target = null;
+    let bestDistanceSq = Infinity;
+    for (const candidate of candidates) {
+      const node = actorNode(candidate);
+      const dx = node.x - this.sprite.x, dy = node.y - this.sprite.y;
+      const d2 = dx * dx + dy * dy;
+      if (d2 < bestDistanceSq) { target = candidate; bestDistanceSq = d2; }
+    }
+    return target;
+  }
+
   patrolVelocity(speed) {
     const path = this.spawn.patrolPath;
     if (!Array.isArray(path) || !path.length) return null;
@@ -279,6 +311,11 @@ export class Enemy {
     for (const id of this.def.abilities || []) {
       const ability = ENEMY_ABILITY_DEFS[id];
       if (!ability || time < (this.abilityCooldowns.get(id) || 0)) continue;
+      if (ability.type === 'friendly_heal') {
+        const need = this.combat?.supportNeedScore?.(this, ability) || 0;
+        if (need < (ability.castMissingThreshold || 0.2)) continue;
+        return ability;
+      }
       if (distance > ability.range || distance < (ability.minRange || 0)) continue;
       if ((ability.type === 'melee_reach' || ability.type === 'radial_aoe' || ability.type === 'dash_strike') && targetNode
         && !this.scene.hasWorldLineOfSight?.(this.sprite.x, this.sprite.y, targetNode.x, targetNode.y)) continue;
@@ -289,13 +326,13 @@ export class Enemy {
 
   beginAbility(ability, target, time) {
     const node = actorNode(target);
-    if (!node) return;
+    if (!node && ability.type !== 'friendly_heal') return;
     this.currentAbility = ability;
     this.abilityStartedAt = time;
     this.abilityTriggered = false;
     this.abilityTargetRef = target;
-    this.abilityTargetX = node.x;
-    this.abilityTargetY = node.y;
+    this.abilityTargetX = node?.x ?? this.sprite.x;
+    this.abilityTargetY = node?.y ?? this.sprite.y;
     this.state = 'ability';
     this.stateUntil = time + ability.windupMs;
     this.abilityCooldowns.set(ability.id, time + ability.cooldownMs);
@@ -374,16 +411,7 @@ export class Enemy {
       return;
     }
 
-    const candidates = (potentialTargets?.length ? potentialTargets : [player])
-      .filter(target => actorAlive(target) && areHostile(this, target));
-    let target = null;
-    let bestDistanceSq = Infinity;
-    for (const candidate of candidates) {
-      const node = actorNode(candidate);
-      const dx = node.x - this.sprite.x, dy = node.y - this.sprite.y;
-      const d2 = dx * dx + dy * dy;
-      if (d2 < bestDistanceSq) { target = candidate; bestDistanceSq = d2; }
-    }
+    const target = this.selectCombatTarget(potentialTargets, player);
     this.target = target;
     const targetNode = actorNode(target);
     const dx = targetNode ? targetNode.x - this.sprite.x : 0;
@@ -392,8 +420,15 @@ export class Enemy {
 
     this.animClock += delta;
     if (this.state === 'ability') {
-      this.sprite.setVelocity(0);
-      this.updateAbility(time);
+      const liveTargetRequired = ['melee_reach', 'dash_strike'].includes(this.currentAbility?.type);
+      if (liveTargetRequired && !actorAlive(this.abilityTargetRef)) {
+        this.clearAbility();
+        this.state = 'recover';
+        this.stateUntil = time + 180;
+      } else {
+        this.sprite.setVelocity(0);
+        this.updateAbility(time);
+      }
     }
 
     if (time >= this.nextThink && this.state !== 'ability') {
@@ -412,6 +447,13 @@ export class Enemy {
         this.stateUntil = time + 700;
         this.worldCollisionStreak = 0;
         this.worldCollisionBlockedSince = 0;
+      }
+      if (!targetNode && ['detect', 'chase', 'attack', 'reposition'].includes(this.state)) {
+        // A dead/despawned opponent must not leave a combatant permanently
+        // stuck in chase/attack. Recover its local formation instead.
+        this.state = homeDistance > 80 ? 'return' : 'idle';
+        this.stateUntil = time + 320;
+        this.attackApplied = false;
       }
       if (homeDistance > this.def.leashRange && this.state !== 'obstructed') this.state = 'return';
       if (this.state === 'idle' && time >= this.stateUntil) { this.state = 'patrol'; this.stateUntil = time + 1000 + Math.random() * 1600; }
@@ -435,6 +477,12 @@ export class Enemy {
       if (this.state === 'recover' && time >= this.stateUntil) { this.state = targetNode && Math.random() < 0.34 ? 'reposition' : (targetNode ? 'chase' : 'idle'); this.stateUntil = time + 420; }
       if (this.state === 'reposition' && time >= this.stateUntil) this.state = targetNode ? 'chase' : 'idle';
       if (this.state === 'return' && homeDistance < 18) { this.state = 'idle'; this.stateUntil = time + 900; }
+      if (!targetNode && ['idle', 'patrol', 'recover'].includes(this.state)) {
+        // Support actors may stabilize nearby friendlies during a short lull;
+        // they should not require a hostile target merely to cast a heal.
+        const supportAbility = this.availableAbility(time, Infinity, null);
+        if (supportAbility?.type === 'friendly_heal') this.beginAbility(supportAbility, null, time);
+      }
 
       let vx = 0, vy = 0;
       const speed = this.def.speed * (this.combat?.statuses.moveMultiplier(this) ?? 1);

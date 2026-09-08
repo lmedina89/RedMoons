@@ -95,6 +95,28 @@ export const ENEMY_ABILITY_DEFS = Object.freeze({
     damageMultiplier: 1.10, knockback: 98, damageType: 'physical', impact: 'blood', telegraph: 'blood', audio: 'hit'
   }),
 
+  radiant_strike: Object.freeze({
+    id: 'radiant_strike', name: 'Radiant Strike', type: 'melee_reach', animation: 'attack',
+    range: 96, minRange: 0, arcDegrees: 86, cooldownMs: 1900, windupMs: 470, triggerAt: 0.58, recoverMs: 310,
+    damageMultiplier: 1.00, knockback: 54, damageType: 'celestial', impact: 'celestial', telegraph: 'celestial', audio: 'celestial_strike'
+  }),
+  lumen_bolt: Object.freeze({
+    id: 'lumen_bolt', name: 'Lumen Bolt', type: 'projectile', projectileId: 'lumen_bolt', animation: 'attack',
+    range: 330, minRange: 104, cooldownMs: 3050, windupMs: 590, triggerAt: 0.61, recoverMs: 330,
+    damageMultiplier: 0.84, damageType: 'celestial', impact: 'celestial', telegraph: 'celestial', audio: 'celestial_strike'
+  }),
+  judgment_pulse: Object.freeze({
+    id: 'judgment_pulse', name: 'Judgment Pulse', type: 'radial_aoe', animation: 'attack',
+    range: 94, minRange: 0, radius: 94, cooldownMs: 4400, windupMs: 720, triggerAt: 0.77, recoverMs: 430,
+    damageMultiplier: 0.82, knockback: 96, damageType: 'celestial', impact: 'celestial', telegraph: 'celestial', audio: 'celestial_strike'
+  }),
+  grace_of_light: Object.freeze({
+    id: 'grace_of_light', name: 'Grace of Light', type: 'friendly_heal', animation: 'attack',
+    range: 420, minRange: 0, radius: 142, cooldownMs: 8200, windupMs: 780, triggerAt: 0.75, recoverMs: 480,
+    healPct: 0.08, selfHealPct: 0.055, playerHealPct: 0.06, castMissingThreshold: 0.20,
+    telegraph: 'celestial', audio: 'heal'
+  }),
+
   earthshatter: Object.freeze({
     id: 'earthshatter', name: 'Earthshatter', type: 'radial_aoe', animation: 'attack',
     range: 122, minRange: 0, radius: 118, cooldownMs: 5200, windupMs: 820, triggerAt: 0.88, recoverMs: 720,

@@ -105,6 +105,12 @@ export const ASSET_DEFS = [
   { key: 'ashbone-demon-slash', path: `${E}demon/ashbone-demon-slash.png`, frameWidth: 64, frameHeight: 64 },
   { key: 'fleshborn-demon-walk', path: `${E}demon/fleshborn-demon-walk.png`, frameWidth: 64, frameHeight: 64 },
   { key: 'fleshborn-demon-slash', path: `${E}demon/fleshborn-demon-slash.png`, frameWidth: 64, frameHeight: 64 },
+  // v0.1.4.2.3 common celestial runtime crops. BaseAngel remains a reusable
+  // layered celestial body/wings source; HeavenlyKnight is a baked heavy guard.
+  { key: 'base-angel-walk', path: `${E}celestial/base-angel-walk.png`, frameWidth: 64, frameHeight: 64 },
+  { key: 'base-angel-slash', path: `${E}celestial/base-angel-slash.png`, frameWidth: 64, frameHeight: 64 },
+  { key: 'heavenly-knight-walk', path: `${E}celestial/heavenly-knight-walk.png`, frameWidth: 64, frameHeight: 64 },
+  { key: 'heavenly-knight-slash', path: `${E}celestial/heavenly-knight-slash.png`, frameWidth: 64, frameHeight: 64 },
   ...['cave-spider', 'ember-spider', 'frost-spider', 'mire-spider'].flatMap(key => [
     { key: `${key}-walk`, path: `${E}${key}-walk.png`, frameWidth: 64, frameHeight: 64 },
     { key: `${key}-attack`, path: `${E}${key}-attack.png`, frameWidth: 64, frameHeight: 64 }
@@ -270,6 +276,7 @@ export const LAYER_ASSETS = Object.freeze({
   enemy_blood_skeleton_base: { walk: 'blood-skeleton-walk', slash: 'blood-skeleton-slash', geometry: 'classic', attackFallback: 'slash' },
   enemy_gilded_skeleton_base: { walk: 'gilded-skeleton-walk', slash: 'gilded-skeleton-slash', geometry: 'classic', attackFallback: 'slash' },
   enemy_fleshborn_base: { walk: 'fleshborn-demon-walk', slash: 'fleshborn-demon-slash', geometry: 'revised64Basic', attackFallback: 'slash' },
+  enemy_base_angel_base: { walk: 'base-angel-walk', slash: 'base-angel-slash', geometry: 'revised64Basic', attackFallback: 'slash' },
 
   // Backwards alias used by older code/tools; player rendering explicitly asks
   // for player_red_base in v0.1.2.

@@ -69,8 +69,8 @@ assert.ok(combatSource.includes('cooldownMs: 2400'), 'Empty-swing combat feedbac
 assert.ok(worldSource.includes('queueKillReward') && worldSource.includes('delayedCall(320'), 'Horde kill rewards must be batched');
 assert.ok(layeredSource.includes('ROOT_X') && layeredSource.includes('baseAsset') && layeredSource.includes("equipmentPolicy === 'player'"), 'Renderer must stabilize revised root motion and support actor-specific bases/equipment policies');
 assert.ok(!html.includes('90_user_generated'), 'Prototype-only generator assets must not ship');
-assert.equal(GAME_VERSION, '0.1.4.2.2', 'Demon Combat Foundation version must be v0.1.4.2.2');
-assert.ok(html.includes('v0.1.4.2.2'), 'Build shell must identify v0.1.4.2.2');
+assert.equal(GAME_VERSION, '0.1.4.2.4', 'Faction Warfare Hardening version must be v0.1.4.2.4');
+assert.ok(html.includes('v0.1.4.2.4'), 'Build shell must identify v0.1.4.2.4');
 assert.ok(html.includes('id="start-screen"') && html.includes('id="continue-game"') && html.includes('id="new-game"') && html.includes('id="load-game"'), 'Start menu must expose Continue, New Game and Load Save');
 assert.ok(html.includes('data-quick-consumable="health"') && html.includes('data-quick-consumable="essence"'), 'Mobile HUD must expose dedicated HP and Essence quick-use controls');
 assert.ok(html.includes('class="flask-glyph"') && cssSource.includes('#skill-button-0') && cssSource.includes('#skill-button-1') && cssSource.includes('#skill-button-2'), 'Combat hotfix must expose recognizable flask glyphs and absolute radial skill positions');
@@ -236,7 +236,7 @@ assert.ok(audioManagerSource.includes('sanctified_nova') && audioManagerSource.i
 assert.ok(enemySource.includes('potentialTargets') && enemySource.includes('areHostile') && enemySource.includes('playerRewardEligible'), 'Enemy AI must support faction targets and contribution-gated rewards');
 assert.ok(worldSource.includes('createAzrael()') && worldSource.includes('friendlyCombatants()') && worldSource.includes('enemy.playerRewardEligible'), 'WorldScene must spawn Azrael and block solo-Azrael XP/loot farming');
 assert.ok(html.includes('data-debug="azrael"') && html.includes('data-debug="azraelai"'), 'Diagnostics must expose Azrael teleport and AI overlay controls');
-assert.ok(projectileManagerSource.includes("data.team === 'enemy'") && projectileManagerSource.includes('friendlyTargetsProvider'), 'Enemy projectiles must be able to strike player or allied combatants through the faction target set');
+assert.ok(projectileManagerSource.includes('hostileTargetsProvider') && projectileManagerSource.includes('sourceActor') && projectileManagerSource.includes('damageTarget'), 'Projectiles must resolve hostile targets from the actual source actor without hard-coded enemy/player branches');
 assert.ok(projectileManagerSource.includes("item.data.def.impact === 'celestial'") && projectileManagerSource.includes('data.def.knockback'), 'Judgment Blast must use a celestial impact burst and projectile knockback');
 assert.ok(combatSource.includes("sourceTeam: 'celestial'") && combatSource.includes("team: 'celestial'"), 'Azrael damage must be identified as celestial so it cannot count as player contribution');
 assert.ok(statusControllerSource.includes('innateResistance') && combatResolverSource.includes('damageFriendly') && combatResolverSource.includes('damageTarget'), 'Azrael must take real resolved damage/statuses through the shared combat pipeline');
@@ -439,16 +439,18 @@ assert.ok((await recursiveNames(path.join(root, 'source-assets'))).length > 20, 
 const conceptRoot = path.join(root, 'source-assets/character-concepts/2026-09-07');
 for (const file of [
   'player-transformation/Transformation.png',
-  'demon-castle/DemonBase.png', 'demon-castle/RedDemon.png', 'demon-castle/TanDemon.png', 'demon-castle/DemonLordFlesh.png',
-  'heavenly-and-unique/Truetrans.png', 'heavenly-and-unique/TransupOrHolyKnight.png', 'heavenly-and-unique/HoodedAzrael.png',
+  'demon-castle/DemonBase.png', 'demon-castle/RedDemon.png', 'demon-castle/TanDemon.png', 'demon-castle/DemonLordFlesh.png', 'demon-castle/DemonMythical.png', 'demon-castle/AncientDemonLord.png',
+  'heavenly-and-unique/Truetrans.png', 'heavenly-and-unique/TransupOrHolyKnight.png', 'heavenly-and-unique/HoodedAzrael.png', 'heavenly-and-unique/BaseAngel.png', 'heavenly-and-unique/HeavenlyKnight.png', 'heavenly-and-unique/LailaniAngel.png', 'heavenly-and-unique/LexiAngel.png',
   'human-hostile/Assassin.png', 'README.md', 'SHA256SUMS.txt'
 ]) await access(path.join(conceptRoot, file));
 for (const file of await recursiveNames(conceptRoot)) {
   if (!file.toLowerCase().endsWith('.png')) continue;
   const size = await pngSize(file);
-  assert.deepEqual([size.width, size.height], [832, 3456], `${file} must preserve the full LPC source sheet`);
+  const base = path.basename(file);
+  const expected = ['LailaniAngel.png', 'LexiAngel.png'].includes(base) ? [1536, 4224] : [832, 3456];
+  assert.deepEqual([size.width, size.height], expected, `${file} must preserve its full source-sheet geometry`);
 }
-assert.ok(!(await recursiveNames(path.join(dist, 'assets'))).some(file => ['Transformation.png', 'Truetrans.png', 'HoodedAzrael.png', 'Assassin.png'].some(name => file.includes(name))), 'Full concept sheets, including staged Azrael/Assassin sources, must not ship in runtime dist/assets before compact runtime harvesting');
+assert.ok(!(await recursiveNames(path.join(dist, 'assets'))).some(file => ['Transformation.png', 'Truetrans.png', 'HoodedAzrael.png', 'LailaniAngel.png', 'LexiAngel.png', 'DemonMythical.png', 'AncientDemonLord.png', 'Assassin.png'].some(name => file.includes(name))), 'Full concept sheets, including staged mythical/unique sources, must not ship in runtime dist/assets before compact runtime harvesting');
 for (const file of ['WEAPON_long_spear.png', 'README.md', 'lpc_entry_README.txt', 'SHA256SUMS.txt']) await access(path.join(root, 'source-assets/combat-v0131/classic-spear', file));
 const refugeAssetKeys = new Set(assetDefsForMap(createDefaultState(), DEFAULT_MAP_ID).map(asset => asset.key));
 const wildAssetKeys = new Set(assetDefsForMap(createDefaultState(), 'map_cinder_wilds').map(asset => asset.key));
@@ -945,4 +947,4 @@ const normalizedWrongSlot = saveManager.validate(wrongSlotSave);
 assert.equal(normalizedWrongSlot.equipment.head, null, 'Wrong-slot saved equipment must be discarded');
 assert.equal(normalizedWrongSlot.equipment.weapon, 'i_000001', 'Valid weapon reference must survive normalization');
 
-console.log(`Validated ${ASSET_DEFS.length} assets, ${Object.keys(ITEM_DEFS).length} items, ${Object.keys(ENEMY_DEFS).length} enemies, ${Object.keys(NPC_DEFS).length} NPCs, ${BUILDING_DEFS.length} refuge buildings, ${COLLIDERS.length} visible-source colliders, ${Object.keys(QUEST_DEFS).length} quests, ${Object.keys(SKILL_DEFS).length} player skills, ${Object.keys(ENEMY_ABILITY_DEFS).length} enemy abilities, v0.1.4.2.2 Demon Combat Foundation, preserved Refuge geometry/building integrity, Living Wilds ecology, grouped aggro, authored patrols, proximity ambushes, layered hostile humans, four-role Demon Legion patrol, bounded offscreen simulation, preserved v0.1.4.1 region scale/refuge rebuild, inherited Sanctuary of the First Light, seven-skill paced Azrael AI, faction combat, knockback/shake, contribution-gated rewards, recovery/consumables, stable map streaming, and save schema ${SAVE_VERSION}.`);
+console.log(`Validated ${ASSET_DEFS.length} assets, ${Object.keys(ITEM_DEFS).length} items, ${Object.keys(ENEMY_DEFS).length} enemies, ${Object.keys(NPC_DEFS).length} NPCs, ${BUILDING_DEFS.length} refuge buildings, ${COLLIDERS.length} visible-source colliders, ${Object.keys(QUEST_DEFS).length} quests, ${Object.keys(SKILL_DEFS).length} player skills, ${Object.keys(ENEMY_ABILITY_DEFS).length} enemy abilities, v0.1.4.2.4 Faction Warfare Hardening, debug-only First-Light stress warband, bounded faction assist, target-loss recovery, pursuit leashes, preserved common celestial troops and faction-safe shared combat, preserved Demon Combat Foundation and Refuge geometry/building integrity, Living Wilds ecology, grouped aggro, authored patrols, proximity ambushes, layered hostile humans, four-role Demon Legion patrol, bounded offscreen simulation, preserved v0.1.4.1 region scale/refuge rebuild, inherited Sanctuary of the First Light, seven-skill paced Azrael AI, faction combat, knockback/shake, contribution-gated rewards, recovery/consumables, stable map streaming, and save schema ${SAVE_VERSION}.`);

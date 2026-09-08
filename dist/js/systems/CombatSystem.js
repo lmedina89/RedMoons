@@ -7,6 +7,7 @@ import { AudioManager } from './AudioManager.js';
 import { SkillController } from './SkillController.js';
 import { DEBUG } from '../config.js';
 import { resolvedSkillDef } from '../data/skills.js';
+import { areHostile, areFriendly } from '../data/factions.js';
 
 function actorNode(actor) { return actor?.body || actor?.sprite || null; }
 function actorAlive(actor) {
@@ -52,7 +53,7 @@ export class CombatSystem {
       enemyDamaged: (_amount, enemy, options) => {
         const sourceTeam = options?.sourceTeam || 'player';
         if (sourceTeam === 'player') this.scene.recovery?.markCombat();
-        const sourceActor = sourceTeam === 'player' ? this.player : (sourceTeam === 'celestial' ? this.scene.azrael : null);
+        const sourceActor = options?.sourceActor || (sourceTeam === 'player' ? this.player : (sourceTeam === 'celestial' ? this.scene.azrael : null));
         if (sourceActor) {
           enemy?.forceEncounterAggro?.(sourceActor, this.scene.time.now);
           enemy?.alertEncounter?.(sourceActor, this.scene.time.now);
@@ -63,16 +64,35 @@ export class CombatSystem {
     this.resolver.setStatusController(this.statuses);
     this.projectiles = new ProjectileManager(
       scene, this.resolver, this.statuses, this.fx, this.audio, player, enemies, 44,
-      () => this.friendlyTargets()
+      sourceActor => this.hostileTargetsFor(sourceActor)
     );
     this.skills = new SkillController(scene, state, player, this, this.statuses, this.fx, this.audio, events);
     this.rangeDebugEnabled = false;
     this.rangeDebugGraphics = DEBUG ? scene.add.graphics().setDepth(16020).setVisible(false) : null;
   }
 
-  friendlyTargets() {
-    const targets = this.scene.friendlyCombatants?.() || [this.player];
-    return targets.filter(actorAlive);
+  combatants() {
+    const sceneTargets = this.scene?.combatants?.();
+    const fallbackFriendlies = this.scene?.friendlyCombatants?.() || [this.player];
+    const targets = sceneTargets || [...fallbackFriendlies, ...(this.enemies || [])];
+    return [...new Set(targets)].filter(actorAlive);
+  }
+
+  hostileTargetsFor(actor) {
+    if (!actor) return [];
+    return this.combatants().filter(target => target !== actor && areHostile(actor, target));
+  }
+
+  friendlyTargetsFor(actor) {
+    if (!actor) return [];
+    return this.combatants().filter(target => target === actor || areFriendly(actor, target));
+  }
+
+  friendlyTargets() { return this.friendlyTargetsFor(this.player); }
+
+  sourceTeamFor(actor) {
+    if (actor === this.player || actor?.isPlayer) return 'player';
+    return (actor?.faction || actor?.def?.faction) === 'celestial' ? 'celestial' : 'enemy';
   }
 
   playerAttack(attack = {}) {
@@ -84,7 +104,7 @@ export class CombatSystem {
     const facing = directionVector(this.player.visual.direction);
     let hitCount = 0;
     for (const enemy of this.enemies) {
-      if (!enemy.sprite.active) continue;
+      if (!enemy.sprite.active || !areHostile(this.player, enemy)) continue;
       const dx = enemy.sprite.x - this.player.body.x;
       const dy = enemy.sprite.y - this.player.body.y;
       const distSq = dx * dx + dy * dy;
@@ -94,7 +114,7 @@ export class CombatSystem {
       if (dot < cosThreshold) continue;
       const applied = this.resolver.damageEnemy(enemy, damage, {
         type: 'physical', sourceX: this.player.body.x, sourceY: this.player.body.y,
-        critChance: Math.min(0.18, (this.state.player.stats.dex || 0) * 0.008), impact: 'physical', sourceTeam: 'player'
+        critChance: Math.min(0.18, (this.state.player.stats.dex || 0) * 0.008), impact: 'physical', sourceTeam: 'player', sourceActor: this.player
       });
       if (applied) hitCount += 1;
     }
@@ -107,7 +127,7 @@ export class CombatSystem {
     const cosThreshold = Math.cos((def.arcDegrees || 100) * Math.PI / 360);
     let hits = 0;
     for (const enemy of this.enemies) {
-      if (!enemy.sprite.active) continue;
+      if (!enemy.sprite.active || !areHostile(this.player, enemy)) continue;
       const dx = enemy.sprite.x - this.player.body.x, dy = enemy.sprite.y - this.player.body.y;
       const distance = Math.hypot(dx, dy);
       if (distance > def.range) continue;
@@ -116,7 +136,7 @@ export class CombatSystem {
       const amount = this.resolver.damageEnemy(enemy, derived.attack * def.damageMultiplier, {
         type: def.damageType, sourceX: this.player.body.x, sourceY: this.player.body.y,
         knockback: def.knockback || 0,
-        critChance: Math.min(0.2, (this.state.player.stats.dex || 0) * 0.009), impact: 'fire', sourceTeam: 'player'
+        critChance: Math.min(0.2, (this.state.player.stats.dex || 0) * 0.009), impact: 'fire', sourceTeam: 'player', sourceActor: this.player
       });
       if (amount) {
         hits += 1;
@@ -131,12 +151,12 @@ export class CombatSystem {
     const derived = derivedStats(this.state);
     let hits = 0;
     for (const enemy of this.enemies) {
-      if (!enemy.sprite.active) continue;
+      if (!enemy.sprite.active || !areHostile(this.player, enemy)) continue;
       const distance = Phaser.Math.Distance.Between(this.player.body.x, this.player.body.y, enemy.sprite.x, enemy.sprite.y);
       if (distance > def.radius) continue;
       const amount = this.resolver.damageEnemy(enemy, derived.attack * def.damageMultiplier, {
         type: def.damageType, sourceX: this.player.body.x, sourceY: this.player.body.y,
-        knockback: def.knockback || 0, impact: 'shadow', sourceTeam: 'player'
+        knockback: def.knockback || 0, impact: 'shadow', sourceTeam: 'player', sourceActor: this.player
       });
       if (amount) {
         hits += 1;
@@ -151,9 +171,10 @@ export class CombatSystem {
   }
 
   enemyMeleeTarget(target, amount, x, y, enemy = null) {
-    if (!target) return 0;
+    if (!target || (enemy && !areHostile(enemy, target))) return 0;
     return this.resolver.damageTarget(target, amount, {
-      type: 'physical', sourceX: x, sourceY: y, impact: 'physical', enemy, sourceTeam: 'enemy'
+      type: 'physical', sourceX: x, sourceY: y, impact: 'physical', enemy,
+      sourceTeam: this.sourceTeamFor(enemy), sourceActor: enemy
     });
   }
 
@@ -162,7 +183,10 @@ export class CombatSystem {
     const node = actorNode(target);
     const tx = targetX ?? node?.x ?? this.player.body.x;
     const ty = targetY ?? node?.y ?? this.player.body.y;
-    if (ability.type === 'radial_aoe') {
+    if (ability.type === 'friendly_heal') {
+      enemy.abilityTelegraph = this.fx.celestialSigil(x, y, Math.min(ability.radius || 120, 150), ability.windupMs);
+      this.fx.burst(x, y - 18, 'heal', 0.66);
+    } else if (ability.type === 'radial_aoe') {
       enemy.abilityTelegraph = this.fx.telegraph(x, y, ability.radius, ability.telegraph || 'earth', ability.windupMs);
     } else if (ability.type === 'melee_reach' || ability.type === 'dash_strike') {
       enemy.abilityTelegraph = this.fx.lineTelegraph(x, y, tx, ty, ability.range, ability.telegraph || 'physical', ability.windupMs);
@@ -176,10 +200,38 @@ export class CombatSystem {
     const abilityKind = ability.impact || ability.telegraph || 'physical';
     const damageType = ability.damageType || (abilityKind === 'hellfire' ? 'fire' : abilityKind === 'abyss' || abilityKind === 'blood' ? 'shadow' : 'physical');
     const audioId = ability.audio || (abilityKind === 'hellfire' ? 'fire' : abilityKind === 'abyss' || abilityKind === 'blood' ? 'shadow' : abilityKind === 'ashbone' ? 'slam' : 'sword');
+    const sourceTeam = this.sourceTeamFor?.(enemy) || ((enemy?.faction || enemy?.def?.faction) === 'celestial' ? 'celestial' : 'enemy');
+    const hostileTargets = this.hostileTargetsFor?.(enemy) || this.friendlyTargets?.() || [];
+
+    if (ability.type === 'friendly_heal') {
+      enemy.abilityTelegraph?.destroy?.(); enemy.abilityTelegraph = null;
+      const radius = ability.radius || 140;
+      let healed = 0;
+      this.fx.ring(x, y, radius, 'heal', 390);
+      this.fx.burst(x, y - 8, 'heal', 0.88);
+      for (const target of this.friendlyTargetsFor(enemy)) {
+        const node = actorNode(target);
+        if (!node || Math.hypot(node.x - x, node.y - y) > radius) continue;
+        const vitals = this.sanctuaryVitals(target);
+        if (!vitals || vitals.hp >= vitals.maxHp) continue;
+        const pct = (target === this.player || target.isPlayer)
+          ? (ability.playerHealPct ?? ability.healPct)
+          : target === enemy ? (ability.selfHealPct ?? ability.healPct) : ability.healPct;
+        const amount = Math.min(vitals.maxHp - vitals.hp, Math.max(1, Math.round(vitals.maxHp * Math.max(0, Number(pct) || 0))));
+        if (!amount) continue;
+        vitals.set(vitals.hp + amount);
+        healed += 1;
+        this.damageNumbers.showHealing(node.x, node.y - 34, amount);
+        this.fx.burst(node.x, node.y - 12, 'heal', target === enemy ? 0.68 : 0.54);
+      }
+      this.audio.play(audioId, { throttleMs: 240, volume: 0.055 });
+      if (healed) this.shakeAt(x, y, 72, 0.0014, 260);
+      return;
+    }
 
     if (ability.type === 'projectile') {
       this.projectiles.launch(ability.projectileId, {
-        team: 'enemy', x, y: y - 10, targetX, targetY,
+        team: sourceTeam, sourceActor: enemy, x, y: y - 10, targetX, targetY,
         damage: enemy.def.attack * ability.damageMultiplier, sourcePower: enemy.def.attack,
         status: ability.status || null, sourceId: enemy.def.id, targetRef
       });
@@ -203,7 +255,7 @@ export class CombatSystem {
       const facing = [dx / distance, dy / distance];
       this.fx.demonClaw(nx, ny, facing, 82, abilityKind, 1.12);
       const halfArc = (ability.arcDegrees || 64) * Math.PI / 360;
-      for (const target of this.friendlyTargets()) {
+      for (const target of hostileTargets) {
         const node = actorNode(target);
         const cdx = node.x - nx, cdy = node.y - ny;
         const currentDistance = Math.hypot(cdx, cdy);
@@ -211,10 +263,10 @@ export class CombatSystem {
         if (currentDistance > 86 || dot < Math.cos(halfArc)) continue;
         const amount = this.resolver.damageTarget(target, enemy.def.attack * ability.damageMultiplier, {
           type: damageType, sourceX: nx, sourceY: ny, knockback: ability.knockback || 0,
-          impact: abilityKind, enemy, sourceTeam: 'enemy'
+          impact: abilityKind, enemy, sourceTeam, sourceActor: enemy
         });
         if (amount && ability.status && Math.random() <= (ability.status.chance ?? 1)) {
-          this.statuses.apply(target, ability.status.id, { power: enemy.def.attack, x: nx, y: ny, team: 'enemy' });
+          this.statuses.apply(target, ability.status.id, { power: enemy.def.attack, x: nx, y: ny, team: sourceTeam });
         }
       }
       this.audio.play(audioId, { throttleMs: 120, volume: 0.075 });
@@ -232,7 +284,7 @@ export class CombatSystem {
       } else {
         this.fx.burst(x + facing[0] * Math.min(ability.range * 0.62, 72), y + facing[1] * Math.min(ability.range * 0.62, 72), abilityKind, 0.9);
       }
-      for (const target of this.friendlyTargets()) {
+      for (const target of hostileTargets) {
         const node = actorNode(target);
         const currentDx = node.x - x, currentDy = node.y - y;
         const distance = Math.hypot(currentDx, currentDy);
@@ -241,10 +293,10 @@ export class CombatSystem {
         if (distance <= ability.range && angleDelta <= halfArc) {
           const amount = this.resolver.damageTarget(target, enemy.def.attack * ability.damageMultiplier, {
             type: damageType, sourceX: x, sourceY: y, knockback: ability.knockback || 0,
-            impact: abilityKind, enemy, sourceTeam: 'enemy'
+            impact: abilityKind, enemy, sourceTeam, sourceActor: enemy
           });
           if (amount && ability.status && Math.random() <= (ability.status.chance ?? 1)) {
-            this.statuses.apply(target, ability.status.id, { power: enemy.def.attack, x, y, team: 'enemy' });
+            this.statuses.apply(target, ability.status.id, { power: enemy.def.attack, x, y, team: sourceTeam });
           }
         }
       }
@@ -257,16 +309,16 @@ export class CombatSystem {
       this.fx.ring(x, y, ability.radius, abilityKind, 330);
       this.scene.time.delayedCall(55, () => this.fx.ring(x, y, ability.radius * 0.72, abilityKind, 290));
       this.fx.burst(x, y - 5, abilityKind, abilityKind === 'blood' ? 1.28 : 1.0);
-      for (const target of this.friendlyTargets()) {
+      for (const target of hostileTargets) {
         const node = actorNode(target);
         const distance = Phaser.Math.Distance.Between(x, y, node.x, node.y);
         if (distance > ability.radius) continue;
         const amount = this.resolver.damageTarget(target, enemy.def.attack * ability.damageMultiplier, {
           type: damageType, sourceX: x, sourceY: y, knockback: ability.knockback || 0,
-          impact: abilityKind, enemy, sourceTeam: 'enemy'
+          impact: abilityKind, enemy, sourceTeam, sourceActor: enemy
         });
         if (amount && ability.status && Math.random() <= (ability.status.chance ?? 1)) {
-          this.statuses.apply(target, ability.status.id, { power: enemy.def.attack, x, y, team: 'enemy' });
+          this.statuses.apply(target, ability.status.id, { power: enemy.def.attack, x, y, team: sourceTeam });
         }
       }
       this.audio.play(audioId, { throttleMs: 140, volume: 0.07 });
@@ -327,7 +379,7 @@ export class CombatSystem {
     const cosThreshold = Math.cos((ability.arcDegrees || 110) * Math.PI / 360);
     let hits = 0;
     for (const enemy of this.enemies) {
-      if (!enemy.sprite.active || enemy.state === 'dying') continue;
+      if (!enemy.sprite.active || enemy.state === 'dying' || !areHostile(actor, enemy)) continue;
       const dx = enemy.sprite.x - node.x, dy = enemy.sprite.y - node.y;
       const distance = Math.hypot(dx, dy);
       if (distance > ability.range) continue;
@@ -335,7 +387,7 @@ export class CombatSystem {
       if (dot < cosThreshold) continue;
       const amount = this.resolver.damageEnemy(enemy, actor.def.attack * ability.damageMultiplier, {
         type: 'celestial', sourceX: node.x, sourceY: node.y, knockback: ability.knockback || 0,
-        impact: 'celestial', sourceTeam: 'celestial'
+        impact: 'celestial', sourceTeam: 'celestial', sourceActor: actor
       });
       if (amount) hits += 1;
     }
@@ -353,12 +405,12 @@ export class CombatSystem {
     const radius = ability.impactRadius || ability.radius || 90;
     let hits = 0;
     for (const enemy of this.enemies) {
-      if (!enemy.sprite.active || enemy.state === 'dying') continue;
+      if (!enemy.sprite.active || enemy.state === 'dying' || !areHostile(actor, enemy)) continue;
       const distance = Phaser.Math.Distance.Between(cx, cy, enemy.sprite.x, enemy.sprite.y);
       if (distance > radius) continue;
       const amount = this.resolver.damageEnemy(enemy, actor.def.attack * ability.damageMultiplier * damageScale, {
         type: 'celestial', sourceX: cx, sourceY: cy, knockback: (ability.knockback || 0) * knockbackScale,
-        impact: 'celestial', sourceTeam: 'celestial'
+        impact: 'celestial', sourceTeam: 'celestial', sourceActor: actor
       });
       if (amount) hits += 1;
     }
@@ -384,6 +436,21 @@ export class CombatSystem {
     const maxHp = Number(target.def?.maxHp ?? target.maxHp);
     if (!Number.isFinite(hp) || !Number.isFinite(maxHp) || maxHp <= 0) return null;
     return { hp, maxHp, set: value => { target.hp = Math.max(0, Math.min(maxHp, value)); target.updateHealthBar?.(); } };
+  }
+
+  supportNeedScore(actor, ability) {
+    const center = actorNode(actor);
+    if (!center || !ability) return 0;
+    const radius = ability.radius || ability.range || 140;
+    let score = 0;
+    for (const target of this.friendlyTargetsFor(actor)) {
+      const node = actorNode(target);
+      if (!node || Math.hypot(node.x - center.x, node.y - center.y) > radius) continue;
+      const vitals = this.sanctuaryVitals(target);
+      if (!vitals) continue;
+      score = Math.max(score, Math.max(0, vitals.maxHp - vitals.hp) / vitals.maxHp);
+    }
+    return score;
   }
 
   sanctuaryNeedScore(actor, ability) {
