@@ -26,6 +26,7 @@ export const MYTHIC_LEVEL_HIERARCHY = Object.freeze({
   ancientDemonLord: Object.freeze({ internalLevel: 160, threatTier: 'apex', reserved: true }),
   azrael: Object.freeze({ internalLevel: 175, threatTier: 'apex' }),
   elexis: Object.freeze({ internalLevel: 150, threatTier: 'apex' }),
+  seraphel: Object.freeze({ internalLevel: 220, threatTier: 'apex' }),
   playerHardCap: 100,
   mortalHardCap: 100,
   supernaturalHardCap: 250

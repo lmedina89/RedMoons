@@ -8,6 +8,7 @@ import { LAILANI_DEF } from '../data/lailani.js';
 import { ELEXIS_DEF } from '../data/elexis.js';
 import { MYTHICAL_DEMON_DEF } from '../data/mythicalDemon.js';
 import { ZERAKOTH_DEF } from '../data/zerakoth.js';
+import { SERAPHEL_DEF } from '../data/seraphel.js';
 import { DEBUG } from '../config.js';
 import { MYTHIC_FREEPLAY_WARFRONT_SPAWNS } from '../data/mythicFreeplayWarfront.js';
 
@@ -85,7 +86,9 @@ export function assetDefsForMap(state, requestedMapId = null) {
     if (instance) addItem(keys, instance.itemId, 'player');
   }
 
-  const freeplayWarfront = state?.sessionMode === 'azrael_freeplay' && map.id === 'map_veil_warfront';
+  const azraelFreeplayWarfront = state?.sessionMode === 'azrael_freeplay' && map.id === 'map_veil_warfront';
+  const seraphelFreeplayWarfront = state?.sessionMode === 'seraphel_freeplay' && map.id === 'map_veil_warfront';
+  const freeplayWarfront = azraelFreeplayWarfront || seraphelFreeplayWarfront;
   const spawnRows = freeplayWarfront
     ? MYTHIC_FREEPLAY_WARFRONT_SPAWNS
     : (DEBUG ? [...SPAWN_REGIONS, ...DEBUG_SPAWN_REGIONS] : SPAWN_REGIONS);
@@ -96,7 +99,7 @@ export function assetDefsForMap(state, requestedMapId = null) {
 
   // The temporary Azrael field-test actor is map-scoped just like enemies.
   // Load only his compact runtime action crops when the Cinder Region is live.
-  if (AZRAEL_DEF.home.mapId === map.id || state?.sessionMode === 'azrael_freeplay' || (DEBUG && map.id === 'map_veil_warfront')) {
+  if (AZRAEL_DEF.home.mapId === map.id || state?.sessionMode === 'azrael_freeplay' || (state?.sessionMode === 'seraphel_freeplay' && map.id === 'map_veil_warfront') || (DEBUG && map.id === 'map_veil_warfront')) {
     // Debug Warfront sessions also stream Azrael's compact crops so the battle
     // arena can summon him without loading his full preserved source sheet.
     for (const key of Object.values(AZRAEL_DEF.assets)) addAssetKey(keys, key);
@@ -123,7 +126,13 @@ export function assetDefsForMap(state, requestedMapId = null) {
 
   // Zerakoth is debug-only in this commander field-test pass. His compact
   // base/warplate/Hellblade layers stream only on the Warfront under ?debug=1.
-  if ((DEBUG || state?.sessionMode === 'azrael_freeplay') && ZERAKOTH_DEF.home.mapId === map.id) addEnemy(keys, ZERAKOTH_DEF);
+  if ((DEBUG || ['azrael_freeplay', 'seraphel_freeplay'].includes(state?.sessionMode)) && ZERAKOTH_DEF.home.mapId === map.id) addEnemy(keys, ZERAKOTH_DEF);
+
+  // Seraphel's full compact action vocabulary follows him across disposable
+  // Freeplay map transitions. The preserved authoring sheet stays source-only.
+  if (state?.sessionMode === 'seraphel_freeplay') {
+    for (const key of Object.values(SERAPHEL_DEF.assets)) addAssetKey(keys, key);
+  }
 
   const zoneIds = new Set(map.zoneIds || []);
   for (const npc of Object.values(NPC_DEFS)) {

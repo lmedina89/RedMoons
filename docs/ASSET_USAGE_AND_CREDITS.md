@@ -10,6 +10,14 @@ This document separates assets with supplied attribution from assets whose match
 
 
 
+
+
+## v0.1.4.4.5.4.4 Seraphel runtime source/crops
+
+`source-assets/character-concepts/2026-09-08/fallen/FallenAngel.png` is the user-supplied authoritative source for **Seraphel, the Shattered Halo**. The 832×3456 source is preserved unchanged (SHA-256 `7326ac496b216e28f251cf537bb28f70c4dc80a49388629a28617a7e8a93e472`). Runtime ships 15 compact action-band crops under `dist/assets/npcs/seraphel/`; all expected frames in all 54 source rows were audited as populated.
+
+No matching upstream generator/license export accompanied this upload. The source and derivatives are **development-authorized / attribution hold** until exact provenance is collected before any commercial/store release. See `source-assets/character-concepts/2026-09-08/fallen/README.md` and `dist/assets/licenses/v01444544-seraphel-crops.txt`.
+
 ## v0.1.4.4.5.1 Demon Knight runtime derivatives
 
 `source-assets/character-concepts/2026-09-07/heavenly-and-unique/TransupOrHolyKnight.png` is now used as the development source for the **Infernal Dreadknight**. The full 832×3456 sheet remains unchanged/source-only. Runtime ships only deterministic walk/slash/hurt crops under `dist/assets/enemies/demon-knight/`, with a project-specific blackened/crimson color treatment to establish the infernal armor identity.

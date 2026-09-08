@@ -13,7 +13,7 @@ const { ZERAKOTH_DEF } = await import('../dist/js/data/zerakoth.js');
 const { MYTHICAL_DEMON_DEF } = await import('../dist/js/data/mythicalDemon.js');
 const { assetDefsForMap } = await import('../dist/js/systems/AssetResolver.js');
 
-assert.equal(GAME_VERSION, '0.1.4.4.5.4.3');
+assert.equal(GAME_VERSION, '0.1.4.4.5.4.4');
 
 // Campaign contract is still the physically approved 32 regular actors.
 const campaignCount = WARFRONT_SPAWN_REGIONS.reduce((sum, row) => sum + row.count, 0);

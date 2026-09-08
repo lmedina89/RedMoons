@@ -11,7 +11,8 @@ function sheet(level, archetype, stats, resourceModel = 'finite_essence') {
   });
 }
 
-// v0.1.4.4.5.4.3 canonical supernatural-level pass. The new allocations
+// v0.1.4.4.5.4.3 canonical supernatural-level pass. v0.1.4.4.5.4.4 adds
+// Seraphel at Lv220 without changing the existing recalibrated sheets.
 // preserve each physically approved character's established stat identity while
 // scaling that distribution into the legal budget for the user's chosen level.
 // Combat HP/ATK/DEF remains hand-tuned/preserved. Named mythics use Infinite
@@ -23,5 +24,6 @@ export const CANONICAL_POWER_STAT_SHEETS = Object.freeze({
   lailani: sheet(150, 'celestial transcendent skirmisher', { str: 124, dex: 278, vit: 162, spr: 201 }, 'infinite_essence'),
   ancientDemonLord: sheet(160, 'infernal apex ancient', { str: 274, dex: 145, vit: 283, spr: 113 }, 'infinite_essence'),
   azrael: sheet(175, 'celestial apex warrior', { str: 305, dex: 175, vit: 288, spr: 122 }, 'infinite_essence'),
-  elexis: sheet(150, 'celestial apex dominion support', { str: 143, dex: 128, vit: 217, spr: 277 }, 'infinite_essence')
+  elexis: sheet(150, 'celestial apex dominion support', { str: 143, dex: 128, vit: 217, spr: 277 }, 'infinite_essence'),
+  seraphel: sheet(220, 'fallen apex prismatic exile', { str: 205, dex: 285, vit: 270, spr: 355 }, 'infinite_essence')
 });

@@ -119,7 +119,8 @@ export class AzraelFreeplayController {
       actor.body.setVelocity(0);
       const p = Math.min(0.999999, (time - actor.deathStartedAt) / 720);
       actor.renderProgress('hurt', p);
-      if (time >= actor.respawnAt) actor.respawn(time);
+      const freeplayRespawnAt = Math.min(actor.respawnAt || Infinity, actor.deathStartedAt + 2600);
+      if (time >= freeplayRespawnAt) actor.respawn(time);
       actor.syncPresentation(time);
       return;
     }

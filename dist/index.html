@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <meta name="theme-color" content="#120907">
-  <meta name="description" content="Hell RPG v0.1.4.4.5.4.3 — Mythic Level Recalibration, a mobile-first pixel action RPG.">
+  <meta name="description" content="Hell RPG v0.1.4.4.5.4.4 — Seraphel, the Shattered Halo Mythic Freeplay, a mobile-first pixel action RPG.">
   <title>Hell RPG — Ashfall Foundation</title>
   <link rel="stylesheet" href="css/game.css">
 </head>
@@ -41,7 +41,7 @@
           <p>Disposable combat sandbox. No quests, progression, loot rewards, or save writes. Your campaign save is never touched.</p>
           <div class="mythic-choice-row">
             <button type="button" id="freeplay-azrael"><span>AZRAEL</span><small>ArchAngel • Lv. ??? • Full 7-skill kit</small></button>
-            <button type="button" disabled aria-label="More mythic characters will be added after Azrael is physically approved"><span>MORE LATER</span><small>One mythic at a time</small></button>
+            <button type="button" id="freeplay-seraphel"><span>SERAPHEL</span><small>The Shattered Halo • Lv. ??? • Fallen Apex • 7 elements</small></button>
           </div>
           <button type="button" id="cancel-freeplay" class="subtle-button">Back</button>
         </section>
@@ -53,7 +53,7 @@
             <button type="button" id="confirm-new-game" class="danger-button">Overwrite & Start</button>
           </div>
         </section>
-        <small class="start-version">v0.1.4.4.5.4.3 • save schema 2</small>
+        <small class="start-version">v0.1.4.4.5.4.4 • save schema 2</small>
       </div>
     </section>
 
@@ -108,6 +108,7 @@
           <button type="button" id="skill-button-2" class="skill-button" data-skill-slot="2" aria-label="Skill 3" disabled><span>III</span><small>Locked</small><b></b></button>
         </div>
         <button type="button" id="mythic-bank-toggle" class="mythic-bank-toggle hidden" aria-label="Switch mythic ability bank">Skills I</button>
+        <button type="button" id="mythic-ultimate-button" class="mythic-ultimate-button hidden" aria-label="Mythic ultimate"><span>ULT</span><small>Ultimate</small><b></b></button>
         <button type="button" id="attack-button" class="round-button attack" aria-label="Attack">Attack</button>
       </div>
     </section>
@@ -255,7 +256,7 @@
         </div>
       </details>
     </aside>
-    <div id="build-label">v0.1.4.4.5.4.3 • save schema 2</div>
+    <div id="build-label">v0.1.4.4.5.4.4 • save schema 2</div>
   </main>
 
   <script src="vendor/phaser.min.js"></script>

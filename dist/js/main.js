@@ -21,6 +21,7 @@ const newButton = $('#new-game');
 const mythicButton = $('#mythic-freeplay');
 const mythicPanel = $('#mythic-freeplay-panel');
 const azraelFreeplayButton = $('#freeplay-azrael');
+const seraphelFreeplayButton = $('#freeplay-seraphel');
 const cancelFreeplayButton = $('#cancel-freeplay');
 const loadPanel = $('#load-slot-panel');
 const loadSlotButton = $('#load-slot-button');
@@ -65,6 +66,17 @@ function createAzraelFreeplayState() {
   state.player.x = 5550;
   state.player.y = 1710;
   // Freeplay is disposable. This state is deliberately never handed to SaveManager.save().
+  state.worldFlags.introToastShown = true;
+  return state;
+}
+
+function createSeraphelFreeplayState() {
+  const state = createDefaultState();
+  state.sessionMode = 'seraphel_freeplay';
+  state.player.mapId = 'map_veil_warfront';
+  state.player.entryPointId = 'seraphel_freeplay';
+  state.player.x = 3072;
+  state.player.y = 360;
   state.worldFlags.introToastShown = true;
   return state;
 }
@@ -116,6 +128,11 @@ mythicButton?.addEventListener('click', () => {
 azraelFreeplayButton?.addEventListener('click', () => {
   const state = createAzraelFreeplayState();
   bootGame(state, { sessionMode: 'azrael_freeplay' });
+});
+
+seraphelFreeplayButton?.addEventListener('click', () => {
+  const state = createSeraphelFreeplayState();
+  bootGame(state, { sessionMode: 'seraphel_freeplay' });
 });
 
 cancelFreeplayButton?.addEventListener('click', () => mythicPanel?.classList.add('hidden'));

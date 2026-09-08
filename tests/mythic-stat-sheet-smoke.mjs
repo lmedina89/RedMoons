@@ -18,7 +18,7 @@ const { MYTHICAL_DEMON_DEF } = await import('../dist/js/data/mythicalDemon.js');
 const { ZERAKOTH_DEF } = await import('../dist/js/data/zerakoth.js');
 const { ENEMY_DEFS } = await import('../dist/js/data/enemies.js');
 
-assert.equal(GAME_VERSION, '0.1.4.4.5.4.3');
+assert.equal(GAME_VERSION, '0.1.4.4.5.4.4');
 assert.equal(SAVE_VERSION, 2);
 assert.equal(SAVE_KEY, 'hellrpg.ashfall.save.v1');
 assert.deepEqual(BASE_PRIMARY_STATS, { str: 5, dex: 5, vit: 5, spr: 5 });

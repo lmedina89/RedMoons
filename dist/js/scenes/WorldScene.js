@@ -9,6 +9,7 @@ import { LAILANI_DEF, LAILANI_SOLO_TEST_DEF } from '../data/lailani.js';
 import { ELEXIS_DEF, ELEXIS_SOLO_TEST_DEF } from '../data/elexis.js';
 import { MYTHICAL_DEMON_DEF, MYTHICAL_DEMON_SOLO_TEST_DEF } from '../data/mythicalDemon.js';
 import { ZERAKOTH_DEF, ZERAKOTH_SOLO_TEST_DEF, ZERAKOTH_SPAWN_DEF } from '../data/zerakoth.js';
+import { SERAPHEL_DEF } from '../data/seraphel.js';
 import { DEBUG_ARENA_GROUPS, DEBUG_ARENA_NAMED_SUMMONS, DEBUG_ARENA_UNIT_SUMMONS, DEBUG_BATTLE_ARENA_DEF } from '../data/debugArena.js';
 import { AREA_DEFS, BUILDING_DEFS, COLLIDERS, DEBUG_SPAWN_REGIONS, DEFAULT_MAP_ID, FALLEN_WATCH_WALLS, HOLLOW_COLLIDERS, HOLLOW_WALLS, INTERIOR_WALLS, MAP_TRANSITIONS, PROP_DEFS, RECOVERY_POINTS, REFUGE_WALLS, SPAWN_REGIONS, TOWN_PROP_DEFS, ZONES, mapForId } from '../data/world.js';
 import { DEBUG, GAME_VERSION, PLAYER_START, RARITY, TILE_SIZE, WORLD_HEIGHT, WORLD_WIDTH } from '../config.js';
@@ -34,8 +35,10 @@ import { Lailani } from '../entities/Lailani.js';
 import { Elexis } from '../entities/Elexis.js';
 import { MythicalDemon } from '../entities/MythicalDemon.js';
 import { Zerakoth } from '../entities/Zerakoth.js';
+import { Seraphel } from '../entities/Seraphel.js';
 import { Player } from '../entities/Player.js';
 import { AzraelFreeplayController } from '../systems/AzraelFreeplayController.js';
+import { SeraphelFreeplayController } from '../systems/SeraphelFreeplayController.js';
 
 export class WorldScene extends Phaser.Scene {
   constructor() { super('WorldScene'); }
@@ -63,6 +66,8 @@ export class WorldScene extends Phaser.Scene {
     this.zerakothSoloTest = null;
     this.sessionMode = this.registry.get('sessionMode') || this.state?.sessionMode || null;
     this.azraelFreeplayActive = this.sessionMode === 'azrael_freeplay';
+    this.seraphelFreeplayActive = this.sessionMode === 'seraphel_freeplay';
+    this.mythicFreeplayActive = this.azraelFreeplayActive || this.seraphelFreeplayActive;
     this.debugGodMode = DEBUG && Boolean(this.registry.get('debugGodMode'));
     this.debugBattleArenaRequested = DEBUG && this.currentMap.id === DEBUG_BATTLE_ARENA_DEF.mapId && Boolean(this.registry.get('debugBattleArenaRequested'));
     this.debugBattleArena = null;
@@ -83,7 +88,7 @@ export class WorldScene extends Phaser.Scene {
     // Physical iPhone Safari testing exposed a WebKit/Phaser transition case
     // where the physics proxy survived but layered sprites could remain hidden.
     this.player.restoreVisual();
-    if (this.azraelFreeplayActive) {
+    if (this.mythicFreeplayActive) {
       // The normal player exists only as an invisible world/interaction proxy in
       // disposable Mythic Freeplay. It never enters combat target pools.
       this.player.visual.setVisible(false);
@@ -109,6 +114,7 @@ export class WorldScene extends Phaser.Scene {
     this.createElexis();
     this.createMythicalDemon();
     this.createZerakoth();
+    this.createSeraphel();
     if (DEBUG) this.dynamicCollisionDebug = this.add.graphics().setDepth(15001);
     this.combat = new CombatSystem(this, this.state, this.player, this.enemies, gameEvents);
     this.player.combat = this.combat;
@@ -118,11 +124,16 @@ export class WorldScene extends Phaser.Scene {
     if (this.elexis) this.elexis.combat = this.combat;
     if (this.mythicalDemon) this.mythicalDemon.combat = this.combat;
     if (this.zerakoth) this.zerakoth.combat = this.combat;
+    if (this.seraphel) this.seraphel.combat = this.combat;
     this.azraelFreeplayController = this.azraelFreeplayActive && this.azrael
       ? new AzraelFreeplayController(this, this.azrael, actionInput)
       : null;
-    if (this.azraelFreeplayController) {
-      this.cameras.main.startFollow(this.azrael.body, true, 1, 1);
+    this.seraphelFreeplayController = this.seraphelFreeplayActive && this.seraphel
+      ? new SeraphelFreeplayController(this, this.seraphel, actionInput)
+      : null;
+    this.freeplayActor = this.azraelFreeplayActive ? this.azrael : (this.seraphelFreeplayActive ? this.seraphel : null);
+    if (this.freeplayActor) {
+      this.cameras.main.startFollow(this.freeplayActor.body, true, 1, 1);
       this.syncFreeplayProxy();
     }
     if (this.debugBattleArenaRequested) this.startDebugBattleArena();
@@ -153,6 +164,7 @@ export class WorldScene extends Phaser.Scene {
       this.elexis?.destroy();
       this.mythicalDemon?.destroy();
       this.zerakoth?.destroy();
+      this.seraphel?.destroy();
       this.combat?.destroy();
     });
     this.updateZone();
@@ -167,7 +179,7 @@ export class WorldScene extends Phaser.Scene {
     // freshly rebuilt player layer stack. Safe cache eviction can return later
     // behind a device-tested handoff boundary; reliability wins for this hotfix.
     this.time.delayedCall(16, () => {
-      if (this.azraelFreeplayActive) this.player.visual.setVisible(false);
+      if (this.mythicFreeplayActive) this.player.visual.setVisible(false);
       else this.recoverPlayerVisual();
     });
     if (DEBUG && this.currentMap.id === LAILANI_SOLO_TEST_DEF.mapId && this.registry.get('lailaniSoloRequested')) {
@@ -188,6 +200,8 @@ export class WorldScene extends Phaser.Scene {
     }
     if (this.azraelFreeplayActive) {
       gameEvents.emit('toast', { text: 'AZRAEL MYTHIC FREEPLAY • disposable session • campaign save untouched.', tone: 'level' });
+    } else if (this.seraphelFreeplayActive) {
+      gameEvents.emit('toast', { text: 'SERAPHEL MYTHIC FREEPLAY • FALLEN FACTION • Heaven and Hell are hostile • campaign save untouched.', tone: 'level' });
     } else if (!this.state.worldFlags.introToastShown && this.currentMap.id === DEFAULT_MAP_ID) {
       this.state.worldFlags.introToastShown = true;
       gameEvents.emit('toast', { text: 'Find Warden Vesra at Warden Hall in Cinder Refuge.', tone: 'quest' });
@@ -1339,7 +1353,7 @@ ${point.label || 'Use'}`, {
       alertEncounter: (enemy, target, time) => this.alertEncounterGroup(enemy, target, time),
       died: enemy => this.onEnemyDied(enemy)
     };
-    const freeplayWarfront = this.azraelFreeplayActive && this.currentMap.id === 'map_veil_warfront';
+    const freeplayWarfront = this.mythicFreeplayActive && this.currentMap.id === 'map_veil_warfront';
     const spawnRows = freeplayWarfront
       ? MYTHIC_FREEPLAY_WARFRONT_SPAWNS
       : (DEBUG ? [...SPAWN_REGIONS, ...DEBUG_SPAWN_REGIONS] : SPAWN_REGIONS);
@@ -1393,11 +1407,17 @@ ${point.label || 'Use'}`, {
   createAzrael() {
     this.azrael = null;
     const arenaSummon = DEBUG && this.debugBattleArenaRequested && this.currentMap.id === DEBUG_BATTLE_ARENA_DEF.mapId;
-    if (AZRAEL_DEF.home.mapId !== this.currentMap.id && !arenaSummon && !this.azraelFreeplayActive) return;
+    const seraphelWarfront = this.seraphelFreeplayActive && this.currentMap.id === 'map_veil_warfront';
+    if (AZRAEL_DEF.home.mapId !== this.currentMap.id && !arenaSummon && !this.azraelFreeplayActive && !seraphelWarfront) return;
     this.azrael = new Azrael(this, AZRAEL_DEF);
     if (this.azraelFreeplayActive) {
       this.azrael.relocateForFieldTest(this.state.player.x, this.state.player.y, this.time.now);
       this.azrael.lastActionName = 'Awaiting command';
+    } else if (seraphelWarfront) {
+      // Freeplay-only Celestial-side deployment so Heaven can independently
+      // recognize and fight the Fallen player. Campaign Azrael placement is untouched.
+      this.azrael.relocateForFieldTest(5550, 1710, this.time.now);
+      this.azrael.lastActionName = 'Warfront vigil';
     }
     // His hidden proxy obeys world bounds, but intentionally does not collide
     // with low terrain props: the field-test locomotion is a wing-assisted
@@ -1433,7 +1453,7 @@ ${point.label || 'Use'}`, {
 
   createZerakoth() {
     this.zerakoth = null;
-    if ((!DEBUG && !this.azraelFreeplayActive) || ZERAKOTH_DEF.home.mapId !== this.currentMap.id) return;
+    if (((!DEBUG && !this.azraelFreeplayActive) && !this.seraphelFreeplayActive) || ZERAKOTH_DEF.home.mapId !== this.currentMap.id) return;
     const callbacks = {
       hitTarget: (target, amount, x, y, actor) => this.combat?.enemyMeleeTarget(target, amount, x, y, actor),
       beginAbility: (actor, ability, target) => this.combat?.beginEnemyAbility(actor, ability, target, actor.abilityTargetX, actor.abilityTargetY),
@@ -1444,6 +1464,16 @@ ${point.label || 'Use'}`, {
       died: () => {}
     };
     this.zerakoth = new Zerakoth(this, this.enemyGroup, ZERAKOTH_DEF, ZERAKOTH_SPAWN_DEF, callbacks);
+  }
+
+  createSeraphel() {
+    this.seraphel = null;
+    if (!this.seraphelFreeplayActive) return;
+    this.seraphel = new Seraphel(this, SERAPHEL_DEF);
+    // On every map creation the committed transition entry becomes the local
+    // disposable respawn anchor. Initial Warfront entry is the safe Fallen/neutral perch north of the Axis.
+    this.seraphel.respawn(this.time.now, this.state.player.x, this.state.player.y);
+    this.seraphel.lastActionName = 'Shattered vigil';
   }
 
   debugArenaNamedActor(key) {
@@ -2213,7 +2243,7 @@ ${point.label || 'Use'}`, {
     // Freeplay's hidden campaign proxy is also never a combat target, but keep
     // the proven debug-God-Mode expression above byte-recognizable to inherited
     // arena regressions and conceptually separate from the new session mode.
-    if (this.azraelFreeplayActive) {
+    if (this.mythicFreeplayActive) {
       const playerIndex = actors.indexOf(this.player);
       if (playerIndex >= 0) actors.splice(playerIndex, 1);
     }
@@ -2222,20 +2252,22 @@ ${point.label || 'Use'}`, {
     if (this.elexis && !this.elexis.dead && !this.elexis._debugArenaDormant) actors.push(this.elexis);
     if (this.mythicalDemon && !this.mythicalDemon.dead && !this.mythicalDemon._debugArenaDormant) actors.push(this.mythicalDemon);
     if (this.zerakoth?.sprite?.active && !this.zerakoth._debugArenaDormant) actors.push(this.zerakoth);
+    if (this.seraphel && !this.seraphel.dead) actors.push(this.seraphel);
     return actors.filter(Boolean);
   }
 
   friendlyCombatants() {
-    const anchor = this.azraelFreeplayActive && this.azrael ? this.azrael : this.player;
+    const anchor = this.freeplayActor || this.player;
     return this.combatants().filter(actor => actor === anchor || areFriendly(anchor, actor));
   }
 
   syncFreeplayProxy() {
-    if (!this.azraelFreeplayActive || !this.azrael?.body || !this.player?.body) return;
-    this.player.body.setPosition(this.azrael.body.x, this.azrael.body.y).setVelocity(0);
+    const actor = this.freeplayActor;
+    if (!this.mythicFreeplayActive || !actor?.body || !this.player?.body) return;
+    this.player.body.setPosition(actor.body.x, actor.body.y).setVelocity(0);
     this.player.visual.setVisible(false);
-    this.state.player.x = Math.round(this.azrael.body.x);
-    this.state.player.y = Math.round(this.azrael.body.y);
+    this.state.player.x = Math.round(actor.body.x);
+    this.state.player.y = Math.round(actor.body.y);
   }
 
   createLootPool() {
@@ -2264,6 +2296,7 @@ ${point.label || 'Use'}`, {
     // Mythic Freeplay kills are always spectacle-only, regardless of any future
     // contribution bookkeeping changes. Never mint campaign XP/ash/loot/quests.
     if (this.azraelFreeplayActive) return;
+    if (this.seraphelFreeplayActive) return;
     // ArchAngel Azrael can clear mobs for the field test, but his solo kills do
     // not become an AFK XP/loot engine. Player rewards require recent material
     // contribution through the shared combat resolver.
@@ -2341,7 +2374,7 @@ ${point.label || 'Use'}`, {
     // Mythic Freeplay is an intentionally disposable combat/roaming mode.
     // Keep map travel and ambient NPC conversation available, but do not even
     // surface progression-bearing POIs, recovery points or loot as Use targets.
-    if (this.azraelFreeplayActive) {
+    if (this.mythicFreeplayActive) {
       nearestDistance = 92;
       for (const npc of this.npcs || []) {
         const distance = Phaser.Math.Distance.Between(this.player.body.x, this.player.body.y, npc.x, npc.y);
@@ -2443,7 +2476,7 @@ ${point.label || 'Use'}`, {
     let action = null;
     // NPCs remain present in Mythic Freeplay for world flavor, but the mode
     // never accepts/turns in quests or opens progression-bearing merchant UI.
-    if (this.azraelFreeplayActive) {
+    if (this.mythicFreeplayActive) {
       if (DEBUG) console.info('[Ashfall diagnostics] freeplay talk', npc.def.id);
       gameEvents.emit('dialogue', { speaker: npc.def.name, role: npc.def.role, text, action: null, uiAction: null });
       this.emitState();
@@ -2512,20 +2545,22 @@ ${point.label || 'Use'}`, {
 
   handleCommand(command) {
     if (!command) return;
-    if (this.azraelFreeplayActive && ['useConsumable', 'useQuickConsumable', 'buyItem', 'equip', 'unequip', 'dropItem', 'destroyItem', 'allocateStats'].includes(command.type)) {
+    if (this.mythicFreeplayActive && ['useConsumable', 'useQuickConsumable', 'buyItem', 'equip', 'unequip', 'dropItem', 'destroyItem', 'allocateStats'].includes(command.type)) {
       gameEvents.emit('toast', { text: 'Mythic Freeplay does not change campaign inventory or progression.', tone: 'muted', short: true });
       return;
     }
     if (command.type === 'attack') {
       if (this.azraelFreeplayController) this.azraelFreeplayController.requestAbility('azrael_celestial_strike');
+      else if (this.seraphelFreeplayController) this.seraphelFreeplayController.requestAttack();
       else actionInput.attackQueued = true;
     }
     if (command.type === 'interact') actionInput.interactQueued = true;
-    if (command.type === 'skill' && !this.azraelFreeplayActive) {
+    if (command.type === 'skill' && !this.mythicFreeplayActive) {
       if (this.combat?.skills.useSlot(command.slot)) this.emitState();
     }
-    if (command.type === 'mythicAbility' && this.azraelFreeplayController) {
-      if (this.azraelFreeplayController.requestAbility(command.abilityId)) this.emitState();
+    if (command.type === 'mythicAbility') {
+      const controller = this.azraelFreeplayController || this.seraphelFreeplayController;
+      if (controller?.requestAbility?.(command.abilityId)) this.emitState();
     }
     if (command.type === 'useConsumable') this.recovery?.useInstance(command.instanceId);
     if (command.type === 'useQuickConsumable') this.recovery?.useQuick(command.slot);
@@ -2554,7 +2589,7 @@ ${point.label || 'Use'}`, {
     }
     if (command.type === 'allocateStats') this.allocateStats(command.points);
     if (command.type === 'respawn') this.respawnAtRefuge();
-    if (command.type === 'save') { const saved = this.safeSave(); gameEvents.emit('toast', { text: saved ? 'Progress saved.' : (this.azraelFreeplayActive ? 'Mythic Freeplay is disposable; your campaign save was not changed.' : 'Battle Arena is isolated; your real save was not changed.'), tone: saved ? 'normal' : 'muted', short: true }); }
+    if (command.type === 'save') { const saved = this.safeSave(); gameEvents.emit('toast', { text: saved ? 'Progress saved.' : (this.mythicFreeplayActive ? 'Mythic Freeplay is disposable; your campaign save was not changed.' : 'Battle Arena is isolated; your real save was not changed.'), tone: saved ? 'normal' : 'muted', short: true }); }
     if (command.type === 'debug') this.runDiagnostic(command.action);
   }
 
@@ -2890,13 +2925,14 @@ ${point.label || 'Use'}`, {
     const derived = derivedStats(this.state);
     this.state.player.hp = Math.min(this.state.player.hp, derived.maxHp);
     this.state.player.essence = Math.min(this.state.player.essence, derived.maxEssence);
-    gameEvents.emit('state', { state: this.state, derived, quests: this.azraelFreeplayActive ? [] : (this.questSystem?.activeSummary() || []), combat: this.combat?.snapshot(this.time.now) || { skills: [], effects: [] }, recovery: this.recovery?.snapshot(this.time.now) || { quick: [], food: { active: false }, passive: { active: false } }, interaction: this.interactionSnapshot(), azrael: this.azrael?.snapshot(this.time.now) || null, lailani: this.lailani?.snapshot(this.time.now) || null, elexis: this.elexis?.snapshot(this.time.now) || null, mythicalDemon: this.mythicalDemon?.snapshot(this.time.now) || null, zerakoth: this.zerakoth?.snapshot(this.time.now) || null, freeplay: this.azraelFreeplayActive ? { mode: 'azrael_freeplay', actor: 'azrael', actionName: this.azrael?.lastActionName || 'Awaiting command', actionLocked: Boolean(this.azrael?.currentAbility || (this.azrael?.state === 'recover' && this.time.now < this.azrael.stateUntil)), majorLockRemaining: Math.max(0, Number(this.azrael?.majorAbilityLockUntil || 0) - this.time.now) } : null, debug: this.debugSnapshot() });
+    gameEvents.emit('state', { state: this.state, derived, quests: this.mythicFreeplayActive ? [] : (this.questSystem?.activeSummary() || []), combat: this.combat?.snapshot(this.time.now) || { skills: [], effects: [] }, recovery: this.recovery?.snapshot(this.time.now) || { quick: [], food: { active: false }, passive: { active: false } }, interaction: this.interactionSnapshot(), azrael: this.azrael?.snapshot(this.time.now) || null, lailani: this.lailani?.snapshot(this.time.now) || null, elexis: this.elexis?.snapshot(this.time.now) || null, mythicalDemon: this.mythicalDemon?.snapshot(this.time.now) || null, zerakoth: this.zerakoth?.snapshot(this.time.now) || null, seraphel: this.seraphel?.snapshot(this.time.now) || null, freeplay: this.azraelFreeplayActive ? { mode: 'azrael_freeplay', actor: 'azrael', actionName: this.azrael?.lastActionName || 'Awaiting command', actionLocked: Boolean(this.azrael?.currentAbility || (this.azrael?.state === 'recover' && this.time.now < this.azrael.stateUntil)), majorLockRemaining: Math.max(0, Number(this.azrael?.majorAbilityLockUntil || 0) - this.time.now) } : this.seraphelFreeplayActive ? { mode: 'seraphel_freeplay', actor: 'seraphel', actionName: this.seraphel?.lastActionName || 'Shattered vigil', actionLocked: Boolean(this.seraphel?.currentAbility || this.seraphel?.state === 'combo' || this.seraphel?.state === 'tempest' || (this.seraphel?.state === 'recover' && this.time.now < this.seraphel.stateUntil)), majorLockRemaining: Math.max(0, Number(this.seraphel?.majorAbilityLockUntil || 0) - this.time.now) } : null, debug: this.debugSnapshot() });
   }
 
   safeSave() {
     // The battle laboratory is a disposable debug scene. Never let its map
     // position, summoned roster or spectator state overwrite a real save.
     if (this.azraelFreeplayActive) return false;
+    if (this.seraphelFreeplayActive) return false;
     if (DEBUG && (this.debugBattleArena?.active || this.registry.get('debugBattleArenaRequested'))) return false;
     try { this.saveManager.save(this.state); return true; }
     catch (error) { console.warn('[Ashfall] Save failed', error); gameEvents.emit('toast', { text: 'Save could not be written on this device.', tone: 'danger' }); return false; }
@@ -2938,8 +2974,8 @@ ${point.label || 'Use'}`, {
       return;
     }
     this.combat?.update(time, delta);
-    if (this.azraelFreeplayController) {
-      this.azraelFreeplayController.update(time, delta);
+    if (this.azraelFreeplayController || this.seraphelFreeplayController) {
+      (this.azraelFreeplayController || this.seraphelFreeplayController).update(time, delta);
       this.syncFreeplayProxy();
     } else {
       this.recovery?.update(time, delta);
@@ -2958,14 +2994,14 @@ ${point.label || 'Use'}`, {
     if (canUpdateNamed(this.lailani)) this.lailani.update(time, delta, combatants);
     if (canUpdateNamed(this.elexis)) this.elexis.update(time, delta, combatants);
     if (canUpdateNamed(this.mythicalDemon)) this.mythicalDemon.update(time, delta, combatants);
-    if (canUpdateNamed(this.zerakoth)) this.zerakoth.update(time, delta, this.azraelFreeplayActive && this.azrael ? this.azrael : this.player, combatants);
+    if (canUpdateNamed(this.zerakoth)) this.zerakoth.update(time, delta, this.freeplayActor || this.player, combatants);
     for (const enemy of this.enemies) {
       if (enemy._debugBattleArena && arenaHold) continue;
       if (enemy._lailaniSoloTest) enemy.update(time, delta, this.lailani, this.lailani ? [this.lailani] : []);
       else if (enemy._elexisSoloTest) enemy.update(time, delta, this.elexis, this.elexis ? [this.elexis] : []);
       else if (enemy._mythicalDemonSoloTest) enemy.update(time, delta, this.mythicalDemon, this.mythicalDemon ? [this.mythicalDemon] : []);
       else if (enemy._zerakothSoloTest) enemy.update(time, delta, this.zerakoth, this.zerakoth ? [this.zerakoth] : []);
-      else enemy.update(time, delta, this.azraelFreeplayActive && this.azrael ? this.azrael : this.player, combatants);
+      else enemy.update(time, delta, this.freeplayActor || this.player, combatants);
     }
     this.updateLailaniSoloTest(time);
     this.updateElexisSoloTest(time);

@@ -1,4 +1,19 @@
-# Hell RPG v0.1.4.4.5.4.3 — Mythic Level Recalibration
+# Hell RPG v0.1.4.4.5.4.4 — Seraphel, the Shattered Halo Mythic Freeplay
+
+
+## v0.1.4.4.5.4.4 Seraphel, the Shattered Halo Mythic Freeplay
+
+- Added **Seraphel, the Shattered Halo** to normal-title-screen Mythic Freeplay as a Lv220 / apex **Fallen** character with a legal 1,115-point STR/DEX/VIT/SPR sheet and Infinite Essence.
+- Added the independent `fallen` faction: both Celestials and Infernals are hostile to Seraphel while Heaven-vs-Hell relations remain unchanged.
+- Preserved the full user-supplied 832×3456 `FallenAngel.png` source unchanged and harvested all 15 populated action blocks into compact runtime crops. Every source action receives a deliberate gameplay/presentation role.
+- Added a six-stage basic combo using slash → thrust → backslash → halfslash → shoot → spellcast, with progressively larger range, damage and prismatic Fallen effects.
+- Added seven ultra-color elemental abilities: **Pyre of the Fallen Sun, Crown of the Frozen Abyss, Tempest of Exile, Worldbreaker Testament, Eclipse of Grace, Prismatic Dominion, and Sevenfold Cataclysm**.
+- **Tempest of Exile** re-evaluates living hostiles before every bounce, prefers different living targets, immediately excludes killed actors, and ends cleanly when nothing remains.
+- Sevenfold Cataclysm has a dedicated ULT control and stages fire, ice/water, lightning, wind, earth, light and dark/void before a prismatic finale.
+- Seraphel starts from a safe neutral/Fallen Warfront perch and reuses the 54-actor Eternal Warfront. Freeplay remains disposable/no-save/no-reward, with no campaign boss spawn or quest activation.
+- Added short Mythic Freeplay respawn behavior for Seraphel and shortened Azrael Freeplay's previous long down-state through the Freeplay controller only. Existing autonomous named AI files remain unchanged.
+
+See `docs/SERAPHEL_MYTHIC_FREEPLAY.md`. Physical iPhone Safari remains the release gate.
 
 ## v0.1.4.4.5.4.3 Mythic Level Recalibration
 

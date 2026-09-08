@@ -132,6 +132,21 @@ export const ASSET_DEFS = [
   })),
   { key: 'azrael-hurt', path: 'assets/npcs/azrael/azrael-hurt.png', frameWidth: 64, frameHeight: 64, frames: 6 },
 
+  // v0.1.4.4.5.4.4 Seraphel Mythic Freeplay. FallenAngel.png is fully
+  // populated across all 54 Expanded-LPC rows, so every complete action block
+  // is preserved as a compact runtime crop instead of loading the 832x3456
+  // authoring sheet into mobile Safari.
+  ...[
+    ['spellcast', 7], ['thrust', 8], ['walk', 9], ['slash', 6], ['shoot', 13],
+    ['idle', 2], ['jump', 5], ['sit', 3], ['emote', 3], ['run', 8],
+    ['combat-idle', 2], ['backslash', 13], ['halfslash', 6]
+  ].map(([action, frames]) => ({
+    key: `seraphel-${action}`, path: `assets/npcs/seraphel/seraphel-${action}.png`,
+    frameWidth: 64, frameHeight: 64, frames
+  })),
+  { key: 'seraphel-hurt', path: 'assets/npcs/seraphel/seraphel-hurt.png', frameWidth: 64, frameHeight: 64, frames: 6 },
+  { key: 'seraphel-climb', path: 'assets/npcs/seraphel/seraphel-climb.png', frameWidth: 64, frameHeight: 64, frames: 6 },
+
   // v0.1.4.4.3 Lailani Field Test runtime crops. Only action blocks whose
   // equipment layers are complete in the user-supplied 1536x4224 expanded
   // sheet are shipped; later source actions with missing clothing remain

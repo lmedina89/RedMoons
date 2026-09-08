@@ -1,5 +1,18 @@
 # Changelog
 
+## v0.1.4.4.5.4.4 — Seraphel, the Shattered Halo Mythic Freeplay
+
+- Added **Seraphel, the Shattered Halo** as a disposable Mythic Freeplay-only Lv220/apex Fallen character. Canonical primary sheet: STR205 / DEX285 / VIT270 / SPR355 = 1,115 legal points; resource model Infinite Essence.
+- Added the independent `fallen` faction. Celestials and Infernals are both hostile to Fallen actors while their existing mutual hostility remains intact.
+- Preserved the authoritative 832×3456 `FallenAngel.png` bytes unchanged and harvested all 15 fully populated Expanded-LPC action blocks into compact runtime crops; no full source sheet is runtime-preloaded.
+- Added an escalating six-hit basic combo using six distinct source moves, growing from 108px/1.00× to a 258px/1.55× Shattered Halo finisher with progressively larger Fallen/prismatic effects.
+- Added exactly seven ultra-color offensive abilities covering fire, ice/water, lightning/wind, earth, light/dark, elemental convergence and the all-element **Sevenfold Cataclysm** ultimate.
+- **Tempest of Exile** performs up to six rapid lightning/wind bounces, rebuilds the living hostile pool before every bounce, prefers new targets and immediately skips killed actors.
+- Added a dedicated Seraphel Freeplay controller/HUD with two three-skill banks plus a separate ULT button. Existing named autonomous AI files are unchanged; no Seraphel boss AI exists yet.
+- Seraphel Freeplay starts from a collision-clear Fallen/neutral perch north of the Axis and reuses the 54-actor Eternal Warfront. Campaign Warfront remains exactly 32 regular actors.
+- Freeplay remains no-save/no-reward/no-progression. Seraphel respawns after ~2.6s at the current-map Freeplay anchor; Azrael Freeplay's long down-state is shortened through its human controller only.
+- Save schema remains 2 and `hellrpg.ashfall.save.v1` is unchanged. No campaign Seraphel spawn, boss quest, boss reward or progression flag is activated.
+
 ## v0.1.4.4.5.4.3 — Mythic Level Recalibration
 
 - Recalibrated canonical named-mythic levels to **Azrael 175**, **El’exis 150**, **Lailani 150**, **Bloodwing Scourge 135**, and reserved **Ancient Demon Lord 160** while retaining the supernatural Level-250 ceiling.

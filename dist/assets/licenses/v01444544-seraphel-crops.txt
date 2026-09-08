@@ -1,0 +1,9 @@
+v0.1.4.4.5.4.4 — Seraphel runtime crops
+
+Source: source-assets/character-concepts/2026-09-08/fallen/FallenAngel.png
+Source SHA-256: 7326ac496b216e28f251cf537bb28f70c4dc80a49388629a28617a7e8a93e472
+Source geometry: 832x3456 RGBA Expanded-LPC-style sheet, 64x64 cells, 13 columns x 54 rows.
+
+Runtime files under dist/assets/npcs/seraphel/ are deterministic action-band crops from the user-supplied source. The original source bytes are preserved unchanged. No new external art was introduced by the crop operation.
+
+Matching upstream generator/license attribution was not supplied with the source upload. These development derivatives remain on attribution hold and are NOT declared commercially/store cleared until the exact matching provenance/credit export is captured and reviewed.

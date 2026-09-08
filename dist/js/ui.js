@@ -6,6 +6,7 @@ import { DEBUG, RARITY } from './config.js';
 import { gameEvents } from './core/EventBus.js';
 import { equipmentBonuses, previewDerivedStats, statBreakdown, xpForLevel } from './systems/StatsSystem.js';
 import { AZRAEL_DEF } from './data/specialActors.js';
+import { SERAPHEL_DEF } from './data/seraphel.js';
 
 const $ = selector => document.querySelector(selector);
 const EQUIPMENT_SLOTS = Object.freeze([
@@ -36,6 +37,11 @@ export class UIManager {
     this.bindEvents();
     this.bindTouchControls();
     $('#mythic-bank-toggle')?.addEventListener('click', () => { this.mythicSkillBank = this.mythicSkillBank ? 0 : 1; this.renderHud(); });
+    $('#mythic-ultimate-button')?.addEventListener('pointerdown', event => {
+      event.preventDefault();
+      const button = event.currentTarget;
+      if (!button?.disabled && button?.dataset?.mythicAbility) gameEvents.emit('command', { type: 'mythicAbility', abilityId: button.dataset.mythicAbility });
+    });
     if (DEBUG) {
       $('#debug-panel').classList.remove('hidden');
       $('#debug-panel-toggle')?.addEventListener('click', () => this.setDebugPanelMinimized(!this.debugPanelMinimized));
@@ -162,15 +168,22 @@ export class UIManager {
     const player = state.player;
     const freeplay = this.snapshot.freeplay;
     const isAzraelFreeplay = freeplay?.mode === 'azrael_freeplay';
-    $('#hud')?.classList.toggle('mythic-freeplay', Boolean(isAzraelFreeplay));
-    $('#touch-controls')?.classList.toggle('mythic-freeplay', Boolean(isAzraelFreeplay));
-    $('#mythic-bank-toggle')?.classList.toggle('hidden', !isAzraelFreeplay);
-    if (isAzraelFreeplay) {
-      const azrael = this.snapshot.azrael || {};
-      const hp = Math.max(0, Number(azrael.hp) || 0);
-      const maxHp = Math.max(1, Number(azrael.maxHp) || AZRAEL_DEF.maxHp);
+    const isSeraphelFreeplay = freeplay?.mode === 'seraphel_freeplay';
+    const isMythicFreeplay = isAzraelFreeplay || isSeraphelFreeplay;
+    $('#hud')?.classList.toggle('mythic-freeplay', isMythicFreeplay);
+    $('#touch-controls')?.classList.toggle('mythic-freeplay', isMythicFreeplay);
+    $('#hud')?.classList.toggle('fallen-freeplay', isSeraphelFreeplay);
+    $('#touch-controls')?.classList.toggle('fallen-freeplay', isSeraphelFreeplay);
+    $('#mythic-bank-toggle')?.classList.toggle('hidden', !isMythicFreeplay);
+    const ultimateButton = $('#mythic-ultimate-button');
+    ultimateButton?.classList.toggle('hidden', !isSeraphelFreeplay);
+    if (isMythicFreeplay) {
+      const definition = isSeraphelFreeplay ? SERAPHEL_DEF : AZRAEL_DEF;
+      const actorSnapshot = isSeraphelFreeplay ? (this.snapshot.seraphel || {}) : (this.snapshot.azrael || {});
+      const hp = Math.max(0, Number(actorSnapshot.hp) || 0);
+      const maxHp = Math.max(1, Number(actorSnapshot.maxHp) || definition.maxHp);
       $('#hud-level').textContent = 'Lv. ???';
-      $('#hud-coins').textContent = 'AZRAEL • FREEPLAY';
+      $('#hud-coins').textContent = isSeraphelFreeplay ? 'SERAPHEL • FALLEN FREEPLAY' : 'AZRAEL • FREEPLAY';
       $('#hp-text').textContent = `${Math.ceil(hp)} / ${maxHp}`;
       $('#hp-fill').style.width = `${Math.max(0, Math.min(100, hp / maxHp * 100))}%`;
       $('#essence-text').textContent = '∞ Essence';
@@ -182,16 +195,15 @@ export class UIManager {
       interactButton.classList.toggle('available', Boolean(interaction.available));
       interactButton.classList.toggle('inactive', !interaction.available);
       interactButton.setAttribute('aria-label', interaction.available ? `${interaction.label || 'Use'}: ${interaction.detail || 'nearby interaction'}` : 'Interact');
-      $('#attack-button').textContent = 'Strike';
-      $('#attack-button').setAttribute('aria-label', 'Celestial Strike');
-      const banks = [
-        ['wingBurst', 'judgmentBlast', 'sanctifiedNova'],
-        ['seraphicJudgment', 'sanctuaryFirstLight', 'heavenfall']
-      ];
+      $('#attack-button').textContent = isSeraphelFreeplay ? 'Combo' : 'Strike';
+      $('#attack-button').setAttribute('aria-label', isSeraphelFreeplay ? 'Six-hit Shattered Halo combo' : 'Celestial Strike');
+      const banks = isSeraphelFreeplay
+        ? [['pyreFallenSun', 'crownFrozenAbyss', 'tempestExile'], ['worldbreakerTestament', 'eclipseGrace', 'prismaticDominion']]
+        : [['wingBurst', 'judgmentBlast', 'sanctifiedNova'], ['seraphicJudgment', 'sanctuaryFirstLight', 'heavenfall']];
       const keys = banks[this.mythicSkillBank] || banks[0];
-      const cooldowns = azrael.cooldowns || {};
+      const cooldowns = actorSnapshot.cooldowns || {};
       keys.forEach((key, slot) => {
-        const ability = AZRAEL_DEF.abilities[key];
+        const ability = definition.abilities[key];
         const button = $(`#skill-button-${slot}`);
         if (!button || !ability) return;
         const remaining = Math.max(0, Number(cooldowns[ability.id]) || 0);
@@ -203,7 +215,10 @@ export class UIManager {
         button.classList.toggle('cooling', displayedRemaining > 0);
         button.classList.remove('unavailable');
         button.querySelector('span').textContent = String(slot + 1);
-        button.querySelector('small').textContent = ability.name.replace('Sanctuary of the First Light', 'Sanctuary').replace('Seraphic Judgment', 'Seraphic').replace('Sanctified Nova', 'Nova').replace('Judgment Blast', 'Judgment').replace('Wing Burst', 'Wing Burst').replace('Heavenfall', 'Heavenfall');
+        const shortName = isSeraphelFreeplay
+          ? ability.name.replace('Pyre of the Fallen Sun', 'Fallen Sun').replace('Crown of the Frozen Abyss', 'Frozen Crown').replace('Tempest of Exile', 'Tempest').replace('Worldbreaker Testament', 'Worldbreak').replace('Eclipse of Grace', 'Eclipse').replace('Prismatic Dominion', 'Prismatic')
+          : ability.name.replace('Sanctuary of the First Light', 'Sanctuary').replace('Seraphic Judgment', 'Seraphic').replace('Sanctified Nova', 'Nova').replace('Judgment Blast', 'Judgment');
+        button.querySelector('small').textContent = shortName;
         button.querySelector('b').textContent = displayedRemaining > 0 ? `${Math.ceil(displayedRemaining / 1000)}s` : '';
         const fraction = ability.cooldownMs > 0 ? Math.max(0, Math.min(1, displayedRemaining / ability.cooldownMs)) : 0;
         button.style.setProperty('--cooldown-angle', `${Math.round(fraction * 360)}deg`);
@@ -211,11 +226,31 @@ export class UIManager {
       });
       const bankToggle = $('#mythic-bank-toggle');
       if (bankToggle) bankToggle.textContent = this.mythicSkillBank ? 'Skills II' : 'Skills I';
+      if (ultimateButton) {
+        if (isSeraphelFreeplay) {
+          const ultimate = SERAPHEL_DEF.abilities.sevenfoldCataclysm;
+          const remaining = Math.max(0, Number(cooldowns[ultimate.id]) || 0);
+          const majorLockRemaining = Math.max(0, Number(freeplay.majorLockRemaining) || 0);
+          const displayedRemaining = Math.max(remaining, majorLockRemaining);
+          ultimateButton.disabled = displayedRemaining > 0 || Boolean(freeplay.actionLocked);
+          ultimateButton.dataset.mythicAbility = ultimate.id;
+          ultimateButton.classList.toggle('cooling', displayedRemaining > 0);
+          ultimateButton.querySelector('small').textContent = 'Sevenfold';
+          ultimateButton.querySelector('b').textContent = displayedRemaining > 0 ? `${Math.ceil(displayedRemaining / 1000)}s` : '';
+          ultimateButton.style.setProperty('--cooldown-angle', `${Math.round((ultimate.cooldownMs ? displayedRemaining / ultimate.cooldownMs : 0) * 360)}deg`);
+          ultimateButton.setAttribute('aria-label', `${ultimate.name}${displayedRemaining > 0 ? `, ${Math.ceil(displayedRemaining / 1000)} seconds until ready` : ''}`);
+        } else {
+          ultimateButton.disabled = true;
+          delete ultimateButton.dataset.mythicAbility;
+        }
+      }
       const statusStrip = $('#status-strip');
-      if (statusStrip) statusStrip.innerHTML = `<span class="status-chip status-buff">ARCHANGEL AZRAEL<b>FREEPLAY</b></span>${freeplay.actionName ? `<span class="status-chip">${freeplay.actionName}</span>` : ''}`;
+      if (statusStrip) statusStrip.innerHTML = `<span class="status-chip status-buff">${isSeraphelFreeplay ? 'SERAPHEL • FALLEN APEX' : 'ARCHANGEL AZRAEL'}<b>FREEPLAY</b></span>${freeplay.actionName ? `<span class="status-chip">${freeplay.actionName}</span>` : ''}`;
       if (DEBUG) this.renderDebugControls();
       return;
     }
+    $('#mythic-ultimate-button')?.classList.add('hidden');
+    if ($('#mythic-ultimate-button')) { $('#mythic-ultimate-button').disabled = true; delete $('#mythic-ultimate-button').dataset.mythicAbility; }
     $('#attack-button').textContent = 'Attack';
     $('#attack-button').setAttribute('aria-label', 'Attack');
     for (let slot = 0; slot < 3; slot += 1) $(`#skill-button-${slot}`)?.removeAttribute('data-mythic-ability');

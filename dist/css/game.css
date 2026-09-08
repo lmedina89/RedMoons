@@ -329,3 +329,18 @@ button:active { transform: translateY(1px); filter: brightness(1.25); }
   .start-actions { grid-template-columns: repeat(4, 1fr); }
   .mythic-choice-row button { min-height: 44px; }
 }
+
+/* v0.1.4.4.5.4.4 — Seraphel Fallen Mythic Freeplay controls. */
+.mythic-ultimate-button { position: absolute; right: 232px; bottom: 104px; width: 60px; height: 60px; min-height: 60px; padding: 3px; border-radius: 50%; border: 2px solid #d85cff; background: radial-gradient(circle at 38% 30%, #a43d70, #321040 52%, #0d0714 78%); color: #fff0bd; font: 800 .55rem Arial, sans-serif; pointer-events: auto; touch-action: manipulation; box-shadow: 0 0 14px #8a35d766, 0 3px 10px #0009; overflow: hidden; }
+.mythic-ultimate-button span { display: block; color: #ffe26e; font-size: .72rem; line-height: 1; }
+.mythic-ultimate-button small { display: block; margin-top: 4px; color: #f0c9ff; font: 800 .49rem Arial, sans-serif; }
+.mythic-ultimate-button b { position: absolute; inset: 0; display: grid; place-items: center; color: #fff; background: rgba(7,2,11,.62); font: 800 .72rem Arial, sans-serif; pointer-events: none; }
+.mythic-ultimate-button b:empty { display: none; }
+.mythic-ultimate-button.cooling b { background: conic-gradient(from 0deg, rgba(5,1,8,.88) 0deg var(--cooldown-angle, 0deg), rgba(10,2,14,.34) var(--cooldown-angle, 0deg) 360deg); }
+.mythic-ultimate-button:disabled { opacity: .42; filter: saturate(.62); }
+#hud.fallen-freeplay .hud-vitals { border-left-color: #bb43d4; background: linear-gradient(90deg, rgba(28,5,35,.92), rgba(24,7,20,.82)); }
+#hud.fallen-freeplay .portrait { color: #ffd76d; border-color: #b94bd2; background: radial-gradient(circle, #6d254c, #17071d 72%); }
+#touch-controls.fallen-freeplay #attack-button { color: #ffe7a0; border-color: #d24c83; background: radial-gradient(circle at 38% 30%, #9c344f, #48142f 48%, #1a0924 76%); box-shadow: 0 0 0 5px #16071d7d, 0 0 18px #7a38c066, 0 7px 18px #0009; }
+#touch-controls.fallen-freeplay .skill-button { border-color: #a14bc2; background: radial-gradient(circle at 45% 30%, #612957, #25102f 72%); }
+#touch-controls.fallen-freeplay .skill-button span { color: #75ecff; }
+#touch-controls.fallen-freeplay .mythic-bank-toggle { border-color: #b957d7; background: linear-gradient(#572657, #24102c); color: #ffe278; }
