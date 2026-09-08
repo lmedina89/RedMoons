@@ -1,5 +1,13 @@
 # Changelog
 
+## v0.1.4.4.4.1 — El’exis Healing Polish
+
+- Raised **Edict of Sanctuary** player restoration to 12% max HP on the opening pulse plus 5% max HP on each of its three sustained pulses, for 27% total only when the player remains inside the full 5.6-second field.
+- Raised **Crown of Dominion** player restoration to 3% max HP per 4.5-second aura pulse while the player remains inside its bounded aura.
+- Made player-healing percentages explicit in El’exis ability data rather than relying on the previous generic 0.68 player-healing scale.
+- Preserved El’exis self-healing, ordinary-Celestial healing, reduced named-mythic cross-healing, Guard/control effects, support-first AI, all damage/cooldown/VFX behavior, the 32-actor production Warfront, Azrael/Lailani behavior and save schema 2.
+- Added focused regression coverage for exact player restoration while retaining the inherited El’exis field/solo suites.
+
 ## v0.1.4.4.4 — El’exis Field Test
 
 - Added **El’exis — Mother of the Host** as an independent Azrael-tier named celestial on the Veil Warfront.

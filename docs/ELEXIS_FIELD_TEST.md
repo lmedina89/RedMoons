@@ -39,3 +39,8 @@ Use `?debug=1`:
 - **El’exis AI Overlay** — shows current state, target, HP, Crown timer, and highest allied support need.
 
 Watch especially for Edict priority/readability, Crown pulse density, Chains control clarity, Constellation sequencing, Throne spectacle, and sustained iPhone smoothness.
+
+
+## v0.1.4.4.4.1 healing polish
+
+Physical iPhone testing found that player-facing restoration was too weak to communicate El’exis's support identity. Edict now heals the player for 12% max HP initially and 5% on each later pulse; Crown heals the player for 3% max HP per aura pulse. Ordinary celestial, self, and reduced named-mythic healing remain unchanged.

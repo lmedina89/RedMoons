@@ -1,4 +1,4 @@
-// v0.1.4.4.4 El’exis Field Test. El’exis is an Azrael-tier named celestial
+// v0.1.4.4.4.1 El’exis Healing Polish. El’exis is an Azrael-tier named celestial
 // built around Dominion, protection, restoration, and deliberate formation
 // control. She is independent from Azrael and Lailani controllers and from the
 // 32-actor production Warfront population budget.
@@ -49,7 +49,7 @@ export const ELEXIS_DEF = Object.freeze({
       id: 'elexis_crown_dominion', name: 'Crown of Dominion',
       cooldownMs: 80000, windupMs: 980, triggerAt: 0.70, recoverMs: 340,
       durationMs: 60000, pulseEveryMs: 4500, auraRadius: 190,
-      damageTakenMultiplier: 0.80, selfHealPct: 0.006, celestialHealPct: 0.015,
+      damageTakenMultiplier: 0.80, selfHealPct: 0.006, celestialHealPct: 0.015, playerHealPct: 0.030,
       guardDurationMs: 5000, retaliationMultiplier: 0.18
     }),
     spearFirmament: Object.freeze({
@@ -76,7 +76,7 @@ export const ELEXIS_DEF = Object.freeze({
       fieldDurationMs: 5600, pulseDelays: Object.freeze([0, 1750, 3500, 5250]),
       initialCelestialHealPct: 0.10, pulseCelestialHealPct: 0.032,
       initialSelfHealPct: 0.055, pulseSelfHealPct: 0.020,
-      playerHealPct: 0.045,
+      initialPlayerHealPct: 0.120, pulsePlayerHealPct: 0.050,
       guardDurationMs: 5600, enemyDamageMultiplier: 0.24, enemySlowMs: 4200,
       castMissingThreshold: 0.20, major: true, majorLockMs: 4300
     }),

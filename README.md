@@ -1,4 +1,12 @@
-# Hell RPG v0.1.4.4.4 — El’exis Field Test
+# Hell RPG v0.1.4.4.4.1 — El’exis Healing Polish
+
+
+## v0.1.4.4.4.1 El’exis Healing Polish
+
+- Physical iPhone testing showed El’exis player healing was visually impressive but numerically too weak (+4 initial / +2 sustained around Level 5).
+- **Edict of Sanctuary** now restores the player for **12% max HP on the opening pulse** and **5% max HP on each of the three sustained pulses** (27% total only if the player remains inside the field for all four pulses).
+- **Crown of Dominion** now restores the player for **3% max HP per 4.5-second aura pulse** while in range.
+- El’exis self-healing, ordinary-Celestial healing, named-mythic cross-healing safeguards, Guard, control, damage, AI priorities, cooldowns, VFX, Warfront population, save schema and all Azrael/Lailani behavior are unchanged.
 
 ## v0.1.4.4.4 El’exis Field Test
 

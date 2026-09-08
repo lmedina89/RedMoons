@@ -272,3 +272,9 @@ Automated checks can establish structural correctness but cannot substitute for 
 ## v0.1.4.4.4 — El’exis Field Test validation
 
 Automated coverage adds El’exis-specific field-test and solo-loop smoke suites: seven-skill namespace/hierarchy, Azrael-tier stat envelope, one-minute Crown mitigation, ordinary-vs-mythic healing scaling, support sanctuary thresholds, offscreen simulation, collision-safe field/solo anchors, exact crop dimensions, Warfront-only asset streaming, debug-only reward bypass, El’exis-only solo targeting, and unchanged 32-actor production Warfront population. Physical iPhone Safari remains required for final visual judgement of her Dominion geometry, healing readability, and effect density.
+
+## v0.1.4.4.4.1 — El’exis Healing Polish validation
+
+- Added an exact-contract smoke regression for player healing: Edict 12% initial + 5% sustained pulses and Crown 3% player aura pulses.
+- Re-ran the complete inherited project validation suite; named-mythic cross-healing remains reduced and ordinary-Celestial/self healing values are unchanged.
+- Physical iPhone Safari remains the release gate for feel, readability and sustained VFX/performance.

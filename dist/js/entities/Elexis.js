@@ -231,7 +231,7 @@ export class Elexis {
   healScaleFor(target) {
     if (!target) return 0;
     if (target === this) return 1;
-    if (target === this.scene?.player || target.isPlayer) return 0.68;
+    if (target === this.scene?.player || target.isPlayer) return 1;
     return tierOf(target) === 'mythic' ? 0.46 : 1;
   }
 
@@ -383,7 +383,9 @@ export class Elexis {
       if (!actorAlive(ally)) continue;
       const node = actorNode(ally);
       if (Math.hypot(node.x - this.body.x, node.y - this.body.y) > ability.auraRadius) continue;
-      const pct = ally === this ? ability.selfHealPct : ability.celestialHealPct;
+      const pct = ally === this
+        ? ability.selfHealPct
+        : (ally === this.scene.player || ally.isPlayer ? ability.playerHealPct : ability.celestialHealPct);
       healed += this.healTarget(ally, pct) > 0 ? 1 : 0;
       this.guardTarget(ally, ability.guardDurationMs);
     }
@@ -733,8 +735,8 @@ export class Elexis {
       const node = actorNode(ally);
       if (Math.hypot(node.x - x, node.y - y) > ability.radius) continue;
       const pct = index === 0
-        ? (ally === this ? ability.initialSelfHealPct : (ally === this.scene.player || ally.isPlayer ? ability.playerHealPct : ability.initialCelestialHealPct))
-        : (ally === this ? ability.pulseSelfHealPct : (ally === this.scene.player || ally.isPlayer ? ability.playerHealPct * 0.42 : ability.pulseCelestialHealPct));
+        ? (ally === this ? ability.initialSelfHealPct : (ally === this.scene.player || ally.isPlayer ? ability.initialPlayerHealPct : ability.initialCelestialHealPct))
+        : (ally === this ? ability.pulseSelfHealPct : (ally === this.scene.player || ally.isPlayer ? ability.pulsePlayerHealPct : ability.pulseCelestialHealPct));
       if (this.healTarget(ally, pct) > 0) healed += 1;
       this.guardTarget(ally, ability.guardDurationMs);
     }
