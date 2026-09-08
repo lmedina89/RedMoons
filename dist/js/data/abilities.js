@@ -74,6 +74,29 @@ export const ENEMY_ABILITY_DEFS = Object.freeze({
     status: Object.freeze({ id: 'stagger', chance: 0.30 }), telegraph: 'ashbone', audio: 'slam'
   }),
 
+  // Lv30 Infernal Dreadknight kit. These use the shared faction-safe enemy
+  // ability pipeline so every arc/dash/AoE automatically rejects demon allies.
+  blackguard_aegis: Object.freeze({
+    id: 'blackguard_aegis', name: 'Blackguard Aegis', type: 'self_guard', animation: 'attack',
+    range: 9999, minRange: 0, cooldownMs: 9800, windupMs: 720, triggerAt: 0.72, recoverMs: 420,
+    castHpThreshold: 0.66, durationMs: 5200, telegraph: 'blood', audio: 'shadow'
+  }),
+  ember_lunge: Object.freeze({
+    id: 'ember_lunge', name: 'Ember Lunge', type: 'dash_strike', animation: 'attack',
+    range: 218, minRange: 76, arcDegrees: 68, dashDistance: 140, cooldownMs: 3850, windupMs: 520, triggerAt: 0.68, recoverMs: 350,
+    damageMultiplier: 1.12, knockback: 112, damageType: 'fire', impact: 'hellfire', status: Object.freeze({ id: 'burn', chance: 0.28 }), telegraph: 'hellfire', audio: 'fire'
+  }),
+  dreadknight_cinder_burst: Object.freeze({
+    id: 'dreadknight_cinder_burst', name: 'Cinder Burst', type: 'radial_aoe', animation: 'attack',
+    range: 126, minRange: 0, radius: 126, cooldownMs: 5550, windupMs: 700, triggerAt: 0.76, recoverMs: 430,
+    damageMultiplier: 0.96, knockback: 126, damageType: 'fire', impact: 'hellfire', status: Object.freeze({ id: 'burn', chance: 0.24 }), telegraph: 'hellfire', audio: 'fire'
+  }),
+  hellblade_cleave: Object.freeze({
+    id: 'hellblade_cleave', name: 'Hellblade Cleave', type: 'melee_reach', animation: 'attack',
+    range: 118, minRange: 0, arcDegrees: 112, cooldownMs: 1550, windupMs: 460, triggerAt: 0.57, recoverMs: 310,
+    damageMultiplier: 1.18, knockback: 82, damageType: 'shadow', impact: 'blood', telegraph: 'blood', audio: 'shadow'
+  }),
+
   flesh_rend: Object.freeze({
     id: 'flesh_rend', name: 'Flesh Rend', type: 'melee_reach', animation: 'attack',
     range: 104, minRange: 0, arcDegrees: 96, cooldownMs: 1650, windupMs: 460, triggerAt: 0.56, recoverMs: 320,

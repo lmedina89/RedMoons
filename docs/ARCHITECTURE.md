@@ -277,3 +277,10 @@ Azrael's Judgment volley remains data-driven in `specialActors.js`: stagger dela
 - Named-mythic cross-healing is deliberately reduced while ordinary Celestials receive full configured healing. This avoids future Azrael/Lailani/El’exis sustain loops without weakening her role as Mother of the Host.
 - El’exis uses a 1200px player-distance simulation gate; delayed constellation/throne/edict effects refuse to resolve while she is offscreen/asleep.
 - Runtime art is map-scoped through `AssetResolver`; only seven verified complete 64px-frame action crops are uploaded when the Veil Warfront is live.
+
+
+## Infernal elite ladder — v0.1.4.4.5.1
+
+`powerTiers.js` now records the non-mythic Infernal progression hooks alongside the existing mythic ladder: Demon Knight is Level 30 / `elite`, while Zerakoth is reserved at Level 60 / `commander`. The first Dreadknight intentionally uses the ordinary `Enemy` actor rather than a bespoke mythic controller. This proves that stronger humanoid elites can reuse faction-safe targeting, encounter navigation, status handling and ability dispatch without treating every high-level enemy as a unique boss.
+
+The Dreadknight's visual base is a compact blackened derivative of the preserved winged humanoid source, rendered through `LayeredCharacter` with a fixed NPC-only Pitsteel sword. A small `self_guard` ability type was added to the shared enemy pipeline; it applies the existing Guard status and accepts an optional infernal FX kind, avoiding a parallel damage-mitigation system.

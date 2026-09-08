@@ -316,6 +316,12 @@ export class Enemy {
         if (need < (ability.castMissingThreshold || 0.2)) continue;
         return ability;
       }
+      if (ability.type === 'self_guard') {
+        const hpRatio = this.def.maxHp > 0 ? this.hp / this.def.maxHp : 1;
+        if (hpRatio > (ability.castHpThreshold ?? 0.66)) continue;
+        if (this.combat?.statuses?.has?.(this, 'guard')) continue;
+        return ability;
+      }
       if (distance > ability.range || distance < (ability.minRange || 0)) continue;
       if ((ability.type === 'melee_reach' || ability.type === 'radial_aoe' || ability.type === 'dash_strike') && targetNode
         && !this.scene.hasWorldLineOfSight?.(this.sprite.x, this.sprite.y, targetNode.x, targetNode.y)) continue;
@@ -326,7 +332,7 @@ export class Enemy {
 
   beginAbility(ability, target, time) {
     const node = actorNode(target);
-    if (!node && ability.type !== 'friendly_heal') return;
+    if (!node && !['friendly_heal', 'self_guard'].includes(ability.type)) return;
     this.currentAbility = ability;
     this.abilityStartedAt = time;
     this.abilityTriggered = false;

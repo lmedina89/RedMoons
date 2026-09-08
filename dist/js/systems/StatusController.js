@@ -38,7 +38,8 @@ export class StatusController {
       nextTickAt: current?.nextTickAt || (def.tickMs ? now + def.tickMs : Infinity)
     });
     if (statusId === 'stagger') this.staggerImmuneUntil.set(target, now + durationMs + (def.immunityMs || 0));
-    this.fx.burst(target.body?.x ?? target.sprite?.x ?? 0, (target.body?.y ?? target.sprite?.y ?? 0) - 16, statusId === 'guard' ? 'guard' : statusId === 'slow' ? 'blueflame' : statusId === 'burn' ? 'fire' : statusId === 'poison' ? 'poison' : 'physical', 0.65);
+    const fxKind = options.fxKind || (statusId === 'guard' ? 'guard' : statusId === 'slow' ? 'blueflame' : statusId === 'burn' ? 'fire' : statusId === 'poison' ? 'poison' : 'physical');
+    this.fx.burst(target.body?.x ?? target.sprite?.x ?? 0, (target.body?.y ?? target.sprite?.y ?? 0) - 16, fxKind, 0.65);
     return true;
   }
 

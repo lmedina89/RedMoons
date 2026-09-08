@@ -287,3 +287,12 @@ Automated coverage adds El’exis-specific field-test and solo-loop smoke suites
 - Added `tests/mythical-demon-solo-test-smoke.mjs` for bounded 3–5 Celestial waves, collision-safe isolated anchors, production-spawn separation, demon-only targeting, reward bypass, prepare-before-commit restart and unchanged 32-actor production Warfront.
 - The first interrupted work copy exposed two issues before packaging: an inherited version assertion had not yet been advanced, and older Azrael shared cone/radial helpers still iterated only ordinary enemies. The release candidate was rebuilt from a fresh v0.1.4.4.4.1 unzip and the damage path was generalized before the full inherited suite was run.
 - Full `npm run check` passes after those repairs. Physical iPhone Safari remains the final gate for combat readability, mythic 1v1 escalation, sustained VFX performance and touch play.
+
+
+## v0.1.4.4.5.1 — Demon Knight Elite Foundation validation
+
+- Added `tests/demon-knight-elite-smoke.mjs` covering the Level-30/elite hierarchy contract, reserved Level-60 Zerakoth commander slot, blackened runtime base, Pitsteel weapon layer, four-skill infernal kit, wounded Blackguard selection, same-faction demon safety, debug-only spawn isolation, collision-safe test entry and runtime PNG geometry.
+- Extended the inherited faction-war regression so its original +8 First-Light debug warband remains scoped to Cinder Wilds while the separate Warfront Dreadknight field-test spawn stays independent.
+- `AssetResolver` now includes `DEBUG_SPAWN_REGIONS` only when `?debug=1`, allowing genuinely new debug-only enemy art to stream without polluting production map packages.
+- Production Living Warfront remains 32 actors. Save schema remains 2. No existing mythic/angel/demon source sheet is modified.
+- Automated validation does not replace physical iPhone Safari review of sword alignment, blackened armor readability, VFX hierarchy, combat feel or frame pacing.

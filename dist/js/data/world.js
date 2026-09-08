@@ -225,6 +225,9 @@ export const SPAWN_REGIONS = Object.freeze([
 // 35-actor mobile population budget. The extra eight demons create a sustained
 // stress battle around Azrael without silently changing normal-world density.
 export const DEBUG_SPAWN_REGIONS = Object.freeze([
+  // v0.1.4.4.5.1 isolated Warfront elite field test. This does not alter the
+  // 32 production Living Warfront slots and exists only under ?debug=1.
+  { id: 'debug_warfront_dreadknight', encounterId: 'enc_warfront_debug_dreadknight', archetype: 'guard', mapId: 'map_veil_warfront', areaId: 'area_warfront_infernal_front', enemyId: 'enemy_infernal_dreadknight', x: 1800, y: 1800, width: 110, height: 90, count: 1, respawnMs: 16000, activationRange: 1200, pursuitMargin: 160, debugOnly: true },
   { id: 'debug_firstlight_abyss_reinforcements', encounterId: 'enc_firstlight_debug_warband', archetype: 'guard', mapId: 'map_cinder_wilds', areaId: 'area_first_light_scar', enemyId: 'enemy_demon_scout', x: 2835, y: 610, width: 220, height: 180, count: 2, respawnMs: 6200, activationRange: 1200, pursuitMargin: 140, debugOnly: true },
   { id: 'debug_firstlight_hellfire_reinforcements', encounterId: 'enc_firstlight_debug_warband', archetype: 'guard', mapId: 'map_cinder_wilds', areaId: 'area_first_light_scar', enemyId: 'enemy_hellfire_demon', x: 2990, y: 785, width: 220, height: 180, count: 2, respawnMs: 6700, activationRange: 1200, pursuitMargin: 140, debugOnly: true },
   { id: 'debug_firstlight_ashbone_reinforcements', encounterId: 'enc_firstlight_debug_warband', archetype: 'guard', mapId: 'map_cinder_wilds', areaId: 'area_first_light_scar', enemyId: 'enemy_ashbone_demon', x: 3440, y: 700, width: 220, height: 180, count: 2, respawnMs: 7200, activationRange: 1200, pursuitMargin: 140, debugOnly: true },
@@ -479,7 +482,7 @@ export const MAP_DEFS = Object.freeze({
   }),
   map_veil_warfront: Object.freeze({
     id: 'map_veil_warfront', name: 'Veil Warfront', width: WARFRONT_DIMENSIONS.width, height: WARFRONT_DIMENSIONS.height, renderer: 'veil_warfront',
-    entryPoints: Object.freeze({ veil_gate: Object.freeze({ x: 3072, y: 2700 }), axis_test: Object.freeze({ x: 3072, y: 1880 }), mythical_demon_test: Object.freeze({ x: 2380, y: 1575 }), mythical_demon_solo: Object.freeze({ x: 740, y: 2740 }), lailani_test: Object.freeze({ x: 3560, y: 1575 }), lailani_solo: Object.freeze({ x: 4015, y: 2700 }), elexis_test: Object.freeze({ x: 4740, y: 1160 }), elexis_solo: Object.freeze({ x: 4740, y: 2700 }) }),
+    entryPoints: Object.freeze({ veil_gate: Object.freeze({ x: 3072, y: 2700 }), axis_test: Object.freeze({ x: 3072, y: 1880 }), demon_knight_test: Object.freeze({ x: 1690, y: 1845 }), mythical_demon_test: Object.freeze({ x: 2380, y: 1575 }), mythical_demon_solo: Object.freeze({ x: 740, y: 2740 }), lailani_test: Object.freeze({ x: 3560, y: 1575 }), lailani_solo: Object.freeze({ x: 4015, y: 2700 }), elexis_test: Object.freeze({ x: 4740, y: 1160 }), elexis_solo: Object.freeze({ x: 4740, y: 2700 }) }),
     zoneIds: Object.freeze(['zone_veil_warfront']),
     areaIds: Object.freeze(['area_warfront_infernal_stronghold', 'area_warfront_infernal_rear', 'area_warfront_infernal_front', 'area_warfront_axis', 'area_warfront_unhoused', 'area_warfront_celestial_front', 'area_warfront_celestial_rear', 'area_warfront_celestial_stronghold']),
     worldAssetKeys: WARFRONT_ASSET_KEYS

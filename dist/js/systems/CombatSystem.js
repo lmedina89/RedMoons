@@ -193,6 +193,10 @@ export class CombatSystem {
     if (ability.type === 'friendly_heal') {
       enemy.abilityTelegraph = this.fx.celestialSigil(x, y, Math.min(ability.radius || 120, 150), ability.windupMs);
       this.fx.burst(x, y - 18, 'heal', 0.66);
+    } else if (ability.type === 'self_guard') {
+      enemy.abilityTelegraph = this.fx.telegraph(x, y, 74, ability.telegraph || 'blood', ability.windupMs);
+      this.fx.ring(x, y, 58, ability.telegraph || 'blood', Math.max(320, ability.windupMs));
+      this.fx.burst(x, y - 18, ability.telegraph || 'blood', 0.86);
     } else if (ability.type === 'radial_aoe') {
       enemy.abilityTelegraph = this.fx.telegraph(x, y, ability.radius, ability.telegraph || 'earth', ability.windupMs);
     } else if (ability.type === 'melee_reach' || ability.type === 'dash_strike') {
@@ -209,6 +213,15 @@ export class CombatSystem {
     const audioId = ability.audio || (abilityKind === 'hellfire' ? 'fire' : abilityKind === 'abyss' || abilityKind === 'blood' ? 'shadow' : abilityKind === 'ashbone' ? 'slam' : 'sword');
     const sourceTeam = this.sourceTeamFor?.(enemy) || ((enemy?.faction || enemy?.def?.faction) === 'celestial' ? 'celestial' : 'enemy');
     const hostileTargets = this.hostileTargetsFor?.(enemy) || this.friendlyTargets?.() || [];
+
+    if (ability.type === 'self_guard') {
+      enemy.abilityTelegraph?.destroy?.(); enemy.abilityTelegraph = null;
+      this.statuses.apply(enemy, 'guard', { power: enemy.def.attack, x, y, team: sourceTeam }, { durationMs: ability.durationMs || 5000, fxKind: ability.telegraph || 'blood' });
+      this.fx.ring(x, y, 72, ability.telegraph || 'blood', 420);
+      this.fx.burst(x, y - 20, ability.telegraph || 'blood', 1.02);
+      this.audio.play(audioId, { throttleMs: 240, volume: 0.065 });
+      return;
+    }
 
     if (ability.type === 'friendly_heal') {
       enemy.abilityTelegraph?.destroy?.(); enemy.abilityTelegraph = null;

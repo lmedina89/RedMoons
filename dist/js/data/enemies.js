@@ -220,6 +220,17 @@ export const ENEMY_DEFS = Object.freeze({
     scale: 1.12, originY: 0.69, loot: []
   },
 
+  enemy_infernal_dreadknight: {
+    id: 'enemy_infernal_dreadknight', name: 'Infernal Dreadknight', family: 'demon', variant: 'dreadknight',
+    subfaction: 'demon_legion', role: 'elite_knight', elite: true, threatTier: 'elite', level: 30,
+    maxHp: 1450, attack: 72, defense: 38, speed: 94, detectRange: 430, attackRange: 66, leashRange: 620, attackCooldown: 920, recoverMs: 320,
+    abilities: ['blackguard_aegis', 'ember_lunge', 'dreadknight_cinder_burst', 'hellblade_cleave'],
+    resistances: { fire: 0.42, poison: 0.32, shadow: 0.34, celestial: 0.06 },
+    statusResistances: { burn: 0.72, poison: 0.54, slow: 0.34 }, staggerResistance: 0.45,
+    xp: 0, currency: [0, 0], layered: true, baseVisual: 'enemy_demon_knight_base', walkFrames: 9, attackFrames: 6, scale: 1.12,
+    fixedLoadout: { weapon: 'weapon_pitsteel_sword_npc' }, loot: []
+  },
+
   enemy_demon_scout: {
     id: 'enemy_demon_scout', name: 'Abyss Ashwing', family: 'demon', variant: 'abyss', subfaction: 'demon_legion', role: 'vanguard', level: 5,
     maxHp: 122, attack: 18, defense: 5, speed: 86, detectRange: 350, attackRange: 58, leashRange: 510, attackCooldown: 1020, recoverMs: 330,

@@ -1,4 +1,19 @@
-# Hell RPG v0.1.4.4.5 — Mythical Demon Field Test + Power Hierarchy Foundation
+# Hell RPG v0.1.4.4.5.1 — Demon Knight Elite Foundation
+
+
+## v0.1.4.4.5.1 Demon Knight Elite Foundation
+
+- Added **Infernal Dreadknight**, a reusable **Level 30 / elite-tier** humanoid demon designed to sit decisively above ordinary Ashwings/Fleshborn while remaining far below the Level-60 commander slot reserved for **Zerakoth, Warden of the Pit** and the Level-94 Bloodwing Scourge.
+- Activated the preserved `TransupOrHolyKnight.png` source as the Dreadknight visual basis without altering the source sheet. Runtime uses only compact verified walk/slash/hurt blocks with a blackened-plate, ember-crimson treatment.
+- Added a dedicated **Pitsteel Longsword** runtime layer derived from the existing Steel Arming Sword geometry; the original player weapon art is unchanged.
+- Added four infernal abilities: **Blackguard Aegis, Ember Lunge, Cinder Burst, and Hellblade Cleave**. Their visual language is blood/crimson/hellfire rather than celestial gold/white.
+- Added reusable `self_guard` enemy-ability support. Blackguard Aegis activates only when materially wounded, grants the existing Guard mitigation through the shared status system, and can request infernal VFX without changing other Guard users.
+- All Dreadknight melee/dash/AoE targeting continues through the shared faction-safe combat path: demons remain friendly to demons and cannot damage each other.
+- Added `?debug=1` **Demon Knight Elite Test** near Riven Hold. The Dreadknight is debug-only in this pass, so the production Living Warfront remains exactly **32 regular actors** while its physical balance/visual tier is evaluated.
+- Extended the hierarchy with **Demon Knight 30 / elite** and reserved **Zerakoth 60 / commander**. The existing 94/96/98/99 mythic/apex ladder is unchanged.
+- Save schema remains **2** and `hellrpg.ashfall.save.v1` is unchanged. Bloodwing Scourge, El’exis healing polish, Lailani, Azrael, portals, production Warfront population and existing source art remain intact.
+
+Physical iPhone Safari remains the release gate. Use **Demon Knight Elite Test** and verify that the blackened armor + Pitsteel sword stay aligned through movement/attacks, Blackguard reads as an evil defensive cast, the four abilities remain clearly below mythic spectacle, and the Lv30 knight feels substantially stronger than fodder without resembling a Lv60+ commander.
 
 
 ## v0.1.4.4.5 Mythical Demon Field Test + Power Hierarchy Foundation

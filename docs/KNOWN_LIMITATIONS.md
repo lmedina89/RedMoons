@@ -1,4 +1,14 @@
-# Known Limitations — v0.1.4.4.2
+# Known Limitations — v0.1.4.4.5.1
+
+
+## v0.1.4.4.5.1 Demon Knight limits
+
+- The Level-30 Infernal Dreadknight is **debug-only** for this field-test pass. It does not consume a production Living Warfront slot until its power/readability are physically approved.
+- Its source concept contains coherent baked winged armor. The runtime blackened/crimson treatment is a compact development derivative; the original source remains unchanged and is still on attribution/provenance hold for commercial/store release.
+- Pitsteel currently uses the proven one-handed arming-sword geometry. A unique future weapon silhouette can replace it later only if a fully compatible action set is verified.
+- Blackguard Aegis reuses the shared Guard mechanics with infernal VFX; it is not a new stacking mitigation system.
+- Zerakoth, Warden of the Pit is hierarchy-reserved at Level 60 / commander but is not activated in this build.
+- Physical iPhone Safari remains the release gate for visual alignment, effect readability, combat pressure and performance.
 
 ## v0.1.4.4.2 Living Warfront limits
 

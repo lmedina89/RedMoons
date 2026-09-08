@@ -1,0 +1,27 @@
+Hell RPG v0.1.4.4.5.1 — Demon Knight Elite Foundation
+
+Development source:
+  source-assets/character-concepts/2026-09-07/heavenly-and-unique/TransupOrHolyKnight.png
+
+Runtime derivatives:
+  dist/assets/enemies/demon-knight/demon-knight-walk.png
+  dist/assets/enemies/demon-knight/demon-knight-slash.png
+  dist/assets/enemies/demon-knight/demon-knight-hurt.png
+
+The source sheet is preserved unchanged. Runtime derivatives are deterministic
+compact crops from verified Expanded-LPC action blocks with a project-specific
+blackened/crimson color treatment for the Infernal Dreadknight identity.
+
+Pitsteel weapon derivatives:
+  dist/assets/enemies/demon-knight/pitsteel-sword-walk.png
+  dist/assets/enemies/demon-knight/pitsteel-sword-slash.png
+
+These are recolored runtime copies of the already-shipping Steel Arming Sword
+action assets. The existing player Steel Arming Sword files are unchanged.
+
+The user supplied the character concept sheet for project development. Exact
+matching upstream generator credit/provenance for this concept sheet is not
+present in the repository, so these character derivatives remain
+DEVELOPMENT-AUTHORIZED / ATTRIBUTION HOLD until provenance is resolved before
+commercial/store distribution. No authorship claim is created by cropping or
+recoloring the source.

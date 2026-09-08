@@ -169,6 +169,16 @@ export const ASSET_DEFS = [
   })),
   { key: 'mythical-demon-hurt', path: 'assets/npcs/mythical-demon/mythical-demon-hurt.png', frameWidth: 64, frameHeight: 64, frames: 6 },
 
+  // v0.1.4.4.5.1 Demon Knight elite runtime presentation. The original
+  // TransupOrHolyKnight source remains unchanged/source-only. These compact
+  // blackened-plate crops preserve its coherent winged armor, while a separate
+  // Pitsteel sword layer reuses the proven arming-sword combat geometry.
+  { key: 'demon-knight-walk', path: 'assets/enemies/demon-knight/demon-knight-walk.png', frameWidth: 64, frameHeight: 64 },
+  { key: 'demon-knight-slash', path: 'assets/enemies/demon-knight/demon-knight-slash.png', frameWidth: 64, frameHeight: 64 },
+  { key: 'demon-knight-hurt', path: 'assets/enemies/demon-knight/demon-knight-hurt.png', frameWidth: 64, frameHeight: 64 },
+  { key: 'pitsteel-sword-walk', path: 'assets/enemies/demon-knight/pitsteel-sword-walk.png', frameWidth: 64, frameHeight: 64 },
+  { key: 'pitsteel-sword-slash', path: 'assets/enemies/demon-knight/pitsteel-sword-slash.png', frameWidth: 128, frameHeight: 128, oversized: true },
+
   { key: 'skeleton-walk', path: `${E}skeleton-walk.png`, frameWidth: 64, frameHeight: 64 },
   { key: 'skeleton-slash', path: `${E}skeleton-slash.png`, frameWidth: 64, frameHeight: 64 },
   { key: 'skeleton-bow-shoot', path: `${E}skeleton-bow-shoot.png`, frameWidth: 64, frameHeight: 64 },
@@ -281,6 +291,12 @@ export const ANIMATION_GEOMETRIES = Object.freeze({
     walk: Object.freeze({ source: 'walk', rows: dirs, stride: 9, sequence: range(1, 8) }),
     slash: Object.freeze({ source: 'slash', rows: dirs, stride: 6, sequence: range(0, 5) })
   }),
+  revised64Elite: Object.freeze({
+    idle: Object.freeze({ source: 'walk', rows: dirs, stride: 9, sequence: Object.freeze([0]) }),
+    walk: Object.freeze({ source: 'walk', rows: dirs, stride: 9, sequence: range(1, 8) }),
+    slash: Object.freeze({ source: 'slash', rows: dirs, stride: 6, sequence: range(0, 5) }),
+    hurt: Object.freeze({ source: 'hurt', rows: [0, 0, 0, 0], stride: 6, sequence: range(0, 5) })
+  }),
   expanded64: Object.freeze({
     idle: Object.freeze({ source: 'texture', rows: [8, 9, 10, 11], stride: 13, sequence: Object.freeze([0]) }),
     walk: Object.freeze({ source: 'texture', rows: [8, 9, 10, 11], stride: 13, sequence: range(1, 8) }),
@@ -305,6 +321,11 @@ export const ANIMATION_GEOMETRIES = Object.freeze({
     backslash1h: Object.freeze({ source: 'backslash', rows: dirs, stride: 13, sequence: Object.freeze([0, 1, 2, 3, 4, 5, 7, 8, 9, 10, 11, 12]) }),
     halfslash1h: Object.freeze({ source: 'halfslash', rows: dirs, stride: 6, sequence: range(0, 5) })
   }),
+  armingSwordBasic: Object.freeze({
+    idle: Object.freeze({ source: 'walk', rows: dirs, stride: 9, sequence: Object.freeze([0]) }),
+    walk: Object.freeze({ source: 'walk', rows: dirs, stride: 9, sequence: range(1, 8) }),
+    slash: Object.freeze({ source: 'slash', rows: dirs, stride: 6, sequence: range(0, 5) })
+  }),
   katanaNpc128: Object.freeze({
     idle: Object.freeze({ source: 'walk', rows: dirs, stride: 9, sequence: Object.freeze([0]) }),
     walk: Object.freeze({ source: 'walk', rows: dirs, stride: 9, sequence: range(1, 8) }),
@@ -327,6 +348,7 @@ export const LAYER_ASSETS = Object.freeze({
   enemy_gilded_skeleton_base: { walk: 'gilded-skeleton-walk', slash: 'gilded-skeleton-slash', geometry: 'classic', attackFallback: 'slash' },
   enemy_fleshborn_base: { walk: 'fleshborn-demon-walk', slash: 'fleshborn-demon-slash', geometry: 'revised64Basic', attackFallback: 'slash' },
   enemy_base_angel_base: { walk: 'base-angel-walk', slash: 'base-angel-slash', geometry: 'revised64Basic', attackFallback: 'slash' },
+  enemy_demon_knight_base: { walk: 'demon-knight-walk', slash: 'demon-knight-slash', hurt: 'demon-knight-hurt', geometry: 'revised64Elite', attackFallback: 'slash' },
 
   // Backwards alias used by older code/tools; player rendering explicitly asks
   // for player_red_base in v0.1.2.
@@ -375,6 +397,7 @@ export const LAYER_ASSETS = Object.freeze({
   weapon_bronze_arming_sword_fg: { walk: 'bronze-arming-sword-walk', slash: 'bronze-arming-sword-slash', backslash: 'bronze-arming-sword-backslash', halfslash: 'bronze-arming-sword-halfslash', geometry: 'armingSword', oversizedSources: ['slash', 'backslash', 'halfslash'] },
   weapon_copper_arming_sword_fg: { walk: 'copper-arming-sword-walk', slash: 'copper-arming-sword-slash', backslash: 'copper-arming-sword-backslash', halfslash: 'copper-arming-sword-halfslash', geometry: 'armingSword', oversizedSources: ['slash', 'backslash', 'halfslash'] },
   weapon_steel_arming_sword_fg: { walk: 'steel-arming-sword-walk', slash: 'steel-arming-sword-slash', backslash: 'steel-arming-sword-backslash', halfslash: 'steel-arming-sword-halfslash', geometry: 'armingSword', oversizedSources: ['slash', 'backslash', 'halfslash'] },
+  weapon_pitsteel_sword_fg: { walk: 'pitsteel-sword-walk', slash: 'pitsteel-sword-slash', geometry: 'armingSwordBasic', oversizedSources: ['slash'], attackFallback: 'slash' },
   weapon_gold_arming_sword_fg: { walk: 'gold-arming-sword-walk', slash: 'gold-arming-sword-slash', backslash: 'gold-arming-sword-backslash', halfslash: 'gold-arming-sword-halfslash', geometry: 'armingSword', oversizedSources: ['slash', 'backslash', 'halfslash'] },
   weapon_ceramic_arming_sword_fg: { walk: 'ceramic-arming-sword-walk', slash: 'ceramic-arming-sword-slash', backslash: 'ceramic-arming-sword-backslash', halfslash: 'ceramic-arming-sword-halfslash', geometry: 'armingSword', oversizedSources: ['slash', 'backslash', 'halfslash'] },
   weapon_katana_npc_fg: { walk: 'katana-walk', slash: 'katana-slash', geometry: 'katanaNpc128', oversizedSources: ['walk', 'slash'], attackFallback: 'slash' },

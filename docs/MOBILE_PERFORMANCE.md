@@ -171,3 +171,8 @@ Judgment Blast now schedules three pooled projectiles per cast instead of one, s
 ## v0.1.4.4.4 El’exis effect budget
 
 El’exis adds one persistent Crown `Graphics` object while active. Other Dominion effects are short-lived `Graphics` telegraphs/impacts created only on ability use. Heavenfall Constellation is capped at six scheduled strikes; Throne Beyond Heaven uses two delayed stages. Her simulation sleeps beyond 1200px from the player and delayed mythic effects abort while asleep. The debug solo loop suspends the 32 production Warfront actors rather than running both populations simultaneously.
+
+
+## v0.1.4.4.5.1 debug-only Demon Knight streaming
+
+The Level-30 Infernal Dreadknight adds only three compact 64px character action sheets and two Pitsteel sword sheets. Because the actor is debug-only in this pass, `AssetResolver` expands `DEBUG_SPAWN_REGIONS` only when `?debug=1`; production Warfront map packages do not pay the new texture cost. The full 832×3456 `TransupOrHolyKnight.png` authoring sheet remains outside runtime `dist/`.

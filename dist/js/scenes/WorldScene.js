@@ -2100,6 +2100,13 @@ ${point.label || 'Use'}`, {
       this.emitState();
       return;
     }
+    if (action === 'demonknight') {
+      if (this.currentMap.id !== 'map_veil_warfront') { this.transitionToMap('map_veil_warfront', 'demon_knight_test'); return; }
+      const knight = this.enemies.find(enemy => enemy.sprite.active && enemy.def.id === 'enemy_infernal_dreadknight');
+      moveNear(knight?.sprite);
+      gameEvents.emit('toast', { text: 'Demon Knight elite test: Lv30 Infernal Dreadknight near Riven Hold.', tone: 'danger', short: true });
+      return;
+    }
     if (action === 'mythicaldemon') {
       if (this.currentMap.id !== MYTHICAL_DEMON_SOLO_TEST_DEF.mapId || this.mythicalDemonSoloTest?.active) {
         this.transitionToMap(MYTHICAL_DEMON_SOLO_TEST_DEF.mapId, 'mythical_demon_test');

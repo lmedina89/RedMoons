@@ -1,5 +1,17 @@
 # Changelog
 
+## v0.1.4.4.5.1 — Demon Knight Elite Foundation
+
+- Added **Infernal Dreadknight** as a debug-only Level-30 `elite` Demon Legion combatant on the Veil Warfront; the 32-slot production Warfront population is unchanged.
+- Added the infernal hierarchy entries **Demon Knight 30 / elite** and reserved **Zerakoth, Warden of the Pit 60 / commander**, preserving Bloodwing 94, Lailani 96, Ancient Demon Lord 98, Azrael 99 and El’exis 99.
+- Harvested verified walk/slash/hurt blocks from `TransupOrHolyKnight.png` into compact runtime crops with a blackened/crimson armor treatment while preserving the full source sheet unchanged.
+- Added an NPC-only **Pitsteel Longsword** layer derived from the existing Steel Arming Sword geometry; existing player weapon assets remain unchanged.
+- Added four evil/dark/fiery abilities: **Blackguard Aegis, Ember Lunge, Cinder Burst, and Hellblade Cleave**.
+- Added reusable `self_guard` enemy ability support and optional status-effect VFX selection so Blackguard can use blood/infernal presentation without changing ordinary Guard behavior.
+- Added `?debug=1` **Demon Knight Elite Test** with a collision-safe Riven Hold observation entry/spawn and debug-only asset streaming.
+- Added regression coverage for level/tier placement, reserved Zerakoth slot, fixed weapon/loadout, infernal VFX language, wounded-Aegis AI, demon friendly-fire rejection, debug-only population isolation and runtime crop geometry.
+- Save schema remains 2; Mythical Demon, El’exis, Lailani, Azrael, production Warfront population and all prior source assets remain intact.
+
 ## v0.1.4.4.5 — Mythical Demon Field Test + Power Hierarchy Foundation
 
 - Added **Mythical Demon — Bloodwing Scourge** as the first independent named infernal mythic on the Veil Warfront, internally Level 94 with hidden `Lv. ???` presentation.

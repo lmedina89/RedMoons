@@ -17,9 +17,10 @@ const { Enemy } = await import('../dist/js/entities/Enemy.js');
 
 const productionWilds = SPAWN_REGIONS.filter(spawn => spawn.mapId === 'map_cinder_wilds').reduce((sum, spawn) => sum + spawn.count, 0);
 assert.equal(productionWilds, 35, 'Production Wilds population must remain at the established 35-actor ceiling');
-assert.equal(DEBUG_SPAWN_REGIONS.reduce((sum, spawn) => sum + spawn.count, 0), 8, 'Debug stress force should add exactly eight Demon Legion reinforcements');
-assert.deepEqual(new Set(DEBUG_SPAWN_REGIONS.map(spawn => spawn.enemyId)), new Set(['enemy_demon_scout', 'enemy_hellfire_demon', 'enemy_ashbone_demon', 'enemy_fleshborn_demon']), 'Debug warband must exercise all four Demon Legion combat identities');
-for (const spawn of DEBUG_SPAWN_REGIONS) {
+const firstLightDebug = DEBUG_SPAWN_REGIONS.filter(spawn => spawn.mapId === 'map_cinder_wilds');
+assert.equal(firstLightDebug.reduce((sum, spawn) => sum + spawn.count, 0), 8, 'Debug stress force should add exactly eight Demon Legion reinforcements');
+assert.deepEqual(new Set(firstLightDebug.map(spawn => spawn.enemyId)), new Set(['enemy_demon_scout', 'enemy_hellfire_demon', 'enemy_ashbone_demon', 'enemy_fleshborn_demon']), 'Debug warband must exercise all four Demon Legion combat identities');
+for (const spawn of firstLightDebug) {
   assert.equal(spawn.debugOnly, true, `${spawn.id} must be explicitly debug-only`);
   assert.equal(spawn.encounterId, 'enc_firstlight_debug_warband');
   assert.ok(ENEMY_DEFS[spawn.enemyId], `${spawn.id} references a real demon definition`);

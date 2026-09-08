@@ -2,11 +2,12 @@ import { ASSET_DEFS, LAYER_ASSETS } from '../data/assets.js';
 import { ENEMY_DEFS } from '../data/enemies.js';
 import { ITEM_DEFS } from '../data/items.js';
 import { NPC_DEFS } from '../data/npcs.js';
-import { DEFAULT_MAP_ID, MAP_DEFS, SPAWN_REGIONS, mapForId } from '../data/world.js';
+import { DEBUG_SPAWN_REGIONS, DEFAULT_MAP_ID, MAP_DEFS, SPAWN_REGIONS, mapForId } from '../data/world.js';
 import { AZRAEL_DEF } from '../data/specialActors.js';
 import { LAILANI_DEF } from '../data/lailani.js';
 import { ELEXIS_DEF } from '../data/elexis.js';
 import { MYTHICAL_DEMON_DEF } from '../data/mythicalDemon.js';
+import { DEBUG } from '../config.js';
 
 const ASSET_BY_KEY = new Map(ASSET_DEFS.map(asset => [asset.key, asset]));
 const LAYER_TEXTURE_FIELDS = Object.freeze(['texture', 'walk', 'run', 'slash', 'backslash', 'halfslash', 'spellcast', 'thrust', 'shoot', 'hurt']);
@@ -82,7 +83,8 @@ export function assetDefsForMap(state, requestedMapId = null) {
     if (instance) addItem(keys, instance.itemId, 'player');
   }
 
-  for (const spawn of SPAWN_REGIONS) {
+  const spawnRows = DEBUG ? [...SPAWN_REGIONS, ...DEBUG_SPAWN_REGIONS] : SPAWN_REGIONS;
+  for (const spawn of spawnRows) {
     if (mapIdForSpawn(spawn) !== map.id) continue;
     addEnemy(keys, ENEMY_DEFS[spawn.enemyId]);
   }

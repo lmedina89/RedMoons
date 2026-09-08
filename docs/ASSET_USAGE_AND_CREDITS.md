@@ -10,6 +10,15 @@ This document separates assets with supplied attribution from assets whose match
 
 
 
+## v0.1.4.4.5.1 Demon Knight runtime derivatives
+
+`source-assets/character-concepts/2026-09-07/heavenly-and-unique/TransupOrHolyKnight.png` is now used as the development source for the **Infernal Dreadknight**. The full 832×3456 sheet remains unchanged/source-only. Runtime ships only deterministic walk/slash/hurt crops under `dist/assets/enemies/demon-knight/`, with a project-specific blackened/crimson color treatment to establish the infernal armor identity.
+
+The **Pitsteel Longsword** runtime walk/slash layers are recolored copies of the already-shipping Steel Arming Sword action geometry. Existing player Steel Arming Sword files are not modified. See `dist/assets/licenses/v0144451-demon-knight-crops.txt`.
+
+Exact upstream generator provenance for the `TransupOrHolyKnight` concept sheet is not present in the project tree, so the Dreadknight character derivatives remain **development-authorized / attribution hold** until commercial/store clearance is completed.
+
+
 ## v0.1.4.2.3 Celestial Combat Foundation source/runtime art
 
 Four compact runtime sheets are deterministic action-band crops from two user-provided full concept sheets:

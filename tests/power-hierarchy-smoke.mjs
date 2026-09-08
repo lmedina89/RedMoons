@@ -4,7 +4,7 @@ import { readFile } from 'node:fs/promises';
 globalThis.location = { search: '' };
 globalThis.Phaser = { Math: { Distance: { Between: (x1, y1, x2, y2) => Math.hypot(x2 - x1, y2 - y1) } } };
 
-const { THREAT_TIERS, MYTHIC_LEVEL_HIERARCHY, isWorthyTarget, clusterOrWorthy } = await import('../dist/js/data/powerTiers.js');
+const { THREAT_TIERS, INFERNAL_LEVEL_HIERARCHY, MYTHIC_LEVEL_HIERARCHY, isWorthyTarget, clusterOrWorthy } = await import('../dist/js/data/powerTiers.js');
 const { AZRAEL_DEF } = await import('../dist/js/data/specialActors.js');
 const { LAILANI_DEF } = await import('../dist/js/data/lailani.js');
 const { ELEXIS_DEF } = await import('../dist/js/data/elexis.js');
@@ -13,6 +13,8 @@ const { Azrael } = await import('../dist/js/entities/Azrael.js');
 const { CombatSystem } = await import('../dist/js/systems/CombatSystem.js');
 
 assert.deepEqual(THREAT_TIERS, { ordinary: 0, elite: 1, commander: 2, boss: 3, mythic: 4, apex: 5 });
+assert.deepEqual(INFERNAL_LEVEL_HIERARCHY.demonKnight, { internalLevel: 30, threatTier: 'elite' });
+assert.deepEqual(INFERNAL_LEVEL_HIERARCHY.zerakoth, { internalLevel: 60, threatTier: 'commander', reserved: true });
 assert.deepEqual(MYTHIC_LEVEL_HIERARCHY.mythicalDemon, { internalLevel: 94, threatTier: 'mythic' });
 assert.deepEqual(MYTHIC_LEVEL_HIERARCHY.lailani, { internalLevel: 96, threatTier: 'mythic' });
 assert.deepEqual(MYTHIC_LEVEL_HIERARCHY.ancientDemonLord, { internalLevel: 98, threatTier: 'apex', reserved: true });
