@@ -1,8 +1,13 @@
-# Hell RPG v0.1.4.4.0 — Warfront Geography & Atmosphere Foundation
+# Hell RPG v0.1.4.4.0.1 — Warfront Geography & Atmosphere Foundation
+
+## v0.1.4.4.0.1 visual assembly hotfix
+
+This narrow hotfix restores the missing Axis crown pieces, uses a curated straight bridge instead of rendering the complete bridge authoring sheet, and replaces visibly disjoint cliff-source tiles with continuous ridge art. Warfront geometry, collision, portal behavior, actor population and combat systems remain unchanged.
+
 
 Built directly from the physically tested **v0.1.4.3 Exploration, POIs & Portal Foundation**. Save schema remains **2** and the localStorage key remains `hellrpg.ashfall.save.v1`.
 
-## v0.1.4.4.0 Warfront Geography & Atmosphere Foundation
+## v0.1.4.4.0.1 Warfront Geography & Atmosphere Foundation
 
 This release opens the first geography-only version of the dedicated **Veil Warfront** through the nested Veil Threshold portal. It intentionally builds the realm before populating it with armies or named mythical actors.
 

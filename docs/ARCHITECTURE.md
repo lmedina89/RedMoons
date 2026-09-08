@@ -228,8 +228,8 @@ Common celestial ability shapes remain deliberately generic/data-driven: `melee_
 The four proof maps deliberately reuse existing curated runtime art through `MAP_DEFS.worldAssetKeys`; no large source atlas is loaded directly. The future Angel–Demon Warfront remains a separate map milestone and should begin with the requested full core/expanded asset audit rather than growing Veil Threshold into the warfront in place.
 
 
-## v0.1.4.4.0 Warfront geography / atmosphere contract
+## v0.1.4.4.0.1 Warfront geography / atmosphere contract
 
 The dedicated `map_veil_warfront` is a streamed 6144×3072 map, not an extension of Cinder Wilds. `dist/js/data/warfront.js` owns realm-specific landmarks, route bands, cliff ribbons, waterways, bridge positions, ruined structures, visible-source colliders, ambient emitter metadata and the Warfront asset key package. `world.js` registers only the map/zone/area/travel integration; `WorldScene` consumes the Warfront data through a dedicated renderer.
 
-The Threshold → Warfront transition uses the same bounded return-anchor stack as interiors. This proves nested travel without adding a second travel system. Warfront actor population is deliberately zero in 0.1.4.4.0; later army passes must reuse map-scoped spawning/activation rather than loading an always-live battlefield. Persistent ambience is capped and world-space; full-screen custom shaders remain out of the baseline mobile contract.
+The Threshold → Warfront transition uses the same bounded return-anchor stack as interiors. This proves nested travel without adding a second travel system. Warfront actor population is deliberately zero in 0.1.4.4.0.1; later army passes must reuse map-scoped spawning/activation rather than loading an always-live battlefield. Persistent ambience is capped and world-space; full-screen custom shaders remain out of the baseline mobile contract.

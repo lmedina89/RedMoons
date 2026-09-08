@@ -171,7 +171,7 @@ export const ASSET_DEFS = [
   { key: 'adobe-house-west', path: `${W}buildings/adobe_house_west.png`, image: true },
   { key: 'adobe-workshop', path: `${W}buildings/adobe_workshop_full.png`, image: true },
 
-  // v0.1.4.4.0 Warfront-specific runtime environment assets curated from the
+  // v0.1.4.4.0.1 Warfront-specific runtime environment assets curated from the
   // already-preserved LPC Revised 4-Season Terrain library. Only the compact
   // sheets needed by the dedicated realm are map-loaded; the original source
   // sheets/credits remain preserved under source-assets/world/warfront/.
@@ -182,6 +182,7 @@ export const ASSET_DEFS = [
   { key: 'warfront-ice-water-tile', path: `${W}warfront/ice-water-tile.png`, image: true },
   { key: 'warfront-water-reflections', path: `${W}warfront/water-reflections.png`, frameWidth: 32, frameHeight: 32 },
   { key: 'warfront-winter-plants', path: `${W}warfront/winter-plants.png`, frameWidth: 16, frameHeight: 16 },
+  { key: 'warfront-bridge-straight', path: `${W}warfront/bridge-straight.png`, image: true },
 
   // v0.1.4.1 curated workshop props. These are tiny transparent crops from
   // the preserved source-only revised workshop sheets, not the full 512px-wide

@@ -1,7 +1,7 @@
-# Known Limitations — v0.1.4.4.0
+# Known Limitations — v0.1.4.4.0.1
 
 
-## v0.1.4.4.0 Warfront foundation limits
+## v0.1.4.4.0.1 Warfront foundation limits
 
 - The Veil Warfront is intentionally **geography/atmosphere only**. It contains no live angel/demon army population, territorial capture, stronghold interiors, quests or named mythical actors yet.
 - Strongholds and outposts are first-pass footprints. Architectural detail/identity is intentionally staged for v0.1.4.4.1 after physical scale/sightline testing.

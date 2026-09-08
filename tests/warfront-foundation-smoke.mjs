@@ -52,7 +52,7 @@ for (const source of ['stronghold-wall', 'outpost-wall', 'ancient-cliff', 'lumin
 
 const assetKeys = new Set(ASSET_DEFS.map(asset => asset.key));
 for (const key of WARFRONT_ASSET_KEYS) assert.ok(assetKeys.has(key), `Warfront references missing runtime asset key ${key}`);
-for (const key of ['warfront-winter-dirt', 'warfront-infernal-dirt', 'warfront-mountain-winter', 'warfront-mountain-autumn', 'warfront-ice-water-tile', 'warfront-water-reflections', 'warfront-winter-plants']) {
+for (const key of ['warfront-winter-dirt', 'warfront-infernal-dirt', 'warfront-mountain-winter', 'warfront-mountain-autumn', 'warfront-ice-water-tile', 'warfront-water-reflections', 'warfront-winter-plants', 'warfront-bridge-straight']) {
   assert.ok(assetKeys.has(key), `Audited 4-Season Warfront asset must be registered: ${key}`);
 }
 
@@ -63,14 +63,18 @@ assert.ok(leave?.returnToOrigin && leave.fallbackDestinationMapId === 'map_veil_
 
 const ambientCount = WARFRONT_AMBIENT_EMITTERS.reduce((sum, row) => sum + row.count, 0);
 assert.ok(ambientCount >= 30 && ambientCount <= 42, 'Persistent ambient world sprites must stay bounded while still visibly present');
-assert.equal(SPAWN_REGIONS.filter(row => row.mapId === map.id).length, 0, 'v0.1.4.4.0 must remain a geography/atmosphere pass with no live Warfront army population yet');
+assert.equal(SPAWN_REGIONS.filter(row => row.mapId === map.id).length, 0, 'v0.1.4.4.0.1 must remain a geography/atmosphere pass with no live Warfront army population yet');
 
 const worldSource = await readFile(new URL('../dist/js/scenes/WorldScene.js', import.meta.url), 'utf8');
 for (const needle of ['buildVeilWarfront()', 'createWarfrontAmbientFx()', 'drawWarfrontCliffRibbon(ribbon)', 'drawWarfrontWallCollider(collider)', "action === 'warfront'"]) {
   assert.ok(worldSource.includes(needle), `WorldScene must wire Warfront geography/atmosphere behavior: ${needle}`);
 }
 assert.ok(worldSource.includes("this.add.tileSprite(0, 0, this.currentMap.width, this.currentMap.height, 'warfront-winter-dirt')"), 'Warfront must use audited winter ground instead of reusing Cinder dirt');
-assert.ok(worldSource.includes("'warfront-mountain-winter'") && worldSource.includes("'warfront-mountain-autumn'"), 'Warfront cliffs must visibly distinguish celestial and infernal terrain families');
+assert.ok(worldSource.includes("const celestial = ribbon.theme === 'celestial'") && worldSource.includes("const cap = celestial ? 0xe7f5f3 : 0xaa7056"), 'Warfront cliff ribbons must visibly distinguish celestial and infernal ridge treatments');
+assert.ok(worldSource.includes("[[172, -64, -128], [173, 0, -128]"), 'Axis tree/orb must include the verified upper crown frames from Castle2');
+assert.ok(worldSource.includes("'warfront-bridge-straight'"), 'Warfront crossings must render the curated straight bridge sprite');
+assert.ok(!worldSource.includes("this.add.image(bridge.x, bridge.y, 'bridge')"), 'Warfront must never render the complete bridge authoring sheet as one crossing');
+assert.ok(worldSource.includes('one continuous ancient shelf'), 'Warfront cliff ribbons must render as continuous shelves rather than cycling unrelated source frames');
 assert.ok(!worldSource.includes('add.shader(') && !worldSource.includes('this.add.shader('), 'Foundation atmosphere must avoid permanent full-screen custom shaders on iPhone');
 
 console.log(`Warfront foundation smoke passed: ${map.width}x${map.height}, ${areas.length} areas, ${warfrontSolids.length} solids, ${ambientCount} bounded ambient sprites, zero live army spawns.`);

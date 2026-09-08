@@ -239,7 +239,7 @@ v0.1.3.2 introduces no new external visual or audio asset dependency. The Ashen 
 
 
 
-## v0.1.4.4.0 Warfront 4-Season environment curation
+## v0.1.4.4.0.1 Warfront 4-Season environment curation
 
 The Veil Warfront activates a compact subset of the already-organized **LPC Revised 4-Season Terrain** library. Runtime files under `dist/assets/world/warfront/` derive directly from the preserved source family: Dirt (Winter), Dirt (Non-Winter), Mountain (Winter), Mountain (Autumn), Ice-Water, Water Reflections and Winter Plants Small. The exact selected source sheets plus Terrain/FX/Terrain-Objects credit files are preserved under `source-assets/world/warfront/4-season/`. Distribution credit records for the same 4-Season families were already preserved under `dist/assets/licenses/original/`.
 

@@ -1,4 +1,4 @@
-// v0.1.4.4.0 Warfront geography/atmosphere data. This file deliberately owns
+// v0.1.4.4.0.1 Warfront geography/atmosphere data. This file deliberately owns
 // the special realm's composition metadata so later stronghold/population
 // passes can add content without hard-coding a second monolithic WorldScene.
 
@@ -118,7 +118,7 @@ export const WARFRONT_AMBIENT_EMITTERS = Object.freeze([
 
 export const WARFRONT_ASSET_KEYS = Object.freeze([
   'warfront-winter-dirt', 'warfront-infernal-dirt', 'warfront-mountain-winter', 'warfront-mountain-autumn',
-  'warfront-ice-water-tile', 'warfront-water-reflections', 'warfront-winter-plants',
+  'warfront-ice-water-tile', 'warfront-water-reflections', 'warfront-winter-plants', 'warfront-bridge-straight',
   'castle2-set', 'dungeon-elements', 'cave3-set', 'bridge', 'fire',
   'adobe-house-east', 'adobe-house-west', 'adobe-workshop', 'rocks-cliffs', 'tree-trunks'
 ]);

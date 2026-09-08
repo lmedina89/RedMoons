@@ -572,19 +572,43 @@ export class WorldScene extends Phaser.Scene {
   }
 
   drawWarfrontCliffRibbon(ribbon) {
-    const texture = ribbon.theme === 'celestial' ? 'warfront-mountain-winter' : 'warfront-mountain-autumn';
-    const tint = ribbon.theme === 'celestial' ? 0xe5f4ef : 0x8f6852;
-    const frames = [49, 50, 51, 56, 57, 58];
-    const count = Math.max(4, Math.floor(ribbon.length / 62));
-    for (let i = 0; i <= count; i += 1) {
-      const x = ribbon.x - ribbon.length / 2 + (i / count) * ribbon.length;
-      const frame = frames[i % frames.length];
-      this.add.sprite(x, ribbon.y, texture, frame)
-        .setScale(1.42)
-        .setTint(tint)
-        .setDepth(ribbon.y - 15)
-        .setAlpha(0.95);
+    // v0.1.4.4.0.1: the mountain source is a composition sheet, not a row of
+    // interchangeable standalone cliff tiles. The previous renderer cycled
+    // unrelated frames and exposed their square source backgrounds/gaps.
+    // Keep the same collider/geography but render one continuous ancient shelf
+    // with a jagged pixel-like cap so the ridge reads as a single landform.
+    const celestial = ribbon.theme === 'celestial';
+    const rock = celestial ? 0x69534a : 0x5a382d;
+    const shadow = celestial ? 0x263438 : 0x241517;
+    const cap = celestial ? 0xe7f5f3 : 0xaa7056;
+    const left = ribbon.x - ribbon.length / 2;
+    const right = ribbon.x + ribbon.length / 2;
+    const top = ribbon.y - 34;
+    const bottom = ribbon.y + 34;
+    const ridge = this.add.graphics().setDepth(ribbon.y - 18);
+    ridge.fillStyle(shadow, 0.34).fillRect(left + 7, top + 11, ribbon.length, 70);
+    ridge.fillStyle(rock, 0.96);
+    ridge.beginPath();
+    ridge.moveTo(left, bottom);
+    ridge.lineTo(left, top + 11);
+    const step = 32;
+    for (let x = left; x <= right; x += step) {
+      const n = Math.round((x - left) / step);
+      ridge.lineTo(Math.min(x, right), top + (n % 3 === 0 ? 5 : (n % 3 === 1 ? 0 : 8)));
     }
+    ridge.lineTo(right, bottom);
+    ridge.closePath();
+    ridge.fillPath();
+    ridge.lineStyle(6, cap, celestial ? 0.92 : 0.68);
+    ridge.beginPath();
+    ridge.moveTo(left, top + 11);
+    for (let x = left; x <= right; x += step) {
+      const n = Math.round((x - left) / step);
+      ridge.lineTo(Math.min(x, right), top + (n % 3 === 0 ? 5 : (n % 3 === 1 ? 0 : 8)));
+    }
+    ridge.strokePath();
+    ridge.lineStyle(2, celestial ? 0xffffff : 0xe6a17b, celestial ? 0.42 : 0.24);
+    ridge.lineBetween(left + 10, top + 15, right - 10, top + 9);
   }
 
   drawWarfrontWallCollider(collider) {
@@ -733,7 +757,9 @@ export class WorldScene extends Phaser.Scene {
         .setScale(1.2).setAlpha(0.42).setDepth(-910).setTint(0xe9ffff);
     }
     for (const bridge of WARFRONT_BRIDGES) {
-      this.add.image(bridge.x, bridge.y, 'bridge').setRotation(bridge.rotation).setScale(bridge.scale).setDepth(bridge.y - 18).setTint(0xc8c5b5);
+      // Use the curated straight bridge sprite, not the full authoring sheet.
+      this.add.image(bridge.x, bridge.y, 'warfront-bridge-straight')
+        .setRotation(bridge.rotation).setScale(1.72).setDepth(bridge.y - 18).setTint(0xc8c5b5);
     }
 
     // Infernal fissures are walkable visual scars rather than hidden blockers.
@@ -749,7 +775,7 @@ export class WorldScene extends Phaser.Scene {
     // Visible walls are driven from the same collider rows used by physics.
     for (const collider of WARFRONT_COLLIDERS.filter(row => ['stronghold-wall', 'outpost-wall'].includes(row.source))) this.drawWarfrontWallCollider(collider);
 
-    // Stronghold identity remains a footprint in 0.1.4.4.0; the next detail
+    // Stronghold identity remains a footprint in 0.1.4.4.0.1; the next detail
     // pass can replace/extend these compositions without changing geography.
     const addGate = (x, y, celestial) => {
       const tint = celestial ? 0xebf1e5 : 0x6f453d;
@@ -795,8 +821,9 @@ export class WorldScene extends Phaser.Scene {
     for (const collider of WARFRONT_COLLIDERS.filter(row => row.source === 'axis-pillar')) {
       this.add.sprite(collider.x, collider.y, 'castle2-set', 100).setScale(1.45).setTint(0xe4d8a7).setDepth(collider.y + 2);
     }
-    // Six-piece ancient tree/orb composition from Castle2 becomes the Axis core.
-    for (const [frame, dx, dy] of [[188, -64, -64], [189, 0, -64], [190, 64, -64], [204, -64, 0], [205, 0, 0], [206, 64, 0]]) {
+    // Complete ancient tree/orb composition from Castle2. Frames 172/173
+    // are the real upper crown and were accidentally omitted in 0.1.4.4.0.
+    for (const [frame, dx, dy] of [[172, -64, -128], [173, 0, -128], [188, -64, -64], [189, 0, -64], [190, 64, -64], [204, -64, 0], [205, 0, 0], [206, 64, 0]]) {
       this.add.sprite(3072 + dx * 1.4, 1510 + dy * 1.4, 'castle2-set', frame).setScale(2.8).setTint(0xd8d7bf).setDepth(1560 + dy);
     }
 

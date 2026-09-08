@@ -1,6 +1,13 @@
 # Changelog
 
-## v0.1.4.4.0 — Warfront Geography & Atmosphere Foundation
+## v0.1.4.4.0.1 — Warfront Visual Assembly Hotfix
+
+- Restored the two omitted Castle2 crown frames above the Axis of First Light tree/orb so the ancient centerpiece renders as the complete source composition.
+- Replaced Warfront bridge rendering of the full 224×160 bridge authoring sheet with one verified compact straight-bridge crop, preserving the same three crossing coordinates and water collision gaps.
+- Replaced the cliff-ribbon renderer that cycled unrelated mountain source frames with a continuous bounded ancient-shelf composition; geography/colliders are unchanged.
+- No combat, faction AI, portals, save schema, Warfront dimensions, spawn population, or ambient-FX budgets changed.
+
+## v0.1.4.4.0.1 — Warfront Geography & Atmosphere Foundation
 
 - Opened the dedicated 6144×3072 Veil Warfront through the existing nested portal/return system.
 - Added eight exact local-area partitions covering Infernal Stronghold, rear/front infernal lines, Axis of First Light, ruined neutral quarter, front/rear celestial lines and Celestial Stronghold.

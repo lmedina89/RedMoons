@@ -1,6 +1,6 @@
-# QA Report — v0.1.4.4.0 Warfront Geography & Atmosphere Foundation
+# QA Report — v0.1.4.4.0.1 Warfront Geography & Atmosphere Foundation
 
-## v0.1.4.4.0 automated/static scope
+## v0.1.4.4.0.1 automated/static scope
 
 Release gating adds `tests/warfront-foundation-smoke.mjs`, which validates the 6144×3072 map, exact eight-area partition, three route bands, both stronghold footprints, four outposts, central Axis, ruined settlement, Veil Gate, Warfront-specific runtime asset registry, visible-source collision, three bridge crossings, nested Threshold↔Warfront return behavior, bounded ambient sprite count and the intentional zero-spawn Warfront population.
 
