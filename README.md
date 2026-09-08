@@ -1,7 +1,9 @@
-# Hell RPG v0.1.4.2.4 — Faction Warfare Hardening
+# Hell RPG v0.1.4.2.4.1 — Faction Warfare Hardening
+
+> **Startup hotfix:** v0.1.4.2.4.1 restores the required repository-root redirect into `dist/`. The v0.1.4.2.4 faction-warfare gameplay/content is otherwise unchanged.
 
 
-## v0.1.4.2.4 Faction Warfare Hardening
+## v0.1.4.2.4.1 Faction Warfare Hardening
 
 This release stress-hardens autonomous celestial/infernal combat before the future portal warfront. Normal Cinder Wilds remain capped at 35 spawned actors. When `?debug=1` is active, an additional eight Demon Legion reinforcements are instantiated in First-Light Scar so the existing four-role patrol becomes a 12-demon pressure force against the First-Light Sentinels, Heavenly Guardian and Azrael. The debug tray includes **Faction War Test** for direct placement.
 

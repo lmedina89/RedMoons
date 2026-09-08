@@ -1,7 +1,7 @@
-# QA Report — v0.1.4.2.4 Faction Warfare Hardening
+# QA Report — v0.1.4.2.4.1 Faction Warfare Hardening
 
 
-## v0.1.4.2.4 automated/static scope
+## v0.1.4.2.4.1 automated/static scope
 
 `npm run check` now includes `tests/celestial-combat-smoke.mjs` in addition to all inherited structural, Azrael, Sanctuary, navigation, ecology, building-integrity and demon-combat suites. The celestial suite validates BaseAngel/HeavenlyKnight compact crop geometry, coherent Sentinel equipment presets, the four shared celestial abilities, wall-blocked Lumen Bolt, First-Light celestial population, the 35-slot Wilds ceiling, faction-safe player attacks, celestial projectile source attribution, Guardian friendly healing and debug field-test hooks.
 

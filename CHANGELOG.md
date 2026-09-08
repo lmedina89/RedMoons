@@ -1,5 +1,11 @@
 # Changelog
 
+## v0.1.4.2.4.1 — Faction Warfare Startup Hotfix
+
+- Restored the repo-root `index.html` launcher so GitHub Pages redirects into `./dist/` instead of trying to load `css/`, `js/`, and `vendor/` from the repository root.
+- Added a root-entry regression test that verifies the repository launcher points to `./dist/` and does not directly reference runtime resources.
+- Preserves all v0.1.4.2.4 faction-warfare behavior, debug-only 12-demon stress force, normal 35-actor Wilds ceiling, saves, art, and combat balance.
+
 ## v0.1.4.2.4 — Faction Warfare Hardening
 
 - Preserves the v0.1.4.2.3 Celestial Combat Foundation and v0.1.4.2.2 Demon Combat Foundation while hardening shared faction battles.

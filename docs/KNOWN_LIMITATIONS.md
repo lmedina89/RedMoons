@@ -1,7 +1,7 @@
-# Known Limitations — v0.1.4.2.4
+# Known Limitations — v0.1.4.2.4.1
 
 
-## v0.1.4.2.4 Faction Warfare Hardening limits
+## v0.1.4.2.4.1 Faction Warfare Hardening limits
 
 - This is the first common-celestial combat pass, not final angel roster/balance. Only First-Light Sentinel and Heavenly Guardian are live common archetypes; Herald/support specialists and broader equipment sets can expand after device testing.
 - Common celestial VFX are intentionally restrained so ordinary troops do not dilute Azrael or future named mythical character spectacle.

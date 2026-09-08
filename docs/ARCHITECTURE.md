@@ -211,7 +211,7 @@ Common celestials intentionally reuse the ordinary `Enemy` runtime so faction ar
 Common celestial ability shapes remain deliberately generic/data-driven: `melee_reach` (Radiant Strike), `projectile` (Lumen Bolt), `radial_aoe` (Judgment Pulse), and `friendly_heal` (Grace of Light). Named mythical beings and Azrael remain outside this ordinary family ceiling.
 
 
-## v0.1.4.2.4 faction-warfare hardening contract
+## v0.1.4.2.4.1 faction-warfare hardening contract
 
 - Production spawn data remains in `SPAWN_REGIONS`; stress-only reinforcements live in `DEBUG_SPAWN_REGIONS` and are instantiated only under `?debug=1`.
 - Encounter-wide alerting remains the first layer. Selected First-Light encounters may also expose `assistRadius`/`assistCap` for bounded same-faction help across neighboring encounter groups.
