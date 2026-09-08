@@ -260,3 +260,10 @@ The field-test home is data-owned in `LAILANI_DEF`; final named-celestial deploy
 ## v0.1.4.4.3.1 debug solo-harness contract
 
 Lailani's solo observation loop remains WorldScene/debug orchestration rather than production spawn data. `data/lailani.js` owns bounded arena/wave definitions; WorldScene creates temporary `Enemy` instances only after the explicit debug command, targets those instances at Lailani only, and bypasses `onEnemyDied()` for their deaths. Production `WARFRONT_SPAWN_REGIONS` remains unchanged at 32 actors. A same-map restart is used before entering the loop so active telegraphs/timers from the normal field test cannot leak into the isolated observation session.
+
+
+## v0.1.4.4.3.2 Judgment Blast projectile contract
+
+`CombatSystem.triggerAllyAbility()` must pass the unique allied actor through `sourceActor` whenever a named ally launches a shared `ProjectileManager` projectile. `ProjectileManager` intentionally resolves valid hit candidates through the firing actor and faction relationship, not through a team string alone. Judgment Blast therefore treats a missing `sourceActor` as a correctness regression.
+
+Azrael's Judgment volley remains data-driven in `specialActors.js`: stagger delays, per-bolt damage scales, shallow fan offsets and movement-lead time are configuration rather than hard-coded balance constants. Delayed bolts re-sample the live target node/velocity immediately before launch; once launched they are ordinary non-homing, wall-blocked pooled projectiles.

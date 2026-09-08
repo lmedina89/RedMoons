@@ -1,4 +1,19 @@
-# Hell RPG v0.1.4.4.3.1 — Lailani Field-Test Polish
+# Hell RPG v0.1.4.4.3.2 — Azrael Judgment Blast Reliability Polish
+
+## v0.1.4.4.3.2 Azrael Judgment Blast Reliability Polish
+
+Built directly from the physically approved **v0.1.4.4.3.1 Lailani Field-Test Polish** release. Save schema remains **2** and Lailani's seven-skill field-test build is unchanged.
+
+This narrow Azrael hotfix repairs a real Judgment Blast hit-registration bug: the old projectile launch omitted Azrael's `sourceActor`, so the faction-aware projectile manager could not obtain any hostile targets and the bolt could never resolve damage. The corrected blast now preserves Azrael as the firing actor and expands the attack into a restrained three-shot celestial volley for better mobile readability/reliability without adding aggressive homing.
+
+- Judgment Blast fires at **0 / 90 / 180 ms** with a shallow center/left/right coverage fan.
+- Each staggered bolt re-reads the live target position and current velocity, applies a modest **0.42s lead**, then travels as an ordinary straight wall-blocked projectile.
+- Damage scales are **60% / 45% / 45% of the previous single-blast configured damage**, capping a perfect three-bolt connection at 150% of the old intended cast budget rather than tripling it.
+- Judgment's collision radius increases from **13 to 16 px** and successful Judgment impacts use a slightly larger/brighter celestial burst.
+- No other Azrael ability, Lailani behavior, common faction ability, Warfront population, portal, save, item, or progression behavior is intentionally changed.
+
+Physical iPhone Safari remains the release gate. Watch several Judgment Blast casts against both moving and stationary demons and verify that successful hits now show damage numbers, knockback and a clearly readable celestial impact while genuine misses remain possible.
+
 
 ## v0.1.4.4.3.1 Lailani Field-Test Polish
 

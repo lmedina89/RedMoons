@@ -1,5 +1,14 @@
 # Changelog
 
+## v0.1.4.4.3.2 — Azrael Judgment Blast Reliability Polish
+
+- Fixed a real Judgment Blast hit-registration defect: Azrael's projectile payload now includes `sourceActor`, allowing the faction-aware projectile manager to resolve hostile demon targets and actual damage.
+- Reworked Judgment Blast from one straight bolt into a restrained three-shot volley at 0/90/180 ms with center/left/right shallow fan offsets and modest live target-movement lead.
+- Set volley damage scaling to 0.60/0.45/0.45 of the prior single-blast configured damage, limiting a perfect three-bolt connection to 150% of the old intended cast budget.
+- Increased the Celestial Judgment collision radius from 13 to 16 px and strengthened its successful impact burst for clearer physical-device hit confirmation.
+- Added `tests/azrael-judgment-blast-smoke.mjs`, including a direct regression of the missing-sourceActor failure mode and the new stagger/fan/lead/damage contract.
+- Preserved Lailani v0.1.4.4.3.1, all six other Azrael skills, common faction combat, Warfront population, portals, save schema and progression behavior.
+
 ## v0.1.4.4.3.1 — Lailani Field-Test Polish
 
 - Widened and restructured Lailani's mythic nameplate into separate **LAILANI**, **TRANSCENDENT SERAPH**, and mythic-status lines for better iPhone readability.

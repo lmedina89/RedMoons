@@ -260,3 +260,11 @@ Automated checks can establish structural correctness but cannot substitute for 
 - Protected regression checks should keep Azrael, shared combat, projectiles, faction data, shared FX/audio and travel/event systems byte-identical to v0.1.4.4.2.
 - Automated validation does not replace the physical iPhone Safari visual/performance gate for Lailani's movement cadence, one-minute aura readability or battlefield spectacle.
 
+
+
+## v0.1.4.4.3.2 — Azrael Judgment Blast Reliability Polish validation
+
+- Added `tests/azrael-judgment-blast-smoke.mjs` to reproduce the original missing-`sourceActor` failure and prove a Celestial Judgment projectile crossing a hostile actor now calls the normal damage resolver exactly once.
+- Static/runtime checks require the 0/90/180 ms three-shot stagger, 0.60/0.45/0.45 damage shares, center/±26 px coverage fan, 0.42s movement lead, 16 px projectile radius and distinct Judgment impact presentation.
+- Full inherited suites remain authoritative for Azrael's six unchanged abilities, Sanctuary, Lailani, regular celestial/demon combat, faction warfare, Warfront population/geography, portals and save schema.
+- Physical iPhone gate: observe both stationary and moving targets. Successful Judgment bolts must produce visible damage numbers + knockback + celestial impact; bolts should remain straight/wall-blocked and genuine evasive misses should still occur.

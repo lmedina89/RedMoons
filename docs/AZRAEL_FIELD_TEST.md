@@ -28,7 +28,7 @@ Azrael is 2D under the hood but should not read as an ordinary walker. His visua
 | --- | --- | --- |
 | Celestial Strike | fast close cone | radiant/white-gold arc, wing-energy accents, modest knockback |
 | Wing Burst | engage / pass-through | wing flare, rapid glide, arrival shockwave, stronger radial knockback |
-| Judgment Blast | ranged pressure | celestial charge/sigil, luminous projectile, sacred impact |
+| Judgment Blast | ranged pressure | staggered three-bolt shallow fan, modest movement lead, luminous straight projectiles, sacred impact |
 | Sanctified Nova | frequent surrounded AoE | ancient rotating rune seal, halo/wing corona, 360° sacred shockwave, strong radial knockback |
 | Seraphic Judgment | frequent cluster AoE | ancient target seal, three descending light-column pulses, final holy detonation/knockback |
 | Sanctuary of the First Light | conditional support field | huge ancient holy seal blooms from beneath Azrael, persists, then sends four healing waves through Azrael/player/celestial allies currently inside |
@@ -62,3 +62,10 @@ The full source sheet stays outside runtime. Compact action crops are map-scoped
 - Final story placement/alignment consequences.
 - Assassin runtime mob/AI.
 - Player endgame holy-route adaptations of selected celestial techniques.
+
+
+## v0.1.4.4.3.2 Judgment Blast reliability correction
+
+Physical testing exposed that Judgment Blast appeared to miss nearly all targets. Audit found a concrete integration defect rather than a balance-only problem: its projectile launch supplied `sourceId` but omitted Azrael as `sourceActor`. The shared projectile manager derives valid hostile targets from the firing actor, so the old blast had no target list and could never enter the normal damage resolver.
+
+The repaired cast now launches three straight, wall-blocked bolts at 0/90/180 ms. Each shot samples the target's live position/velocity, applies a modest movement lead and uses a shallow perpendicular fan offset. This is intentionally **not homing**. Damage shares are 0.60/0.45/0.45 of the old single-blast configured budget, the projectile collision radius is 16 px, and Judgment impacts use a slightly stronger celestial burst for hit readability. All other Azrael abilities remain unchanged.

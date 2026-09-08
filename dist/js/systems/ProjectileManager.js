@@ -43,8 +43,10 @@ export class ProjectileManager {
 
   deactivate(item, impact = false) {
     if (impact && item.data) {
-      if (item.data.def.impact === 'celestial') this.fx.celestialImpact(item.sprite.x, item.sprite.y, 58, 0.62);
-      else this.fx.impact(item.data.def.impact || item.data.def.damageType, item.sprite.x, item.sprite.y);
+      if (item.data.def.impact === 'celestial') {
+        const judgment = item.data.def.id === 'celestial_judgment';
+        this.fx.celestialImpact(item.sprite.x, item.sprite.y, judgment ? 70 : 58, judgment ? 0.82 : 0.62);
+      } else this.fx.impact(item.data.def.impact || item.data.def.damageType, item.sprite.x, item.sprite.y);
     }
     item.sprite.setVelocity(0).setActive(false).setVisible(false);
     item.sprite.body.enable = false; item.data = null;

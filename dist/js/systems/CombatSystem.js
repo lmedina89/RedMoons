@@ -517,15 +517,36 @@ export class CombatSystem {
       return;
     }
     if (ability.id === 'azrael_judgment_blast') {
-      const targetNode = actorNode(target);
-      const tx = targetNode?.x ?? targetX;
-      const ty = targetNode?.y ?? targetY;
-      this.projectiles.launch(ability.projectileId, {
-        team: 'celestial', x: node.x, y: node.y - 20, targetX: tx, targetY: ty,
-        damage: actor.def.attack * ability.damageMultiplier, sourcePower: actor.def.attack,
-        sourceId: actor.def.id
+      const delays = ability.projectileDelays || [0, 90, 180];
+      const scales = ability.projectileScales || [0.60, 0.45, 0.45];
+      const fanOffsets = ability.projectileFanOffsets || [0, -26, 26];
+      const leadSeconds = Math.max(0, Number(ability.targetLeadSeconds) || 0);
+      const launchShot = index => {
+        if (!actorAlive(actor)) return;
+        const sourceNode = actorNode(actor);
+        if (!sourceNode) return;
+        const liveTargetNode = actorAlive(target) ? actorNode(target) : null;
+        const baseTx = liveTargetNode?.x ?? targetX;
+        const baseTy = liveTargetNode?.y ?? targetY;
+        const velocity = liveTargetNode?.body?.velocity || liveTargetNode?.velocity || { x: 0, y: 0 };
+        const predictedX = baseTx + (Number(velocity?.x) || 0) * leadSeconds;
+        const predictedY = baseTy + (Number(velocity?.y) || 0) * leadSeconds;
+        const dx = predictedX - sourceNode.x;
+        const dy = predictedY - (sourceNode.y - 20);
+        const distance = Math.hypot(dx, dy) || 1;
+        const fan = Number(fanOffsets[index] ?? 0) || 0;
+        const tx = predictedX + (-dy / distance) * fan;
+        const ty = predictedY + (dx / distance) * fan;
+        this.projectiles.launch(ability.projectileId, {
+          team: 'celestial', sourceActor: actor, x: sourceNode.x, y: sourceNode.y - 20, targetX: tx, targetY: ty,
+          damage: actor.def.attack * ability.damageMultiplier * (Number(scales[index]) || 0), sourcePower: actor.def.attack,
+          sourceId: actor.def.id, targetRef: target
+        });
+      };
+      delays.forEach((delay, index) => {
+        if (delay <= 0) launchShot(index);
+        else this.scene.time.delayedCall(delay, () => launchShot(index));
       });
-      this.audio.play('judgment_blast', { volume: 0.09, throttleMs: 220 });
       return;
     }
     if (ability.id === 'azrael_sanctified_nova') {

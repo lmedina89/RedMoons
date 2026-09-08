@@ -162,3 +162,8 @@ Lailani is a unique actor outside the 32-slot regular army budget, but her bespo
 ## v0.1.4.4.3.1 solo-test budget
 
 The debug-only Lailani Solo Test suspends the normal 32 Warfront army actors before starting its observation loop. Each authored wave contains only 3–5 active demons plus Lailani, so the harness does not stack a mythic VFX test on top of the full Living Warfront simulation. Wave actors are destroyed/removed before the next wave is instantiated.
+
+
+## v0.1.4.4.3.2 Judgment volley budget
+
+Judgment Blast now schedules three pooled projectiles per cast instead of one, separated by 90 ms. It does not create a persistent emitter, homing update loop or new full-screen Graphics surface. The existing fixed 44-projectile pool remains unchanged; the added peak cost is two extra short-lived pooled projectiles plus their bounded trails/impacts. Physical iPhone testing should include repeated Judgment casts during ordinary Warfront activity to confirm projectile-pool reuse and frame pacing remain stable.

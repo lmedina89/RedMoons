@@ -56,7 +56,11 @@ export const AZRAEL_DEF = Object.freeze({
     judgmentBlast: Object.freeze({
       id: 'azrael_judgment_blast', name: 'Judgment Blast', range: 390, minRange: 118,
       damageMultiplier: 0.96, cooldownMs: 2350, windupMs: 730, triggerAt: 0.58, recoverMs: 360,
-      projectileId: 'celestial_judgment'
+      projectileId: 'celestial_judgment',
+      projectileDelays: Object.freeze([0, 90, 180]),
+      projectileScales: Object.freeze([0.60, 0.45, 0.45]),
+      projectileFanOffsets: Object.freeze([0, -26, 26]),
+      targetLeadSeconds: 0.42
     }),
     sanctifiedNova: Object.freeze({
       id: 'azrael_sanctified_nova', name: 'Sanctified Nova', radius: 146,

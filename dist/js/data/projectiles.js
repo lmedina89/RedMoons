@@ -1,6 +1,6 @@
 export const PROJECTILE_DEFS = Object.freeze({
   celestial_judgment: Object.freeze({
-    id: 'celestial_judgment', speed: 430, lifetimeMs: 1500, radius: 13, texture: 'projectile-celestial',
+    id: 'celestial_judgment', speed: 430, lifetimeMs: 1500, radius: 16, texture: 'projectile-celestial',
     damageType: 'celestial', trail: 'celestial', impact: 'celestial', knockback: 210, wallCollision: true
   }),
   lumen_bolt: Object.freeze({

@@ -164,3 +164,8 @@ The v0.1.2.2 visible-source collision rule remains authoritative. Do not reintro
 - Lailani uses only complete dressed/winged action blocks from her supplied sheet. Expanded source actions that omit clothing layers are intentionally not used at runtime.
 - Local automated browser navigation is administrator-blocked in the build environment, so physical iPhone Safari remains the release gate for animation/VFX readability and performance.
 
+
+
+## v0.1.4.4.3.2 Judgment Blast field-test limitation
+
+The hit-registration defect is repaired, but final Judgment Blast tuning remains a physical-device decision. The three bolts deliberately do not home; fast targets can still evade part or all of the shallow fan. Do not increase homing, projectile count or damage further until several minutes of iPhone observation establish the real post-fix hit rate and readability.
