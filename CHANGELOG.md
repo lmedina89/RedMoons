@@ -1,5 +1,14 @@
 # Changelog
 
+## v0.1.4.2.1 — Refuge Geometry & Building Integrity Hotfix
+
+- Repaired all nine Cinder Refuge building colliders after physical iPhone testing showed the solids vertically offset into empty ground below the rendered structures.
+- Building collision is now derived from the same explicit display width/height and origin used by rendering, eliminating the separate hand-tuned collider offsets that caused the drift.
+- Rebuilt Torren’s Forge from the old 288×92 facade-only slice into a 288×156 complete adobe workshop shell using existing `adobe2-set` tiles; the original source facade remains preserved.
+- Added building-integrity smoke coverage for visual-bound/collider agreement and the completed Forge shell.
+- Adjusted only the two town NPC route loops that crossed the newly corrected building footprints (Sable near East Lodge and Doran near Hunter House); the new smoke test also verifies NPC route segments do not pass through Refuge building solids.
+- Preserved v0.1.4.2 encounter ecology, hostile-human factions, patrols/ambushes, actor ceiling, Azrael/Sanctuary behavior, map scale/transitions and save schema 2.
+
 ## v0.1.4.2 — Living Wilds: Monster Families & Encounter Ecology
 
 - Activated the staged monster-family/encounter architecture with 21 local encounter definitions and six behavior archetypes: roam, pack, patrol, guard, ritual and ambush.

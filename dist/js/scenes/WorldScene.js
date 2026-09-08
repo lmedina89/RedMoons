@@ -260,10 +260,11 @@ export class WorldScene extends Phaser.Scene {
 
     for (const building of BUILDING_DEFS.filter(entry => entry.mapId === this.currentMap.id)) {
       const image = this.add.image(building.x, building.y, building.texture)
-        .setOrigin(0.5, 0.82)
-        .setScale(building.scale || 1)
+        .setOrigin(0.5, building.originY ?? 0.82)
         .setFlipX(Boolean(building.flipX))
         .setDepth(building.y + (building.depthOffset || -20));
+      if (building.displayWidth && building.displayHeight) image.setDisplaySize(building.displayWidth, building.displayHeight);
+      else image.setScale(building.scale || 1);
       image.buildingId = building.id;
       if (['refuge_forge', 'refuge_warden_hall', 'refuge_inn', 'refuge_storehouse', 'refuge_tailor'].includes(building.id)) {
         this.add.text(building.x, building.y + 24, building.name, {

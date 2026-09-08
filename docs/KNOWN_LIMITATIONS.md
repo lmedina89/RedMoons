@@ -1,6 +1,9 @@
-# Known Limitations — v0.1.4.2
+# Known Limitations — v0.1.4.2.1
 
+## v0.1.4.2.1 hotfix limits
 
+- This hotfix corrects Refuge building geometry only; it does not add enterable interiors or redesign the v0.1.4.2 encounter ecology.
+- Physical iPhone Safari remains the release gate for visual alignment and touch traversal around the repaired buildings.
 
 ## v0.1.4.2 Living Wilds limits
 

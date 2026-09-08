@@ -1,4 +1,12 @@
-# v0.1.4.2 Living Wilds — Physical Test Route
+# v0.1.4.2.1 Refuge Geometry — Physical Test Route
+
+## v0.1.4.2.1 building test route
+
+1. Launch with `?debug=1` and use **Map: Refuge**.
+2. Walk along all four sides of Torren’s Forge; the green building solid should sit on the visible structure, not below it.
+3. Repeat around Thread & Ash, Warden Hall, Ashen Rest, Refuge Stores and the smaller houses.
+4. Verify Torren’s Forge now reads as a taller complete adobe workshop rather than the previous thin facade strip.
+5. Leave Refuge and spot-check one v0.1.4.2 group encounter to confirm ecology behavior remains intact.
 
 No automated interactive iPhone/browser playthrough is claimed. Use `?debug=1` for direct encounter teleports. Save schema remains 2.
 

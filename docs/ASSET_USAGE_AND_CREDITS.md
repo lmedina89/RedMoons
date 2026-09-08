@@ -203,4 +203,7 @@ The Bone Spearman uses `dist/assets/enemies/skeleton-spear-thrust.png`, harveste
 ## v0.1.3.2 recovery presentation
 
 v0.1.3.2 introduces no new external visual or audio asset dependency. The Ashen Rest marker, recovery feedback and cooldown presentation use procedural Phaser/DOM graphics, and heal/Essence/food/rest sounds use the existing procedural WebAudio foundation. All v0.1.3.1 source artwork is retained unchanged.
+## v0.1.4.2.1 completed Refuge workshop shell
+
+`dist/assets/world/buildings/adobe_workshop_full.png` is a local composite made exclusively from the already-included adobe building artwork: the existing `adobe2-set.png` tiles and preserved `adobe_workshop.png` facade. No new third-party art source or license is introduced by this hotfix.
 

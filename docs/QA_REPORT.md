@@ -1,5 +1,8 @@
-# QA Report — v0.1.4.2 Living Wilds: Monster Families & Encounter Ecology
+# QA Report — v0.1.4.2.1 Refuge Geometry & Building Integrity Hotfix
 
+## v0.1.4.2.1 automated/static scope
+
+Automated validation covers render-derived building solids, completed Forge dimensions, existing world navigation, encounter ecology, Azrael/Sanctuary regression and static project integrity. Physical iPhone Safari remains the visual release gate.
 
 ## v0.1.4.2 automated/static scope
 

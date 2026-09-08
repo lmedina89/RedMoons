@@ -1,10 +1,10 @@
 {
   "name": "hell-rpg-ashfall-foundation",
-  "version": "0.1.4.2",
+  "version": "0.1.4.2.1",
   "private": true,
   "type": "module",
   "scripts": {
     "dev": "node tests/static-server.mjs",
-    "check": "node tests/validate-project.mjs && node tests/azrael-logic-smoke.mjs && node tests/sanctuary-healing-smoke.mjs && node tests/world-navigation-smoke.mjs && node tests/encounter-ecology-smoke.mjs"
+    "check": "node tests/validate-project.mjs && node tests/azrael-logic-smoke.mjs && node tests/sanctuary-healing-smoke.mjs && node tests/world-navigation-smoke.mjs && node tests/encounter-ecology-smoke.mjs && node tests/building-integrity-smoke.mjs"
   }
 }

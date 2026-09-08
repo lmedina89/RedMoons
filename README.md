@@ -1,4 +1,20 @@
-# Hell RPG v0.1.4.2 — Living Wilds: Monster Families & Encounter Ecology
+# Hell RPG v0.1.4.2.1 — Refuge Geometry & Building Integrity Hotfix
+
+Built directly from the physically tested **v0.1.4.2 Living Wilds: Monster Families & Encounter Ecology**. Save schema remains **2** and the localStorage key remains `hellrpg.ashfall.save.v1`.
+
+## v0.1.4.2.1 Refuge Geometry & Building Integrity Hotfix
+
+This is a narrow visual/collision repair prompted by physical iPhone testing. It preserves the v0.1.4.2 encounter ecology and fixes two Refuge presentation problems: building solids had drifted below their rendered sprites, and Torren’s Forge was still using a short facade-only workshop slice.
+
+- All nine Refuge buildings now declare explicit rendered dimensions. Their actor-blocking rectangles are **derived from the same visible bounds** rather than separately hand-entered Y offsets, so collision stays on the structure instead of empty ground beneath it.
+- Player and ordinary-enemy collision remain shared: a building blocks both actor classes in the same place, while player/enemy dynamic shoving stays disabled.
+- Torren’s Forge now uses a **288×156 completed adobe workshop shell** assembled losslessly from the existing `adobe2-set` tiles plus the preserved 288×92 workshop facade. The original facade file remains untouched in the package.
+- A dedicated `building-integrity-smoke.mjs` test checks every building solid stays inside and covers most of its rendered structure and verifies the completed Forge dimensions.
+- Adjusted only the two town NPC route loops that crossed the newly corrected building footprints (Sable near East Lodge and Doran near Hunter House); the new smoke test also verifies NPC route segments do not pass through Refuge building solids.
+- Living Wilds encounter groups, family tables, hostile-human loadouts, patrols, ambushes, 35-actor Wilds ceiling, Azrael controller/abilities/Sanctuary and save schema are unchanged.
+
+For physical verification, enable `?debug=1`, walk around each Refuge building, and confirm the green solid overlays the visible building rather than the ground below it. Pay special attention to Torren’s Forge, Thread & Ash, Warden Hall and the houses along the south/east districts.
+
 
 Built directly from the physically approved **v0.1.4.1 Cinder Region Expansion & Refuge Rebuild**. Save schema remains **2** and the localStorage key remains `hellrpg.ashfall.save.v1`.
 

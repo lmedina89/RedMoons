@@ -157,7 +157,7 @@ export const ASSET_DEFS = [
   { key: 'adobe-house-tower', path: `${W}buildings/adobe_house_tower.png`, image: true },
   { key: 'adobe-house-east', path: `${W}buildings/adobe_house_east.png`, image: true },
   { key: 'adobe-house-west', path: `${W}buildings/adobe_house_west.png`, image: true },
-  { key: 'adobe-workshop', path: `${W}buildings/adobe_workshop.png`, image: true },
+  { key: 'adobe-workshop', path: `${W}buildings/adobe_workshop_full.png`, image: true },
 
   // v0.1.4.1 curated workshop props. These are tiny transparent crops from
   // the preserved source-only revised workshop sheets, not the full 512px-wide

@@ -1,4 +1,4 @@
-// v0.1.4.2 world data: Cinder Refuge is now its own deliberately composed
+// v0.1.4.2.1 world data: Cinder Refuge is now its own deliberately composed
 // settlement map while the Cinder Wilds have room to breathe as a larger
 // exterior region. All placement remains data-driven so future maps can reuse
 // the same render/collision paths without baking coordinates into actor code.
@@ -37,17 +37,53 @@ export const AREA_DEFS = Object.freeze([
   Object.freeze({ id: 'area_ashfall_hollow', mapId: 'map_ashfall_hollow', parentZoneId: 'zone_ashfall_hollow', name: 'Ashfall Hollow', danger: 'Cavern', x: 0, y: 0, width: 1024, height: 768, identity: 'A separate enclosed cavern habitat with tight sightlines and arachnid pressure.', encounter: Object.freeze({ families: Object.freeze([{ id: 'spider', weight: 100 }]), groups: Object.freeze(['pack', 'ambush']) }) })
 ]);
 
+export const BUILDING_ORIGIN_Y = 0.82;
+
+// Building dimensions are explicit rather than inferred from a hand-tuned
+// collision rectangle. The renderer uses these same display dimensions, and
+// buildingCollider() derives the solid directly from the rendered footprint.
+// This keeps collision on top of the visible structure instead of drifting
+// below it when a building image or scale changes.
 export const BUILDING_DEFS = Object.freeze([
-  { id: 'refuge_forge', mapId: 'map_cinder_refuge', name: 'Torren’s Forge', texture: 'adobe-workshop', x: 470, y: 390, scale: 0.92, depthOffset: -30, collider: { x: 470, y: 423, width: 245, height: 62 } },
-  { id: 'refuge_warden_hall', mapId: 'map_cinder_refuge', name: 'Warden Hall', texture: 'adobe-house-tower', x: 1515, y: 500, scale: 1.13, depthOffset: -38, collider: { x: 1515, y: 548, width: 130, height: 84 } },
-  { id: 'refuge_inn', mapId: 'map_cinder_refuge', name: 'Ashen Rest', texture: 'adobe-house-east', x: 760, y: 1115, scale: 1.08, flipX: true, depthOffset: -38, collider: { x: 760, y: 1158, width: 124, height: 80 } },
-  { id: 'refuge_storehouse', mapId: 'map_cinder_refuge', name: 'Refuge Stores', texture: 'adobe-house-east', x: 1150, y: 1120, scale: 1.04, depthOffset: -38, collider: { x: 1150, y: 1162, width: 120, height: 78 } },
-  { id: 'refuge_hunter_house', mapId: 'map_cinder_refuge', name: 'Hunter House', texture: 'adobe-house-tower', x: 360, y: 1000, scale: 0.88, flipX: true, depthOffset: -34, collider: { x: 360, y: 1036, width: 100, height: 66 } },
-  { id: 'refuge_cinder_house', mapId: 'map_cinder_refuge', name: 'Cinder House', texture: 'adobe-house-tower', x: 1190, y: 330, scale: 0.86, depthOffset: -34, collider: { x: 1190, y: 365, width: 98, height: 64 } },
-  { id: 'refuge_tailor', mapId: 'map_cinder_refuge', name: 'Thread & Ash', texture: 'adobe-house-west', x: 815, y: 350, scale: 0.95, depthOffset: -34, collider: { x: 815, y: 389, width: 92, height: 72 } },
-  { id: 'refuge_lodge', mapId: 'map_cinder_refuge', name: 'East Lodge', texture: 'adobe-house-east', x: 1440, y: 1030, scale: 0.92, flipX: true, depthOffset: -34, collider: { x: 1440, y: 1068, width: 108, height: 70 } },
-  { id: 'refuge_south_house', mapId: 'map_cinder_refuge', name: 'Road House', texture: 'adobe-house-west', x: 540, y: 1190, scale: 0.85, flipX: true, depthOffset: -34, collider: { x: 540, y: 1225, width: 82, height: 64 } }
+  { id: 'refuge_forge', mapId: 'map_cinder_refuge', name: 'Torren’s Forge', texture: 'adobe-workshop', x: 470, y: 390, displayWidth: 265, displayHeight: 144, depthOffset: -30, collisionInset: { x: 6, top: 5, bottom: 5 } },
+  { id: 'refuge_warden_hall', mapId: 'map_cinder_refuge', name: 'Warden Hall', texture: 'adobe-house-tower', x: 1515, y: 500, displayWidth: 145, displayHeight: 181, depthOffset: -38, collisionInset: { x: 5, top: 5, bottom: 5 } },
+  { id: 'refuge_inn', mapId: 'map_cinder_refuge', name: 'Ashen Rest', texture: 'adobe-house-east', x: 760, y: 1115, displayWidth: 138, displayHeight: 173, flipX: true, depthOffset: -38, collisionInset: { x: 5, top: 5, bottom: 5 } },
+  { id: 'refuge_storehouse', mapId: 'map_cinder_refuge', name: 'Refuge Stores', texture: 'adobe-house-east', x: 1150, y: 1120, displayWidth: 133, displayHeight: 166, depthOffset: -38, collisionInset: { x: 5, top: 5, bottom: 5 } },
+  { id: 'refuge_hunter_house', mapId: 'map_cinder_refuge', name: 'Hunter House', texture: 'adobe-house-tower', x: 360, y: 1000, displayWidth: 113, displayHeight: 141, flipX: true, depthOffset: -34, collisionInset: { x: 4, top: 4, bottom: 4 } },
+  { id: 'refuge_cinder_house', mapId: 'map_cinder_refuge', name: 'Cinder House', texture: 'adobe-house-tower', x: 1190, y: 330, displayWidth: 110, displayHeight: 138, depthOffset: -34, collisionInset: { x: 4, top: 4, bottom: 4 } },
+  { id: 'refuge_tailor', mapId: 'map_cinder_refuge', name: 'Thread & Ash', texture: 'adobe-house-west', x: 815, y: 350, displayWidth: 91, displayHeight: 158, depthOffset: -34, collisionInset: { x: 4, top: 4, bottom: 4 } },
+  { id: 'refuge_lodge', mapId: 'map_cinder_refuge', name: 'East Lodge', texture: 'adobe-house-east', x: 1440, y: 1030, displayWidth: 118, displayHeight: 147, flipX: true, depthOffset: -34, collisionInset: { x: 4, top: 4, bottom: 4 } },
+  { id: 'refuge_south_house', mapId: 'map_cinder_refuge', name: 'Road House', texture: 'adobe-house-west', x: 540, y: 1190, displayWidth: 82, displayHeight: 141, flipX: true, depthOffset: -34, collisionInset: { x: 4, top: 4, bottom: 4 } }
 ]);
+
+export const buildingVisualBounds = building => {
+  const originY = building.originY ?? BUILDING_ORIGIN_Y;
+  const width = building.displayWidth;
+  const height = building.displayHeight;
+  const left = building.x - width / 2;
+  const top = building.y - height * originY;
+  return Object.freeze({ left, top, right: left + width, bottom: top + height, width, height });
+};
+
+export const buildingCollider = building => {
+  const visual = buildingVisualBounds(building);
+  const inset = building.collisionInset || {};
+  const insetX = inset.x || 0;
+  const top = visual.top + (inset.top || 0);
+  const bottom = visual.bottom - (inset.bottom || 0);
+  const left = visual.left + insetX;
+  const right = visual.right - insetX;
+  return Object.freeze({
+    id: `building-${building.id}`,
+    mapId: building.mapId,
+    source: 'building',
+    x: (left + right) / 2,
+    y: (top + bottom) / 2,
+    width: right - left,
+    height: bottom - top,
+    blocksActors: Object.freeze(['player', 'enemy'])
+  });
+};
 
 export const RECOVERY_POINTS = Object.freeze([
   Object.freeze({ id: 'recovery_ashen_rest', name: 'Ashen Rest Hearth', mapId: 'map_cinder_refuge', x: 760, y: 1250, radius: 82, label: 'FULL HEAL • HP + ESSENCE' })
@@ -179,7 +215,7 @@ export const COLLIDERS = Object.freeze([
   ...REFUGE_WALLS.map(wallCollider),
   ...FALLEN_WATCH_WALLS.map(wallCollider),
   ...WILDS_STRUCTURE_COLLIDERS,
-  ...BUILDING_DEFS.map(building => ({ id: `building-${building.id}`, mapId: building.mapId, source: 'building', blocksActors: Object.freeze(['player', 'enemy']), ...building.collider }))
+  ...BUILDING_DEFS.map(buildingCollider)
 ]);
 
 export const PROP_DEFS = Object.freeze([

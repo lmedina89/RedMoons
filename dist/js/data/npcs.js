@@ -41,7 +41,7 @@ export const NPC_DEFS = Object.freeze({
     npcType: 'adventurer', level: 6, combatRole: 'skirmisher', guildId: null, recruitable: true, activityState: 'between_hunts', homeZone: 'zone_cinder_refuge',
     baseVisual: 'npc_olive_base', hairVisual: null,
     loadout: { shoulders: 'shoulders_leather_revised', chest: 'chest_cinderhide', feet: 'feet_leather_revised', weapon: 'weapon_katana_npc' },
-    route: [{ x: 1420, y: 1120 }, { x: 1500, y: 1060 }, { x: 1570, y: 980 }, { x: 1480, y: 1030 }], speed: 28,
+    route: [{ x: 1420, y: 1120 }, { x: 1510, y: 1090 }, { x: 1570, y: 1040 }, { x: 1540, y: 1125 }], speed: 28,
     dialogue: [
       { conditions: [{ type: 'previousConversationAtLeast', value: 1 }, { type: 'playerLevelAtLeast', value: 3 }], text: 'Still walking east? Then remember: skeletons hear straight roads better than soft ground.' },
       { conditions: [], text: 'Bone Road begins where the wind stops carrying voices back to town.' }
@@ -63,7 +63,7 @@ export const NPC_DEFS = Object.freeze({
     npcType: 'adventurer', level: 4, combatRole: 'striker', guildId: null, recruitable: true, activityState: 'studying_routes', homeZone: 'zone_cinder_refuge',
     baseVisual: 'npc_olive_base', hairVisual: null,
     loadout: { head: 'head_bronze_revised', shoulders: 'shoulders_legion', chest: 'chest_wayfarer', feet: 'feet_road_boots', weapon: 'weapon_copper_arming_sword' },
-    route: [{ x: 340, y: 820 }, { x: 400, y: 845 }, { x: 375, y: 900 }, { x: 315, y: 865 }], speed: 24,
+    route: [{ x: 340, y: 820 }, { x: 400, y: 845 }, { x: 440, y: 870 }, { x: 315, y: 850 }], speed: 24,
     dialogue: [
       { conditions: [{ type: 'worldFlag', key: 'bone_road_open', value: true }], text: 'Ossivar fell? Then I picked the right week to stop pretending I was ready for Bone Road.' },
       { conditions: [], text: 'I mark where the hunters return from, not where they leave. The difference keeps maps honest.' }

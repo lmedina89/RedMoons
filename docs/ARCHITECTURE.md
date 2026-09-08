@@ -185,3 +185,7 @@ True run uses `LayeredCharacter.supportsAction('run')` as an all-visible-body-la
 ## Sanctuary healing boundary
 
 `AZRAEL_DEF` owns sanctuary tuning, `Azrael` owns cast eligibility through a missing-health score, `CombatSystem` owns positional/faction healing and max-HP clamping, and `FxManager` owns presentation. The player and any future `celestial` actors returned by `WorldScene.friendlyCombatants()` are supported without save changes or a special angel-only registry.
+## v0.1.4.2.1 building-geometry contract
+
+Refuge buildings now expose explicit display dimensions in `BUILDING_DEFS`. `buildingVisualBounds()` and `buildingCollider()` derive static actor solids from those same values, while `WorldScene` renders with `setDisplaySize()`. Future building art swaps should update the display dimensions rather than authoring an independent collider Y offset.
+
