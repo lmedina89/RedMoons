@@ -218,3 +218,11 @@ Common celestial ability shapes remain deliberately generic/data-driven: `melee_
 - Generic actors only acquire hostile targets whose position remains inside the actor's home-centered pursuit territory (`leashRange + pursuitMargin`).
 - A committed basic attack retains its chosen live target through the windup. Melee/dash abilities cancel if their required target disappears; projectile/radial casts may complete against their already-telegraphed location.
 - Lost targets transition actors back toward their local home/formation instead of leaving stale chase states.
+
+## v0.1.4.3 exploration / portal contract
+
+`TravelSystem` owns a small persisted return stack independent of individual maps. Enterable transitions may set `captureReturn`; the source anchor is pushed only through `transitionToMap(...beforeCommit)` after the destination asset package has loaded successfully. `returnToOrigin` transitions pop only on a successful return commit and expose authored fallback destinations for debug/direct-entry safety. Save schema remains 2; validation clamps coordinates, discards unknown maps and bounds stack depth.
+
+`data/exploration.js` owns POI and lightweight world-event records. `WorldScene` renders/interacts with map-local POIs while persistent cache/lore state lives under `worldFlags.poiStates`. `WorldEventSystem` polls at a bounded interval and delegates event effects back to `WorldScene`, so map art does not hard-code encounter logic. The first event kinds only alert an authored encounter toward the player or initiate a local hostile-faction clash.
+
+The four proof maps deliberately reuse existing curated runtime art through `MAP_DEFS.worldAssetKeys`; no large source atlas is loaded directly. The future Angel–Demon Warfront remains a separate map milestone and should begin with the requested full core/expanded asset audit rather than growing Veil Threshold into the warfront in place.

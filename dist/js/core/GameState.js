@@ -49,7 +49,8 @@ export function createDefaultState() {
       quest_ember_heart: { state: 'locked', objectives: { collect_heart: 0 } },
       quest_bone_captain: { state: 'locked', objectives: { kill_captain: 0 } }
     },
-    worldFlags: { wingsUnlocked: false },
+    worldFlags: { wingsUnlocked: false, poiStates: {} },
+    travel: { returnStack: [] },
     npcStates: {},
     settings: { musicVolume: 0.5, sfxVolume: 0.75, screenShake: true, diagnostics: false },
     nextItemSequence: 9

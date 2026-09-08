@@ -1,4 +1,4 @@
-// v0.1.4.2.4 world data: Cinder Refuge is now its own deliberately composed
+// v0.1.4.3 world data: Cinder Refuge is now its own deliberately composed
 // settlement map while the Cinder Wilds have room to breathe as a larger
 // exterior region. All placement remains data-driven so future maps can reuse
 // the same render/collision paths without baking coordinates into actor code.
@@ -19,6 +19,22 @@ export const ZONES = Object.freeze([
   {
     id: 'zone_ashfall_hollow', name: 'Ashfall Hollow', x: 0, y: 0, width: 1024, height: 768, danger: 'Cavern',
     levelRange: [2, 5], safe: false, hostile: true, biome: 'ash_cavern', eventTags: ['cave_hunt'], dungeonHooks: [], mapId: 'map_ashfall_hollow'
+  },
+  {
+    id: 'zone_warden_hall', name: 'Warden Hall', x: 0, y: 0, width: 1024, height: 768, danger: 'Sanctuary Interior',
+    levelRange: [1, 3], safe: true, hostile: false, biome: 'refuge_interior', eventTags: ['interior'], dungeonHooks: [], mapId: 'map_warden_hall'
+  },
+  {
+    id: 'zone_torrens_forge', name: 'Torren’s Forge', x: 0, y: 0, width: 1024, height: 768, danger: 'Workshop Interior',
+    levelRange: [1, 3], safe: true, hostile: false, biome: 'refuge_interior', eventTags: ['interior'], dungeonHooks: [], mapId: 'map_torrens_forge'
+  },
+  {
+    id: 'zone_ashgrave_crypt', name: 'Ashgrave Crypt', x: 0, y: 0, width: 1280, height: 896, danger: 'Sealed Crypt',
+    levelRange: [3, 6], safe: false, hostile: true, biome: 'ossuary_crypt', eventTags: ['interior', 'crypt_hunt'], dungeonHooks: [], mapId: 'map_ashgrave_crypt'
+  },
+  {
+    id: 'zone_veil_threshold', name: 'Veil Threshold', x: 0, y: 0, width: 1280, height: 896, danger: 'Unstable Realm',
+    levelRange: [1, 8], safe: true, hostile: false, biome: 'mystic_threshold', eventTags: ['portal', 'warfront_future'], dungeonHooks: [], mapId: 'map_veil_threshold'
   }
 ]);
 
@@ -34,7 +50,11 @@ export const AREA_DEFS = Object.freeze([
   Object.freeze({ id: 'area_fallen_watch', mapId: 'map_cinder_wilds', parentZoneId: 'zone_scorched_outskirts', name: 'The Fallen Watch', danger: 'Ruined Strongpoint', x: 4200, y: 0, width: 1400, height: 1024, identity: 'A shattered fortress outpost with broken walls, defensive lanes and abandoned supply works.', encounter: Object.freeze({ families: Object.freeze([{ id: 'skeleton', weight: 40 }, { id: 'human', weight: 25 }, { id: 'goblin', weight: 15 }, { id: 'spider', weight: 10 }, { id: 'construct', weight: 10 }]), groups: Object.freeze(['patrol', 'guard', 'ambush', 'pack']) }) }),
   Object.freeze({ id: 'area_ashgrave_hollow', mapId: 'map_cinder_wilds', parentZoneId: 'zone_scorched_outskirts', name: 'Ashgrave Hollow', danger: 'Restless Dead', x: 4200, y: 1024, width: 1400, height: 1024, identity: 'A corpse-strewn basin of graves, ruined shrines and scavenger paths descending toward deeper death.', encounter: Object.freeze({ families: Object.freeze([{ id: 'skeleton', weight: 55 }, { id: 'rotwing', weight: 20 }, { id: 'carrion', weight: 15 }, { id: 'spider', weight: 10 }]), groups: Object.freeze(['ritual', 'guard', 'pack']) }) }),
   Object.freeze({ id: 'area_bone_road', mapId: 'map_cinder_wilds', parentZoneId: 'zone_bone_road', name: 'Bone Road', danger: 'Dead March', x: 5600, y: 0, width: 800, height: 2048, identity: 'A hostile military road dominated by organized ossuary dead and heavier guardians.', encounter: Object.freeze({ families: Object.freeze([{ id: 'skeleton', weight: 85 }, { id: 'construct', weight: 15 }]), groups: Object.freeze(['patrol', 'guard', 'ritual']) }) }),
-  Object.freeze({ id: 'area_ashfall_hollow', mapId: 'map_ashfall_hollow', parentZoneId: 'zone_ashfall_hollow', name: 'Ashfall Hollow', danger: 'Cavern', x: 0, y: 0, width: 1024, height: 768, identity: 'A separate enclosed cavern habitat with tight sightlines and arachnid pressure.', encounter: Object.freeze({ families: Object.freeze([{ id: 'spider', weight: 100 }]), groups: Object.freeze(['pack', 'ambush']) }) })
+  Object.freeze({ id: 'area_ashfall_hollow', mapId: 'map_ashfall_hollow', parentZoneId: 'zone_ashfall_hollow', name: 'Ashfall Hollow', danger: 'Cavern', x: 0, y: 0, width: 1024, height: 768, identity: 'A separate enclosed cavern habitat with tight sightlines and arachnid pressure.', encounter: Object.freeze({ families: Object.freeze([{ id: 'spider', weight: 100 }]), groups: Object.freeze(['pack', 'ambush']) }) }),
+  Object.freeze({ id: 'area_warden_hall', mapId: 'map_warden_hall', parentZoneId: 'zone_warden_hall', name: 'Warden Hall', danger: 'Sanctuary Interior', x: 0, y: 0, width: 1024, height: 768, identity: 'A compact command hall lined with old campaign stone, ledgers and salvaged furnishings.', encounter: Object.freeze({ families: Object.freeze([]), groups: Object.freeze([]) }) }),
+  Object.freeze({ id: 'area_torrens_forge', mapId: 'map_torrens_forge', parentZoneId: 'zone_torrens_forge', name: 'Torren’s Forge', danger: 'Workshop Interior', x: 0, y: 0, width: 1024, height: 768, identity: 'A hot working forge packed with tools, racks and repair benches.', encounter: Object.freeze({ families: Object.freeze([]), groups: Object.freeze([]) }) }),
+  Object.freeze({ id: 'area_ashgrave_crypt', mapId: 'map_ashgrave_crypt', parentZoneId: 'zone_ashgrave_crypt', name: 'Ashgrave Crypt', danger: 'Sealed Crypt', x: 0, y: 0, width: 1280, height: 896, identity: 'A buried ossuary chamber older than the graves above, with narrow lanes and a sealed cache.', encounter: Object.freeze({ families: Object.freeze([{ id: 'spider', weight: 55 }, { id: 'skeleton', weight: 45 }]), groups: Object.freeze(['pack', 'guard']) }) }),
+  Object.freeze({ id: 'area_veil_threshold', mapId: 'map_veil_threshold', parentZoneId: 'zone_veil_threshold', name: 'Veil Threshold', danger: 'Unstable Realm', x: 0, y: 0, width: 1280, height: 896, identity: 'A small impossible antechamber where celestial geometry and infernal scars overlap before an unopened warfront fracture.', encounter: Object.freeze({ families: Object.freeze([]), groups: Object.freeze([]) }) })
 ]);
 
 export const BUILDING_ORIGIN_Y = 0.82;
@@ -174,7 +194,12 @@ export const SPAWN_REGIONS = Object.freeze([
   // Ashfall Hollow remains deliberately small but now differentiates a visible
   // roaming nest from a proximity-triggered mire ambush.
   { id: 'spawn_hollow_cave_spider', encounterId: 'enc_hollow_cave_nest', archetype: 'pack', mapId: 'map_ashfall_hollow', areaId: 'area_ashfall_hollow', enemyId: 'enemy_cave_spider', x: 120, y: 100, width: 420, height: 430, count: 3, respawnMs: 8200, activationRange: 760 },
-  { id: 'spawn_hollow_mire_spider', encounterId: 'enc_hollow_mire_ambush', archetype: 'ambush', mapId: 'map_ashfall_hollow', areaId: 'area_ashfall_hollow', enemyId: 'enemy_mire_spider', x: 515, y: 120, width: 390, height: 390, count: 2, respawnMs: 10800, activationRange: 720, ambushRange: 145 }
+  { id: 'spawn_hollow_mire_spider', encounterId: 'enc_hollow_mire_ambush', archetype: 'ambush', mapId: 'map_ashfall_hollow', areaId: 'area_ashfall_hollow', enemyId: 'enemy_mire_spider', x: 515, y: 120, width: 390, height: 390, count: 2, respawnMs: 10800, activationRange: 720, ambushRange: 145 },
+
+  // v0.1.4.3 first hostile interior. It has its own tiny actor budget rather
+  // than adding pressure to the 35-actor Cinder Wilds population.
+  { id: 'spawn_ashgrave_crypt_spiders', encounterId: 'enc_ashgrave_crypt_nest', archetype: 'pack', mapId: 'map_ashgrave_crypt', areaId: 'area_ashgrave_crypt', enemyId: 'enemy_cave_spider', x: 210, y: 220, width: 330, height: 300, count: 2, respawnMs: 12000, activationRange: 760 },
+  { id: 'spawn_ashgrave_crypt_guard', encounterId: 'enc_ashgrave_crypt_nest', archetype: 'guard', mapId: 'map_ashgrave_crypt', areaId: 'area_ashgrave_crypt', enemyId: 'enemy_ash_skeleton', x: 760, y: 180, width: 260, height: 280, count: 1, respawnMs: 15500, activationRange: 800 }
 ]);
 
 // Debug-only First-Light reinforcement force. These rows are instantiated only
@@ -231,13 +256,35 @@ export const WILDS_STRUCTURE_COLLIDERS = Object.freeze([
   { id: 'first-light-shrine', mapId: 'map_cinder_wilds', source: 'ruined-shrine', x: 3250, y: 540, width: 105, height: 68, blocksActors: Object.freeze(['player', 'enemy']) }
 ]);
 
+// Small enterable maps use authored boundary walls with a south-door opening.
+// Visual rendering and actor collision share these exact records.
+export const INTERIOR_WALLS = Object.freeze([
+  ...['map_warden_hall', 'map_torrens_forge'].flatMap(mapId => [
+    { id: `${mapId}-north`, mapId, source: 'interior-wall', x1: 70, y1: 70, x2: 954, y2: 70, thickness: 28 },
+    { id: `${mapId}-west`, mapId, source: 'interior-wall', x1: 70, y1: 70, x2: 70, y2: 700, thickness: 28 },
+    { id: `${mapId}-east`, mapId, source: 'interior-wall', x1: 954, y1: 70, x2: 954, y2: 700, thickness: 28 },
+    { id: `${mapId}-south-west`, mapId, source: 'interior-wall', x1: 70, y1: 700, x2: 432, y2: 700, thickness: 28 },
+    { id: `${mapId}-south-east`, mapId, source: 'interior-wall', x1: 592, y1: 700, x2: 954, y2: 700, thickness: 28 }
+  ]),
+  ...['map_ashgrave_crypt', 'map_veil_threshold'].flatMap(mapId => [
+    { id: `${mapId}-north`, mapId, source: 'interior-wall', x1: 50, y1: 50, x2: 1230, y2: 50, thickness: 30 },
+    { id: `${mapId}-west`, mapId, source: 'interior-wall', x1: 50, y1: 50, x2: 50, y2: 846, thickness: 30 },
+    { id: `${mapId}-east`, mapId, source: 'interior-wall', x1: 1230, y1: 50, x2: 1230, y2: 846, thickness: 30 },
+    { id: `${mapId}-south-west`, mapId, source: 'interior-wall', x1: 50, y1: 846, x2: 555, y2: 846, thickness: 30 },
+    { id: `${mapId}-south-east`, mapId, source: 'interior-wall', x1: 725, y1: 846, x2: 1230, y2: 846, thickness: 30 }
+  ])
+]);
+export const INTERIOR_COLLIDERS = Object.freeze(INTERIOR_WALLS.map(wallCollider));
+
+
 // All normal ground-solid colliders carry a mapId. WorldScene filters this
 // array for the active map, avoiding parallel collision registries as maps grow.
 export const COLLIDERS = Object.freeze([
   ...REFUGE_WALLS.map(wallCollider),
   ...FALLEN_WATCH_WALLS.map(wallCollider),
   ...WILDS_STRUCTURE_COLLIDERS,
-  ...BUILDING_DEFS.map(buildingCollider)
+  ...BUILDING_DEFS.map(buildingCollider),
+  ...INTERIOR_COLLIDERS
 ]);
 
 export const PROP_DEFS = Object.freeze([
@@ -309,7 +356,27 @@ export const PROP_DEFS = Object.freeze([
   { mapId: 'map_cinder_wilds', texture: 'rocks-cliffs', frame: 20, x: 5780, y: 1680, scale: 1.6 },
   { mapId: 'map_cinder_wilds', texture: 'castle2-set', frame: 64, x: 6100, y: 1180, scale: 1.2 },
   { mapId: 'map_cinder_wilds', texture: 'castle2-set', frame: 65, x: 6150, y: 1180, scale: 1.2 },
-  { mapId: 'map_cinder_wilds', texture: 'castle2-set', frame: 128, x: 5860, y: 920, scale: 1.0 }
+  { mapId: 'map_cinder_wilds', texture: 'castle2-set', frame: 128, x: 5860, y: 920, scale: 1.0 },
+
+  // v0.1.4.3 enterable interiors and portal-threshold dressing. These reuse
+  // already-curated runtime assets instead of shipping large new atlases.
+  { mapId: 'map_warden_hall', texture: 'prop-wood-bench', x: 350, y: 365, scale: 1.0 },
+  { mapId: 'map_warden_hall', texture: 'prop-wood-bench', x: 350, y: 455, scale: 1.0 },
+  { mapId: 'map_warden_hall', texture: 'prop-wood-toolboard', x: 780, y: 245, scale: 0.9 },
+  { mapId: 'map_warden_hall', texture: 'prop-tailor-display', x: 720, y: 395, scale: 0.75 },
+  { mapId: 'map_torrens_forge', texture: 'prop-smith-forge', x: 285, y: 300, scale: 1.15 },
+  { mapId: 'map_torrens_forge', texture: 'prop-smith-tools', x: 700, y: 285, scale: 1.0 },
+  { mapId: 'map_torrens_forge', texture: 'prop-smith-racks', x: 690, y: 490, scale: 1.0 },
+  { mapId: 'map_torrens_forge', texture: 'prop-wood-bench', x: 380, y: 500, scale: 1.0 },
+  { mapId: 'map_ashgrave_crypt', texture: 'dungeon-elements', frame: 64, x: 310, y: 310, scale: 1.5 },
+  { mapId: 'map_ashgrave_crypt', texture: 'dungeon-elements', frame: 65, x: 360, y: 310, scale: 1.5 },
+  { mapId: 'map_ashgrave_crypt', texture: 'castle2-set', frame: 128, x: 1010, y: 270, scale: 1.1 },
+  { mapId: 'map_ashgrave_crypt', texture: 'mushrooms', frame: 23, x: 930, y: 650, scale: 0.9 },
+  { mapId: 'map_veil_threshold', texture: 'dungeon-elements', frame: 64, x: 420, y: 350, scale: 1.7, tint: 0xd9c68e },
+  { mapId: 'map_veil_threshold', texture: 'dungeon-elements', frame: 65, x: 860, y: 350, scale: 1.7, tint: 0x8d685d },
+  { mapId: 'map_veil_threshold', texture: 'castle2-set', frame: 99, x: 640, y: 230, scale: 1.35, tint: 0xd8c994 },
+  { mapId: 'map_veil_threshold', texture: 'rocks-cliffs', frame: 18, x: 270, y: 610, scale: 1.7 },
+  { mapId: 'map_veil_threshold', texture: 'rocks-cliffs', frame: 19, x: 1010, y: 610, scale: 1.7 }
 ]);
 
 export const DEFAULT_MAP_ID = 'map_cinder_refuge';
@@ -366,25 +433,85 @@ export const MAP_DEFS = Object.freeze({
     zoneIds: Object.freeze(['zone_ashfall_hollow']),
     areaIds: Object.freeze(['area_ashfall_hollow']),
     worldAssetKeys: Object.freeze(['cave3-set'])
+  }),
+  map_warden_hall: Object.freeze({
+    id: 'map_warden_hall', name: 'Warden Hall', width: 1024, height: 768, renderer: 'warden_hall',
+    entryPoints: Object.freeze({ arrival: Object.freeze({ x: 512, y: 610 }) }),
+    zoneIds: Object.freeze(['zone_warden_hall']), areaIds: Object.freeze(['area_warden_hall']),
+    worldAssetKeys: Object.freeze(['terrain-dirt', 'castle2-set', 'dungeon-elements', 'prop-wood-bench', 'prop-wood-toolboard', 'prop-tailor-display'])
+  }),
+  map_torrens_forge: Object.freeze({
+    id: 'map_torrens_forge', name: 'Torren’s Forge', width: 1024, height: 768, renderer: 'torrens_forge',
+    entryPoints: Object.freeze({ arrival: Object.freeze({ x: 512, y: 610 }) }),
+    zoneIds: Object.freeze(['zone_torrens_forge']), areaIds: Object.freeze(['area_torrens_forge']),
+    worldAssetKeys: Object.freeze(['terrain-dirt', 'adobe2-set', 'castle2-set', 'fire', 'prop-smith-forge', 'prop-smith-tools', 'prop-smith-racks', 'prop-wood-bench', 'prop-wood-toolboard'])
+  }),
+  map_ashgrave_crypt: Object.freeze({
+    id: 'map_ashgrave_crypt', name: 'Ashgrave Crypt', width: 1280, height: 896, renderer: 'ashgrave_crypt',
+    entryPoints: Object.freeze({ arrival: Object.freeze({ x: 640, y: 760 }) }),
+    zoneIds: Object.freeze(['zone_ashgrave_crypt']), areaIds: Object.freeze(['area_ashgrave_crypt']),
+    worldAssetKeys: Object.freeze(['terrain-dirt', 'cave3-set', 'dungeon-elements', 'castle2-set', 'mushrooms'])
+  }),
+  map_veil_threshold: Object.freeze({
+    id: 'map_veil_threshold', name: 'Veil Threshold', width: 1280, height: 896, renderer: 'veil_threshold',
+    entryPoints: Object.freeze({ arrival: Object.freeze({ x: 640, y: 755 }) }),
+    zoneIds: Object.freeze(['zone_veil_threshold']), areaIds: Object.freeze(['area_veil_threshold']),
+    worldAssetKeys: Object.freeze(['terrain-dirt', 'dungeon-elements', 'castle2-set', 'rocks-cliffs', 'fire'])
   })
 });
 
 export const MAP_TRANSITIONS = Object.freeze([
   Object.freeze({
-    id: 'transition_refuge_wilds', mapId: 'map_cinder_refuge', x: 1910, y: 768, radius: 100,
+    id: 'transition_refuge_wilds', mapId: 'map_cinder_refuge', x: 1910, y: 768, radius: 100, kind: 'gate',
     label: 'East Gate • Cinder Wilds', destinationMapId: 'map_cinder_wilds', destinationEntryId: 'from_refuge'
   }),
   Object.freeze({
-    id: 'transition_wilds_refuge', mapId: 'map_cinder_wilds', x: 105, y: 1024, radius: 95,
+    id: 'transition_wilds_refuge', mapId: 'map_cinder_wilds', x: 105, y: 1024, radius: 95, kind: 'gate',
     label: 'Cinder Refuge', destinationMapId: 'map_cinder_refuge', destinationEntryId: 'from_wilds'
   }),
   Object.freeze({
-    id: 'transition_outskirts_hollow', mapId: 'map_cinder_wilds', x: 2440, y: 1835, radius: 86,
+    id: 'transition_outskirts_hollow', mapId: 'map_cinder_wilds', x: 2440, y: 1835, radius: 86, kind: 'cave',
     label: 'Ashfall Hollow', destinationMapId: 'map_ashfall_hollow', destinationEntryId: 'from_cinder'
   }),
   Object.freeze({
-    id: 'transition_hollow_outskirts', mapId: 'map_ashfall_hollow', x: 512, y: 715, radius: 78,
+    id: 'transition_hollow_outskirts', mapId: 'map_ashfall_hollow', x: 512, y: 715, radius: 78, kind: 'cave',
     label: 'Return to Cinderwood', destinationMapId: 'map_cinder_wilds', destinationEntryId: 'from_hollow'
+  }),
+
+  // Reusable return-anchor transitions. Entering one of these captures the
+  // player's exact source position; the paired interior/realm return uses that
+  // anchor instead of hard-coding an exterior coordinate.
+  Object.freeze({
+    id: 'transition_refuge_warden_hall', mapId: 'map_cinder_refuge', x: 1515, y: 570, radius: 74, kind: 'door', captureReturn: true,
+    label: 'Enter Warden Hall', destinationMapId: 'map_warden_hall', destinationEntryId: 'arrival'
+  }),
+  Object.freeze({
+    id: 'transition_warden_hall_return', mapId: 'map_warden_hall', x: 512, y: 695, radius: 72, kind: 'return', returnToOrigin: true,
+    label: 'Return to Cinder Refuge', fallbackDestinationMapId: 'map_cinder_refuge', fallbackDestinationEntryId: 'cinder_start'
+  }),
+  Object.freeze({
+    id: 'transition_refuge_forge', mapId: 'map_cinder_refuge', x: 470, y: 458, radius: 74, kind: 'door', captureReturn: true,
+    label: 'Enter Torren’s Forge', destinationMapId: 'map_torrens_forge', destinationEntryId: 'arrival'
+  }),
+  Object.freeze({
+    id: 'transition_forge_return', mapId: 'map_torrens_forge', x: 512, y: 695, radius: 72, kind: 'return', returnToOrigin: true,
+    label: 'Return to Cinder Refuge', fallbackDestinationMapId: 'map_cinder_refuge', fallbackDestinationEntryId: 'cinder_start'
+  }),
+  Object.freeze({
+    id: 'transition_ashgrave_crypt', mapId: 'map_cinder_wilds', x: 4500, y: 1850, radius: 82, kind: 'crypt', captureReturn: true,
+    label: 'Ashgrave Crypt', destinationMapId: 'map_ashgrave_crypt', destinationEntryId: 'arrival'
+  }),
+  Object.freeze({
+    id: 'transition_crypt_return', mapId: 'map_ashgrave_crypt', x: 640, y: 820, radius: 72, kind: 'return', returnToOrigin: true,
+    label: 'Return to Ashgrave', fallbackDestinationMapId: 'map_cinder_wilds', fallbackDestinationEntryId: 'from_hollow'
+  }),
+  Object.freeze({
+    id: 'transition_firstlight_veil', mapId: 'map_cinder_wilds', x: 3980, y: 1740, radius: 96, kind: 'portal', captureReturn: true,
+    label: 'Fractured War Gate', destinationMapId: 'map_veil_threshold', destinationEntryId: 'arrival'
+  }),
+  Object.freeze({
+    id: 'transition_veil_return', mapId: 'map_veil_threshold', x: 640, y: 820, radius: 86, kind: 'return_portal', returnToOrigin: true,
+    label: 'Return Through the Veil', fallbackDestinationMapId: 'map_cinder_wilds', fallbackDestinationEntryId: 'first_light_test'
   })
 ]);
 
@@ -398,10 +525,9 @@ export const HOLLOW_WALLS = Object.freeze([
 
 export const HOLLOW_COLLIDERS = Object.freeze(HOLLOW_WALLS.map(wallCollider));
 
+
 export function mapIdForZone(zoneId) {
-  if (zoneId === 'zone_cinder_refuge') return 'map_cinder_refuge';
-  if (zoneId === 'zone_ashfall_hollow') return 'map_ashfall_hollow';
-  return 'map_cinder_wilds';
+  return ZONES.find(zone => zone.id === zoneId)?.mapId || 'map_cinder_wilds';
 }
 
 export function mapForId(mapId) {

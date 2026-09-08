@@ -5,15 +5,18 @@ import { MERCHANT_SUPPLY_DEFS, RECOVERY_DROP_TABLE } from '../data/consumables.j
 import { ITEM_DEFS } from '../data/items.js';
 import { NPC_DEFS } from '../data/npcs.js';
 import { AZRAEL_DEF } from '../data/specialActors.js';
-import { AREA_DEFS, BUILDING_DEFS, COLLIDERS, DEBUG_SPAWN_REGIONS, DEFAULT_MAP_ID, FALLEN_WATCH_WALLS, HOLLOW_COLLIDERS, HOLLOW_WALLS, MAP_TRANSITIONS, PROP_DEFS, RECOVERY_POINTS, REFUGE_WALLS, SPAWN_REGIONS, TOWN_PROP_DEFS, ZONES, mapForId } from '../data/world.js';
+import { AREA_DEFS, BUILDING_DEFS, COLLIDERS, DEBUG_SPAWN_REGIONS, DEFAULT_MAP_ID, FALLEN_WATCH_WALLS, HOLLOW_COLLIDERS, HOLLOW_WALLS, INTERIOR_WALLS, MAP_TRANSITIONS, PROP_DEFS, RECOVERY_POINTS, REFUGE_WALLS, SPAWN_REGIONS, TOWN_PROP_DEFS, ZONES, mapForId } from '../data/world.js';
 import { DEBUG, GAME_VERSION, PLAYER_START, RARITY, TILE_SIZE, WORLD_HEIGHT, WORLD_WIDTH } from '../config.js';
 import { gameEvents } from '../core/EventBus.js';
+import { POI_DEFS } from '../data/exploration.js';
 import { actionInput } from '../systems/ActionInput.js';
 import { CombatSystem } from '../systems/CombatSystem.js';
 import { DialogueSystem } from '../systems/DialogueSystem.js';
 import { InventorySystem, pickRarity } from '../systems/InventorySystem.js';
 import { QuestSystem } from '../systems/QuestSystem.js';
 import { RecoverySystem } from '../systems/RecoverySystem.js';
+import { makeReturnAnchor, peekReturnAnchor, popReturnAnchor, pushReturnAnchor, ensureTravelState } from '../systems/TravelSystem.js';
+import { WorldEventSystem } from '../systems/WorldEventSystem.js';
 import { assetDefsForMap, ensureItemVisualAssets, prepareMapAssets, queueAssetDefs } from '../systems/AssetResolver.js';
 import { derivedStats, grantXp } from '../systems/StatsSystem.js';
 import { ACTOR_COLLISION_KIND, colliderBlocksActor, enemyIgnoresWorldCollision, pointInRectArea, segmentIntersectsCollider } from '../systems/WorldNavigation.js';
@@ -48,6 +51,7 @@ export class WorldScene extends Phaser.Scene {
     this.buildWorld();
     this.createTransitionMarkers();
     this.createRecoveryMarkers();
+    this.createPoiMarkers();
 
     this.inventory = new InventorySystem(this.state);
     this.questSystem = new QuestSystem(this.state, this.inventory, (rewards, name) => this.grantRewards(rewards, name));
@@ -80,6 +84,7 @@ export class WorldScene extends Phaser.Scene {
     for (const enemy of this.enemies) enemy.combat = this.combat;
     if (this.azrael) this.azrael.combat = this.combat;
     this.recovery = new RecoverySystem(this, this.state, this.inventory, this.player, gameEvents);
+    this.worldEvents = new WorldEventSystem(this, this.state, gameEvents);
     this.createLootPool();
     this.currentZone = null;
     this.currentArea = null;
@@ -145,6 +150,11 @@ export class WorldScene extends Phaser.Scene {
   buildWorld() {
     if (this.currentMap.renderer === 'cinder_refuge') return this.buildCinderRefuge();
     if (this.currentMap.renderer === 'cinder_wilds') return this.buildCinderWilds();
+    if (this.currentMap.renderer === 'ashfall_hollow') return this.buildAshfallHollow();
+    if (this.currentMap.renderer === 'warden_hall') return this.buildWardenHall();
+    if (this.currentMap.renderer === 'torrens_forge') return this.buildTorrensForge();
+    if (this.currentMap.renderer === 'ashgrave_crypt') return this.buildAshgraveCrypt();
+    if (this.currentMap.renderer === 'veil_threshold') return this.buildVeilThreshold();
     return this.buildAshfallHollow();
   }
 
@@ -451,6 +461,106 @@ export class WorldScene extends Phaser.Scene {
     this.enemyGroup = this.physics.add.group({ allowGravity: false, immovable: false });
   }
 
+  renderInteriorWalls({ fill = 0x3c2b25, edge = 0x8b6a52, ruin = false } = {}) {
+    const graphics = this.add.graphics().setDepth(120);
+    for (const wall of INTERIOR_WALLS.filter(entry => entry.mapId === this.currentMap.id)) {
+      const horizontal = wall.y1 === wall.y2;
+      const x = (wall.x1 + wall.x2) / 2;
+      const y = (wall.y1 + wall.y2) / 2;
+      const width = horizontal ? Math.abs(wall.x2 - wall.x1) : wall.thickness;
+      const height = horizontal ? wall.thickness : Math.abs(wall.y2 - wall.y1);
+      graphics.fillStyle(fill, ruin ? 0.88 : 0.96).fillRect(x - width / 2, y - height / 2, width, height);
+      graphics.lineStyle(3, edge, ruin ? 0.55 : 0.82).strokeRect(x - width / 2, y - height / 2, width, height);
+      const step = 34;
+      const length = horizontal ? width : height;
+      const count = Math.floor(length / step);
+      for (let i = 0; i <= count; i += 1) {
+        const px = horizontal ? x - width / 2 + i * step : x;
+        const py = horizontal ? y : y - height / 2 + i * step;
+        if (this.textures.exists('castle2-set')) this.add.sprite(px, py, 'castle2-set', ruin ? [48, 52, 55, 60][i % 4] : [48, 52, 56, 60][i % 4])
+          .setScale(1.0).setAlpha(ruin ? 0.62 : 0.76).setTint(ruin ? 0x8f8078 : 0xb69a7e).setDepth(y + 2);
+      }
+    }
+  }
+
+  buildWardenHall() {
+    this.makeGroundLayer();
+    const art = this.add.graphics().setDepth(-900);
+    art.fillStyle(0x3a2922, 0.74).fillRect(70, 70, 884, 630);
+    art.fillStyle(0x765039, 0.30).fillRoundedRect(250, 170, 520, 390, 28);
+    art.lineStyle(5, 0xb78b59, 0.20).strokeRoundedRect(250, 170, 520, 390, 28);
+    art.fillStyle(0x261914, 0.55).fillRect(462, 145, 100, 390);
+    this.renderInteriorWalls({ fill: 0x34231d, edge: 0x9b7656 });
+    for (const prop of PROP_DEFS.filter(entry => entry.mapId === this.currentMap.id)) this.addPlacedProp(prop);
+    this.add.sprite(512, 300, 'castle2-set', 128).setScale(1.25).setDepth(302).setTint(0xb79a76);
+    this.add.sprite(585, 300, 'castle2-set', 136).setScale(1.05).setDepth(302).setTint(0x9e8165);
+    this.add.text(512, 115, 'WARDEN HALL', { fontFamily: 'Georgia, serif', fontSize: '22px', color: '#e9c886', stroke: '#160b08', strokeThickness: 5, letterSpacing: 3 }).setOrigin(0.5).setDepth(900);
+    this.add.text(512, 143, 'Command chamber • campaign archive', { fontFamily: 'Georgia, serif', fontSize: '10px', color: '#bea287', stroke: '#160b08', strokeThickness: 3 }).setOrigin(0.5).setDepth(900);
+    this.createStaticObstacles(this.activeMapColliders());
+  }
+
+  buildTorrensForge() {
+    this.makeGroundLayer();
+    const art = this.add.graphics().setDepth(-900);
+    art.fillStyle(0x3b261d, 0.80).fillRect(70, 70, 884, 630);
+    art.fillStyle(0x8f4929, 0.16).fillEllipse(320, 330, 360, 300);
+    art.fillStyle(0x2c1b17, 0.44).fillRoundedRect(180, 170, 650, 420, 22);
+    this.renderInteriorWalls({ fill: 0x3b2922, edge: 0xa36b47 });
+    for (const prop of PROP_DEFS.filter(entry => entry.mapId === this.currentMap.id)) this.addPlacedProp(prop);
+    if (this.textures.exists('fire')) {
+      for (const [x, y] of [[250, 345], [310, 345]]) this.add.sprite(x, y, 'fire', 0).setScale(1.1).setDepth(y + 5).setAlpha(0.9);
+    }
+    this.add.text(512, 115, 'TORREN’S FORGE', { fontFamily: 'Georgia, serif', fontSize: '22px', color: '#f0b56c', stroke: '#160b08', strokeThickness: 5, letterSpacing: 3 }).setOrigin(0.5).setDepth(900);
+    this.add.text(512, 143, 'Repair benches • weapon racks • field supplies', { fontFamily: 'Georgia, serif', fontSize: '10px', color: '#c69a78', stroke: '#160b08', strokeThickness: 3 }).setOrigin(0.5).setDepth(900);
+    this.createStaticObstacles(this.activeMapColliders());
+  }
+
+  buildAshgraveCrypt() {
+    this.makeGroundLayer();
+    const art = this.add.graphics().setDepth(-900);
+    art.fillStyle(0x171113, 0.78).fillRect(0, 0, this.currentMap.width, this.currentMap.height);
+    art.fillStyle(0x3b3230, 0.66).fillRoundedRect(80, 80, 1120, 730, 18);
+    art.lineStyle(4, 0x72635d, 0.26).strokeRoundedRect(120, 120, 1040, 650, 18);
+    this.renderInteriorWalls({ fill: 0x252021, edge: 0x776965, ruin: true });
+    for (let i = 0; i < 12; i += 1) {
+      const x = 175 + (i % 4) * 285;
+      const y = 175 + Math.floor(i / 4) * 210;
+      art.fillStyle(0x5e5551, 0.72).fillRoundedRect(x - 34, y - 18, 68, 36, 5);
+      art.lineStyle(2, 0x8c7b72, 0.42).strokeRoundedRect(x - 34, y - 18, 68, 36, 5);
+    }
+    for (const prop of PROP_DEFS.filter(entry => entry.mapId === this.currentMap.id)) this.addPlacedProp(prop);
+    this.add.text(640, 92, 'ASHGRAVE CRYPT', { fontFamily: 'Georgia, serif', fontSize: '23px', color: '#c8b5a6', stroke: '#11090b', strokeThickness: 6, letterSpacing: 4 }).setOrigin(0.5).setDepth(900);
+    this.add.text(640, 122, 'The road below remembers older dead', { fontFamily: 'Georgia, serif', fontSize: '10px', color: '#8f8180', stroke: '#11090b', strokeThickness: 3 }).setOrigin(0.5).setDepth(900);
+    this.createStaticObstacles(this.activeMapColliders());
+  }
+
+  buildVeilThreshold() {
+    this.makeGroundLayer();
+    const art = this.add.graphics().setDepth(-900);
+    art.fillStyle(0x111017, 0.82).fillRect(0, 0, this.currentMap.width, this.currentMap.height);
+    art.fillStyle(0x4e473e, 0.36).fillEllipse(640, 450, 960, 650);
+    art.lineStyle(5, 0xf2d78a, 0.20).strokeCircle(640, 420, 300);
+    art.lineStyle(3, 0x8f4c3f, 0.24).strokeCircle(640, 420, 370);
+    art.lineStyle(2, 0xc8e3ff, 0.15).strokeCircle(640, 420, 225);
+    for (let i = 0; i < 12; i += 1) {
+      const angle = (i / 12) * Math.PI * 2;
+      art.lineStyle(2, i % 2 ? 0xf4da96 : 0x9c5146, 0.19).lineBetween(
+        640 + Math.cos(angle) * 175, 420 + Math.sin(angle) * 175,
+        640 + Math.cos(angle) * 390, 420 + Math.sin(angle) * 390
+      );
+    }
+    this.renderInteriorWalls({ fill: 0x242128, edge: 0x857465, ruin: true });
+    for (const prop of PROP_DEFS.filter(entry => entry.mapId === this.currentMap.id)) this.addPlacedProp(prop);
+    const rift = this.add.graphics().setDepth(520);
+    rift.fillStyle(0x05050a, 0.90).fillEllipse(640, 300, 150, 250);
+    rift.lineStyle(7, 0xe5cf86, 0.62).strokeEllipse(640, 300, 160, 260);
+    rift.lineStyle(3, 0x9d4d45, 0.58).strokeEllipse(640, 300, 126, 225);
+    this.tweens.add({ targets: rift, alpha: { from: 0.72, to: 1 }, duration: 1100, yoyo: true, repeat: -1, ease: 'Sine.easeInOut' });
+    this.add.text(640, 95, 'VEIL THRESHOLD', { fontFamily: 'Georgia, serif', fontSize: '23px', color: '#ead491', stroke: '#0d090d', strokeThickness: 6, letterSpacing: 4 }).setOrigin(0.5).setDepth(900);
+    this.add.text(640, 125, 'A fractured antechamber to a larger warfront', { fontFamily: 'Georgia, serif', fontSize: '10px', color: '#b9a88e', stroke: '#0d090d', strokeThickness: 3 }).setOrigin(0.5).setDepth(900);
+    this.createStaticObstacles(this.activeMapColliders());
+  }
+
   playerObstacleProcess(_playerBody, obstacle) {
     return colliderBlocksActor(obstacle, ACTOR_COLLISION_KIND.PLAYER);
   }
@@ -477,10 +587,24 @@ export class WorldScene extends Phaser.Scene {
     this.mapTransitions = MAP_TRANSITIONS.filter(transition => transition.mapId === this.currentMap.id);
     for (const transition of this.mapTransitions) {
       const marker = this.add.graphics().setDepth(transition.y - 20);
-      if (this.currentMap.renderer === 'cinder_refuge') {
-        // The visible wall/gate already does the heavy lifting. A restrained
-        // threshold glow makes the travel interaction readable without looking
-        // like a portal inside town.
+      const kind = transition.kind || 'travel';
+      if (kind === 'portal' || kind === 'return_portal') {
+        marker.fillStyle(0x09070d, 0.78).fillEllipse(transition.x, transition.y, kind === 'portal' ? 126 : 104, kind === 'portal' ? 78 : 64);
+        marker.lineStyle(6, 0xe7ca7f, 0.68).strokeEllipse(transition.x, transition.y, kind === 'portal' ? 132 : 110, kind === 'portal' ? 84 : 70);
+        marker.lineStyle(3, 0x9f5045, 0.58).strokeEllipse(transition.x, transition.y, kind === 'portal' ? 104 : 86, kind === 'portal' ? 64 : 54);
+        for (let i = 0; i < 6; i += 1) {
+          const a = i * Math.PI / 3;
+          marker.fillStyle(i % 2 ? 0xf0d58b : 0xa55349, 0.74).fillCircle(transition.x + Math.cos(a) * 58, transition.y + Math.sin(a) * 36, 4);
+        }
+        this.tweens.add({ targets: marker, alpha: { from: 0.72, to: 1 }, duration: 900, yoyo: true, repeat: -1, ease: 'Sine.easeInOut' });
+      } else if (kind === 'door') {
+        marker.fillStyle(0x1b110e, 0.28).fillRect(transition.x - 30, transition.y - 16, 60, 26);
+        marker.lineStyle(3, 0xd0a46b, 0.55).lineBetween(transition.x - 28, transition.y + 8, transition.x + 28, transition.y + 8);
+      } else if (kind === 'crypt') {
+        marker.fillStyle(0x080607, 0.88).fillEllipse(transition.x, transition.y + 4, 118, 64);
+        marker.lineStyle(6, 0x64524c, 0.92).strokeEllipse(transition.x, transition.y + 4, 124, 70);
+        marker.lineStyle(2, 0xa18d80, 0.55).strokeEllipse(transition.x, transition.y + 4, 94, 52);
+      } else if (this.currentMap.renderer === 'cinder_refuge') {
         marker.fillStyle(0xdca45e, 0.10).fillRect(transition.x - 24, transition.y - 94, 48, 188);
         marker.lineStyle(3, 0xd5a05c, 0.45).lineBetween(transition.x - 18, transition.y - 92, transition.x - 18, transition.y + 92);
         marker.lineStyle(3, 0xd5a05c, 0.45).lineBetween(transition.x + 18, transition.y - 92, transition.x + 18, transition.y + 92);
@@ -504,9 +628,40 @@ export class WorldScene extends Phaser.Scene {
     }
   }
 
-  async transitionToMap(destinationMapId, destinationEntryId) {
+  travelThroughTransition(transition) {
+    if (!transition || this.transitioning) return;
+    ensureTravelState(this.state);
+    if (transition.returnToOrigin) {
+      const anchor = peekReturnAnchor(this.state);
+      if (anchor) {
+        this.transitionToMap(anchor.mapId, anchor.entryPointId, {
+          position: { x: anchor.x, y: anchor.y },
+          beforeCommit: () => popReturnAnchor(this.state)
+        });
+        return;
+      }
+      this.transitionToMap(transition.fallbackDestinationMapId, transition.fallbackDestinationEntryId);
+      return;
+    }
+
+    let beforeCommit = null;
+    if (transition.captureReturn) {
+      const anchor = makeReturnAnchor({
+        mapId: this.currentMap.id,
+        x: this.player.body.x,
+        y: this.player.body.y,
+        entryPointId: this.state.player.entryPointId,
+        transitionId: transition.id
+      });
+      beforeCommit = () => pushReturnAnchor(this.state, anchor);
+    }
+    this.transitionToMap(transition.destinationMapId, transition.destinationEntryId, { beforeCommit });
+  }
+
+  async transitionToMap(destinationMapId, destinationEntryId, options = {}) {
     const destination = mapForId(destinationMapId);
-    const entry = destination.entryPoints?.[destinationEntryId] || Object.values(destination.entryPoints || {})[0];
+    const resolvedEntryId = destination.entryPoints?.[destinationEntryId] ? destinationEntryId : Object.keys(destination.entryPoints || {})[0];
+    const entry = destination.entryPoints?.[resolvedEntryId] || Object.values(destination.entryPoints || {})[0];
     if (!entry || this.transitioning) return;
     this.transitioning = true;
     actionInput.resetTouchMovement();
@@ -529,10 +684,12 @@ export class WorldScene extends Phaser.Scene {
       return;
     }
 
+    options.beforeCommit?.();
+    const requestedPosition = options.position || entry;
     this.state.player.mapId = destination.id;
-    this.state.player.entryPointId = destinationEntryId;
-    this.state.player.x = entry.x;
-    this.state.player.y = entry.y;
+    this.state.player.entryPointId = resolvedEntryId || null;
+    this.state.player.x = Phaser.Math.Clamp(Number(requestedPosition.x) || entry.x, 48, destination.width - 48);
+    this.state.player.y = Phaser.Math.Clamp(Number(requestedPosition.y) || entry.y, 48, destination.height - 48);
     this.safeSave();
     this.cameras.main.fadeOut(170, 10, 4, 3);
     this.time.delayedCall(185, () => {
@@ -554,6 +711,107 @@ export class WorldScene extends Phaser.Scene {
     } catch (error) {
       console.warn('[Ashfall] Player visual recovery failed.', error);
       gameEvents.emit('toast', { text: 'Player visuals could not be restored. Reload once and report this build.', tone: 'danger' });
+    }
+  }
+
+  createPoiMarkers() {
+    this.poiCooldowns = new Map();
+    this.poiMarkers = new Map();
+    this.pois = POI_DEFS.filter(poi => poi.mapId === this.currentMap.id);
+    if (!this.state.worldFlags.poiStates || typeof this.state.worldFlags.poiStates !== 'object') this.state.worldFlags.poiStates = {};
+    for (const poi of this.pois) {
+      const marker = this.add.graphics().setDepth(poi.y + 8);
+      const opened = this.state.worldFlags.poiStates[poi.id] === 'opened';
+      if (poi.visual === 'cache') {
+        marker.fillStyle(0x2a1710, 0.86).fillRoundedRect(poi.x - 18, poi.y - 12, 36, 24, 4);
+        marker.lineStyle(2, opened ? 0x6e5a4b : 0xd39a54, opened ? 0.45 : 0.86).strokeRoundedRect(poi.x - 18, poi.y - 12, 36, 24, 4);
+        marker.lineStyle(2, 0x1a0e0b, 0.85).lineBetween(poi.x - 16, poi.y - 1, poi.x + 16, poi.y - 1);
+      } else if (poi.visual === 'shrine') {
+        marker.fillStyle(0x2c3426, 0.65).fillCircle(poi.x, poi.y, 18);
+        marker.lineStyle(3, 0xe1c772, 0.78).strokeCircle(poi.x, poi.y, 18);
+        marker.lineStyle(2, 0x8ed79d, 0.62).strokeCircle(poi.x, poi.y, 11);
+      } else if (poi.visual === 'rift') {
+        marker.fillStyle(0x07060b, 0.72).fillEllipse(poi.x, poi.y, 66, 42);
+        marker.lineStyle(3, 0xe3cd83, 0.68).strokeEllipse(poi.x, poi.y, 70, 46);
+        marker.lineStyle(2, 0x9d5147, 0.58).lineBetween(poi.x - 10, poi.y - 18, poi.x + 8, poi.y + 19);
+      } else {
+        marker.fillStyle(0x403832, 0.78).fillRoundedRect(poi.x - 10, poi.y - 22, 20, 36, 4);
+        marker.lineStyle(2, 0xcbb58c, 0.62).strokeRoundedRect(poi.x - 10, poi.y - 22, 20, 36, 4);
+      }
+      if (poi.visual === 'reliquary') {
+        marker.fillStyle(0x272017, 0.90).fillRoundedRect(poi.x - 20, poi.y - 14, 40, 28, 5);
+        marker.lineStyle(3, opened ? 0x6f6755 : 0xead58a, opened ? 0.42 : 0.84).strokeRoundedRect(poi.x - 20, poi.y - 14, 40, 28, 5);
+        marker.fillStyle(0xcdb86f, opened ? 0.22 : 0.72).fillCircle(poi.x, poi.y - 1, 5);
+      }
+      if (opened) marker.setAlpha(0.48);
+      this.poiMarkers.set(poi.id, marker);
+    }
+  }
+
+  canReceivePoiItems(items = []) {
+    let freeSlots = Math.max(0, 30 - this.state.inventory.length);
+    for (const row of items) {
+      const def = ITEM_DEFS[row.itemId];
+      if (!def) return false;
+      const max = Math.max(1, Math.floor(def.stackMax || 1));
+      let remaining = Math.max(1, Math.floor(row.quantity || 1));
+      if (max > 1) {
+        const capacity = this.state.inventory
+          .filter(item => item.itemId === row.itemId && item.rarity === (row.rarity || 'normal'))
+          .reduce((sum, item) => sum + Math.max(0, max - (item.quantity || 1)), 0);
+        remaining = Math.max(0, remaining - capacity);
+      }
+      const needed = Math.ceil(remaining / max);
+      if (needed > freeSlots) return false;
+      freeSlots -= needed;
+    }
+    return true;
+  }
+
+  usePoi(poi) {
+    if (!poi) return;
+    const flags = this.state.worldFlags.poiStates || (this.state.worldFlags.poiStates = {});
+    if (poi.type === 'cache') {
+      if (flags[poi.id] === 'opened') {
+        gameEvents.emit('toast', { text: `${poi.name} is empty.`, tone: 'muted', short: true });
+        return;
+      }
+      const items = poi.reward?.items || [];
+      if (!this.canReceivePoiItems(items)) {
+        gameEvents.emit('toast', { text: 'Your pack is too full to empty this cache.', tone: 'danger', short: true });
+        return;
+      }
+      for (const row of items) this.inventory.add(this.inventory.createItem(row.itemId, row.rarity || 'normal', row.quantity || 1));
+      const currency = Math.max(0, Number(poi.reward?.currency) || 0);
+      this.state.player.currency += currency;
+      flags[poi.id] = 'opened';
+      this.poiMarkers.get(poi.id)?.setAlpha(0.48);
+      const names = items.map(row => `${ITEM_DEFS[row.itemId]?.name || row.itemId}${(row.quantity || 1) > 1 ? ` ×${row.quantity}` : ''}`).join(', ');
+      gameEvents.emit('toast', { text: `${poi.name}: ${currency ? `+${currency} ash${names ? ' • ' : ''}` : ''}${names || 'supplies recovered'}`, tone: 'noble' });
+      this.emitState();
+      this.safeSave();
+      return;
+    }
+    if (poi.type === 'shrine') {
+      const now = this.time.now;
+      if (now < (this.poiCooldowns.get(poi.id) || 0)) {
+        gameEvents.emit('toast', { text: `${poi.name} is quiet for now.`, tone: 'muted', short: true });
+        return;
+      }
+      const stats = derivedStats(this.state);
+      const hpGain = Math.max(1, Math.floor(stats.maxHp * (poi.recovery?.hpRatio || 0)));
+      const essenceGain = Math.max(1, Math.floor(stats.maxEssence * (poi.recovery?.essenceRatio || 0)));
+      this.state.player.hp = Math.min(stats.maxHp, this.state.player.hp + hpGain);
+      this.state.player.essence = Math.min(stats.maxEssence, this.state.player.essence + essenceGain);
+      this.poiCooldowns.set(poi.id, now + Math.max(5000, poi.recovery?.cooldownMs || 30000));
+      gameEvents.emit('toast', { text: `${poi.name}: +${hpGain} HP • +${essenceGain} Essence`, tone: 'level', short: true });
+      this.emitState();
+      return;
+    }
+    if (poi.type === 'lore') {
+      flags[poi.id] = flags[poi.id] || 'read';
+      gameEvents.emit('dialogue', { speaker: poi.name, role: 'Discovery', text: poi.text || poi.detail, action: null, uiAction: null });
+      this.safeSave();
     }
   }
 
@@ -642,6 +900,37 @@ ${point.label || 'Use'}`, {
     // His hidden proxy obeys world bounds, but intentionally does not collide
     // with low terrain props: the field-test locomotion is a wing-assisted
     // hover/glide and should cross rocks instead of snagging like a walker.
+  }
+
+  triggerWorldEvent(event) {
+    const members = encounterId => (this.enemies || []).filter(enemy => enemy.encounterId === encounterId && enemy.sprite?.active);
+    if (event.kind === 'encounter_alert_player') {
+      const actors = (event.encounterIds || []).flatMap(members);
+      if (!actors.length) return false;
+      for (const actor of actors) actor.forceEncounterAggro(this.player, this.time.now);
+      if (actors[0]) this.alertEncounterGroup(actors[0], this.player, this.time.now);
+      return true;
+    }
+    if (event.kind === 'faction_clash') {
+      const [aId, bId] = event.encounterIds || [];
+      const a = members(aId);
+      const b = members(bId);
+      if (!a.length || !b.length) return false;
+      let best = null;
+      for (const left of a) for (const right of b) {
+        if (!areHostile(left, right)) continue;
+        const dx = left.sprite.x - right.sprite.x, dy = left.sprite.y - right.sprite.y;
+        const d2 = dx * dx + dy * dy;
+        if (!best || d2 < best.d2) best = { left, right, d2 };
+      }
+      if (!best) return false;
+      best.left.forceEncounterAggro(best.right, this.time.now);
+      best.right.forceEncounterAggro(best.left, this.time.now);
+      this.alertEncounterGroup(best.left, best.right, this.time.now);
+      this.alertEncounterGroup(best.right, best.left, this.time.now);
+      return true;
+    }
+    return false;
   }
 
   combatants() {
@@ -752,6 +1041,16 @@ ${point.label || 'Use'}`, {
     if (target) return target;
 
     nearestDistance = Infinity;
+    for (const poi of this.pois || []) {
+      const distance = Phaser.Math.Distance.Between(this.player.body.x, this.player.body.y, poi.x, poi.y);
+      if (distance <= poi.radius && distance < nearestDistance) {
+        target = { type: 'poi', target: poi, distance, label: poi.type === 'cache' ? 'Search' : (poi.type === 'shrine' ? 'Touch' : 'Inspect'), detail: poi.name };
+        nearestDistance = distance;
+      }
+    }
+    if (target) return target;
+
+    nearestDistance = Infinity;
     for (const point of this.recoveryPoints || []) {
       const distance = Phaser.Math.Distance.Between(this.player.body.x, this.player.body.y, point.x, point.y);
       if (distance <= point.radius && distance < nearestDistance) {
@@ -798,8 +1097,11 @@ ${point.label || 'Use'}`, {
       return;
     }
     if (interaction.type === 'transition') {
-      const transition = interaction.target;
-      this.transitionToMap(transition.destinationMapId, transition.destinationEntryId);
+      this.travelThroughTransition(interaction.target);
+      return;
+    }
+    if (interaction.type === 'poi') {
+      this.usePoi(interaction.target);
       return;
     }
     if (interaction.type === 'recovery') {
@@ -871,6 +1173,7 @@ ${point.label || 'Use'}`, {
     this.deathAnnounced = false;
     gameEvents.emit('death-cleared');
     if (this.currentMap.id !== DEFAULT_MAP_ID) {
+      ensureTravelState(this.state).returnStack.length = 0;
       // Restore the live actor before the prepared map handoff, but keep the
       // temporary respawn position inside the current map. transitionToMap()
       // then commits the actual Refuge entry coordinates. This avoids both the
@@ -932,6 +1235,14 @@ ${point.label || 'Use'}`, {
     };
     if (action === 'hollow') { this.transitionToMap('map_ashfall_hollow', 'hollow_center'); return; }
     if (action === 'refuge') { this.transitionToMap(DEFAULT_MAP_ID, 'cinder_start'); return; }
+    if (action === 'wardenhall') { this.transitionToMap('map_warden_hall', 'arrival'); return; }
+    if (action === 'forge') { this.transitionToMap('map_torrens_forge', 'arrival'); return; }
+    if (action === 'crypt') { this.transitionToMap('map_ashgrave_crypt', 'arrival'); return; }
+    if (action === 'veil') { this.transitionToMap('map_veil_threshold', 'arrival'); return; }
+    if (action === 'burntcache') {
+      if (this.currentMap.id !== 'map_cinder_wilds') { this.transitionToMap('map_cinder_wilds', 'from_refuge', { position: { x: 2200, y: 900 } }); return; }
+      this.player.body.setPosition(2200, 900); return;
+    }
     if (action === 'level') {
       const result = grantXp(this.state, 650);
       if (result.levels) this.combat?.skills.syncUnlocks(true);
@@ -1116,6 +1427,7 @@ ${point.label || 'Use'}`, {
     this.combat?.update(time, delta);
     this.recovery?.update(time, delta);
     this.player.update(time, delta);
+    this.worldEvents?.update(time);
     for (let slot = 0; slot < 3; slot += 1) if (actionInput.consumeSkill(slot)) this.combat?.skills.useSlot(slot);
     if (actionInput.consumeRecovery(0)) this.recovery?.useQuick('health');
     if (actionInput.consumeRecovery(1)) this.recovery?.useQuick('essence');

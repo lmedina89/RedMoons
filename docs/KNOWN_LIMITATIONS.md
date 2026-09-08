@@ -1,4 +1,13 @@
-# Known Limitations — v0.1.4.2.4.1
+# Known Limitations — v0.1.4.3
+
+
+## v0.1.4.3 Exploration / portal limits
+
+- Warden Hall and Torren’s Forge are proof-of-concept interiors; NPC relocation, shop-specific interior interactions and a full interior catalog are intentionally deferred.
+- Veil Threshold is a small mystical antechamber only. The planned medium-large Angel–Demon Warfront, strongholds, outposts and mythical-character events are **not** implemented in this release.
+- POI rewards intentionally use existing recovery/currency items. The full rarity/affix/enhancement loot-excitement pass remains future work.
+- World events are lightweight local triggers, not persistent territorial simulation.
+- Physical iPhone Safari remains the release gate; automated tests validate data, save normalization, geometry, static hosting and logic but do not claim a live touch playthrough.
 
 
 ## v0.1.4.2.4.1 Faction Warfare Hardening limits

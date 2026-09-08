@@ -8,6 +8,7 @@ const html = await readFile(path.join(root, 'index.html'), 'utf8');
 
 assert.ok(html.includes('url=./dist/'), 'Repo-root index must meta-refresh into ./dist/');
 assert.ok(html.includes("new URL('./dist/', location.href)"), 'Repo-root index must JS-redirect into ./dist/');
+assert.ok(html.includes('target.search = location.search') && html.includes('target.hash = location.hash'), 'Repo-root launcher must preserve ?debug=1 and any hash through the ./dist/ redirect');
 assert.ok(html.includes('href="./dist/"'), 'Repo-root fallback link must target ./dist/');
 for (const bad of ['href="css/game.css"', 'src="vendor/phaser.min.js"', 'src="js/main.js"']) {
   assert.ok(!html.includes(bad), `Repo-root launcher must not load runtime resource directly: ${bad}`);

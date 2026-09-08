@@ -3,6 +3,7 @@ import { DEFAULT_MAP_ID, MAP_DEFS, mapForId } from '../data/world.js';
 import { createDefaultState } from './GameState.js';
 import { ITEM_DEFS } from '../data/items.js';
 import { normalizeSkillState } from '../data/skills.js';
+import { normalizeTravelState } from '../systems/TravelSystem.js';
 
 const plainObject = value => value && typeof value === 'object' && !Array.isArray(value);
 const finite = value => Number.isFinite(value);
@@ -138,6 +139,8 @@ export class SaveManager {
       }
     }
     state.worldFlags = { ...base.worldFlags, ...(plainObject(value.worldFlags) ? structuredClone(value.worldFlags) : {}) };
+    if (!plainObject(state.worldFlags.poiStates)) state.worldFlags.poiStates = {};
+    state.travel = normalizeTravelState(value.travel, MAP_DEFS);
     state.npcStates = plainObject(value.npcStates) ? structuredClone(value.npcStates) : {};
     state.settings = { ...base.settings, ...(plainObject(value.settings) ? value.settings : {}) };
     if (plainObject(value.skills)) state.skills = structuredClone(value.skills);

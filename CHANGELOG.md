@@ -1,5 +1,17 @@
 # Changelog
 
+## v0.1.4.3 — Exploration, POIs & Portal Foundation
+
+- Added a reusable persisted return-anchor travel system for interiors/realms. Entry transitions can capture the exact source map/coordinates; paired return transitions pop the anchor only after destination assets prepare successfully and provide safe fallbacks for direct/debug entry.
+- Added four proof maps: Warden Hall, Torren’s Forge, Ashgrave Crypt, and Veil Threshold.
+- Added 10 data-driven POIs spanning persistent one-time caches, lore discoveries, a cooldown recovery shrine, interior supplies, and the first mystical warfront foreshadowing space.
+- Added a bounded dynamic world-event system with local encounter alerts and a reusable faction-clash event type.
+- Added the first three-actor hostile interior encounter in Ashgrave Crypt without increasing the established 35-actor Cinder Wilds production ceiling.
+- Added save-schema-2 normalization for `travel.returnStack` and `worldFlags.poiStates`; malformed/obsolete anchors are discarded or safely clamped instead of corrupting a save.
+- Added dedicated exploration/portal smoke coverage for transition pairing, exact return coordinates, save normalization, POI reward validity, collider safety, event encounter references, hostile-interior population and unchanged Wilds population.
+- Preserved the repo-root `./dist/` GitHub Pages launcher, taught it to preserve query/hash state (including root-level `?debug=1`), and kept its startup regression test.
+- No existing image assets, Azrael combat, Demon Combat, Celestial Combat, or faction-warfare behavior are intentionally changed.
+
 ## v0.1.4.2.4.1 — Faction Warfare Startup Hotfix
 
 - Restored the repo-root `index.html` launcher so GitHub Pages redirects into `./dist/` instead of trying to load `css/`, `js/`, and `vendor/` from the repository root.

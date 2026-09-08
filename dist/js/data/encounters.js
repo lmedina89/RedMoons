@@ -47,7 +47,8 @@ export const ENCOUNTER_DEFS = Object.freeze({
   enc_bone_road_guard: Object.freeze({ id: 'enc_bone_road_guard', areaId: 'area_bone_road', archetype: 'guard', label: 'Gilded Road Guard', alertRadius: 340, activationRange: 1000 }),
   enc_bone_road_captain: Object.freeze({ id: 'enc_bone_road_captain', areaId: 'area_bone_road', archetype: 'guard', label: 'Captain Ossivar', alertRadius: 260, activationRange: 1000, rare: true }),
   enc_hollow_cave_nest: Object.freeze({ id: 'enc_hollow_cave_nest', areaId: 'area_ashfall_hollow', archetype: 'pack', label: 'Cave Spider Nest', alertRadius: 250, activationRange: 760 }),
-  enc_hollow_mire_ambush: Object.freeze({ id: 'enc_hollow_mire_ambush', areaId: 'area_ashfall_hollow', archetype: 'ambush', label: 'Mire Spider Ambush', alertRadius: 240, activationRange: 720, ambushRange: 145 })
+  enc_hollow_mire_ambush: Object.freeze({ id: 'enc_hollow_mire_ambush', areaId: 'area_ashfall_hollow', archetype: 'ambush', label: 'Mire Spider Ambush', alertRadius: 240, activationRange: 720, ambushRange: 145 }),
+  enc_ashgrave_crypt_nest: Object.freeze({ id: 'enc_ashgrave_crypt_nest', areaId: 'area_ashgrave_crypt', archetype: 'guard', label: 'Ashgrave Crypt Nest', alertRadius: 300, activationRange: 800 })
 });
 
 export function encounterForId(id) { return id ? ENCOUNTER_DEFS[id] || null : null; }

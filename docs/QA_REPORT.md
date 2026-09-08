@@ -1,4 +1,10 @@
-# QA Report — v0.1.4.2.4.1 Faction Warfare Hardening
+# QA Report — v0.1.4.3 Exploration, POIs & Portal Foundation
+
+## v0.1.4.3 automated/static scope
+
+Release gating adds dedicated exploration/portal coverage: four proof-map registrations, exact/bounded return anchors, schema-2 travel/POI persistence, transition/fallback validity, entry/transition/POI collision clearance, POI reward IDs, event→encounter references, a three-actor crypt budget, and unchanged 35-actor Wilds production budget. The root launcher regression remains mandatory after the v0.1.4.2.4 packaging incident.
+
+No automated result is described as a physical iPhone/Safari playthrough. Required release testing remains: normal GitHub Pages root boot, natural and debug map entry/return, cache one-time behavior, shrine cooldown/recovery, crypt combat/collision, Veil return, and regression of First-Light faction combat/Azrael.
 
 
 ## v0.1.4.2.4.1 automated/static scope

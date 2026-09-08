@@ -3,7 +3,7 @@ import { readFile } from 'node:fs/promises';
 
 globalThis.location = { search: '' };
 
-const { AREA_DEFS, BUILDING_DEFS, COLLIDERS, DEFAULT_MAP_ID, FALLEN_WATCH_WALLS, HOLLOW_COLLIDERS, MAP_DEFS, MAP_TRANSITIONS, SPAWN_REGIONS } = await import('../dist/js/data/world.js');
+const { AREA_DEFS, BUILDING_DEFS, COLLIDERS, DEFAULT_MAP_ID, FALLEN_WATCH_WALLS, HOLLOW_COLLIDERS, INTERIOR_COLLIDERS, MAP_DEFS, MAP_TRANSITIONS, SPAWN_REGIONS } = await import('../dist/js/data/world.js');
 const { MONSTER_FAMILY_DEFS, ENCOUNTER_GROUP_ARCHETYPES } = await import('../dist/js/data/encounters.js');
 const { ENEMY_DEFS } = await import('../dist/js/data/enemies.js');
 const { AZRAEL_DEF } = await import('../dist/js/data/specialActors.js');
@@ -53,7 +53,11 @@ for (const map of Object.values(MAP_DEFS)) {
 }
 for (const transition of MAP_TRANSITIONS) {
   assert.equal(pointHitsSolid(transition.mapId, transition.x, transition.y, 8), false, `${transition.id} interaction center must remain in a visible opening`);
-  assert.ok(MAP_DEFS[transition.destinationMapId]?.entryPoints?.[transition.destinationEntryId], `${transition.id} must target a real destination entry`);
+  if (transition.returnToOrigin) {
+    assert.ok(MAP_DEFS[transition.fallbackDestinationMapId]?.entryPoints?.[transition.fallbackDestinationEntryId], `${transition.id} must provide a real fallback destination when no return anchor exists`);
+  } else {
+    assert.ok(MAP_DEFS[transition.destinationMapId]?.entryPoints?.[transition.destinationEntryId], `${transition.id} must target a real destination entry`);
+  }
 }
 
 const firstLight = AREA_DEFS.find(area => area.id === 'area_first_light_scar');

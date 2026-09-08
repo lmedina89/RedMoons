@@ -5,7 +5,12 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta http-equiv="refresh" content="0; url=./dist/">
     <title>Hell RPG — Ashfall Foundation</title>
-    <script>location.replace(new URL('./dist/', location.href));</script>
+    <script>
+      const target = new URL('./dist/', location.href);
+      target.search = location.search;
+      target.hash = location.hash;
+      location.replace(target);
+    </script>
   </head>
   <body>
     <p><a href="./dist/">Launch Hell RPG — Ashfall Foundation</a></p>

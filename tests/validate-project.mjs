@@ -14,7 +14,8 @@ const { ENEMY_DEFS } = await import('../dist/js/data/enemies.js');
 const { EQUIPMENT_SET_DEFS, ITEM_DEFS } = await import('../dist/js/data/items.js');
 const { CONSUMABLE_EFFECT_DEFS, MERCHANT_SUPPLY_DEFS, QUICK_CONSUMABLE_SLOTS, RECOVERY_DROP_TABLE } = await import('../dist/js/data/consumables.js');
 const { NPC_DEFS, NPC_GUILD_SEEDS } = await import('../dist/js/data/npcs.js');
-const { AREA_DEFS, BUILDING_DEFS, COLLIDERS, DEFAULT_MAP_ID, FALLEN_WATCH_WALLS, HOLLOW_COLLIDERS, HOLLOW_WALLS, MAP_DEFS, MAP_TRANSITIONS, RECOVERY_POINTS, REFUGE_WALLS, SPAWN_REGIONS, WILDS_STRUCTURE_COLLIDERS, ZONES } = await import('../dist/js/data/world.js');
+const { AREA_DEFS, BUILDING_DEFS, COLLIDERS, DEFAULT_MAP_ID, FALLEN_WATCH_WALLS, HOLLOW_COLLIDERS, HOLLOW_WALLS, INTERIOR_COLLIDERS, MAP_DEFS, MAP_TRANSITIONS, RECOVERY_POINTS, REFUGE_WALLS, SPAWN_REGIONS, WILDS_STRUCTURE_COLLIDERS, ZONES } = await import('../dist/js/data/world.js');
+const { POI_DEFS, WORLD_EVENT_DEFS } = await import('../dist/js/data/exploration.js');
 const { MONSTER_FAMILY_DEFS, ENCOUNTER_GROUP_ARCHETYPES, ENCOUNTER_DEFS } = await import('../dist/js/data/encounters.js');
 const { QUEST_DEFS } = await import('../dist/js/data/quests.js');
 const { SKILL_DEFS, DEFAULT_SKILL_SLOTS, normalizeSkillState, resolvedSkillDef } = await import('../dist/js/data/skills.js');
@@ -69,8 +70,8 @@ assert.ok(combatSource.includes('cooldownMs: 2400'), 'Empty-swing combat feedbac
 assert.ok(worldSource.includes('queueKillReward') && worldSource.includes('delayedCall(320'), 'Horde kill rewards must be batched');
 assert.ok(layeredSource.includes('ROOT_X') && layeredSource.includes('baseAsset') && layeredSource.includes("equipmentPolicy === 'player'"), 'Renderer must stabilize revised root motion and support actor-specific bases/equipment policies');
 assert.ok(!html.includes('90_user_generated'), 'Prototype-only generator assets must not ship');
-assert.equal(GAME_VERSION, '0.1.4.2.4.1', 'Faction Warfare Startup Hotfix version must be v0.1.4.2.4.1');
-assert.ok(html.includes('v0.1.4.2.4.1'), 'Build shell must identify v0.1.4.2.4.1');
+assert.equal(GAME_VERSION, '0.1.4.3', 'Exploration/POI/Portal Foundation version must be v0.1.4.3');
+assert.ok(html.includes('v0.1.4.3'), 'Build shell must identify v0.1.4.3');
 assert.ok(html.includes('id="start-screen"') && html.includes('id="continue-game"') && html.includes('id="new-game"') && html.includes('id="load-game"'), 'Start menu must expose Continue, New Game and Load Save');
 assert.ok(html.includes('data-quick-consumable="health"') && html.includes('data-quick-consumable="essence"'), 'Mobile HUD must expose dedicated HP and Essence quick-use controls');
 assert.ok(html.includes('class="flask-glyph"') && cssSource.includes('#skill-button-0') && cssSource.includes('#skill-button-1') && cssSource.includes('#skill-button-2'), 'Combat hotfix must expose recognizable flask glyphs and absolute radial skill positions');
@@ -148,18 +149,23 @@ assert.ok(REFUGE_WALLS.some(wall => wall.id === 'refuge-east-north') && REFUGE_W
 const eastNorth = REFUGE_WALLS.find(wall => wall.id === 'refuge-east-north');
 const eastSouth = REFUGE_WALLS.find(wall => wall.id === 'refuge-east-south');
 assert.ok(eastSouth.y1 - eastNorth.y2 >= 400, 'Refuge east exit must remain broadly touch-traversable');
-assert.ok(COLLIDERS.every(collider => ['visible-wall', 'ruin-wall', 'building', 'ruined-building', 'natural-rock', 'ruined-shrine'].includes(collider.source)), 'Every static collider must correspond to visible wall/building/ruin/natural geometry');
-assert.equal(COLLIDERS.length, REFUGE_WALLS.length + FALLEN_WATCH_WALLS.length + BUILDING_DEFS.length + WILDS_STRUCTURE_COLLIDERS.length, 'Static collision must be fully explained by visible refuge walls, Watch ruins, buildings and authored wild structures');
+assert.ok(COLLIDERS.every(collider => ['visible-wall', 'ruin-wall', 'building', 'ruined-building', 'natural-rock', 'ruined-shrine', 'interior-wall'].includes(collider.source)), 'Every static collider must correspond to visible wall/building/ruin/natural geometry');
+assert.equal(COLLIDERS.length, REFUGE_WALLS.length + FALLEN_WATCH_WALLS.length + BUILDING_DEFS.length + WILDS_STRUCTURE_COLLIDERS.length + INTERIOR_COLLIDERS.length, 'Static collision must be fully explained by visible refuge walls, Watch ruins, buildings, authored wild structures and visible interior walls');
 assert.ok(!COLLIDERS.some(collider => ['north-cliff', 'south-cliff', 'west-wall', 'east-fog', 'road-bones'].includes(collider.id)), 'Unrepresented/redundant invisible world blockers must not return');
 assert.ok(worldSource.includes('renderStoneWallSegments(REFUGE_WALLS)') && worldSource.includes('renderStoneWallSegments(FALLEN_WATCH_WALLS') && worldSource.includes('collisionDebug.strokeRect'), 'Visible Refuge/Fallen Watch stone art and debug collider audit must share the same wall data');
 assert.ok(ZONES.every(zone => Array.isArray(zone.levelRange) && typeof zone.safe === 'boolean' && Array.isArray(zone.eventTags)), 'Zones must expose future-proof level/safety/event metadata');
-assert.equal(Object.keys(MAP_DEFS).length, 3, 'World streaming must now ship a dedicated Refuge, expanded Wilds and Ashfall Hollow');
+assert.equal(Object.keys(MAP_DEFS).length, 7, 'World streaming must ship Refuge, Wilds, Hollow plus four v0.1.4.3 proof maps');
 assert.equal(DEFAULT_MAP_ID, 'map_cinder_refuge', 'Fresh characters and deaths must resolve to the dedicated Refuge map');
 assert.equal(MAP_DEFS.map_cinder_refuge.width, 2048, 'Cinder Refuge must have room for a real settlement layout');
 assert.equal(MAP_DEFS.map_cinder_refuge.height, 1536, 'Cinder Refuge must have a deeper settlement footprint');
 assert.equal(MAP_DEFS.map_cinder_wilds.width, 6400, 'Cinder Wilds must materially expand regional travel spacing');
 assert.equal(MAP_DEFS.map_cinder_wilds.height, 2048, 'Cinder Wilds must expand vertical routing/sightline space');
 assert.equal(MAP_DEFS.map_ashfall_hollow.width, 1024, 'Ashfall Hollow must keep its own smaller map bounds');
+assert.deepEqual(
+  ['map_warden_hall', 'map_torrens_forge', 'map_ashgrave_crypt', 'map_veil_threshold'].map(id => MAP_DEFS[id]?.renderer),
+  ['warden_hall', 'torrens_forge', 'ashgrave_crypt', 'veil_threshold'],
+  'Exploration foundation must register all four proof-map renderers'
+);
 assert.equal(HOLLOW_COLLIDERS.length, HOLLOW_WALLS.length, 'Hollow collision must come only from its visible wall records');
 assert.ok(COLLIDERS.every(collider => collider.blocksActors?.includes('player') && collider.blocksActors?.includes('enemy')), 'Every current Cinder solid must block both player and ordinary ground enemies');
 assert.ok(HOLLOW_COLLIDERS.every(collider => collider.blocksActors?.includes('player') && collider.blocksActors?.includes('enemy')), 'Every Hollow wall must block both player and ordinary ground enemies');
@@ -177,6 +183,16 @@ assert.ok(MAP_TRANSITIONS.some(t => t.mapId === DEFAULT_MAP_ID && t.destinationM
 assert.ok(MAP_TRANSITIONS.some(t => t.mapId === 'map_cinder_wilds' && t.destinationMapId === DEFAULT_MAP_ID), 'Wilds must provide a physical return to Refuge');
 assert.ok(MAP_TRANSITIONS.some(t => t.mapId === 'map_cinder_wilds' && t.destinationMapId === 'map_ashfall_hollow'), 'Cinderwood must expose an enterable Hollow transition');
 assert.ok(MAP_TRANSITIONS.some(t => t.mapId === 'map_ashfall_hollow' && t.destinationMapId === 'map_cinder_wilds'), 'Ashfall Hollow must return to Cinderwood in the Wilds');
+for (const [sourceMapId, destinationMapId] of [
+  ['map_cinder_refuge', 'map_warden_hall'],
+  ['map_cinder_refuge', 'map_torrens_forge'],
+  ['map_cinder_wilds', 'map_ashgrave_crypt'],
+  ['map_cinder_wilds', 'map_veil_threshold']
+]) {
+  assert.ok(MAP_TRANSITIONS.some(t => t.mapId === sourceMapId && t.destinationMapId === destinationMapId && t.captureReturn), `${sourceMapId} must capture an exact return anchor when entering ${destinationMapId}`);
+  assert.ok(MAP_TRANSITIONS.some(t => t.mapId === destinationMapId && t.returnToOrigin && t.fallbackDestinationMapId), `${destinationMapId} must expose a safe return-to-origin transition`);
+}
+assert.ok(POI_DEFS.length >= 10 && WORLD_EVENT_DEFS.length >= 4, 'Exploration foundation must include meaningful POIs and dynamic world-event seeds');
 assert.ok(Object.keys(ENEMY_DEFS).length >= 16, 'Asset variety expansion should ship a broad early enemy roster');
 assert.ok(Object.values(ENEMY_DEFS).filter(enemy => enemy.layered).length >= 4, 'Skeleton family should use layered equipment-bearing actors');
 for (const id of ['enemy_cinder_imp', 'enemy_blight_imp', 'enemy_blueflame_imp']) {
@@ -947,4 +963,4 @@ const normalizedWrongSlot = saveManager.validate(wrongSlotSave);
 assert.equal(normalizedWrongSlot.equipment.head, null, 'Wrong-slot saved equipment must be discarded');
 assert.equal(normalizedWrongSlot.equipment.weapon, 'i_000001', 'Valid weapon reference must survive normalization');
 
-console.log(`Validated ${ASSET_DEFS.length} assets, ${Object.keys(ITEM_DEFS).length} items, ${Object.keys(ENEMY_DEFS).length} enemies, ${Object.keys(NPC_DEFS).length} NPCs, ${BUILDING_DEFS.length} refuge buildings, ${COLLIDERS.length} visible-source colliders, ${Object.keys(QUEST_DEFS).length} quests, ${Object.keys(SKILL_DEFS).length} player skills, ${Object.keys(ENEMY_ABILITY_DEFS).length} enemy abilities, v0.1.4.2.4.1 Faction Warfare Startup Hotfix, debug-only First-Light stress warband, bounded faction assist, target-loss recovery, pursuit leashes, preserved common celestial troops and faction-safe shared combat, preserved Demon Combat Foundation and Refuge geometry/building integrity, Living Wilds ecology, grouped aggro, authored patrols, proximity ambushes, layered hostile humans, four-role Demon Legion patrol, bounded offscreen simulation, preserved v0.1.4.1 region scale/refuge rebuild, inherited Sanctuary of the First Light, seven-skill paced Azrael AI, faction combat, knockback/shake, contribution-gated rewards, recovery/consumables, stable map streaming, and save schema ${SAVE_VERSION}.`);
+console.log(`Validated ${ASSET_DEFS.length} assets, ${Object.keys(ITEM_DEFS).length} items, ${Object.keys(ENEMY_DEFS).length} enemies, ${Object.keys(NPC_DEFS).length} NPCs, ${BUILDING_DEFS.length} refuge buildings, ${COLLIDERS.length} visible-source colliders, ${Object.keys(QUEST_DEFS).length} quests, ${Object.keys(SKILL_DEFS).length} player skills, ${Object.keys(ENEMY_ABILITY_DEFS).length} enemy abilities, v0.1.4.3 Exploration/POI/Portal Foundation, four proof maps, ten POIs, four world-event seeds, reusable return anchors, debug-only First-Light stress warband, bounded faction assist, target-loss recovery, pursuit leashes, preserved common celestial troops and faction-safe shared combat, preserved Demon Combat Foundation and Refuge geometry/building integrity, Living Wilds ecology, grouped aggro, authored patrols, proximity ambushes, layered hostile humans, four-role Demon Legion patrol, bounded offscreen simulation, preserved v0.1.4.1 region scale/refuge rebuild, inherited Sanctuary of the First Light, seven-skill paced Azrael AI, faction combat, knockback/shake, contribution-gated rewards, recovery/consumables, stable map streaming, and save schema ${SAVE_VERSION}.`);

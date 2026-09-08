@@ -1,7 +1,21 @@
-# Hell RPG v0.1.4.2.4.1 — Faction Warfare Hardening
+# Hell RPG v0.1.4.3 — Exploration, POIs & Portal Foundation
 
-> **Startup hotfix:** v0.1.4.2.4.1 restores the required repository-root redirect into `dist/`. The v0.1.4.2.4 faction-warfare gameplay/content is otherwise unchanged.
+Built directly from **v0.1.4.2.4.1 Faction Warfare Startup Hotfix**. Save schema remains **2** and the localStorage key remains `hellrpg.ashfall.save.v1`.
 
+## v0.1.4.3 Exploration, POIs & Portal Foundation
+
+This release adds the reusable exploration/travel layer needed before the dedicated celestial-vs-infernal warfront. It deliberately proves the architecture on the existing world rather than building the full warfront prematurely.
+
+- Four small proof maps are now enterable: **Warden Hall**, **Torren’s Forge**, **Ashgrave Crypt**, and the mystical **Veil Threshold**.
+- Warden Hall, Forge, Crypt, and Veil entries capture the player's exact source map/position. Their return exits use a bounded persisted return stack and fall back to safe authored entries when reached directly through debug tools.
+- **10 POIs** seed exploration rewards and environmental storytelling across Cinder Wilds and the proof maps: caches, lore markers, a recovery waystone, a celestial reliquary, an ossuary cache, and the Veil Observatory. Cache state persists so rewards cannot be repeatedly harvested by saving/reloading.
+- The first **dynamic world-event** definitions can wake authored encounter groups or initiate a local celestial/infernal clash without hard-coding those events into the map renderer.
+- **Ashgrave Crypt** is the first intentionally small hostile interior, with three local actors and a guarded cache.
+- **Veil Threshold** is only an antechamber/foreshadowing space. It does **not** implement the future Angel–Demon Warfront yet; the larger warfront remains a separate planned asset-audited map.
+- Existing Wilds production population remains exactly **35 actors**. No Azrael, demon-family, celestial-family, faction-warfare, building, or artwork assets are modified by this release.
+- The repository-root launcher remains a tiny `./dist/` redirect required by GitHub Pages and now preserves query/hash state, so root-level `?debug=1` survives the handoff; the startup regression test stays in the full check pipeline.
+
+For physical verification, load the normal repository root first, then use `?debug=1` to test Warden Hall, Torren’s Forge, Ashgrave Crypt, Veil Threshold, and the Burnt-Hamlet Cache. Enter each location naturally when possible and verify its return exit places you back at the exact exterior entrance. Re-open caches to confirm they stay empty, test the Waystone cooldown, and re-check First-Light faction combat/Azrael after the exploration pass.
 
 ## v0.1.4.2.4.1 Faction Warfare Hardening
 
