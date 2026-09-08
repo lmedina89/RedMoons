@@ -5,7 +5,7 @@ import { MERCHANT_SUPPLY_DEFS, RECOVERY_DROP_TABLE } from '../data/consumables.j
 import { ITEM_DEFS } from '../data/items.js';
 import { NPC_DEFS } from '../data/npcs.js';
 import { AZRAEL_DEF } from '../data/specialActors.js';
-import { LAILANI_DEF } from '../data/lailani.js';
+import { LAILANI_DEF, LAILANI_SOLO_TEST_DEF } from '../data/lailani.js';
 import { AREA_DEFS, BUILDING_DEFS, COLLIDERS, DEBUG_SPAWN_REGIONS, DEFAULT_MAP_ID, FALLEN_WATCH_WALLS, HOLLOW_COLLIDERS, HOLLOW_WALLS, INTERIOR_WALLS, MAP_TRANSITIONS, PROP_DEFS, RECOVERY_POINTS, REFUGE_WALLS, SPAWN_REGIONS, TOWN_PROP_DEFS, ZONES, mapForId } from '../data/world.js';
 import { DEBUG, GAME_VERSION, PLAYER_START, RARITY, TILE_SIZE, WORLD_HEIGHT, WORLD_WIDTH } from '../config.js';
 import { gameEvents } from '../core/EventBus.js';
@@ -48,6 +48,7 @@ export class WorldScene extends Phaser.Scene {
     // destination coordinates. Reset it on every create() or the restarted
     // destination Scene will render normally but update() will return forever.
     this.transitioning = false;
+    this.lailaniSoloTest = null;
     this.makeRuntimeTextures();
     this.physics.world.setBounds(0, 0, this.currentMap.width, this.currentMap.height);
     this.cameras.main.setBounds(0, 0, this.currentMap.width, this.currentMap.height).setRoundPixels(true).setZoom(1);
@@ -126,6 +127,10 @@ export class WorldScene extends Phaser.Scene {
     // freshly rebuilt player layer stack. Safe cache eviction can return later
     // behind a device-tested handoff boundary; reliability wins for this hotfix.
     this.time.delayedCall(16, () => this.recoverPlayerVisual());
+    if (DEBUG && this.currentMap.id === LAILANI_SOLO_TEST_DEF.mapId && this.registry.get('lailaniSoloRequested')) {
+      this.registry.set('lailaniSoloRequested', false);
+      this.time.delayedCall(40, () => this.startLailaniSoloTest());
+    }
     if (!this.state.worldFlags.introToastShown && this.currentMap.id === DEFAULT_MAP_ID) {
       this.state.worldFlags.introToastShown = true;
       gameEvents.emit('toast', { text: 'Find Warden Vesra at Warden Hall in Cinder Refuge.', tone: 'quest' });
@@ -1344,6 +1349,117 @@ ${point.label || 'Use'}`, {
     // battlefield without snagging on low decorative geometry.
   }
 
+  suspendProductionEnemiesForLailaniSoloTest() {
+    for (const enemy of this.enemies || []) {
+      if (!enemy || enemy._lailaniSoloTest) continue;
+      enemy._lailaniSoloSuspended = true;
+      enemy.clearAbility?.();
+      this.combat?.statuses?.clear?.(enemy);
+      enemy.target = null;
+      enemy.respawnAt = Number.MAX_SAFE_INTEGER;
+      enemy.sprite?.setVelocity?.(0);
+      if (enemy.sprite?.body) enemy.sprite.body.enable = false;
+      enemy.sprite?.setActive?.(false)?.setVisible?.(false);
+      enemy.visual?.setVisible?.(false);
+    }
+  }
+
+  createLailaniSoloEnemy(enemyId, point, index) {
+    const def = ENEMY_DEFS[enemyId];
+    if (!def || !point) return null;
+    const wave = this.lailaniSoloTest?.wave || 1;
+    const spawn = {
+      id: `debug_lailani_solo_${wave}_${index}_${enemyId}`,
+      encounterId: `debug_lailani_solo_wave_${wave}`,
+      archetype: 'guard',
+      mapId: LAILANI_SOLO_TEST_DEF.mapId,
+      areaId: 'area_warfront_celestial_front',
+      enemyId,
+      x: point.x - 40, y: point.y - 40, width: 80, height: 80, count: 1,
+      respawnMs: 1000000000, activationRange: 1800, pursuitMargin: 900, debugOnly: true
+    };
+    const callbacks = {
+      hitTarget: (target, amount, x, y, enemy) => this.combat?.enemyMeleeTarget(target, amount, x, y, enemy),
+      beginAbility: (enemy, ability, target) => this.combat?.beginEnemyAbility(enemy, ability, target, enemy.abilityTargetX, enemy.abilityTargetY),
+      triggerAbility: (enemy, ability, targetX, targetY, target) => this.combat?.triggerEnemyAbility(enemy, ability, targetX, targetY, target),
+      damageNumber: (x, y, amount, hostile) => this.combat?.damageNumbers.show(x, y, amount, hostile),
+      alertEncounter: (_enemy, target, time) => {
+        if (!target || target !== this.lailani) return;
+        for (const ally of this.lailaniSoloTest?.actors || []) ally?.forceEncounterAggro?.(this.lailani, time);
+      },
+      // Debug-wave deaths intentionally bypass onEnemyDied(): no XP, ash, loot,
+      // quest credit or save churn comes from the observation loop.
+      died: enemy => { enemy._lailaniSoloDefeated = true; }
+    };
+    const enemy = new Enemy(this, this.enemyGroup, def, spawn, 0, callbacks);
+    enemy._lailaniSoloTest = true;
+    enemy.combat = this.combat;
+    this.enemies.push(enemy);
+    enemy.forceEncounterAggro(this.lailani, this.time.now);
+    return enemy;
+  }
+
+  clearLailaniSoloWaveActors() {
+    const actors = this.lailaniSoloTest?.actors || [];
+    for (const actor of actors) {
+      actor?.clearAbility?.();
+      this.combat?.statuses?.clear?.(actor);
+      actor?.sprite?.destroy?.();
+      actor?.visual?.destroy?.();
+      const index = this.enemies.indexOf(actor);
+      if (index >= 0) this.enemies.splice(index, 1);
+    }
+    if (this.lailaniSoloTest) this.lailaniSoloTest.actors = [];
+  }
+
+  spawnLailaniSoloWave(time = this.time.now) {
+    if (!this.lailaniSoloTest?.active || !this.lailani) return false;
+    this.clearLailaniSoloWaveActors();
+    this.lailaniSoloTest.wave += 1;
+    const waveIndex = (this.lailaniSoloTest.wave - 1) % LAILANI_SOLO_TEST_DEF.waves.length;
+    const enemyIds = LAILANI_SOLO_TEST_DEF.waves[waveIndex];
+    const center = LAILANI_SOLO_TEST_DEF.spawnCenter;
+    this.lailaniSoloTest.actors = enemyIds.map((enemyId, index) => {
+      const offset = LAILANI_SOLO_TEST_DEF.spawnOffsets[index % LAILANI_SOLO_TEST_DEF.spawnOffsets.length];
+      return this.createLailaniSoloEnemy(enemyId, { x: center.x + offset.x, y: center.y + offset.y }, index);
+    }).filter(Boolean);
+    this.lailaniSoloTest.nextWaveAt = 0;
+    this.lailaniSoloTest.waveCleared = false;
+    const harder = waveIndex === 2;
+    gameEvents.emit('toast', {
+      text: `Lailani Solo Test • Wave ${this.lailaniSoloTest.wave}${harder ? ' • Heavy wave' : ''}`,
+      tone: harder ? 'noble' : 'muted', short: true
+    });
+    return this.lailaniSoloTest.actors.length > 0;
+  }
+
+  updateLailaniSoloTest(time) {
+    const test = this.lailaniSoloTest;
+    if (!test?.active) return;
+    const actors = test.actors || [];
+    if (actors.length && !test.waveCleared && actors.every(actor => !actor || actor.hp <= 0 || actor.state === 'dying' || actor.state === 'dead' || actor.sprite?.active === false)) {
+      test.waveCleared = true;
+      test.nextWaveAt = time + LAILANI_SOLO_TEST_DEF.nextWaveDelayMs;
+    }
+    if (test.waveCleared && test.nextWaveAt && time >= test.nextWaveAt) this.spawnLailaniSoloWave(time);
+  }
+
+  startLailaniSoloTest() {
+    if (!DEBUG || this.currentMap.id !== LAILANI_SOLO_TEST_DEF.mapId || !this.lailani) return false;
+    if (this.lailaniSoloTest?.active) {
+      gameEvents.emit('toast', { text: `Lailani Solo Test already running • Wave ${this.lailaniSoloTest.wave}`, tone: 'muted', short: true });
+      return true;
+    }
+    this.lailaniSoloTest = { active: true, wave: 0, actors: [], nextWaveAt: 0, waveCleared: false };
+    this.suspendProductionEnemiesForLailaniSoloTest();
+    this.lailani.relocateForFieldTest(LAILANI_SOLO_TEST_DEF.lailani.x, LAILANI_SOLO_TEST_DEF.lailani.y, this.time.now);
+    this.player.body.setPosition(LAILANI_SOLO_TEST_DEF.player.x, LAILANI_SOLO_TEST_DEF.player.y);
+    this.player.visual.direction = 3;
+    this.spawnLailaniSoloWave(this.time.now);
+    gameEvents.emit('toast', { text: 'Solo loop active: demons target Lailani only. Normal Warfront troops return after a map reload.', tone: 'muted' });
+    return true;
+  }
+
   triggerWorldEvent(event) {
     const members = encounterId => (this.enemies || []).filter(enemy => enemy.encounterId === encounterId && enemy.sprite?.active);
     if (event.kind === 'encounter_alert_player') {
@@ -1691,9 +1807,18 @@ ${point.label || 'Use'}`, {
       return;
     }
     if (action === 'lailani') {
-      if (this.currentMap.id !== 'map_veil_warfront') { this.transitionToMap('map_veil_warfront', 'lailani_test'); return; }
+      if (this.currentMap.id !== 'map_veil_warfront' || this.lailaniSoloTest?.active) { this.transitionToMap('map_veil_warfront', 'lailani_test'); return; }
       moveNear(this.lailani?.body);
       gameEvents.emit('toast', { text: 'Lailani field test: her Dawnward position can engage the Axis patrols.', tone: 'muted', short: true });
+      return;
+    }
+    if (action === 'lailanisolo') {
+      // Always restart the Warfront before a solo loop. This cancels any
+      // in-flight field-test timers/telegraphs and gives the observation arena
+      // a clean deterministic starting state.
+      this.transitionToMap(LAILANI_SOLO_TEST_DEF.mapId, LAILANI_SOLO_TEST_DEF.entryId, {
+        beforeCommit: () => this.registry.set('lailaniSoloRequested', true)
+      });
       return;
     }
     if (action === 'lailaniai') {
@@ -1901,7 +2026,11 @@ ${point.label || 'Use'}`, {
     this.azrael?.update(time, delta, this.enemies);
     this.lailani?.update(time, delta, this.enemies);
     const combatants = this.combatants();
-    for (const enemy of this.enemies) enemy.update(time, delta, this.player, combatants);
+    for (const enemy of this.enemies) {
+      if (enemy._lailaniSoloTest) enemy.update(time, delta, this.lailani, this.lailani ? [this.lailani] : []);
+      else enemy.update(time, delta, this.player, combatants);
+    }
+    this.updateLailaniSoloTest(time);
     for (const npc of this.npcs) npc.update(time, delta, this.player);
     this.updateZone();
     this.updateArea();

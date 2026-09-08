@@ -149,6 +149,13 @@ v0.1.3.1 is built from the physical-iPhone-validated v0.1.3 combat baseline. Aut
 
 The v0.1.2.2 visible-source collision rule remains authoritative. Do not reintroduce invisible decorative blockers. Actor collision proxies also must not use `setDisplaySize()` on the tiny `solid` helper before body sizing, because Arcade bodies inherit GameObject scale.
 
+
+## v0.1.4.4.3.1 field-test polish limitations
+
+- **Lailani Solo Test** is an explicit `?debug=1` observation harness, not a production encounter or future story arena. It temporarily suspends normal Warfront troops until the map is reloaded/left.
+- Solo-wave actors intentionally provide no production rewards. The player can still move around the debug arena, but the spawned demons are AI-targeted only toward Lailani.
+- Lailani's combat numbers and seven ability definitions are unchanged from v0.1.4.4.3; this pass addresses testing access and nameplate readability only.
+
 ## v0.1.4.4.3 field-test limitations
 
 - Lailani's Dawnward/Axis position is a **temporary field-test station**, not her final story/home placement. Named-celestial deployment and Azrael's eventual move to the Celestial Stronghold are deferred.

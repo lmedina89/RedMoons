@@ -1,5 +1,14 @@
 # Changelog
 
+## v0.1.4.4.3.1 — Lailani Field-Test Polish
+
+- Widened and restructured Lailani's mythic nameplate into separate **LAILANI**, **TRANSCENDENT SERAPH**, and mythic-status lines for better iPhone readability.
+- Added `?debug=1` **Lailani Solo Test**. It restarts the Warfront into a clean southern observation pocket, suspends the normal 32 production actors for that debug session, and relocates Lailani into a dedicated arena.
+- Added four recyclable debug-only demon wave templates (3–5 actors), including a heavier Fleshborn wave. New waves begin after a short clear delay for continuous observation.
+- Solo demons target Lailani only and use a dedicated death callback that bypasses production XP, currency, loot, quest credit and reward-save handling.
+- Normal Lailani Field Test remains available; reloading/leaving the Warfront restores the standard Living Warfront population.
+- No changes to Lailani's seven ability definitions, Azrael, common enemy/celestial balance, production Warfront spawn data, shared combat/projectile/FX/audio, portals, or save schema.
+
 ## v0.1.4.4.3 — Lailani Field Test
 
 - Added Lailani as a unique celestial mythic special actor on the Veil Warfront using a dedicated controller independent of Azrael.

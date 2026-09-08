@@ -1,4 +1,13 @@
-# Hell RPG v0.1.4.4.3 — Lailani Field Test
+# Hell RPG v0.1.4.4.3.1 — Lailani Field-Test Polish
+
+## v0.1.4.4.3.1 Lailani Field-Test Polish
+
+Built directly from the approved **v0.1.4.4.3 Lailani Field Test**. Save schema remains **2** and Lailani's seven-skill balance is unchanged.
+
+This narrow polish release improves mythic-nameplate readability and adds an isolated **Lailani Solo Test** observation loop. In `?debug=1`, the solo command restarts into a clean southern Warfront pocket, temporarily suspends the normal 32 production soldiers, relocates Lailani into the test arena, and cycles bounded 3–5 demon waves indefinitely. Solo demons target Lailani only and their deaths bypass XP, ash, loot and quest rewards. A heavier Fleshborn wave appears in the authored cycle. Leaving/reloading the Warfront restores normal production warfare.
+
+Lailani's plate now separates **LAILANI**, **TRANSCENDENT SERAPH**, and the mythic level/faction line inside a wider frame instead of compressing the full title onto one line. Azrael, Lailani's seven abilities, the regular Warfront population, shared combat/projectile/FX/audio systems, portals and save schema are intentionally unchanged.
+
 
 ## v0.1.4.4.3 Lailani Field Test
 

@@ -245,6 +245,13 @@ Automated checks can establish structural correctness but cannot substitute for 
 - Target replacement, pursuit-bound filtering, bounded faction assist and debug-only spawn instantiation are covered by `tests/faction-warfare-smoke.mjs`.
 - Physical iPhone Safari remains the release gate for actual battle readability, frame pacing and Azrael-vs-warband feel.
 
+
+## v0.1.4.4.3.1 — Lailani Field-Test Polish validation
+
+- Added `tests/lailani-field-test-polish-smoke.mjs` covering the wider split-line nameplate, debug solo command, clean solo entry, four bounded 3–5 actor wave templates, Fleshborn heavy-wave coverage, collision-safe arena anchors/slots, separation from production spawn centers, Lailani-only test targeting, reward-bypass callback, and unchanged 32-actor production Warfront definition.
+- Full legacy suite remains authoritative for Azrael, common combat, faction warfare, portals, Warfront geography/detail and Lailani's original seven-skill field-test contract.
+- Physical iPhone Safari remains the release gate for readability of the wider plate and long-duration solo-loop VFX/performance.
+
 ## v0.1.4.4.3 — Lailani Field Test validation
 
 - Added a dedicated Lailani smoke suite covering the seven-skill identity contract, exact 60-second Mantle duration, defensive multiplier, bounded self-heal pulse, speed hierarchy versus Azrael, cluster-aware target selection, source/action asset dimensions and Warfront-only streaming.

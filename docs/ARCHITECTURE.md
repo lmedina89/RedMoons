@@ -256,3 +256,7 @@ The field-test home is data-owned in `LAILANI_DEF`; final named-celestial deploy
 ## v0.1.4.4.3 Lailani special-actor contract
 
 `data/lailani.js` owns Lailani tuning/assets and `entities/Lailani.js` owns her bespoke movement, seven-skill cadence and Mantle state. She participates in the shared faction-safe `CombatSystem` through `WorldScene.combatants()` but does not inherit from Azrael or occupy a normal `SPAWN_REGIONS` army slot. Her special-actor simulation is player-distance gated on the large Warfront; distant state cancels active telegraphs/targeting while absolute cooldown/Mantle timers remain bounded and presentation wakes only when the player returns.
+
+## v0.1.4.4.3.1 debug solo-harness contract
+
+Lailani's solo observation loop remains WorldScene/debug orchestration rather than production spawn data. `data/lailani.js` owns bounded arena/wave definitions; WorldScene creates temporary `Enemy` instances only after the explicit debug command, targets those instances at Lailani only, and bypasses `onEnemyDied()` for their deaths. Production `WARFRONT_SPAWN_REGIONS` remains unchanged at 32 actors. A same-map restart is used before entering the loop so active telegraphs/timers from the normal field test cannot leak into the isolated observation session.

@@ -98,33 +98,37 @@ export class Lailani {
   }
 
   createNameplate() {
-    this.nameplate = this.scene.add.container(this.body.x, this.body.y - 77).setDepth(9100);
+    this.nameplate = this.scene.add.container(this.body.x, this.body.y - 82).setDepth(9100);
     const plate = this.scene.add.graphics();
-    plate.fillStyle(0x090c14, 0.88).fillRoundedRect(-91, -19, 182, 40, 9);
-    plate.lineStyle(1, 0xf8e8a8, 0.90).strokeRoundedRect(-91, -19, 182, 40, 9);
-    plate.lineStyle(1, 0xbfeeff, 0.52).strokeRoundedRect(-87, -15, 174, 32, 7);
+    plate.fillStyle(0x090c14, 0.90).fillRoundedRect(-112, -23, 224, 48, 10);
+    plate.lineStyle(1, 0xf8e8a8, 0.92).strokeRoundedRect(-112, -23, 224, 48, 10);
+    plate.lineStyle(1, 0xbfeeff, 0.54).strokeRoundedRect(-108, -19, 216, 40, 8);
     // A small open halo with four drifting points differentiates her plate from
     // Azrael's wing seal without requiring another texture.
-    plate.lineStyle(2, 0xffffff, 0.84).strokeEllipse(-70, -4, 14, 5);
+    plate.lineStyle(2, 0xffffff, 0.84).strokeEllipse(-91, -6, 14, 5);
     for (let i = 0; i < 4; i += 1) {
       const a = i * Math.PI / 2 + Math.PI / 4;
       plate.fillStyle(i % 2 ? 0xcff7ff : 0xffefad, 0.92)
-        .fillCircle(-70 + Math.cos(a) * 10, -4 + Math.sin(a) * 7, 1.4);
+        .fillCircle(-91 + Math.cos(a) * 10, -6 + Math.sin(a) * 7, 1.4);
     }
 
-    this.nameText = this.scene.add.text(8, -14, 'LAILANI • TRANSCENDENT', {
-      fontFamily: 'Georgia, serif', fontSize: '10px', fontStyle: 'bold', color: '#fff3c7',
-      stroke: '#18101d', strokeThickness: 3, letterSpacing: 0.25
+    this.nameText = this.scene.add.text(8, -20, 'LAILANI', {
+      fontFamily: 'Georgia, serif', fontSize: '12px', fontStyle: 'bold', color: '#fff3c7',
+      stroke: '#18101d', strokeThickness: 3, letterSpacing: 0.55
     }).setOrigin(0.5, 0);
-    this.levelText = this.scene.add.text(8, 0, 'Lv. ???  •  CELESTIAL MYTHIC', {
+    this.titleText = this.scene.add.text(8, -6, 'TRANSCENDENT SERAPH', {
+      fontFamily: 'Georgia, serif', fontSize: '8px', fontStyle: 'bold', color: '#dff9ff',
+      stroke: '#08131b', strokeThickness: 2, letterSpacing: 0.35
+    }).setOrigin(0.5, 0);
+    this.levelText = this.scene.add.text(8, 5, 'Lv. ???  •  CELESTIAL MYTHIC', {
       fontFamily: 'Arial, sans-serif', fontSize: '7px', color: '#dff9ff',
       stroke: '#08131b', strokeThickness: 2, letterSpacing: 0.15
     }).setOrigin(0.5, 0);
 
     this.healthBack = this.scene.add.graphics();
-    this.healthBack.fillStyle(0x140d16, 0.92).fillRoundedRect(-63, 14, 126, 5, 2);
+    this.healthBack.fillStyle(0x140d16, 0.92).fillRoundedRect(-74, 17, 148, 5, 2);
     this.healthBar = this.scene.add.graphics();
-    this.nameplate.add([plate, this.nameText, this.levelText, this.healthBack, this.healthBar]);
+    this.nameplate.add([plate, this.nameText, this.titleText, this.levelText, this.healthBack, this.healthBar]);
     this.updateHealthBar();
   }
 
@@ -145,8 +149,8 @@ export class Lailani {
     if (!this.healthBar) return;
     const ratio = clamp(this.hp / this.def.maxHp, 0, 1);
     this.healthBar.clear();
-    this.healthBar.fillStyle(0xffe89a, 0.96).fillRoundedRect(-62, 15, 124 * ratio, 3, 1);
-    if (ratio > 0.35) this.healthBar.fillStyle(0xdffcff, 0.54).fillRect(-61, 15, 122 * ratio, 1);
+    this.healthBar.fillStyle(0xffe89a, 0.96).fillRoundedRect(-73, 18, 146 * ratio, 3, 1);
+    if (ratio > 0.35) this.healthBar.fillStyle(0xdffcff, 0.54).fillRect(-72, 18, 144 * ratio, 1);
   }
 
   cooldownReady(id, time) { return time >= (this.abilityCooldowns.get(id) || 0); }
@@ -980,7 +984,7 @@ export class Lailani {
     const hoverAmp = this.dead ? 0 : (speed > 8 ? 2.4 : 1.65);
     const hoverY = Math.sin((time + 420) * 0.0072) * hoverAmp;
     this.sprite.setPosition(this.body.x, this.body.y - 5 + hoverY).setDepth(this.body.y + 5);
-    this.nameplate.setPosition(this.body.x, this.body.y - 80 + hoverY).setDepth(this.body.y + 9000);
+    this.nameplate.setPosition(this.body.x, this.body.y - 85 + hoverY).setDepth(this.body.y + 9000);
     this.debugText.setPosition(this.body.x, this.body.y + 39).setDepth(this.body.y + 16020);
     this.updateHealthBar();
 
@@ -1061,6 +1065,24 @@ export class Lailani {
     this.lastActionName = 'Transcendent vigil';
     this.debugText.setVisible(this.debugEnabled);
     this.renderFrame('idle', 0);
+  }
+
+  relocateForFieldTest(x, y, time = this.scene.time.now) {
+    const nextX = Number(x);
+    const nextY = Number(y);
+    if (!Number.isFinite(nextX) || !Number.isFinite(nextY)) return false;
+    this.abilityTelegraph?.destroy?.();
+    this.abilityTelegraph = null;
+    this.currentAbility = null;
+    this.abilityTriggered = false;
+    this.combat?.statuses?.clear(this);
+    this.homeX = nextX;
+    this.homeY = nextY;
+    this.respawn(time);
+    this.sprite.setPosition(nextX, nextY).setDepth(nextY + 3);
+    this.nameplate.setPosition(nextX, nextY - 85).setDepth(nextY + 9000);
+    this.lastActionName = 'Solo-test vigil';
+    return true;
   }
 
   snapshot(time = this.scene.time.now) {

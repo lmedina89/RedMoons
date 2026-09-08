@@ -158,3 +158,7 @@ Lailani's spectacle is bounded rather than particle-unlimited. Mantle owns one p
 ## v0.1.4.4.3 named-actor simulation gate
 
 Lailani is a unique actor outside the 32-slot regular army budget, but her bespoke AI/Graphics are still player-distance gated at 1200px on the 6144×3072 Warfront. When distant she stops movement, drops targets, cancels active telegraphs and hides the persistent Mantle Graphics; delayed damage callbacks also refuse to resolve while sleeping. This prevents an unseen mythic duel from becoming an offscreen CPU/FX cost.
+
+## v0.1.4.4.3.1 solo-test budget
+
+The debug-only Lailani Solo Test suspends the normal 32 Warfront army actors before starting its observation loop. Each authored wave contains only 3–5 active demons plus Lailani, so the harness does not stack a mythic VFX test on top of the full Living Warfront simulation. Wave actors are destroyed/removed before the next wave is instantiated.

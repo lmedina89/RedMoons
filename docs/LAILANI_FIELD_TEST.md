@@ -1,4 +1,4 @@
-# Lailani Field Test — v0.1.4.4.3
+# Lailani Field Test — v0.1.4.4.3.1
 
 ## Purpose
 
@@ -6,7 +6,7 @@ This is the first focused runtime validation of **Lailani, Transcendent Seraph**
 
 ## Identity
 
-- Display: **LAILANI • TRANSCENDENT**
+- Display: **LAILANI** / **TRANSCENDENT SERAPH** on separate readable mythic-nameplate lines
 - Tier: celestial mythic / unique special actor
 - Internal field-test level: 96
 - Takes real damage; she is not invulnerable.
@@ -16,6 +16,13 @@ This is the first focused runtime validation of **Lailani, Transcendent Seraph**
 ## Temporary field-test position
 
 Lailani is stationed on the Dawnward side of the **Axis of First Light** around `(3660, 1510)`. `?debug=1` exposes **Lailani Field Test**, which approaches through the `lailani_test` entry. This is temporary placement chosen so existing infernal Axis patrols can exercise her AI. Her combat simulation sleeps beyond a 1200px player-distance gate, preventing unseen mythic fighting while the player explores distant Warfront sectors.
+
+
+## Solo observation loop
+
+`?debug=1` now exposes **Lailani Solo Test** in addition to the normal field test. The command restarts the Warfront into a clean southern observation pocket around `(4200, 2700)`, temporarily suspends the normal 32 production soldiers, and cycles four bounded 3–5 demon wave templates. Solo demons target Lailani only. Their dedicated death callback does not grant XP, ash, loot, quest credit, or production kill rewards. A heavier authored wave includes Fleshborn pressure. After each clear, the next wave starts after roughly two seconds. Reloading/leaving the Warfront restores ordinary Warfront deployment.
+
+This harness is intentionally debug-only and does not change Lailani's production home, seven ability values, or the 32-actor Living Warfront population definition.
 
 ## Seven-skill contract
 
@@ -43,7 +50,7 @@ Lailani has a dedicated `entities/Lailani.js` controller and `data/lailani.js` d
 
 ## Physical test checklist
 
-Use an iPhone in landscape with `?debug=1`, choose **Lailani Field Test**, and observe her against the Axis patrol. Confirm: movement looks graceful rather than jittery; Mantle remains readable for a full minute; the heal/defense state does not make her effectively immortal; Passage and Waltz visibly reposition her; Lances, Halo, Garden and Dawn are visually distinguishable; ordinary army effects remain below her spectacle; and overlapping Warfront combat remains smooth. Revisit Cinder afterward to verify Azrael still behaves exactly as before.
+Use an iPhone in landscape with `?debug=1`. Use **Lailani Field Test** for production-context behavior, then use **Lailani Solo Test** for uninterrupted ability observation without friendly army assistance. Confirm: movement looks graceful rather than jittery; Mantle remains readable for a full minute; the heal/defense state does not make her effectively immortal; Passage and Waltz visibly reposition her; Lances, Halo, Garden and Dawn are visually distinguishable; ordinary army effects remain below her spectacle; and overlapping Warfront combat remains smooth. Revisit Cinder afterward to verify Azrael still behaves exactly as before.
 
 ## Deferred
 

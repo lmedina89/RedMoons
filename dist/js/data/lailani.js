@@ -1,4 +1,4 @@
-// v0.1.4.4.3 Lailani Field Test. This named celestial remains independent
+// v0.1.4.4.3.1 Lailani Field-Test Polish. This named celestial remains independent
 // from the ordinary Warfront population budget and from Azrael's controller.
 // Her identity is speed, graceful repositioning, layered holy geometry, and a
 // long-lived defensive mantle rather than Azrael's heavier judgment cadence.
@@ -89,4 +89,30 @@ export const LAILANI_DEF = Object.freeze({
       minCluster: 3, major: true, majorLockMs: 5000
     })
   })
+});
+
+
+// Debug-only observation loop for physical Lailani QA. These rows are not part
+// of the production Warfront population and are instantiated only after the
+// explicit ?debug=1 "Lailani Solo Test" command.
+export const LAILANI_SOLO_TEST_DEF = Object.freeze({
+  mapId: 'map_veil_warfront',
+  entryId: 'lailani_solo',
+  player: Object.freeze({ x: 4015, y: 2700 }),
+  lailani: Object.freeze({ x: 4200, y: 2700 }),
+  spawnCenter: Object.freeze({ x: 4410, y: 2700 }),
+  nextWaveDelayMs: 2100,
+  spawnOffsets: Object.freeze([
+    Object.freeze({ x: 0, y: -150 }),
+    Object.freeze({ x: 90, y: -55 }),
+    Object.freeze({ x: 100, y: 70 }),
+    Object.freeze({ x: 10, y: 155 }),
+    Object.freeze({ x: -70, y: 45 })
+  ]),
+  waves: Object.freeze([
+    Object.freeze(['enemy_demon_scout', 'enemy_hellfire_demon', 'enemy_ashbone_demon']),
+    Object.freeze(['enemy_demon_scout', 'enemy_hellfire_demon', 'enemy_ashbone_demon', 'enemy_demon_scout']),
+    Object.freeze(['enemy_hellfire_demon', 'enemy_ashbone_demon', 'enemy_fleshborn_demon', 'enemy_demon_scout', 'enemy_ashbone_demon']),
+    Object.freeze(['enemy_hellfire_demon', 'enemy_hellfire_demon', 'enemy_ashbone_demon', 'enemy_fleshborn_demon'])
+  ])
 });
