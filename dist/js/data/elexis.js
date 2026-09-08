@@ -9,6 +9,7 @@ export const ELEXIS_DEF = Object.freeze({
   displayName: 'El’exis',
   faction: 'celestial',
   tier: 'mythic',
+  threatTier: 'apex',
   unique: true,
   internalLevel: 99,
   levelDisplay: '???',
@@ -62,7 +63,7 @@ export const ELEXIS_DEF = Object.freeze({
       range: 370, radius: 172, damageMultiplier: 0.46, knockback: 30,
       slowDurationMs: 3800, staggerDurationMs: 430,
       cooldownMs: 5100, windupMs: 830, triggerAt: 0.72, recoverMs: 380,
-      minCluster: 2
+      minCluster: 2, worthyTargetTier: 'mythic'
     }),
     astralSeverance: Object.freeze({
       id: 'elexis_astral_severance', name: 'Astral Severance',
@@ -85,7 +86,7 @@ export const ELEXIS_DEF = Object.freeze({
       range: 430, targetClusterRadius: 178, impactRadius: 72,
       strikes: 6, strikeDelayMs: 135, damageMultiplier: 0.27, knockback: 85,
       cooldownMs: 7300, windupMs: 980, triggerAt: 0.74, recoverMs: 460,
-      minCluster: 2, major: true, majorLockMs: 3600
+      minCluster: 2, worthyTargetTier: 'mythic', major: true, majorLockMs: 3600
     }),
     throneBeyondHeaven: Object.freeze({
       id: 'elexis_throne_beyond_heaven', name: 'Throne Beyond Heaven',
@@ -94,7 +95,7 @@ export const ELEXIS_DEF = Object.freeze({
       bindDamageMultiplier: 0.22, damageMultiplier: 1.46, knockback: 275,
       slowDurationMs: 3400, staggerDurationMs: 520,
       cooldownMs: 15400, windupMs: 1320, triggerAt: 0.80, recoverMs: 680,
-      minCluster: 3, major: true, majorLockMs: 5400
+      minCluster: 3, worthyTargetTier: 'mythic', major: true, majorLockMs: 5400
     })
   })
 });

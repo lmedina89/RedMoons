@@ -5,6 +5,7 @@ export const AZRAEL_DEF = Object.freeze({
   displayName: 'ArchAngel Azrael',
   faction: 'celestial',
   tier: 'mythic',
+  threatTier: 'apex',
   unique: true,
   internalLevel: 99,
   levelDisplay: '???',
@@ -65,12 +66,12 @@ export const AZRAEL_DEF = Object.freeze({
     sanctifiedNova: Object.freeze({
       id: 'azrael_sanctified_nova', name: 'Sanctified Nova', radius: 146,
       damageMultiplier: 1.04, knockback: 315, cooldownMs: 4600, windupMs: 860, triggerAt: 0.72, recoverMs: 430,
-      minNearby: 2, major: true, majorLockMs: 3400
+      minNearby: 2, worthyTargetTier: 'mythic', major: true, majorLockMs: 3400
     }),
     seraphicJudgment: Object.freeze({
       id: 'azrael_seraphic_judgment', name: 'Seraphic Judgment', radius: 158, targetClusterRadius: 152, range: 390,
       damageMultiplier: 1.08, knockback: 300, cooldownMs: 6200, windupMs: 1040, triggerAt: 0.72, recoverMs: 540,
-      minCluster: 2, major: true, majorLockMs: 4000, pulseDelays: Object.freeze([0, 120, 250]),
+      minCluster: 2, worthyTargetTier: 'mythic', major: true, majorLockMs: 4000, pulseDelays: Object.freeze([0, 120, 250]),
       pulseScales: Object.freeze([0.24, 0.30, 0.46])
     }),
     sanctuaryFirstLight: Object.freeze({
@@ -83,7 +84,7 @@ export const AZRAEL_DEF = Object.freeze({
     heavenfall: Object.freeze({
       id: 'azrael_heavenfall', name: 'Heavenfall', radius: 176, targetClusterRadius: 150,
       damageMultiplier: 1.34, knockback: 390, cooldownMs: 11600, windupMs: 1220, triggerAt: 0.78, recoverMs: 700,
-      minCluster: 4, major: true, majorLockMs: 5000
+      minCluster: 4, worthyTargetTier: 'mythic', major: true, majorLockMs: 5000
     })
   })
 });

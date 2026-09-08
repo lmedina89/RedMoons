@@ -1,5 +1,18 @@
-# Hell RPG v0.1.4.4.4.1 — El’exis Healing Polish
+# Hell RPG v0.1.4.4.5 — Mythical Demon Field Test + Power Hierarchy Foundation
 
+
+## v0.1.4.4.5 Mythical Demon Field Test + Power Hierarchy Foundation
+
+- Activated the staged **Mythical Demon — Bloodwing Scourge** as the first independent named infernal mythic on the Veil Warfront. Its visible level remains `Lv. ???`; its canonical internal level is **94**.
+- Added seven independent infernal abilities: **Abyssal Ascendance, Rending Talon, Bloodwing Rush, Hellspine Volley, Maw of the Void, Crimson Eclipse, and Cataclysm of the First Pit**.
+- Added a reusable threat hierarchy separate from ordinary RPG level: `ordinary → elite → commander → boss → mythic → apex`. The current mythic ladder is Mythical Demon **94 / mythic**, Lailani **96 / mythic**, reserved Ancient Demon Lord **98 / apex**, Azrael **99 / apex**, El’exis **99 / apex**, with a future player hard cap of **100**.
+- Added **worthy-single-target** major-skill escalation. Existing crowd requirements are preserved for ordinary enemies, but Azrael, Lailani, El’exis, and the Mythical Demon may use configured major AoE/signature abilities against one `mythic`/`apex` opponent. Major cooldowns and pacing locks remain intact.
+- Generalized the older shared Azrael cone/radial hit helpers and player attack/skill targeting so hostile special actors participate in real damage resolution rather than being invisible to paths that historically iterated only the ordinary-enemy array.
+- Added compact Warfront-only runtime crops from the verified complete upper action blocks of `DemonMythical.png`; the full source sheet remains preserved unchanged under source assets.
+- Added `?debug=1` **Mythical Demon Field Test**, **Mythical Demon Solo Test**, and **Mythical Demon AI Overlay**. The solo loop suspends production troops for that scene instance and cycles bounded 3–5 Celestial waves against the demon only with no production rewards.
+- Production Living Warfront remains **32 regular actors**. Save schema remains **2** and the localStorage key remains `hellrpg.ashfall.save.v1`. El’exis healing polish, Lailani, Azrael Judgment Blast, portals, progression, ordinary faction balance and Warfront geography are preserved.
+
+Physical iPhone Safari remains the release gate. First use **Mythical Demon Solo Test** to watch all seven attacks, then use the normal field test near the infernal front and specifically observe mythic-vs-mythic engagements: major abilities should now escalate in a 1v1 against a worthy named opponent without being wasted on one ordinary soldier.
 
 ## v0.1.4.4.4.1 El’exis Healing Polish
 

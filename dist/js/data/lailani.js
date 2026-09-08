@@ -9,6 +9,7 @@ export const LAILANI_DEF = Object.freeze({
   displayName: 'Lailani',
   faction: 'celestial',
   tier: 'mythic',
+  threatTier: 'mythic',
   unique: true,
   internalLevel: 96,
   levelDisplay: '???',
@@ -79,14 +80,14 @@ export const LAILANI_DEF = Object.freeze({
       pulseDelays: Object.freeze([0, 150, 340]), pulseScales: Object.freeze([0.24, 0.30, 0.58]),
       damageMultiplier: 1.0, knockback: 170,
       cooldownMs: 7600, windupMs: 980, triggerAt: 0.72, recoverMs: 430,
-      minCluster: 2, major: true, majorLockMs: 2800
+      minCluster: 2, worthyTargetTier: 'mythic', major: true, majorLockMs: 2800
     }),
     transcendentDawn: Object.freeze({
       id: 'lailani_transcendent_dawn', name: 'Transcendent Dawn',
       range: 430, radius: 220, targetClusterRadius: 190,
       damageMultiplier: 1.38, knockback: 245,
       cooldownMs: 14800, windupMs: 1260, triggerAt: 0.80, recoverMs: 620,
-      minCluster: 3, major: true, majorLockMs: 5000
+      minCluster: 3, worthyTargetTier: 'mythic', major: true, majorLockMs: 5000
     })
   })
 });

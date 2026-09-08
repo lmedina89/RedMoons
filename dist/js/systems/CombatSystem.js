@@ -103,16 +103,19 @@ export class CombatSystem {
     const damage = derived.attack * (attack.damageMultiplier || 1);
     const facing = directionVector(this.player.visual.direction);
     let hitCount = 0;
-    for (const enemy of this.enemies) {
-      if (!enemy.sprite.active || !areHostile(this.player, enemy)) continue;
-      const dx = enemy.sprite.x - this.player.body.x;
-      const dy = enemy.sprite.y - this.player.body.y;
+    const targets = this.hostileTargetsFor?.(this.player) || (this.enemies || []).filter(enemy => areHostile(this.player, enemy));
+    for (const enemy of targets) {
+      const node = actorNode(enemy);
+      if (!node || node.active === false) continue;
+      const dx = node.x - this.player.body.x;
+      const dy = node.y - this.player.body.y;
       const distSq = dx * dx + dy * dy;
       if (distSq > range * range) continue;
       const distance = Math.sqrt(distSq) || 1;
       const dot = (dx / distance) * facing[0] + (dy / distance) * facing[1];
       if (dot < cosThreshold) continue;
-      const applied = this.resolver.damageEnemy(enemy, damage, {
+      const applyDamage = this.resolver.damageTarget?.bind(this.resolver) || this.resolver.damageEnemy.bind(this.resolver);
+      const applied = applyDamage(enemy, damage, {
         type: 'physical', sourceX: this.player.body.x, sourceY: this.player.body.y,
         critChance: Math.min(0.18, (this.state.player.stats.dex || 0) * 0.008), impact: 'physical', sourceTeam: 'player', sourceActor: this.player
       });
@@ -126,14 +129,16 @@ export class CombatSystem {
     const derived = derivedStats(this.state);
     const cosThreshold = Math.cos((def.arcDegrees || 100) * Math.PI / 360);
     let hits = 0;
-    for (const enemy of this.enemies) {
-      if (!enemy.sprite.active || !areHostile(this.player, enemy)) continue;
-      const dx = enemy.sprite.x - this.player.body.x, dy = enemy.sprite.y - this.player.body.y;
+    const targets = this.hostileTargetsFor?.(this.player) || (this.enemies || []).filter(enemy => areHostile(this.player, enemy));
+    for (const enemy of targets) {
+      const node = actorNode(enemy);
+      if (!node || node.active === false) continue;
+      const dx = node.x - this.player.body.x, dy = node.y - this.player.body.y;
       const distance = Math.hypot(dx, dy);
       if (distance > def.range) continue;
       const dot = distance ? (dx / distance) * facing[0] + (dy / distance) * facing[1] : 1;
       if (dot < cosThreshold) continue;
-      const amount = this.resolver.damageEnemy(enemy, derived.attack * def.damageMultiplier, {
+      const amount = this.resolver.damageTarget(enemy, derived.attack * def.damageMultiplier, {
         type: def.damageType, sourceX: this.player.body.x, sourceY: this.player.body.y,
         knockback: def.knockback || 0,
         critChance: Math.min(0.2, (this.state.player.stats.dex || 0) * 0.009), impact: 'fire', sourceTeam: 'player', sourceActor: this.player
@@ -150,11 +155,13 @@ export class CombatSystem {
   playerRadial(def) {
     const derived = derivedStats(this.state);
     let hits = 0;
-    for (const enemy of this.enemies) {
-      if (!enemy.sprite.active || !areHostile(this.player, enemy)) continue;
-      const distance = Phaser.Math.Distance.Between(this.player.body.x, this.player.body.y, enemy.sprite.x, enemy.sprite.y);
+    const targets = this.hostileTargetsFor?.(this.player) || (this.enemies || []).filter(enemy => areHostile(this.player, enemy));
+    for (const enemy of targets) {
+      const node = actorNode(enemy);
+      if (!node || node.active === false) continue;
+      const distance = Phaser.Math.Distance.Between(this.player.body.x, this.player.body.y, node.x, node.y);
       if (distance > def.radius) continue;
-      const amount = this.resolver.damageEnemy(enemy, derived.attack * def.damageMultiplier, {
+      const amount = this.resolver.damageTarget(enemy, derived.attack * def.damageMultiplier, {
         type: def.damageType, sourceX: this.player.body.x, sourceY: this.player.body.y,
         knockback: def.knockback || 0, impact: 'shadow', sourceTeam: 'player', sourceActor: this.player
       });
@@ -378,14 +385,15 @@ export class CombatSystem {
     const facing = directionVector(actor.direction);
     const cosThreshold = Math.cos((ability.arcDegrees || 110) * Math.PI / 360);
     let hits = 0;
-    for (const enemy of this.enemies) {
-      if (!enemy.sprite.active || enemy.state === 'dying' || !areHostile(actor, enemy)) continue;
-      const dx = enemy.sprite.x - node.x, dy = enemy.sprite.y - node.y;
+    for (const target of this.hostileTargetsFor(actor)) {
+      const targetNode = actorNode(target);
+      if (!targetNode || targetNode.active === false) continue;
+      const dx = targetNode.x - node.x, dy = targetNode.y - node.y;
       const distance = Math.hypot(dx, dy);
       if (distance > ability.range) continue;
       const dot = distance ? (dx / distance) * facing[0] + (dy / distance) * facing[1] : 1;
       if (dot < cosThreshold) continue;
-      const amount = this.resolver.damageEnemy(enemy, actor.def.attack * ability.damageMultiplier, {
+      const amount = this.resolver.damageTarget(target, actor.def.attack * ability.damageMultiplier, {
         type: 'celestial', sourceX: node.x, sourceY: node.y, knockback: ability.knockback || 0,
         impact: 'celestial', sourceTeam: 'celestial', sourceActor: actor
       });
@@ -404,11 +412,12 @@ export class CombatSystem {
     if (!Number.isFinite(cx) || !Number.isFinite(cy)) return 0;
     const radius = ability.impactRadius || ability.radius || 90;
     let hits = 0;
-    for (const enemy of this.enemies) {
-      if (!enemy.sprite.active || enemy.state === 'dying' || !areHostile(actor, enemy)) continue;
-      const distance = Phaser.Math.Distance.Between(cx, cy, enemy.sprite.x, enemy.sprite.y);
+    for (const target of this.hostileTargetsFor(actor)) {
+      const targetNode = actorNode(target);
+      if (!targetNode || targetNode.active === false) continue;
+      const distance = Phaser.Math.Distance.Between(cx, cy, targetNode.x, targetNode.y);
       if (distance > radius) continue;
-      const amount = this.resolver.damageEnemy(enemy, actor.def.attack * ability.damageMultiplier * damageScale, {
+      const amount = this.resolver.damageTarget(target, actor.def.attack * ability.damageMultiplier * damageScale, {
         type: 'celestial', sourceX: cx, sourceY: cy, knockback: (ability.knockback || 0) * knockbackScale,
         impact: 'celestial', sourceTeam: 'celestial', sourceActor: actor
       });

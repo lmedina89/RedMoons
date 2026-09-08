@@ -1,4 +1,5 @@
 import { areHostile } from '../data/factions.js';
+import { isWorthyTarget } from '../data/powerTiers.js';
 
 const FRAME_COUNTS = Object.freeze({
   spellcast: 7,
@@ -855,11 +856,13 @@ export class Lailani {
     const garden = this.def.abilities.gardenHeaven;
     const dawnCluster = this.clusterCount(this.target, available, dawn.targetClusterRadius);
     const gardenCluster = this.clusterCount(this.target, available, garden.targetClusterRadius);
+    const worthyDawn = isWorthyTarget(this.target, dawn.worthyTargetTier);
+    const worthyGarden = isWorthyTarget(this.target, garden.worthyTargetTier);
     if (this.majorReady(time)) {
-      if (dawnCluster >= dawn.minCluster && distance <= dawn.range && this.cooldownReady(dawn.id, time)) {
+      if ((dawnCluster >= dawn.minCluster || worthyDawn) && distance <= dawn.range && this.cooldownReady(dawn.id, time)) {
         this.beginAbility(dawn, this.target, time); return;
       }
-      if (gardenCluster >= garden.minCluster && distance <= garden.range && this.cooldownReady(garden.id, time)) {
+      if ((gardenCluster >= garden.minCluster || worthyGarden) && distance <= garden.range && this.cooldownReady(garden.id, time)) {
         this.beginAbility(garden, this.target, time); return;
       }
     }

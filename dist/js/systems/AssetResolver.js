@@ -6,6 +6,7 @@ import { DEFAULT_MAP_ID, MAP_DEFS, SPAWN_REGIONS, mapForId } from '../data/world
 import { AZRAEL_DEF } from '../data/specialActors.js';
 import { LAILANI_DEF } from '../data/lailani.js';
 import { ELEXIS_DEF } from '../data/elexis.js';
+import { MYTHICAL_DEMON_DEF } from '../data/mythicalDemon.js';
 
 const ASSET_BY_KEY = new Map(ASSET_DEFS.map(asset => [asset.key, asset]));
 const LAYER_TEXTURE_FIELDS = Object.freeze(['texture', 'walk', 'run', 'slash', 'backslash', 'halfslash', 'spellcast', 'thrust', 'shoot', 'hurt']);
@@ -103,6 +104,12 @@ export function assetDefsForMap(state, requestedMapId = null) {
   // her seven compact complete runtime action crops.
   if (ELEXIS_DEF.home.mapId === map.id) {
     for (const key of Object.values(ELEXIS_DEF.assets)) addAssetKey(keys, key);
+  }
+
+  // First infernal mythic is independently Warfront-scoped and never loads on
+  // Cinder/interior maps.
+  if (MYTHICAL_DEMON_DEF.home.mapId === map.id) {
+    for (const key of Object.values(MYTHICAL_DEMON_DEF.assets)) addAssetKey(keys, key);
   }
 
   const zoneIds = new Set(map.zoneIds || []);

@@ -1,4 +1,5 @@
 import { areHostile, areFriendly } from '../data/factions.js';
+import { isWorthyTarget } from '../data/powerTiers.js';
 
 const FRAME_COUNTS = Object.freeze({ spellcast: 7, thrust: 8, walk: 9, slash: 6, shoot: 13, hurt: 6, idle: 2 });
 const IDLE_SEQUENCE = Object.freeze([0, 0, 1, 0, 1, 0]);
@@ -900,18 +901,21 @@ export class Elexis {
     const constellation = this.def.abilities.heavenfallConstellation;
     const throneCluster = this.clusterCount(this.target, available, throne.targetClusterRadius);
     const constellationCluster = this.clusterCount(this.target, available, constellation.targetClusterRadius);
+    const worthyThrone = isWorthyTarget(this.target, throne.worthyTargetTier);
+    const worthyConstellation = isWorthyTarget(this.target, constellation.worthyTargetTier);
     if (this.majorReady(time)) {
-      if (throneCluster >= throne.minCluster && distance <= throne.range && this.cooldownReady(throne.id, time)) {
+      if ((throneCluster >= throne.minCluster || worthyThrone) && distance <= throne.range && this.cooldownReady(throne.id, time)) {
         this.beginAbility(throne, this.target, time); return;
       }
-      if (constellationCluster >= constellation.minCluster && distance <= constellation.range && this.cooldownReady(constellation.id, time)) {
+      if ((constellationCluster >= constellation.minCluster || worthyConstellation) && distance <= constellation.range && this.cooldownReady(constellation.id, time)) {
         this.beginAbility(constellation, this.target, time); return;
       }
     }
 
     const chains = this.def.abilities.chainsSeventhThrone;
     const chainsCluster = this.clusterCount(this.target, available, chains.radius);
-    if (chainsCluster >= chains.minCluster && distance <= chains.range && this.cooldownReady(chains.id, time)) {
+    const worthyChains = isWorthyTarget(this.target, chains.worthyTargetTier);
+    if ((chainsCluster >= chains.minCluster || worthyChains) && distance <= chains.range && this.cooldownReady(chains.id, time)) {
       this.beginAbility(chains, this.target, time); return;
     }
 

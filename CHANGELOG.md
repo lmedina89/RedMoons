@@ -1,5 +1,17 @@
 # Changelog
 
+## v0.1.4.4.5 — Mythical Demon Field Test + Power Hierarchy Foundation
+
+- Added **Mythical Demon — Bloodwing Scourge** as the first independent named infernal mythic on the Veil Warfront, internally Level 94 with hidden `Lv. ???` presentation.
+- Added seven bespoke infernal abilities: Abyssal Ascendance, Rending Talon, Bloodwing Rush, Hellspine Volley, Maw of the Void, Crimson Eclipse, and Cataclysm of the First Pit.
+- Added the reusable combat-threat hierarchy `ordinary / elite / commander / boss / mythic / apex` while keeping RPG level as a separate progression value. Canonical named ladder: Mythical Demon 94, Lailani 96, reserved Ancient Demon Lord 98, Azrael 99, El’exis 99; future player hard cap 100.
+- Added worthy-single-target escalation: configured major abilities preserve their normal crowd gates but may also fire against one mythic/apex target. Azrael Heavenfall/Sanctified Nova/Seraphic Judgment, Lailani Garden/Transcendent Dawn, El’exis Chains/Constellation/Throne, and the Mythical Demon’s three major AoEs participate.
+- Generalized shared Celestial cone/radial and player attack/skill hit paths so hostile special actors receive real resolved damage instead of being skipped by ordinary-enemy-array-only loops.
+- Added seven compact runtime crops from the verified complete upper LPC action blocks of `DemonMythical.png`; the full source sheet remains source-only and unchanged.
+- Added `Mythical Demon Field Test`, `Mythical Demon Solo Test`, and `Mythical Demon AI Overlay` debug actions. Solo waves are bounded to 3–5 Celestials, target the demon only, bypass production rewards, and use a collision-safe southern-western arena separated from production spawn centers.
+- Added power-hierarchy, infernal-field-test, and infernal-solo regression suites. Production Warfront remains 32 regular actors; save schema remains 2.
+- Preserved v0.1.4.4.4.1 El’exis healing, Azrael Judgment Blast, Lailani, ordinary faction balance, portals, progression and Warfront geography.
+
 ## v0.1.4.4.4.1 — El’exis Healing Polish
 
 - Raised **Edict of Sanctuary** player restoration to 12% max HP on the opening pulse plus 5% max HP on each of its three sustained pulses, for 27% total only when the player remains inside the full 5.6-second field.

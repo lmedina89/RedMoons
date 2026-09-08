@@ -1,4 +1,5 @@
 import { areHostile } from '../data/factions.js';
+import { isWorthyTarget } from '../data/powerTiers.js';
 
 const FRAME_COUNTS = Object.freeze({
   spellcast: 7, thrust: 8, slash: 6, shoot: 13, hurt: 6,
@@ -358,6 +359,9 @@ export class Azrael {
     const seraphicCluster = this.clusterCount(this.target, available, seraphic.targetClusterRadius);
     const nearby = this.hostileCountNear(available, this.body.x, this.body.y, sanctified.radius);
     const sanctuaryNeed = sanctuary ? (this.combat?.sanctuaryNeedScore?.(this, sanctuary) || 0) : 0;
+    const worthyHeavenfall = isWorthyTarget(this.target, heavenfall.worthyTargetTier);
+    const worthySanctified = isWorthyTarget(this.target, sanctified.worthyTargetTier) && distance <= sanctified.radius;
+    const worthySeraphic = isWorthyTarget(this.target, seraphic.worthyTargetTier);
 
     // Major celestial abilities share a short pacing lock so their huge visuals
     // read as deliberate invocations instead of becoming an unreadable nuke loop.
@@ -367,13 +371,13 @@ export class Azrael {
       if (sanctuary && sanctuaryNeed >= sanctuary.castMissingThreshold && this.cooldownReady(sanctuary.id, time)) {
         this.beginAbility(sanctuary, this.target, time); return;
       }
-      if (cluster >= heavenfall.minCluster && distance <= 390 && this.cooldownReady(heavenfall.id, time)) {
+      if ((cluster >= heavenfall.minCluster || worthyHeavenfall) && distance <= 390 && this.cooldownReady(heavenfall.id, time)) {
         this.beginAbility(heavenfall, this.target, time); return;
       }
-      if (nearby >= sanctified.minNearby && this.cooldownReady(sanctified.id, time)) {
+      if ((nearby >= sanctified.minNearby || worthySanctified) && this.cooldownReady(sanctified.id, time)) {
         this.beginAbility(sanctified, this.target, time); return;
       }
-      if (seraphicCluster >= seraphic.minCluster && distance <= seraphic.range && this.cooldownReady(seraphic.id, time)) {
+      if ((seraphicCluster >= seraphic.minCluster || worthySeraphic) && distance <= seraphic.range && this.cooldownReady(seraphic.id, time)) {
         this.beginAbility(seraphic, this.target, time); return;
       }
     }

@@ -7,6 +7,7 @@ import { NPC_DEFS } from '../data/npcs.js';
 import { AZRAEL_DEF } from '../data/specialActors.js';
 import { LAILANI_DEF, LAILANI_SOLO_TEST_DEF } from '../data/lailani.js';
 import { ELEXIS_DEF, ELEXIS_SOLO_TEST_DEF } from '../data/elexis.js';
+import { MYTHICAL_DEMON_DEF, MYTHICAL_DEMON_SOLO_TEST_DEF } from '../data/mythicalDemon.js';
 import { AREA_DEFS, BUILDING_DEFS, COLLIDERS, DEBUG_SPAWN_REGIONS, DEFAULT_MAP_ID, FALLEN_WATCH_WALLS, HOLLOW_COLLIDERS, HOLLOW_WALLS, INTERIOR_WALLS, MAP_TRANSITIONS, PROP_DEFS, RECOVERY_POINTS, REFUGE_WALLS, SPAWN_REGIONS, TOWN_PROP_DEFS, ZONES, mapForId } from '../data/world.js';
 import { DEBUG, GAME_VERSION, PLAYER_START, RARITY, TILE_SIZE, WORLD_HEIGHT, WORLD_WIDTH } from '../config.js';
 import { gameEvents } from '../core/EventBus.js';
@@ -28,6 +29,7 @@ import { NPC } from '../entities/NPC.js';
 import { Azrael } from '../entities/Azrael.js';
 import { Lailani } from '../entities/Lailani.js';
 import { Elexis } from '../entities/Elexis.js';
+import { MythicalDemon } from '../entities/MythicalDemon.js';
 import { Player } from '../entities/Player.js';
 
 export class WorldScene extends Phaser.Scene {
@@ -52,6 +54,7 @@ export class WorldScene extends Phaser.Scene {
     this.transitioning = false;
     this.lailaniSoloTest = null;
     this.elexisSoloTest = null;
+    this.mythicalDemonSoloTest = null;
     this.makeRuntimeTextures();
     this.physics.world.setBounds(0, 0, this.currentMap.width, this.currentMap.height);
     this.cameras.main.setBounds(0, 0, this.currentMap.width, this.currentMap.height).setRoundPixels(true).setZoom(1);
@@ -87,6 +90,7 @@ export class WorldScene extends Phaser.Scene {
     this.createAzrael();
     this.createLailani();
     this.createElexis();
+    this.createMythicalDemon();
     if (DEBUG) this.dynamicCollisionDebug = this.add.graphics().setDepth(15001);
     this.combat = new CombatSystem(this, this.state, this.player, this.enemies, gameEvents);
     this.player.combat = this.combat;
@@ -94,6 +98,7 @@ export class WorldScene extends Phaser.Scene {
     if (this.azrael) this.azrael.combat = this.combat;
     if (this.lailani) this.lailani.combat = this.combat;
     if (this.elexis) this.elexis.combat = this.combat;
+    if (this.mythicalDemon) this.mythicalDemon.combat = this.combat;
     this.recovery = new RecoverySystem(this, this.state, this.inventory, this.player, gameEvents);
     this.worldEvents = new WorldEventSystem(this, this.state, gameEvents);
     this.createLootPool();
@@ -119,6 +124,7 @@ export class WorldScene extends Phaser.Scene {
       this.azrael?.destroy();
       this.lailani?.destroy();
       this.elexis?.destroy();
+      this.mythicalDemon?.destroy();
       this.combat?.destroy();
     });
     this.updateZone();
@@ -140,6 +146,10 @@ export class WorldScene extends Phaser.Scene {
     if (DEBUG && this.currentMap.id === ELEXIS_SOLO_TEST_DEF.mapId && this.registry.get('elexisSoloRequested')) {
       this.registry.set('elexisSoloRequested', false);
       this.time.delayedCall(40, () => this.startElexisSoloTest());
+    }
+    if (DEBUG && this.currentMap.id === MYTHICAL_DEMON_SOLO_TEST_DEF.mapId && this.registry.get('mythicalDemonSoloRequested')) {
+      this.registry.set('mythicalDemonSoloRequested', false);
+      this.time.delayedCall(40, () => this.startMythicalDemonSoloTest());
     }
     if (!this.state.worldFlags.introToastShown && this.currentMap.id === DEFAULT_MAP_ID) {
       this.state.worldFlags.introToastShown = true;
@@ -1367,6 +1377,14 @@ ${point.label || 'Use'}`, {
     // formation-control casts should not snag on decorative ground clutter.
   }
 
+  createMythicalDemon() {
+    this.mythicalDemon = null;
+    if (MYTHICAL_DEMON_DEF.home.mapId !== this.currentMap.id) return;
+    this.mythicalDemon = new MythicalDemon(this, MYTHICAL_DEMON_DEF);
+    // The first infernal mythic uses the same compact airborne/navigation
+    // principle as named celestials: world bounds apply, low clutter does not.
+  }
+
   suspendProductionEnemiesForLailaniSoloTest() {
     for (const enemy of this.enemies || []) {
       if (!enemy || enemy._lailaniSoloTest) continue;
@@ -1586,6 +1604,115 @@ ${point.label || 'Use'}`, {
     return true;
   }
 
+
+  suspendProductionEnemiesForMythicalDemonSoloTest() {
+    for (const enemy of this.enemies || []) {
+      if (!enemy || enemy._mythicalDemonSoloTest) continue;
+      enemy._mythicalDemonSoloSuspended = true;
+      enemy.clearAbility?.();
+      this.combat?.statuses?.clear?.(enemy);
+      enemy.target = null;
+      enemy.respawnAt = Number.MAX_SAFE_INTEGER;
+      enemy.sprite?.setVelocity?.(0);
+      if (enemy.sprite?.body) enemy.sprite.body.enable = false;
+      enemy.sprite?.setActive?.(false)?.setVisible?.(false);
+      enemy.visual?.setVisible?.(false);
+    }
+  }
+
+  createMythicalDemonSoloEnemy(enemyId, point, index) {
+    const def = ENEMY_DEFS[enemyId];
+    if (!def || !point) return null;
+    const wave = this.mythicalDemonSoloTest?.wave || 1;
+    const spawn = {
+      id: `debug_mythical_demon_solo_${wave}_${index}_${enemyId}`,
+      encounterId: `debug_mythical_demon_solo_wave_${wave}`,
+      archetype: 'guard', mapId: MYTHICAL_DEMON_SOLO_TEST_DEF.mapId,
+      areaId: 'area_warfront_infernal_front', enemyId,
+      x: point.x - 40, y: point.y - 40, width: 80, height: 80, count: 1,
+      respawnMs: 1000000000, activationRange: 1800, pursuitMargin: 900, debugOnly: true
+    };
+    const callbacks = {
+      hitTarget: (target, amount, x, y, enemy) => this.combat?.enemyMeleeTarget(target, amount, x, y, enemy),
+      beginAbility: (enemy, ability, target) => this.combat?.beginEnemyAbility(enemy, ability, target, enemy.abilityTargetX, enemy.abilityTargetY),
+      triggerAbility: (enemy, ability, targetX, targetY, target) => this.combat?.triggerEnemyAbility(enemy, ability, targetX, targetY, target),
+      damageNumber: (x, y, amount, hostile) => this.combat?.damageNumbers.show(x, y, amount, hostile),
+      alertEncounter: (_enemy, target, time) => {
+        if (!target || target !== this.mythicalDemon) return;
+        for (const ally of this.mythicalDemonSoloTest?.actors || []) ally?.forceEncounterAggro?.(this.mythicalDemon, time);
+      },
+      // Debug celestial deaths intentionally bypass production rewards.
+      died: enemy => { enemy._mythicalDemonSoloDefeated = true; }
+    };
+    const enemy = new Enemy(this, this.enemyGroup, def, spawn, 0, callbacks);
+    enemy._mythicalDemonSoloTest = true;
+    enemy.combat = this.combat;
+    this.enemies.push(enemy);
+    enemy.forceEncounterAggro(this.mythicalDemon, this.time.now);
+    return enemy;
+  }
+
+  clearMythicalDemonSoloWaveActors() {
+    const actors = this.mythicalDemonSoloTest?.actors || [];
+    for (const actor of actors) {
+      actor?.clearAbility?.();
+      this.combat?.statuses?.clear?.(actor);
+      actor?.sprite?.destroy?.();
+      actor?.visual?.destroy?.();
+      const index = this.enemies.indexOf(actor);
+      if (index >= 0) this.enemies.splice(index, 1);
+    }
+    if (this.mythicalDemonSoloTest) this.mythicalDemonSoloTest.actors = [];
+  }
+
+  spawnMythicalDemonSoloWave(time = this.time.now) {
+    if (!this.mythicalDemonSoloTest?.active || !this.mythicalDemon) return false;
+    this.clearMythicalDemonSoloWaveActors();
+    this.mythicalDemonSoloTest.wave += 1;
+    const waveIndex = (this.mythicalDemonSoloTest.wave - 1) % MYTHICAL_DEMON_SOLO_TEST_DEF.waves.length;
+    const enemyIds = MYTHICAL_DEMON_SOLO_TEST_DEF.waves[waveIndex];
+    const center = MYTHICAL_DEMON_SOLO_TEST_DEF.spawnCenter;
+    this.mythicalDemonSoloTest.actors = enemyIds.map((enemyId, index) => {
+      const offset = MYTHICAL_DEMON_SOLO_TEST_DEF.spawnOffsets[index % MYTHICAL_DEMON_SOLO_TEST_DEF.spawnOffsets.length];
+      return this.createMythicalDemonSoloEnemy(enemyId, { x: center.x + offset.x, y: center.y + offset.y }, index);
+    }).filter(Boolean);
+    this.mythicalDemonSoloTest.nextWaveAt = 0;
+    this.mythicalDemonSoloTest.waveCleared = false;
+    const harder = waveIndex >= 2;
+    gameEvents.emit('toast', {
+      text: `Mythical Demon Solo Test • Wave ${this.mythicalDemonSoloTest.wave}${harder ? ' • Guardian pressure' : ''}`,
+      tone: harder ? 'danger' : 'muted', short: true
+    });
+    return this.mythicalDemonSoloTest.actors.length > 0;
+  }
+
+  updateMythicalDemonSoloTest(time) {
+    const test = this.mythicalDemonSoloTest;
+    if (!test?.active) return;
+    const actors = test.actors || [];
+    if (actors.length && !test.waveCleared && actors.every(actor => !actor || actor.hp <= 0 || actor.state === 'dying' || actor.state === 'dead' || actor.sprite?.active === false)) {
+      test.waveCleared = true;
+      test.nextWaveAt = time + MYTHICAL_DEMON_SOLO_TEST_DEF.nextWaveDelayMs;
+    }
+    if (test.waveCleared && test.nextWaveAt && time >= test.nextWaveAt) this.spawnMythicalDemonSoloWave(time);
+  }
+
+  startMythicalDemonSoloTest() {
+    if (!DEBUG || this.currentMap.id !== MYTHICAL_DEMON_SOLO_TEST_DEF.mapId || !this.mythicalDemon) return false;
+    if (this.mythicalDemonSoloTest?.active) {
+      gameEvents.emit('toast', { text: `Mythical Demon Solo Test already running • Wave ${this.mythicalDemonSoloTest.wave}`, tone: 'muted', short: true });
+      return true;
+    }
+    this.mythicalDemonSoloTest = { active: true, wave: 0, actors: [], nextWaveAt: 0, waveCleared: false };
+    this.suspendProductionEnemiesForMythicalDemonSoloTest();
+    this.mythicalDemon.relocateForFieldTest(MYTHICAL_DEMON_SOLO_TEST_DEF.demon.x, MYTHICAL_DEMON_SOLO_TEST_DEF.demon.y, this.time.now);
+    this.player.body.setPosition(MYTHICAL_DEMON_SOLO_TEST_DEF.player.x, MYTHICAL_DEMON_SOLO_TEST_DEF.player.y);
+    this.player.visual.direction = 3;
+    this.spawnMythicalDemonSoloWave(this.time.now);
+    gameEvents.emit('toast', { text: 'Solo loop active: Celestial test waves target the Mythical Demon only. Normal Warfront troops return after a map reload.', tone: 'muted' });
+    return true;
+  }
+
   triggerWorldEvent(event) {
     const members = encounterId => (this.enemies || []).filter(enemy => enemy.encounterId === encounterId && enemy.sprite?.active);
     if (event.kind === 'encounter_alert_player') {
@@ -1622,6 +1749,7 @@ ${point.label || 'Use'}`, {
     if (this.azrael && !this.azrael.dead) actors.push(this.azrael);
     if (this.lailani && !this.lailani.dead) actors.push(this.lailani);
     if (this.elexis && !this.elexis.dead) actors.push(this.elexis);
+    if (this.mythicalDemon && !this.mythicalDemon.dead) actors.push(this.mythicalDemon);
     return actors.filter(Boolean);
   }
 
@@ -1972,6 +2100,27 @@ ${point.label || 'Use'}`, {
       this.emitState();
       return;
     }
+    if (action === 'mythicaldemon') {
+      if (this.currentMap.id !== MYTHICAL_DEMON_SOLO_TEST_DEF.mapId || this.mythicalDemonSoloTest?.active) {
+        this.transitionToMap(MYTHICAL_DEMON_SOLO_TEST_DEF.mapId, 'mythical_demon_test');
+        return;
+      }
+      moveNear(this.mythicalDemon?.body);
+      gameEvents.emit('toast', { text: 'Mythical Demon field test: the Bloodwing Scourge is loose on the Infernal approach.', tone: 'danger', short: true });
+      return;
+    }
+    if (action === 'mythicaldemonsolo') {
+      this.transitionToMap(MYTHICAL_DEMON_SOLO_TEST_DEF.mapId, MYTHICAL_DEMON_SOLO_TEST_DEF.entryId, {
+        beforeCommit: () => this.registry.set('mythicalDemonSoloRequested', true)
+      });
+      return;
+    }
+    if (action === 'mythicaldemonai') {
+      const enabled = this.mythicalDemon?.setDebugEnabled(!this.mythicalDemon.debugEnabled);
+      gameEvents.emit('toast', { text: enabled ? 'Mythical Demon AI diagnostics on.' : 'Mythical Demon AI diagnostics off.', tone: 'muted', short: true });
+      this.emitState();
+      return;
+    }
     if (action === 'burntcache') {
       if (this.currentMap.id !== 'map_cinder_wilds') { this.transitionToMap('map_cinder_wilds', 'from_refuge', { position: { x: 2200, y: 900 } }); return; }
       this.player.body.setPosition(2200, 900); return;
@@ -2126,7 +2275,7 @@ ${point.label || 'Use'}`, {
     const derived = derivedStats(this.state);
     this.state.player.hp = Math.min(this.state.player.hp, derived.maxHp);
     this.state.player.essence = Math.min(this.state.player.essence, derived.maxEssence);
-    gameEvents.emit('state', { state: this.state, derived, quests: this.questSystem?.activeSummary() || [], combat: this.combat?.snapshot(this.time.now) || { skills: [], effects: [] }, recovery: this.recovery?.snapshot(this.time.now) || { quick: [], food: { active: false }, passive: { active: false } }, interaction: this.interactionSnapshot(), azrael: this.azrael?.snapshot(this.time.now) || null, lailani: this.lailani?.snapshot(this.time.now) || null, elexis: this.elexis?.snapshot(this.time.now) || null });
+    gameEvents.emit('state', { state: this.state, derived, quests: this.questSystem?.activeSummary() || [], combat: this.combat?.snapshot(this.time.now) || { skills: [], effects: [] }, recovery: this.recovery?.snapshot(this.time.now) || { quick: [], food: { active: false }, passive: { active: false } }, interaction: this.interactionSnapshot(), azrael: this.azrael?.snapshot(this.time.now) || null, lailani: this.lailani?.snapshot(this.time.now) || null, elexis: this.elexis?.snapshot(this.time.now) || null, mythicalDemon: this.mythicalDemon?.snapshot(this.time.now) || null });
   }
 
   safeSave() { try { this.saveManager.save(this.state); } catch (error) { console.warn('[Ashfall] Save failed', error); gameEvents.emit('toast', { text: 'Save could not be written on this device.', tone: 'danger' }); } }
@@ -2150,6 +2299,8 @@ ${point.label || 'Use'}`, {
     if (this.lailani && !this.lailani.dead) drawBody(this.lailani.body?.body, 0xbff6ff, 0.78);
     // Pale violet = El’exis's compact Dominion field-test proxy.
     if (this.elexis && !this.elexis.dead) drawBody(this.elexis.body?.body, 0xd9c7ff, 0.80);
+    // Crimson = first infernal mythic field-test proxy.
+    if (this.mythicalDemon && !this.mythicalDemon.dead) drawBody(this.mythicalDemon.body?.body, 0xff4c3a, 0.82);
   }
 
   update(time, delta) {
@@ -2170,17 +2321,20 @@ ${point.label || 'Use'}`, {
     if (actionInput.consumeRecovery(1)) this.recovery?.useQuick('essence');
     if (DEBUG) this.drawDynamicCollisionDebug();
     if (actionInput.consumeInteract()) this.interact();
-    this.azrael?.update(time, delta, this.enemies);
-    this.lailani?.update(time, delta, this.enemies);
-    this.elexis?.update(time, delta, this.enemies);
     const combatants = this.combatants();
+    this.azrael?.update(time, delta, combatants);
+    this.lailani?.update(time, delta, combatants);
+    this.elexis?.update(time, delta, combatants);
+    this.mythicalDemon?.update(time, delta, combatants);
     for (const enemy of this.enemies) {
       if (enemy._lailaniSoloTest) enemy.update(time, delta, this.lailani, this.lailani ? [this.lailani] : []);
       else if (enemy._elexisSoloTest) enemy.update(time, delta, this.elexis, this.elexis ? [this.elexis] : []);
+      else if (enemy._mythicalDemonSoloTest) enemy.update(time, delta, this.mythicalDemon, this.mythicalDemon ? [this.mythicalDemon] : []);
       else enemy.update(time, delta, this.player, combatants);
     }
     this.updateLailaniSoloTest(time);
     this.updateElexisSoloTest(time);
+    this.updateMythicalDemonSoloTest(time);
     for (const npc of this.npcs) npc.update(time, delta, this.player);
     this.updateZone();
     this.updateArea();

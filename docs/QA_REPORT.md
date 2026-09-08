@@ -278,3 +278,12 @@ Automated coverage adds El’exis-specific field-test and solo-loop smoke suites
 - Added an exact-contract smoke regression for player healing: Edict 12% initial + 5% sustained pulses and Crown 3% player aura pulses.
 - Re-ran the complete inherited project validation suite; named-mythic cross-healing remains reduced and ordinary-Celestial/self healing values are unchanged.
 - Physical iPhone Safari remains the release gate for feel, readability and sustained VFX/performance.
+
+
+## v0.1.4.4.5 — Mythical Demon Field Test + Power Hierarchy Foundation validation
+
+- Added `tests/power-hierarchy-smoke.mjs` for the canonical 94/96/98/99 ladder, threat-tier ordering, ordinary-vs-worthy distinction, Azrael 1v1 Heavenfall escalation and special-actor Celestial cone/radial damage resolution.
+- Added `tests/mythical-demon-field-test-smoke.mjs` for the seven-skill infernal kit, Level-94/threat-tier contract, worthy-target Cataclysm selection, 1200px simulation gate, collision-safe home/debug placement, Warfront-only streaming and exact runtime crop dimensions.
+- Added `tests/mythical-demon-solo-test-smoke.mjs` for bounded 3–5 Celestial waves, collision-safe isolated anchors, production-spawn separation, demon-only targeting, reward bypass, prepare-before-commit restart and unchanged 32-actor production Warfront.
+- The first interrupted work copy exposed two issues before packaging: an inherited version assertion had not yet been advanced, and older Azrael shared cone/radial helpers still iterated only ordinary enemies. The release candidate was rebuilt from a fresh v0.1.4.4.4.1 unzip and the damage path was generalized before the full inherited suite was run.
+- Full `npm run check` passes after those repairs. Physical iPhone Safari remains the final gate for combat readability, mythic 1v1 escalation, sustained VFX performance and touch play.

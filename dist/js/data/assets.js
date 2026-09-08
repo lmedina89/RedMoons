@@ -158,6 +158,17 @@ export const ASSET_DEFS = [
   })),
   { key: 'elexis-hurt', path: 'assets/npcs/elexis/elexis-hurt.png', frameWidth: 64, frameHeight: 64, frames: 6 },
 
+  // v0.1.4.4.5 first infernal mythic runtime crops. Only the verified complete
+  // top LPC action blocks from DemonMythical.png are streamed on the Warfront.
+  ...[
+    ['spellcast', 7], ['thrust', 8], ['walk', 9], ['slash', 6],
+    ['shoot', 13], ['idle', 2]
+  ].map(([action, frames]) => ({
+    key: `mythical-demon-${action}`, path: `assets/npcs/mythical-demon/mythical-demon-${action}.png`,
+    frameWidth: 64, frameHeight: 64, frames
+  })),
+  { key: 'mythical-demon-hurt', path: 'assets/npcs/mythical-demon/mythical-demon-hurt.png', frameWidth: 64, frameHeight: 64, frames: 6 },
+
   { key: 'skeleton-walk', path: `${E}skeleton-walk.png`, frameWidth: 64, frameHeight: 64 },
   { key: 'skeleton-slash', path: `${E}skeleton-slash.png`, frameWidth: 64, frameHeight: 64 },
   { key: 'skeleton-bow-shoot', path: `${E}skeleton-bow-shoot.png`, frameWidth: 64, frameHeight: 64 },

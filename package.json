@@ -1,10 +1,10 @@
 {
   "name": "hell-rpg-ashfall-foundation",
-  "version": "0.1.4.4-4-1",
+  "version": "0.1.4.4-5",
   "private": true,
   "type": "module",
   "scripts": {
     "dev": "node tests/static-server.mjs",
-    "check": "node tests/root-entry-smoke.mjs && node tests/validate-project.mjs && node tests/azrael-logic-smoke.mjs && node tests/azrael-judgment-blast-smoke.mjs && node tests/sanctuary-healing-smoke.mjs && node tests/world-navigation-smoke.mjs && node tests/encounter-ecology-smoke.mjs && node tests/building-integrity-smoke.mjs && node tests/demon-combat-smoke.mjs && node tests/celestial-combat-smoke.mjs && node tests/faction-warfare-smoke.mjs && node tests/exploration-portal-smoke.mjs && node tests/warfront-foundation-smoke.mjs && node tests/living-warfront-smoke.mjs && node tests/lailani-field-test-smoke.mjs && node tests/lailani-field-test-polish-smoke.mjs && node tests/elexis-field-test-smoke.mjs && node tests/elexis-healing-polish-smoke.mjs && node tests/elexis-solo-test-smoke.mjs"
+    "check": "node tests/root-entry-smoke.mjs && node tests/validate-project.mjs && node tests/azrael-logic-smoke.mjs && node tests/azrael-judgment-blast-smoke.mjs && node tests/sanctuary-healing-smoke.mjs && node tests/world-navigation-smoke.mjs && node tests/encounter-ecology-smoke.mjs && node tests/building-integrity-smoke.mjs && node tests/demon-combat-smoke.mjs && node tests/celestial-combat-smoke.mjs && node tests/faction-warfare-smoke.mjs && node tests/exploration-portal-smoke.mjs && node tests/warfront-foundation-smoke.mjs && node tests/living-warfront-smoke.mjs && node tests/lailani-field-test-smoke.mjs && node tests/lailani-field-test-polish-smoke.mjs && node tests/elexis-field-test-smoke.mjs && node tests/elexis-healing-polish-smoke.mjs && node tests/elexis-solo-test-smoke.mjs && node tests/power-hierarchy-smoke.mjs && node tests/mythical-demon-field-test-smoke.mjs && node tests/mythical-demon-solo-test-smoke.mjs"
   }
 }
