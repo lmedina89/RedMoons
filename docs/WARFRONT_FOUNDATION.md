@@ -1,4 +1,4 @@
-# Veil Warfront Foundation — v0.1.4.4.1
+# Veil Warfront Foundation — v0.1.4.4.2
 
 ## Purpose
 
@@ -26,3 +26,8 @@ The geography remains fixed, but the seven non-Axis landmark zones now have dist
 ## Staged next pass
 
 v0.1.4.4.2 can populate the approved/detail-complete map with bounded common-unit faction warfare. Named mythical actors remain separate bespoke releases.
+
+
+## v0.1.4.4.2 Living Warfront population layer
+
+The first live army pass adds 32 regular actors (16 celestial / 16 infernal) across stronghold guards, rear/forward outpost defenders, opposing Axis patrols and a smaller Pilgrim’s Ruin scout clash. All groups reuse existing faction-aware targeting, bounded assist, pursuit/leash and offscreen-sleep behavior. Named mythical characters remain outside runtime.

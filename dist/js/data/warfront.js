@@ -1,4 +1,4 @@
-// v0.1.4.4.1 Warfront geography/atmosphere/detail data. This file deliberately owns
+// v0.1.4.4.2 Warfront geography/atmosphere/detail/population data. This file deliberately owns
 // the special realm's composition metadata so later stronghold/population
 // passes can add content without hard-coding a second monolithic WorldScene.
 
@@ -157,6 +157,72 @@ export const WARFRONT_AMBIENT_EMITTERS = Object.freeze([
   Object.freeze({ id: 'celestial_motes', kind: 'mote', x: 4930, y: 1510, spreadX: 1030, spreadY: 1320, count: 14, tint: 0xeafcff, alpha: 0.52, minDuration: 4700, maxDuration: 7600 }),
   Object.freeze({ id: 'infernal_embers', kind: 'ember', x: 1210, y: 1510, spreadX: 1070, spreadY: 1320, count: 14, tint: 0xff6a3d, alpha: 0.46, minDuration: 3900, maxDuration: 6500 }),
   Object.freeze({ id: 'axis_dust', kind: 'mote', x: 3072, y: 1510, spreadX: 630, spreadY: 520, count: 10, tint: 0xf8df9a, alpha: 0.44, minDuration: 5200, maxDuration: 8200 })
+]);
+
+
+
+// v0.1.4.4.2 Living Warfront population. The realm deliberately stays below
+// the proven 35-actor Cinder Wilds production ceiling. Spawn rows are grouped
+// by defended landmarks and two contested patrol lanes; Enemy.js keeps distant
+// groups asleep until the player approaches their sector.
+export const WARFRONT_POPULATION_BUDGET = Object.freeze({
+  maxProductionActors: 32,
+  maxActiveSectorRange: 1080,
+  mythicActors: 0
+});
+
+export const WARFRONT_SPAWN_REGIONS = Object.freeze([
+  // Infernal Stronghold — four rear-line defenders around the inner muster
+  // yard, split around the ritual altar so no spawn overlaps its solid.
+  Object.freeze({ id: 'spawn_warfront_infernal_stronghold_abyss', encounterId: 'enc_warfront_infernal_stronghold', archetype: 'guard', mapId: 'map_veil_warfront', areaId: 'area_warfront_infernal_stronghold', enemyId: 'enemy_demon_scout', x: 220, y: 930, width: 210, height: 190, count: 2, respawnMs: 14500, activationRange: 980, pursuitMargin: 110 }),
+  Object.freeze({ id: 'spawn_warfront_infernal_stronghold_ashbone', encounterId: 'enc_warfront_infernal_stronghold', archetype: 'guard', mapId: 'map_veil_warfront', areaId: 'area_warfront_infernal_stronghold', enemyId: 'enemy_ashbone_demon', x: 600, y: 1810, width: 170, height: 180, count: 1, respawnMs: 16800, activationRange: 980, pursuitMargin: 110 }),
+  Object.freeze({ id: 'spawn_warfront_infernal_stronghold_fleshborn', encounterId: 'enc_warfront_infernal_stronghold', archetype: 'guard', mapId: 'map_veil_warfront', areaId: 'area_warfront_infernal_stronghold', enemyId: 'enemy_fleshborn_demon', x: 240, y: 1900, width: 170, height: 180, count: 1, respawnMs: 22000, activationRange: 980, pursuitMargin: 110 }),
+
+  // Cinder Bastion — compact rear logistics guard.
+  Object.freeze({ id: 'spawn_warfront_cinder_abyss', encounterId: 'enc_warfront_cinder_bastion', archetype: 'guard', mapId: 'map_veil_warfront', areaId: 'area_warfront_infernal_rear', enemyId: 'enemy_demon_scout', x: 1110, y: 780, width: 100, height: 80, count: 1, respawnMs: 13800, activationRange: 920 }),
+  Object.freeze({ id: 'spawn_warfront_cinder_hellfire', encounterId: 'enc_warfront_cinder_bastion', archetype: 'guard', mapId: 'map_veil_warfront', areaId: 'area_warfront_infernal_rear', enemyId: 'enemy_hellfire_demon', x: 1370, y: 780, width: 100, height: 80, count: 1, respawnMs: 15200, activationRange: 920 }),
+  Object.freeze({ id: 'spawn_warfront_cinder_imp', encounterId: 'enc_warfront_cinder_bastion', archetype: 'guard', mapId: 'map_veil_warfront', areaId: 'area_warfront_infernal_rear', enemyId: 'enemy_blueflame_imp', x: 1370, y: 950, width: 100, height: 70, count: 1, respawnMs: 11800, activationRange: 900 }),
+
+  // Riven Hold — the heavy forward infernal redoubt.
+  Object.freeze({ id: 'spawn_warfront_riven_abyss', encounterId: 'enc_warfront_riven_hold', archetype: 'guard', mapId: 'map_veil_warfront', areaId: 'area_warfront_infernal_front', enemyId: 'enemy_demon_scout', x: 1950, y: 1420, width: 110, height: 80, count: 1, respawnMs: 13200, activationRange: 1020, pursuitMargin: 130 }),
+  Object.freeze({ id: 'spawn_warfront_riven_hellfire', encounterId: 'enc_warfront_riven_hold', archetype: 'guard', mapId: 'map_veil_warfront', areaId: 'area_warfront_infernal_front', enemyId: 'enemy_hellfire_demon', x: 2200, y: 1420, width: 110, height: 80, count: 1, respawnMs: 14800, activationRange: 1020, pursuitMargin: 130 }),
+  Object.freeze({ id: 'spawn_warfront_riven_ashbone', encounterId: 'enc_warfront_riven_hold', archetype: 'guard', mapId: 'map_veil_warfront', areaId: 'area_warfront_infernal_front', enemyId: 'enemy_ashbone_demon', x: 1950, y: 1620, width: 110, height: 80, count: 1, respawnMs: 15800, activationRange: 1020, pursuitMargin: 130 }),
+  Object.freeze({ id: 'spawn_warfront_riven_fleshborn', encounterId: 'enc_warfront_riven_hold', archetype: 'guard', mapId: 'map_veil_warfront', areaId: 'area_warfront_infernal_front', enemyId: 'enemy_fleshborn_demon', x: 2200, y: 1620, width: 110, height: 80, count: 1, respawnMs: 21500, activationRange: 1020, pursuitMargin: 130 }),
+
+  // Infernal Axis patrol — walks the western half of the ancient center and
+  // meets the celestial patrol only when the player activates the sector.
+  Object.freeze({ id: 'spawn_warfront_axis_infernal_abyss', encounterId: 'enc_warfront_axis_infernal_patrol', archetype: 'patrol', mapId: 'map_veil_warfront', areaId: 'area_warfront_axis', enemyId: 'enemy_demon_scout', x: 2690, y: 1380, width: 100, height: 100, count: 1, respawnMs: 15500, activationRange: 1080, pursuitMargin: 150, patrolPath: [[2780, 1430], [2900, 1400], [2980, 1450], [3000, 1510], [2980, 1580], [2900, 1620], [2780, 1590]] }),
+  Object.freeze({ id: 'spawn_warfront_axis_infernal_hellfire', encounterId: 'enc_warfront_axis_infernal_patrol', archetype: 'patrol', mapId: 'map_veil_warfront', areaId: 'area_warfront_axis', enemyId: 'enemy_hellfire_demon', x: 2770, y: 1410, width: 100, height: 100, count: 1, respawnMs: 16500, activationRange: 1080, pursuitMargin: 150, patrolPath: [[2780, 1430], [2900, 1400], [2980, 1450], [3000, 1510], [2980, 1580], [2900, 1620], [2780, 1590]] }),
+  Object.freeze({ id: 'spawn_warfront_axis_infernal_ashbone', encounterId: 'enc_warfront_axis_infernal_patrol', archetype: 'patrol', mapId: 'map_veil_warfront', areaId: 'area_warfront_axis', enemyId: 'enemy_ashbone_demon', x: 2740, y: 1580, width: 100, height: 100, count: 1, respawnMs: 17500, activationRange: 1080, pursuitMargin: 150, patrolPath: [[2780, 1430], [2900, 1400], [2980, 1450], [3000, 1510], [2980, 1580], [2900, 1620], [2780, 1590]] }),
+
+  // Infernal southern scout pair — uses Pilgrim's Ruin rather than idling in
+  // the ruined settlement itself.
+  Object.freeze({ id: 'spawn_warfront_south_infernal_abyss', encounterId: 'enc_warfront_south_infernal_patrol', archetype: 'patrol', mapId: 'map_veil_warfront', areaId: 'area_warfront_unhoused', enemyId: 'enemy_demon_scout', x: 2700, y: 2140, width: 110, height: 80, count: 1, respawnMs: 16000, activationRange: 980, pursuitMargin: 135, patrolPath: [[2740, 2160], [2860, 2160], [2990, 2180], [2910, 2220], [2760, 2220]] }),
+  Object.freeze({ id: 'spawn_warfront_south_infernal_hellfire', encounterId: 'enc_warfront_south_infernal_patrol', archetype: 'patrol', mapId: 'map_veil_warfront', areaId: 'area_warfront_unhoused', enemyId: 'enemy_hellfire_demon', x: 2840, y: 2140, width: 110, height: 80, count: 1, respawnMs: 17000, activationRange: 980, pursuitMargin: 135, patrolPath: [[2740, 2160], [2860, 2160], [2990, 2180], [2910, 2220], [2760, 2220]] }),
+
+  // Celestial Stronghold — four rear-line defenders around the sanctuary font.
+  Object.freeze({ id: 'spawn_warfront_celestial_stronghold_sentinels', encounterId: 'enc_warfront_celestial_stronghold', archetype: 'guard', mapId: 'map_veil_warfront', areaId: 'area_warfront_celestial_stronghold', enemyId: 'enemy_celestial_footsoldier', x: 5480, y: 950, width: 260, height: 180, count: 3, respawnMs: 15000, activationRange: 980, pursuitMargin: 110 }),
+  Object.freeze({ id: 'spawn_warfront_celestial_stronghold_guardian', encounterId: 'enc_warfront_celestial_stronghold', archetype: 'guard', mapId: 'map_veil_warfront', areaId: 'area_warfront_celestial_stronghold', enemyId: 'enemy_heavenly_guardian', x: 5700, y: 1880, width: 170, height: 170, count: 1, respawnMs: 20500, activationRange: 980, pursuitMargin: 110 }),
+
+  // Halo Bastion — rear-line sanctuary guard.
+  Object.freeze({ id: 'spawn_warfront_halo_sentinels', encounterId: 'enc_warfront_halo_bastion', archetype: 'guard', mapId: 'map_veil_warfront', areaId: 'area_warfront_celestial_rear', enemyId: 'enemy_celestial_footsoldier', x: 4680, y: 780, width: 100, height: 70, count: 2, respawnMs: 14500, activationRange: 920 }),
+  Object.freeze({ id: 'spawn_warfront_halo_guardian', encounterId: 'enc_warfront_halo_bastion', archetype: 'guard', mapId: 'map_veil_warfront', areaId: 'area_warfront_celestial_rear', enemyId: 'enemy_heavenly_guardian', x: 4940, y: 950, width: 90, height: 65, count: 1, respawnMs: 19000, activationRange: 920 }),
+
+  // Dawnward Hold — forward celestial defense mirrors Riven's four roles with
+  // three mobile Sentinels and one durable Guardian.
+  Object.freeze({ id: 'spawn_warfront_dawnward_sentinel_north', encounterId: 'enc_warfront_dawnward_hold', archetype: 'guard', mapId: 'map_veil_warfront', areaId: 'area_warfront_celestial_front', enemyId: 'enemy_celestial_footsoldier', x: 3810, y: 1420, width: 120, height: 80, count: 2, respawnMs: 14200, activationRange: 1020, pursuitMargin: 130 }),
+  Object.freeze({ id: 'spawn_warfront_dawnward_sentinel_south', encounterId: 'enc_warfront_dawnward_hold', archetype: 'guard', mapId: 'map_veil_warfront', areaId: 'area_warfront_celestial_front', enemyId: 'enemy_celestial_footsoldier', x: 4070, y: 1620, width: 105, height: 80, count: 1, respawnMs: 14200, activationRange: 1020, pursuitMargin: 130 }),
+  Object.freeze({ id: 'spawn_warfront_dawnward_guardian', encounterId: 'enc_warfront_dawnward_hold', archetype: 'guard', mapId: 'map_veil_warfront', areaId: 'area_warfront_celestial_front', enemyId: 'enemy_heavenly_guardian', x: 3810, y: 1620, width: 105, height: 80, count: 1, respawnMs: 19500, activationRange: 1020, pursuitMargin: 130 }),
+
+  // Celestial Axis patrol — converges opposite the Infernal patrol around the
+  // outer ring but retains its own home/leash so the fight cannot migrate.
+  Object.freeze({ id: 'spawn_warfront_axis_celestial_sentinel_a', encounterId: 'enc_warfront_axis_celestial_patrol', archetype: 'patrol', mapId: 'map_veil_warfront', areaId: 'area_warfront_axis', enemyId: 'enemy_celestial_footsoldier', x: 3350, y: 1380, width: 100, height: 100, count: 1, respawnMs: 15800, activationRange: 1080, pursuitMargin: 150, patrolPath: [[3360, 1430], [3240, 1400], [3165, 1450], [3140, 1510], [3165, 1580], [3240, 1620], [3360, 1590]] }),
+  Object.freeze({ id: 'spawn_warfront_axis_celestial_sentinel_b', encounterId: 'enc_warfront_axis_celestial_patrol', archetype: 'patrol', mapId: 'map_veil_warfront', areaId: 'area_warfront_axis', enemyId: 'enemy_celestial_footsoldier', x: 3270, y: 1410, width: 100, height: 100, count: 1, respawnMs: 15800, activationRange: 1080, pursuitMargin: 150, patrolPath: [[3360, 1430], [3240, 1400], [3165, 1450], [3140, 1510], [3165, 1580], [3240, 1620], [3360, 1590]] }),
+  Object.freeze({ id: 'spawn_warfront_axis_celestial_guardian', encounterId: 'enc_warfront_axis_celestial_patrol', archetype: 'patrol', mapId: 'map_veil_warfront', areaId: 'area_warfront_axis', enemyId: 'enemy_heavenly_guardian', x: 3300, y: 1580, width: 100, height: 100, count: 1, respawnMs: 20500, activationRange: 1080, pursuitMargin: 150, patrolPath: [[3360, 1430], [3240, 1400], [3165, 1450], [3140, 1510], [3165, 1580], [3240, 1620], [3360, 1590]] }),
+
+  // Celestial southern scout pair mirrors the infernal Pilgrim's Ruin patrol.
+  Object.freeze({ id: 'spawn_warfront_south_celestial_sentinel_a', encounterId: 'enc_warfront_south_celestial_patrol', archetype: 'patrol', mapId: 'map_veil_warfront', areaId: 'area_warfront_unhoused', enemyId: 'enemy_celestial_footsoldier', x: 3340, y: 2140, width: 110, height: 80, count: 1, respawnMs: 16000, activationRange: 980, pursuitMargin: 135, patrolPath: [[3400, 2160], [3280, 2160], [3140, 2180], [3220, 2220], [3380, 2220]] }),
+  Object.freeze({ id: 'spawn_warfront_south_celestial_sentinel_b', encounterId: 'enc_warfront_south_celestial_patrol', archetype: 'patrol', mapId: 'map_veil_warfront', areaId: 'area_warfront_unhoused', enemyId: 'enemy_celestial_footsoldier', x: 3200, y: 2140, width: 110, height: 80, count: 1, respawnMs: 16000, activationRange: 980, pursuitMargin: 135, patrolPath: [[3400, 2160], [3280, 2160], [3140, 2180], [3220, 2220], [3380, 2220]] })
 ]);
 
 export const WARFRONT_ASSET_KEYS = Object.freeze([

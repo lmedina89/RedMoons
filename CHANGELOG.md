@@ -1,5 +1,16 @@
 # Changelog
 
+## v0.1.4.4.2 — Living Warfront
+
+- Populated the 6144×3072 Veil Warfront with **32 production actors total: 16 celestial and 16 infernal**, remaining below the established 35-actor Cinder Wilds ceiling.
+- Added bounded defenders for both main strongholds, both rear outposts and both forward outposts.
+- Added opposing three-actor Axis patrols plus two-actor scout patrols near Pilgrim’s Ruin/The Unhoused approach.
+- Added two localized data-driven faction-clash event seeds so nearby opposing patrols can converge without waking the entire battlefield.
+- Reused the existing faction-safe combat, target-loss recovery, bounded assist, pursuit leashes and player-scoped offscreen sleeping systems; no common ability tuning is changed.
+- Added a `?debug=1` **Warfront Axis Clash** placement helper for physical stress testing.
+- Kept Lailani, Lexi, DemonMythical and AncientDemonLord source-only with zero mythic runtime population.
+- Save schema remains 2; Warfront geography/detail/ambient budgets and existing art remain unchanged.
+
 ## v0.1.4.4.1 — Strongholds, Outposts & Environmental Detail
 
 - Preserved the approved 6144×3072 Veil Warfront geography, portals, routes, Axis, water crossings and ambient budget while deepening all seven major non-Axis landmarks.

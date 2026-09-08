@@ -1667,6 +1667,13 @@ ${point.label || 'Use'}`, {
     if (action === 'crypt') { this.transitionToMap('map_ashgrave_crypt', 'arrival'); return; }
     if (action === 'veil') { this.transitionToMap('map_veil_threshold', 'arrival'); return; }
     if (action === 'warfront') { this.transitionToMap('map_veil_warfront', 'veil_gate'); return; }
+    if (action === 'warfrontaxis') {
+      if (this.currentMap.id !== 'map_veil_warfront') { this.transitionToMap('map_veil_warfront', 'axis_test'); return; }
+      this.player.body.setPosition(3072, 1880);
+      this.player.visual.direction = 0;
+      gameEvents.emit('toast', { text: 'Living Warfront test: approach the Axis to wake the opposing patrols.', tone: 'muted', short: true });
+      return;
+    }
     if (action === 'burntcache') {
       if (this.currentMap.id !== 'map_cinder_wilds') { this.transitionToMap('map_cinder_wilds', 'from_refuge', { position: { x: 2200, y: 900 } }); return; }
       this.player.body.setPosition(2200, 900); return;

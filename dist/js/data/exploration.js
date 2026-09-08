@@ -75,6 +75,16 @@ export const WORLD_EVENT_DEFS = Object.freeze([
     id: 'event_crypt_pressure', mapId: 'map_ashgrave_crypt', x: 640, y: 440, radius: 280,
     kind: 'encounter_alert_player', encounterIds: Object.freeze(['enc_ashgrave_crypt_nest']), oncePerVisit: true,
     text: 'Something skitters behind the crypt walls.'
+  }),
+  Object.freeze({
+    id: 'event_warfront_axis_clash', mapId: 'map_veil_warfront', x: 3072, y: 1510, radius: 590,
+    kind: 'faction_clash', encounterIds: Object.freeze(['enc_warfront_axis_infernal_patrol', 'enc_warfront_axis_celestial_patrol']), cooldownMs: 48000,
+    text: 'The Axis erupts as opposing patrols converge on the ancient ring.'
+  }),
+  Object.freeze({
+    id: 'event_warfront_unhoused_clash', mapId: 'map_veil_warfront', x: 3072, y: 2180, radius: 420,
+    kind: 'faction_clash', encounterIds: Object.freeze(['enc_warfront_south_infernal_patrol', 'enc_warfront_south_celestial_patrol']), cooldownMs: 60000,
+    text: 'Scouts collide among the ruins above The Unhoused.'
   })
 ]);
 

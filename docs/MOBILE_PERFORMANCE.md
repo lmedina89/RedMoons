@@ -140,3 +140,11 @@ The first Warfront pass adds 38 persistent world-space ambient sprites total acr
 
 The environmental-detail pass adds a hard authored ceiling of **136 static detail sprites** across all seven major landmark clusters and exactly **6 persistent landmark Graphics/tween effects**. Static images/sprites are camera-culled by Phaser and do not run AI. The prior 38 ambient world sprites remain unchanged, no full-screen shader is added, and Warfront actor population remains zero so the cost of environment detail can be physically isolated before v0.1.4.4.2 introduces armies.
 
+
+
+## v0.1.4.4.2 Living Warfront actor budget
+
+- Production Warfront population is capped at **32 actor slots** across the entire 6144×3072 realm, below the established 35-actor Cinder Wilds ceiling.
+- Encounter activation ranges are capped at 1080px; distant groups inherit player-scoped sleeping from the shared Enemy controller.
+- Same-faction assistance is capped at two helpers and local radii no larger than 330px.
+- The first pass contains zero mythic actors and does not add new persistent environmental FX beyond the previously approved Warfront budgets.

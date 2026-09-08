@@ -239,3 +239,8 @@ The Threshold → Warfront transition uses the same bounded return-anchor stack 
 
 `WARFRONT_DETAIL_CLUSTERS` describes semantic landmark roles rather than hundreds of individual sprite rows. `WorldScene.drawWarfrontDetailCluster()` translates those bounded clusters into compositions from the audited runtime palette. `WARFRONT_DETAIL_BUDGET` hard-caps authored static detail and persistent landmark FX. Large centerpieces that visually read as solid are represented by `landmark-prop` colliders in the same shared actor collision registry; small clutter intentionally remains non-blocking. This layer is independent of encounter/spawn data so v0.1.4.4.2 can add armies without coupling faction simulation to environment rendering.
 
+
+
+## v0.1.4.4.2 Living Warfront population contract
+
+Warfront population is exported from `data/warfront.js` as `WARFRONT_SPAWN_REGIONS` and folded into the shared `SPAWN_REGIONS` registry by `data/world.js`. This keeps faction actors on the same Enemy/encounter pipeline as Cinder rather than creating a Warfront-only AI fork. The explicit production budget is 32 actors with zero mythic actors; encounter assist and activation ranges remain locally bounded.

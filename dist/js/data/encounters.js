@@ -48,7 +48,22 @@ export const ENCOUNTER_DEFS = Object.freeze({
   enc_bone_road_captain: Object.freeze({ id: 'enc_bone_road_captain', areaId: 'area_bone_road', archetype: 'guard', label: 'Captain Ossivar', alertRadius: 260, activationRange: 1000, rare: true }),
   enc_hollow_cave_nest: Object.freeze({ id: 'enc_hollow_cave_nest', areaId: 'area_ashfall_hollow', archetype: 'pack', label: 'Cave Spider Nest', alertRadius: 250, activationRange: 760 }),
   enc_hollow_mire_ambush: Object.freeze({ id: 'enc_hollow_mire_ambush', areaId: 'area_ashfall_hollow', archetype: 'ambush', label: 'Mire Spider Ambush', alertRadius: 240, activationRange: 720, ambushRange: 145 }),
-  enc_ashgrave_crypt_nest: Object.freeze({ id: 'enc_ashgrave_crypt_nest', areaId: 'area_ashgrave_crypt', archetype: 'guard', label: 'Ashgrave Crypt Nest', alertRadius: 300, activationRange: 800 })
+  enc_ashgrave_crypt_nest: Object.freeze({ id: 'enc_ashgrave_crypt_nest', areaId: 'area_ashgrave_crypt', archetype: 'guard', label: 'Ashgrave Crypt Nest', alertRadius: 300, activationRange: 800 }),
+
+  // v0.1.4.4.2 Living Warfront: bounded defensive groups and two opposing
+  // patrol pairs. Assist radii are deliberately local so one skirmish cannot
+  // wake an entire 6144px battlefield.
+  enc_warfront_infernal_stronghold: Object.freeze({ id: 'enc_warfront_infernal_stronghold', areaId: 'area_warfront_infernal_stronghold', archetype: 'guard', label: 'Infernal Stronghold Guard', alertRadius: 340, activationRange: 980, assistRadius: 260, assistCap: 2 }),
+  enc_warfront_cinder_bastion: Object.freeze({ id: 'enc_warfront_cinder_bastion', areaId: 'area_warfront_infernal_rear', archetype: 'guard', label: 'Cinder Bastion Guard', alertRadius: 300, activationRange: 920, assistRadius: 240, assistCap: 2 }),
+  enc_warfront_riven_hold: Object.freeze({ id: 'enc_warfront_riven_hold', areaId: 'area_warfront_infernal_front', archetype: 'guard', label: 'Riven Hold War Guard', alertRadius: 350, activationRange: 1020, assistRadius: 330, assistCap: 2 }),
+  enc_warfront_axis_infernal_patrol: Object.freeze({ id: 'enc_warfront_axis_infernal_patrol', areaId: 'area_warfront_axis', archetype: 'patrol', label: 'Infernal Axis Patrol', alertRadius: 380, activationRange: 1080, assistRadius: 330, assistCap: 2 }),
+  enc_warfront_south_infernal_patrol: Object.freeze({ id: 'enc_warfront_south_infernal_patrol', areaId: 'area_warfront_unhoused', archetype: 'patrol', label: 'Pilgrim’s Ruin Demon Scouts', alertRadius: 310, activationRange: 980, assistRadius: 240, assistCap: 1 }),
+
+  enc_warfront_celestial_stronghold: Object.freeze({ id: 'enc_warfront_celestial_stronghold', areaId: 'area_warfront_celestial_stronghold', archetype: 'guard', label: 'Celestial Stronghold Guard', alertRadius: 340, activationRange: 980, assistRadius: 260, assistCap: 2 }),
+  enc_warfront_halo_bastion: Object.freeze({ id: 'enc_warfront_halo_bastion', areaId: 'area_warfront_celestial_rear', archetype: 'guard', label: 'Halo Bastion Guard', alertRadius: 300, activationRange: 920, assistRadius: 240, assistCap: 2 }),
+  enc_warfront_dawnward_hold: Object.freeze({ id: 'enc_warfront_dawnward_hold', areaId: 'area_warfront_celestial_front', archetype: 'guard', label: 'Dawnward Hold Guard', alertRadius: 350, activationRange: 1020, assistRadius: 330, assistCap: 2 }),
+  enc_warfront_axis_celestial_patrol: Object.freeze({ id: 'enc_warfront_axis_celestial_patrol', areaId: 'area_warfront_axis', archetype: 'patrol', label: 'Celestial Axis Patrol', alertRadius: 380, activationRange: 1080, assistRadius: 330, assistCap: 2 }),
+  enc_warfront_south_celestial_patrol: Object.freeze({ id: 'enc_warfront_south_celestial_patrol', areaId: 'area_warfront_unhoused', archetype: 'patrol', label: 'Pilgrim’s Ruin Celestial Scouts', alertRadius: 310, activationRange: 980, assistRadius: 240, assistCap: 1 })
 });
 
 export function encounterForId(id) { return id ? ENCOUNTER_DEFS[id] || null : null; }

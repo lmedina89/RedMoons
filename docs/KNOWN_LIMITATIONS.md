@@ -1,6 +1,10 @@
-# Known Limitations — v0.1.4.4.1
+# Known Limitations — v0.1.4.4.2
 
-## v0.1.4.4.1 Warfront detail limits
+## v0.1.4.4.2 Living Warfront limits
+
+- The Living Warfront currently uses only regular/common faction troops. Lailani, Lexi, DemonMythical and AncientDemonLord remain source-only for later bespoke field-test releases.
+- Territory capture, persistent outpost ownership, siege logic and large-scale strategic simulation are not implemented yet.
+- Production population is fixed at 32 actors across the full realm; distant actors rely on existing sleeping/activation behavior rather than background strategic simulation.
 
 The Warfront remains intentionally unpopulated by production armies and has no capture/state simulation, stronghold interiors, mythic appearances or Warfront-specific loot progression yet. Minor decorative clutter is not collision-backed; only structures large enough to read as meaningful movement blockers receive `landmark-prop` collision. Physical iPhone testing is still required for final composition, readability and performance approval.
 

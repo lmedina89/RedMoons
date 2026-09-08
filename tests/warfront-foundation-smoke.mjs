@@ -17,6 +17,7 @@ const {
   WARFRONT_DETAIL_FX,
   WARFRONT_LANDMARKS,
   WARFRONT_ROUTE_BANDS,
+  WARFRONT_SPAWN_REGIONS,
   WARFRONT_RUIN_BUILDINGS,
   WARFRONT_WATERWAYS
 } = await import('../dist/js/data/warfront.js');
@@ -74,7 +75,7 @@ assert.ok(leave?.returnToOrigin && leave.fallbackDestinationMapId === 'map_veil_
 
 const ambientCount = WARFRONT_AMBIENT_EMITTERS.reduce((sum, row) => sum + row.count, 0);
 assert.ok(ambientCount >= 30 && ambientCount <= 42, 'Persistent ambient world sprites must stay bounded while still visibly present');
-assert.equal(SPAWN_REGIONS.filter(row => row.mapId === map.id).length, 0, 'v0.1.4.4.1 must remain an environment/detail pass with no live Warfront army population yet');
+assert.equal(SPAWN_REGIONS.filter(row => row.mapId === map.id).length, WARFRONT_SPAWN_REGIONS.length, 'Living Warfront must preserve the Warfront foundation while registering only the authored Warfront spawn rows');
 
 const worldSource = await readFile(new URL('../dist/js/scenes/WorldScene.js', import.meta.url), 'utf8');
 for (const needle of ['buildVeilWarfront()', 'createWarfrontAmbientFx()', 'drawWarfrontCliffRibbon(ribbon)', 'drawWarfrontWallCollider(collider)', "action === 'warfront'"]) {
@@ -93,4 +94,4 @@ assert.ok(worldSource.includes('castle(160, -41, 0') && worldSource.includes('ca
 assert.ok(worldSource.includes('this.add.container(def.x, def.y)'), 'Landmark pulse FX must scale around local world-space origins rather than drifting around 0,0');
 assert.ok(!worldSource.includes('add.shader(') && !worldSource.includes('this.add.shader('), 'Foundation atmosphere must avoid permanent full-screen custom shaders on iPhone');
 
-console.log(`Warfront detail smoke passed: ${map.width}x${map.height}, ${areas.length} areas, ${warfrontSolids.length} solids, ${ambientCount} bounded ambient sprites, zero live army spawns.`);
+console.log(`Warfront foundation/detail smoke passed: ${map.width}x${map.height}, ${areas.length} areas, ${warfrontSolids.length} solids, ${ambientCount} bounded ambient sprites, ${WARFRONT_SPAWN_REGIONS.length} Living Warfront spawn rows.`);

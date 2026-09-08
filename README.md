@@ -1,4 +1,22 @@
-# Hell RPG v0.1.4.4.1 — Strongholds, Outposts & Environmental Detail
+# Hell RPG v0.1.4.4.2 — Living Warfront
+
+## v0.1.4.4.2 Living Warfront
+
+Built directly from the approved **v0.1.4.4.1 Strongholds, Outposts & Environmental Detail** release. Save schema remains **2** and the localStorage key remains `hellrpg.ashfall.save.v1`.
+
+This pass populates the existing 6144×3072 Veil Warfront with **32 regular production actors total — 16 celestial and 16 infernal — without activating any named mythical character**. Strongholds and outposts gain bounded defenders, the Axis gains opposing patrols, and Pilgrim’s Ruin above The Unhoused gains a smaller opposing scout pair.
+
+- Celestial population uses First-Light Sentinels and Heavenly Guardians only.
+- Infernal population uses Abyss, Hellfire and Ashbone Ashwings, Fleshborn Ravagers, plus a small lesser-imp logistics guard where appropriate.
+- Stronghold/rear/forward groups defend authored local territory; Axis and southern groups use authored patrol loops.
+- Two data-driven `faction_clash` events wake opposing patrol sectors near the Axis and The Unhoused approach.
+- Same-faction reinforcement assist remains capped at two nearby helpers and local radii; existing pursuit/leash and offscreen-sleep behavior remains intact.
+- Warfront production population is deliberately **32**, below the proven 35-actor Cinder Wilds ceiling.
+- **Lailani, Lexi, DemonMythical and AncientDemonLord remain source-only with zero runtime actors.**
+- `?debug=1` adds a **Warfront Axis Clash** helper for direct physical-device testing.
+- No common-unit ability definitions, Azrael logic, portals, save schema, Warfront geography, stronghold detail, or environmental FX budgets are retuned by this pass.
+
+Physical iPhone Safari remains the release gate. In debug mode, use **Warfront Axis Clash** and then naturally walk the Axis, Riven Hold/Dawnward Hold, The Unhoused approach, and both strongholds. Verify that battles stay local, offscreen groups remain quiet, target switching works after deaths, and performance remains smooth.
 
 
 ## v0.1.4.4.1 Strongholds, Outposts & Environmental Detail

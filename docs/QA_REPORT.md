@@ -1,15 +1,15 @@
-# QA Report — v0.1.4.4.1 Strongholds, Outposts & Environmental Detail
+# QA Report — v0.1.4.4.2 Living Warfront
 
-## v0.1.4.4.1 automated/static scope
+## v0.1.4.4.2 automated/static scope
 
-The Warfront regression suite now requires authored detail clusters for both strongholds, all four outposts and The Unhoused; an exact mobile-authored sprite ceiling; a six-object persistent landmark-FX cap; visible-source `landmark-prop` collision for major centerpieces; continued zero Warfront army population; and preserved nested portal/geography/ambient invariants. The asset registry must include the curated smith/wood/tailor props used by the ruined neutral quarter.
+The Warfront regression suite now requires authored detail clusters for both strongholds, all four outposts and The Unhoused; an exact mobile-authored sprite ceiling; a six-object persistent landmark-FX cap; visible-source `landmark-prop` collision for major centerpieces; a bounded 32-actor Warfront production population with zero mythic actors; and preserved nested portal/geography/ambient invariants. The asset registry must include the curated smith/wood/tailor props used by the ruined neutral quarter.
 
 The build environment blocks local Chromium navigation (`ERR_BLOCKED_BY_ADMINISTRATOR`), so no interactive browser playthrough is claimed. Visual composition was sanity-checked against the real source sprites through static asset composites; physical iPhone Safari remains the release gate.
 
 
 ## v0.1.4.4.0.1 automated/static scope
 
-Release gating adds `tests/warfront-foundation-smoke.mjs`, which validates the 6144×3072 map, exact eight-area partition, three route bands, both stronghold footprints, four outposts, central Axis, ruined settlement, Veil Gate, Warfront-specific runtime asset registry, visible-source collision, three bridge crossings, nested Threshold↔Warfront return behavior, bounded ambient sprite count and the intentional zero-spawn Warfront population.
+Release gating adds `tests/warfront-foundation-smoke.mjs`, which validates the 6144×3072 map, exact eight-area partition, three route bands, both stronghold footprints, four outposts, central Axis, ruined settlement, Veil Gate, Warfront-specific runtime asset registry, visible-source collision, three bridge crossings, nested Threshold↔Warfront return behavior, bounded ambient sprite count and the authored Living Warfront population budget/regular-faction-only contract.
 
 The normal project suite, all inherited Azrael/Sanctuary/Demon/Celestial/faction/exploration/navigation checks, all JS/MJS syntax checks, ZIP integrity and clean-package static hosting remain required. The container browser is administrator-blocked from local navigation, so no automated live Phaser playthrough is claimed. Physical iPhone Safari remains the release gate for atmosphere, map scale, bridge/water feel and GPU/frame pacing.
 

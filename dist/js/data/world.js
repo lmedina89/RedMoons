@@ -1,6 +1,6 @@
-import { WARFRONT_ASSET_KEYS, WARFRONT_COLLIDERS, WARFRONT_DIMENSIONS } from './warfront.js';
+import { WARFRONT_ASSET_KEYS, WARFRONT_COLLIDERS, WARFRONT_DIMENSIONS, WARFRONT_SPAWN_REGIONS } from './warfront.js';
 
-// v0.1.4.4.1 world data: Cinder Refuge remains its own deliberately composed
+// v0.1.4.4.2 world data: Cinder Refuge remains its own deliberately composed
 // settlement map while the Cinder Wilds have room to breathe as a larger
 // exterior region. All placement remains data-driven so future maps can reuse
 // the same render/collision paths without baking coordinates into actor code.
@@ -213,7 +213,11 @@ export const SPAWN_REGIONS = Object.freeze([
   // v0.1.4.3 first hostile interior. It has its own tiny actor budget rather
   // than adding pressure to the 35-actor Cinder Wilds population.
   { id: 'spawn_ashgrave_crypt_spiders', encounterId: 'enc_ashgrave_crypt_nest', archetype: 'pack', mapId: 'map_ashgrave_crypt', areaId: 'area_ashgrave_crypt', enemyId: 'enemy_cave_spider', x: 210, y: 220, width: 330, height: 300, count: 2, respawnMs: 12000, activationRange: 760 },
-  { id: 'spawn_ashgrave_crypt_guard', encounterId: 'enc_ashgrave_crypt_nest', archetype: 'guard', mapId: 'map_ashgrave_crypt', areaId: 'area_ashgrave_crypt', enemyId: 'enemy_ash_skeleton', x: 760, y: 180, width: 260, height: 280, count: 1, respawnMs: 15500, activationRange: 800 }
+  { id: 'spawn_ashgrave_crypt_guard', encounterId: 'enc_ashgrave_crypt_nest', archetype: 'guard', mapId: 'map_ashgrave_crypt', areaId: 'area_ashgrave_crypt', enemyId: 'enemy_ash_skeleton', x: 760, y: 180, width: 260, height: 280, count: 1, respawnMs: 15500, activationRange: 800 },
+
+  // v0.1.4.4.2: streamed Living Warfront population. These rows reuse the
+  // ordinary faction actor system and remain below its established mobile cap.
+  ...WARFRONT_SPAWN_REGIONS
 ]);
 
 // Debug-only First-Light reinforcement force. These rows are instantiated only
