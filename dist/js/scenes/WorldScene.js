@@ -9,6 +9,7 @@ import { AREA_DEFS, BUILDING_DEFS, COLLIDERS, DEBUG_SPAWN_REGIONS, DEFAULT_MAP_I
 import { DEBUG, GAME_VERSION, PLAYER_START, RARITY, TILE_SIZE, WORLD_HEIGHT, WORLD_WIDTH } from '../config.js';
 import { gameEvents } from '../core/EventBus.js';
 import { POI_DEFS } from '../data/exploration.js';
+import { WARFRONT_AMBIENT_EMITTERS, WARFRONT_BRIDGES, WARFRONT_CLIFF_RIBBONS, WARFRONT_COLLIDERS, WARFRONT_LANDMARKS, WARFRONT_ROUTE_BANDS, WARFRONT_RUIN_BUILDINGS, WARFRONT_WATERWAYS } from '../data/warfront.js';
 import { actionInput } from '../systems/ActionInput.js';
 import { CombatSystem } from '../systems/CombatSystem.js';
 import { DialogueSystem } from '../systems/DialogueSystem.js';
@@ -145,6 +146,14 @@ export class WorldScene extends Phaser.Scene {
       const graphic = this.add.graphics().fillStyle(color, 0.22).fillCircle(10, 10, 10).fillStyle(color, 1).fillRect(7, 7, 6, 6).lineStyle(1, 0x1b0c09, 1).strokeRect(7, 7, 6, 6);
       graphic.generateTexture(key, 20, 20).destroy();
     }
+    if (!this.textures.exists('warfront-mote')) {
+      const mote = this.add.graphics().fillStyle(0xffffff, 0.95).fillCircle(4, 4, 2.1).lineStyle(1, 0xffffff, 0.35).strokeCircle(4, 4, 3.5);
+      mote.generateTexture('warfront-mote', 8, 8).destroy();
+    }
+    if (!this.textures.exists('warfront-ember')) {
+      const ember = this.add.graphics().fillStyle(0xffffff, 0.95).fillCircle(4, 4, 2.4).fillStyle(0xffffff, 0.32).fillCircle(4, 4, 3.8);
+      ember.generateTexture('warfront-ember', 8, 8).destroy();
+    }
   }
 
   buildWorld() {
@@ -155,6 +164,7 @@ export class WorldScene extends Phaser.Scene {
     if (this.currentMap.renderer === 'torrens_forge') return this.buildTorrensForge();
     if (this.currentMap.renderer === 'ashgrave_crypt') return this.buildAshgraveCrypt();
     if (this.currentMap.renderer === 'veil_threshold') return this.buildVeilThreshold();
+    if (this.currentMap.renderer === 'veil_warfront') return this.buildVeilWarfront();
     return this.buildAshfallHollow();
   }
 
@@ -558,6 +568,270 @@ export class WorldScene extends Phaser.Scene {
     this.tweens.add({ targets: rift, alpha: { from: 0.72, to: 1 }, duration: 1100, yoyo: true, repeat: -1, ease: 'Sine.easeInOut' });
     this.add.text(640, 95, 'VEIL THRESHOLD', { fontFamily: 'Georgia, serif', fontSize: '23px', color: '#ead491', stroke: '#0d090d', strokeThickness: 6, letterSpacing: 4 }).setOrigin(0.5).setDepth(900);
     this.add.text(640, 125, 'A fractured antechamber to a larger warfront', { fontFamily: 'Georgia, serif', fontSize: '10px', color: '#b9a88e', stroke: '#0d090d', strokeThickness: 3 }).setOrigin(0.5).setDepth(900);
+    this.createStaticObstacles(this.activeMapColliders());
+  }
+
+  drawWarfrontCliffRibbon(ribbon) {
+    const texture = ribbon.theme === 'celestial' ? 'warfront-mountain-winter' : 'warfront-mountain-autumn';
+    const tint = ribbon.theme === 'celestial' ? 0xe5f4ef : 0x8f6852;
+    const frames = [49, 50, 51, 56, 57, 58];
+    const count = Math.max(4, Math.floor(ribbon.length / 62));
+    for (let i = 0; i <= count; i += 1) {
+      const x = ribbon.x - ribbon.length / 2 + (i / count) * ribbon.length;
+      const frame = frames[i % frames.length];
+      this.add.sprite(x, ribbon.y, texture, frame)
+        .setScale(1.42)
+        .setTint(tint)
+        .setDepth(ribbon.y - 15)
+        .setAlpha(0.95);
+    }
+  }
+
+  drawWarfrontWallCollider(collider) {
+    const celestial = collider.x > this.currentMap.width / 2;
+    const outpost = collider.source === 'outpost-wall';
+    const tint = celestial ? (outpost ? 0xd9e1d9 : 0xe7eee5) : (outpost ? 0x8a6659 : 0x6f4b43);
+    const horizontal = collider.width >= collider.height;
+    const length = horizontal ? collider.width : collider.height;
+    const count = Math.max(1, Math.floor(length / 30));
+    const startX = collider.x - (horizontal ? collider.width / 2 : 0);
+    const startY = collider.y - (horizontal ? 0 : collider.height / 2);
+    const shadow = this.add.graphics().setDepth(collider.y - 30);
+    shadow.fillStyle(0x08060a, celestial ? 0.26 : 0.42).fillRect(
+      collider.x - collider.width / 2 + 6,
+      collider.y - collider.height / 2 + 9,
+      collider.width,
+      collider.height
+    );
+    for (let i = 0; i <= count; i += 1) {
+      if (outpost && i % 9 === 5) continue;
+      const t = count ? i / count : 0;
+      const x = horizontal ? startX + collider.width * t : collider.x;
+      const y = horizontal ? collider.y : startY + collider.height * t;
+      this.add.sprite(x, y, 'castle2-set', [48, 52, 56, 60][i % 4])
+        .setScale(outpost ? 0.98 : 1.16)
+        .setTint(tint)
+        .setAlpha(outpost ? 0.86 : 0.96)
+        .setDepth(y - 4);
+    }
+  }
+
+  createWarfrontAmbientFx() {
+    this.warfrontAmbient = [];
+    for (const emitter of WARFRONT_AMBIENT_EMITTERS) {
+      for (let i = 0; i < emitter.count; i += 1) {
+        const key = emitter.kind === 'ember' ? 'warfront-ember' : 'warfront-mote';
+        const x = emitter.x + Phaser.Math.FloatBetween(-emitter.spreadX / 2, emitter.spreadX / 2);
+        const y = emitter.y + Phaser.Math.FloatBetween(-emitter.spreadY / 2, emitter.spreadY / 2);
+        const particle = this.add.image(x, y, key)
+          .setTint(emitter.tint)
+          .setAlpha(Phaser.Math.FloatBetween(emitter.alpha * 0.45, emitter.alpha))
+          .setScale(Phaser.Math.FloatBetween(0.65, 1.35))
+          .setDepth(-30);
+        const rise = emitter.kind === 'ember' ? Phaser.Math.Between(60, 120) : Phaser.Math.Between(42, 86);
+        this.tweens.add({
+          targets: particle,
+          y: particle.y - rise,
+          x: particle.x + Phaser.Math.Between(-22, 22),
+          alpha: 0.05,
+          scale: particle.scale * 0.55,
+          duration: Phaser.Math.Between(emitter.minDuration, emitter.maxDuration),
+          delay: Phaser.Math.Between(0, 2200),
+          repeat: -1,
+          onRepeat: () => {
+            particle.setPosition(
+              emitter.x + Phaser.Math.FloatBetween(-emitter.spreadX / 2, emitter.spreadX / 2),
+              emitter.y + Phaser.Math.FloatBetween(-emitter.spreadY / 2, emitter.spreadY / 2)
+            );
+            particle.setAlpha(Phaser.Math.FloatBetween(emitter.alpha * 0.45, emitter.alpha));
+            particle.setScale(Phaser.Math.FloatBetween(0.65, 1.35));
+          }
+        });
+        this.warfrontAmbient.push(particle);
+      }
+    }
+
+    // The ancient Axis uses two counter-rotating world-space rings. These are
+    // Graphics/tweens rather than a shader so iPhone Safari gets the mystical
+    // movement without a permanent full-screen WebGL cost.
+    const axisOuter = this.add.container(3072, 1510).setDepth(880);
+    const outerG = this.add.graphics();
+    outerG.lineStyle(4, 0xf1dda0, 0.24).strokeCircle(0, 0, 300);
+    for (let i = 0; i < 12; i += 1) {
+      const a = i * Math.PI / 6;
+      const dx = Math.cos(a) * 300, dy = Math.sin(a) * 225;
+      outerG.fillStyle(i % 2 ? 0xeaf7ff : 0xf4d28d, 0.54);
+      outerG.fillTriangle(dx, dy - 10, dx + 7, dy, dx, dy + 10);
+      outerG.fillTriangle(dx, dy - 10, dx - 7, dy, dx, dy + 10);
+    }
+    axisOuter.add(outerG);
+    this.tweens.add({ targets: axisOuter, angle: 360, duration: 32000, repeat: -1, ease: 'Linear' });
+
+    const axisInner = this.add.container(3072, 1510).setDepth(881);
+    const innerG = this.add.graphics();
+    innerG.lineStyle(3, 0xa8e4ef, 0.22).strokeEllipse(0, 0, 420, 290);
+    innerG.lineStyle(2, 0xc85b45, 0.18).strokeEllipse(0, 0, 350, 235);
+    axisInner.add(innerG);
+    this.tweens.add({ targets: axisInner, angle: -360, duration: 24000, repeat: -1, ease: 'Linear' });
+
+    const veilPulse = this.add.graphics().setDepth(830);
+    veilPulse.lineStyle(5, 0xf0da9a, 0.32).strokeEllipse(3072, 2700, 260, 150);
+    veilPulse.lineStyle(3, 0x9d544b, 0.26).strokeEllipse(3072, 2700, 330, 190);
+    this.tweens.add({ targets: veilPulse, alpha: { from: 0.42, to: 1 }, duration: 1450, yoyo: true, repeat: -1, ease: 'Sine.easeInOut' });
+
+    // A few distant localized flashes imply warfare beyond the currently
+    // active sector without simulating dozens of offscreen combatants.
+    for (const [x, y, tint, delay] of [[2520, 820, 0xff754f, 700], [3650, 920, 0xe7f6ff, 1500], [2440, 1910, 0xff8a59, 2600], [3740, 2050, 0xf8e9ad, 3300]]) {
+      const flash = this.add.image(x, y, 'warfront-mote').setTint(tint).setScale(5).setAlpha(0.03).setDepth(-25);
+      this.tweens.add({ targets: flash, alpha: { from: 0.02, to: 0.62 }, scale: { from: 3.5, to: 8.5 }, duration: 190, yoyo: true, repeat: -1, repeatDelay: 4200, delay });
+    }
+  }
+
+  buildVeilWarfront() {
+    this.cameras.main.setBackgroundColor('#0d0a10');
+
+    // One tiled texture per territorial half keeps the 6144x3072 realm cheap
+    // while still giving Heaven and the Infernal host genuinely different
+    // ground language from Cinder Wilds.
+    this.groundLayer = this.add.tileSprite(0, 0, this.currentMap.width, this.currentMap.height, 'warfront-winter-dirt')
+      .setOrigin(0).setDepth(-1000).setTint(0xc9e5e5);
+    this.add.tileSprite(0, 0, 2700, this.currentMap.height, 'warfront-infernal-dirt')
+      .setOrigin(0).setDepth(-995).setTint(0x8c5f4d).setAlpha(0.96);
+
+    const ground = this.add.graphics().setDepth(-980);
+    // The center is older than either army: overlapping neutral stone/scar
+    // bands make the transition gradual instead of a hard red/blue biome line.
+    ground.fillStyle(0x312b32, 0.46).fillRect(2520, 0, 1120, this.currentMap.height);
+    ground.fillStyle(0x734330, 0.16).fillRect(2300, 0, 420, this.currentMap.height);
+    ground.fillStyle(0xc9e8e5, 0.12).fillRect(3500, 0, 420, this.currentMap.height);
+    ground.fillStyle(0x131016, 0.24).fillRect(0, 0, this.currentMap.width, 150);
+    ground.fillStyle(0x131016, 0.20).fillRect(0, this.currentMap.height - 145, this.currentMap.width, 145);
+
+    // Three broad roads remain cross-connected rather than becoming MMO lanes.
+    const routes = this.add.graphics().setDepth(-925);
+    for (const route of WARFRONT_ROUTE_BANDS) {
+      routes.lineStyle(route.width + 24, 0x0c090c, 0.18).lineBetween(500, route.y + 10, 5640, route.y + 10);
+      routes.lineStyle(route.width, 0x655a57, route.id === 'center' ? 0.40 : 0.28).lineBetween(500, route.y, 5640, route.y);
+      routes.lineStyle(6, route.id === 'center' ? 0xcfad72 : 0xa78b70, 0.10).lineBetween(500, route.y, 5640, route.y);
+    }
+    for (const x of [1450, 2360, 3072, 3840, 4720]) {
+      routes.lineStyle(70, 0x514a49, 0.24).lineBetween(x, 650, x, 2360);
+      routes.lineStyle(4, 0xb9a078, 0.08).lineBetween(x, 650, x, 2360);
+    }
+
+    // Celestial luminous water channel. The collider data leaves three bridge
+    // gaps matching the visible crossings.
+    const water = WARFRONT_WATERWAYS[0];
+    this.add.tileSprite(water.x, water.y, water.width, water.height, 'warfront-ice-water-tile')
+      .setDepth(-915).setAlpha(water.alpha).setTint(0xbdf8ff);
+    const axisPool = WARFRONT_WATERWAYS[1];
+    const pool = this.add.graphics().setDepth(-914);
+    pool.fillStyle(axisPool.color, axisPool.alpha).fillEllipse(axisPool.x, axisPool.y, axisPool.width, axisPool.height);
+    pool.lineStyle(5, 0xd8fbff, 0.28).strokeEllipse(axisPool.x, axisPool.y, axisPool.width, axisPool.height);
+    for (let i = 0; i < 9; i += 1) {
+      this.add.sprite(water.x + Phaser.Math.Between(-30, 30), 390 + i * 300, 'warfront-water-reflections', i % 12)
+        .setScale(1.2).setAlpha(0.42).setDepth(-910).setTint(0xe9ffff);
+    }
+    for (const bridge of WARFRONT_BRIDGES) {
+      this.add.image(bridge.x, bridge.y, 'bridge').setRotation(bridge.rotation).setScale(bridge.scale).setDepth(bridge.y - 18).setTint(0xc8c5b5);
+    }
+
+    // Infernal fissures are walkable visual scars rather than hidden blockers.
+    const fissures = this.add.graphics().setDepth(-905);
+    for (const [x1, y1, x2, y2] of [[560, 420, 980, 760], [1140, 2040, 1640, 1790], [1780, 1120, 2320, 1280], [2080, 2460, 2470, 2180]]) {
+      fissures.lineStyle(18, 0x19090a, 0.32).lineBetween(x1, y1, x2, y2);
+      fissures.lineStyle(5, 0xc84a33, 0.52).lineBetween(x1, y1, x2, y2);
+      fissures.lineStyle(2, 0xff9b54, 0.32).lineBetween(x1 + 3, y1 - 2, x2 + 3, y2 - 2);
+    }
+
+    for (const ribbon of WARFRONT_CLIFF_RIBBONS) this.drawWarfrontCliffRibbon(ribbon);
+
+    // Visible walls are driven from the same collider rows used by physics.
+    for (const collider of WARFRONT_COLLIDERS.filter(row => ['stronghold-wall', 'outpost-wall'].includes(row.source))) this.drawWarfrontWallCollider(collider);
+
+    // Stronghold identity remains a footprint in 0.1.4.4.0; the next detail
+    // pass can replace/extend these compositions without changing geography.
+    const addGate = (x, y, celestial) => {
+      const tint = celestial ? 0xebf1e5 : 0x6f453d;
+      const frames = [64, 65, 66, 67, 68, 69, 70];
+      for (let i = 0; i < frames.length; i += 1) this.add.sprite(x + (i - 3) * 32, y, 'castle2-set', frames[i]).setScale(1.55).setTint(tint).setDepth(y + 5);
+    };
+    addGate(875, 1550, false);
+    addGate(5265, 1550, true);
+
+    // Infernal occupation: dungeon/bone/fire language mixed into the ancient
+    // fortress rather than a generic lava castle.
+    for (const [x, y, frame] of [[300, 1060, 176], [640, 1040, 178], [260, 1900, 114], [640, 1980, 119], [500, 1840, 128]]) {
+      this.add.sprite(x, y, 'castle2-set', frame).setScale(1.28).setTint(0x8f5f50).setDepth(y + 4);
+    }
+    for (const [x, y, frame] of [[250, 1300, 64], [310, 1300, 65], [620, 1820, 64], [680, 1820, 65]]) {
+      this.add.sprite(x, y, 'dungeon-elements', frame).setScale(1.65).setTint(0xa36a55).setDepth(y + 5);
+    }
+
+    // Celestial occupation: fountain/statue/pale-stone language with sparse
+    // winter plants around the inner court.
+    for (const [x, y, frame] of [[5500, 1080, 217], [5532, 1080, 218], [5564, 1080, 219], [5800, 1840, 100], [5480, 1910, 116]]) {
+      this.add.sprite(x, y, 'castle2-set', frame).setScale(1.35).setTint(0xe9efe4).setDepth(y + 4);
+    }
+    for (let i = 0; i < 12; i += 1) {
+      this.add.sprite(5380 + (i % 4) * 150, 1280 + Math.floor(i / 4) * 310, 'warfront-winter-plants', i % 6)
+        .setScale(1.8).setTint(0xe9ffff).setAlpha(0.78).setDepth(1400 + i);
+    }
+
+    // Central Axis: real Castle2 mystical fragments + procedural ancient rings.
+    const axis = this.add.graphics().setDepth(-850);
+    axis.fillStyle(0x14131b, 0.52).fillEllipse(3072, 1510, 980, 720);
+    axis.lineStyle(10, 0x51493f, 0.54).strokeEllipse(3072, 1510, 930, 670);
+    axis.lineStyle(5, 0xe4cd91, 0.34).strokeEllipse(3072, 1510, 790, 555);
+    axis.lineStyle(3, 0x9ddce8, 0.24).strokeEllipse(3072, 1510, 610, 405);
+    axis.lineStyle(2, 0xbc553f, 0.20).strokeEllipse(3072, 1510, 490, 310);
+    for (let i = 0; i < 16; i += 1) {
+      const a = i * Math.PI / 8;
+      axis.lineStyle(2, i % 2 ? 0xf3dfa2 : 0xa5dbe3, 0.24).lineBetween(
+        3072 + Math.cos(a) * 250, 1510 + Math.sin(a) * 170,
+        3072 + Math.cos(a) * 450, 1510 + Math.sin(a) * 320
+      );
+    }
+    for (const collider of WARFRONT_COLLIDERS.filter(row => row.source === 'axis-pillar')) {
+      this.add.sprite(collider.x, collider.y, 'castle2-set', 100).setScale(1.45).setTint(0xe4d8a7).setDepth(collider.y + 2);
+    }
+    // Six-piece ancient tree/orb composition from Castle2 becomes the Axis core.
+    for (const [frame, dx, dy] of [[188, -64, -64], [189, 0, -64], [190, 64, -64], [204, -64, 0], [205, 0, 0], [206, 64, 0]]) {
+      this.add.sprite(3072 + dx * 1.4, 1510 + dy * 1.4, 'castle2-set', frame).setScale(2.8).setTint(0xd8d7bf).setDepth(1560 + dy);
+    }
+
+    // Ruined neutral settlement around the southern route.
+    for (const building of WARFRONT_RUIN_BUILDINGS) {
+      this.add.image(building.x, building.y, building.texture)
+        .setScale(building.scale).setTint(building.tint).setAlpha(building.alpha).setDepth(building.y - 20);
+    }
+    for (const [x, y, frame, tint] of [[2980, 2450, 250, 0x867b75], [3060, 2500, 248, 0x7c7270], [3450, 2420, 176, 0x6f6466], [2890, 2610, 128, 0x81766c]]) {
+      this.add.sprite(x, y, 'castle2-set', frame).setScale(1.15).setTint(tint).setDepth(y + 3);
+    }
+
+    // The Veil Gate is intentionally ancient/neutral, not owned by either side.
+    const gate = this.add.graphics().setDepth(820);
+    gate.fillStyle(0x05050a, 0.90).fillEllipse(3072, 2700, 190, 285);
+    gate.lineStyle(10, 0xe5cf86, 0.58).strokeEllipse(3072, 2700, 205, 300);
+    gate.lineStyle(4, 0xa04f46, 0.50).strokeEllipse(3072, 2700, 164, 258);
+    gate.lineStyle(2, 0xb8e8f4, 0.36).strokeEllipse(3072, 2700, 130, 220);
+
+    this.add.text(3072, 1085, 'AXIS OF FIRST LIGHT', { fontFamily: 'Georgia, serif', fontSize: '22px', color: '#eadca6', stroke: '#100c12', strokeThickness: 6, letterSpacing: 4 })
+      .setOrigin(0.5).setDepth(5000).setAlpha(0.82);
+    this.add.text(3072, 274, 'THE VEIL WARFRONT', { fontFamily: 'Georgia, serif', fontSize: '25px', color: '#d8d2bf', stroke: '#0b080d', strokeThickness: 7, letterSpacing: 5 })
+      .setOrigin(0.5).setDepth(5000).setAlpha(0.72);
+    this.add.text(3072, 307, 'Two armies occupy a realm neither one built', { fontFamily: 'Georgia, serif', fontSize: '11px', color: '#aaa2a4', stroke: '#0b080d', strokeThickness: 3 })
+      .setOrigin(0.5).setDepth(5000).setAlpha(0.72);
+
+    // Small landmark labels are deliberately sparse. The HUD remains the main
+    // area locator; these simply help the first geometry test read at a glance.
+    for (const landmark of WARFRONT_LANDMARKS.filter(item => ['infernal_stronghold', 'celestial_stronghold', 'ruined_settlement'].includes(item.id))) {
+      const color = landmark.faction === 'celestial' ? '#e8f3df' : (landmark.faction === 'infernal' ? '#d89578' : '#c5b6a5');
+      this.add.text(landmark.x, landmark.y - 455, landmark.name.toUpperCase(), { fontFamily: 'Georgia, serif', fontSize: '12px', color, stroke: '#0d090d', strokeThickness: 4, letterSpacing: 2 })
+        .setOrigin(0.5).setDepth(5000).setAlpha(0.72);
+    }
+
+    this.createWarfrontAmbientFx();
     this.createStaticObstacles(this.activeMapColliders());
   }
 
@@ -1239,6 +1513,7 @@ ${point.label || 'Use'}`, {
     if (action === 'forge') { this.transitionToMap('map_torrens_forge', 'arrival'); return; }
     if (action === 'crypt') { this.transitionToMap('map_ashgrave_crypt', 'arrival'); return; }
     if (action === 'veil') { this.transitionToMap('map_veil_threshold', 'arrival'); return; }
+    if (action === 'warfront') { this.transitionToMap('map_veil_warfront', 'veil_gate'); return; }
     if (action === 'burntcache') {
       if (this.currentMap.id !== 'map_cinder_wilds') { this.transitionToMap('map_cinder_wilds', 'from_refuge', { position: { x: 2200, y: 900 } }); return; }
       this.player.body.setPosition(2200, 900); return;

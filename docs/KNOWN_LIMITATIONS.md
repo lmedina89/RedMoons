@@ -1,5 +1,13 @@
-# Known Limitations — v0.1.4.3
+# Known Limitations — v0.1.4.4.0
 
+
+## v0.1.4.4.0 Warfront foundation limits
+
+- The Veil Warfront is intentionally **geography/atmosphere only**. It contains no live angel/demon army population, territorial capture, stronghold interiors, quests or named mythical actors yet.
+- Strongholds and outposts are first-pass footprints. Architectural detail/identity is intentionally staged for v0.1.4.4.1 after physical scale/sightline testing.
+- Warfront ambience uses bounded sprites/Graphics rather than a full-screen shader. This is deliberate for iPhone stability; later atmosphere changes must preserve mobile performance.
+- Castle2/Cave3/workshop-derived assets already carry the project's existing provenance/attribution holds where exact upstream records are incomplete. The newly curated 4-Season terrain assets use the already-preserved 4-Season credit records.
+- Automated browser navigation is blocked by the build environment administrator, so actual Phaser visual/interaction validation remains physical-device work.
 
 ## v0.1.4.3 Exploration / portal limits
 

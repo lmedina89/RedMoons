@@ -1,6 +1,22 @@
-# Hell RPG v0.1.4.3 — Exploration, POIs & Portal Foundation
+# Hell RPG v0.1.4.4.0 — Warfront Geography & Atmosphere Foundation
 
-Built directly from **v0.1.4.2.4.1 Faction Warfare Startup Hotfix**. Save schema remains **2** and the localStorage key remains `hellrpg.ashfall.save.v1`.
+Built directly from the physically tested **v0.1.4.3 Exploration, POIs & Portal Foundation**. Save schema remains **2** and the localStorage key remains `hellrpg.ashfall.save.v1`.
+
+## v0.1.4.4.0 Warfront Geography & Atmosphere Foundation
+
+This release opens the first geography-only version of the dedicated **Veil Warfront** through the nested Veil Threshold portal. It intentionally builds the realm before populating it with armies or named mythical actors.
+
+- Added a separate **6144×3072** Warfront map with eight non-overlapping local area identities, three broad east/west traversal bands, cross-routes, two main stronghold footprints, four forward/rear outpost footprints, the ruined neutral settlement **The Unhoused**, the southern **Veil Gate**, and the central **Axis of First Light**.
+- The portal chain is genuinely nested: Cinder Wilds → Veil Threshold → Veil Warfront → exact Threshold origin → exact Cinder origin. Existing bounded return-stack/fallback rules remain unchanged.
+- The Warfront uses newly curated runtime art from the already-preserved **LPC Revised 4-Season Terrain** source library: winter/non-winter dirt, winter/autumn mountain sheets, icy-water tile, water reflections and winter plants. Castle2, Dungeon Elements, Cave3, bridge and existing ruined-building assets provide ancient/occupied structure language.
+- Celestial territory uses pale winter ground, luminous ice-water channels, reflective accents and cleaner ancient stone. Infernal territory uses darker non-winter earth, autumn cliff stone, dungeon/bone/fire occupation props and procedural fissures. The center deliberately mixes both palettes instead of using a hard biome border.
+- The **Axis of First Light** uses a real six-piece Castle2 mystical tree/orb composition surrounded by layered procedural rings, eight collision-backed ancient pillars and a shallow luminous pool.
+- Added three visible bridge crossings over a collision-backed celestial luminous channel. Stronghold walls, outpost walls, cliff shelves, deep water, ruined settlement structures and Axis pillars all use shared visible-source actor collision.
+- Added a mobile-conscious **Warfront Ambient FX** layer: 38 bounded world-space mote/ember/rune-dust sprites, two rotating Axis Graphics rings, a pulsing Veil Gate field and four tiny distant-battle flashes. No permanent full-screen custom shader is used.
+- No Warfront army spawns, mythic characters, territory capture or stronghold interiors are active yet. This pass is for physical scale, traversal, collision and atmosphere evaluation only. Existing Cinder/Refuge/First-Light combat population and balance remain unchanged.
+- Debug mode adds **Map: Veil Warfront** for direct geometry testing while the natural Threshold portal remains the intended entry.
+
+Physical iPhone testing should focus on travel distance, sightlines, bridge/water collision, stronghold/outpost scale, the Axis composition, ruined settlement spacing, portal round-trip behavior and whether the persistent ambience remains smooth/readable.
 
 ## v0.1.4.3 Exploration, POIs & Portal Foundation
 

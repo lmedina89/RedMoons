@@ -1,5 +1,18 @@
 # Changelog
 
+## v0.1.4.4.0 — Warfront Geography & Atmosphere Foundation
+
+- Opened the dedicated 6144×3072 Veil Warfront through the existing nested portal/return system.
+- Added eight exact local-area partitions covering Infernal Stronghold, rear/front infernal lines, Axis of First Light, ruined neutral quarter, front/rear celestial lines and Celestial Stronghold.
+- Added three traversal bands with cross-connections, four outpost footprints, two stronghold shells, ruined settlement structures, central Axis geometry and southern Veil Gate arrival.
+- Curated seven compact runtime environment assets from the preserved LPC Revised 4-Season Terrain library: winter/non-winter ground, winter/autumn mountains, icy-water tile, water reflections and winter plants. Original source sheets and credit records are preserved under `source-assets/world/warfront/4-season/`; existing distribution credit files remain in `dist/assets/licenses/original/`.
+- Added visible-source Warfront collision for stronghold/outpost walls, cliff shelves, deep luminous water, ruined structures and eight Axis pillars; three authored bridge gaps remain traversable.
+- Added bounded persistent Phaser ambience: 38 world-space motes/embers/rune dust, counter-rotating Axis rings, Veil pulse and low-cost distant battle flashes. No permanent full-screen shader.
+- Added natural Veil Threshold → Warfront nested travel plus a direct debug Warfront map helper.
+- Warfront population remains intentionally zero in this geography pass; no Lailani, Lexi, Mythical Demon or Ancient Demon Lord runtime activation.
+- Save schema remains 2 and all existing v0.1.4.3 travel/POI/faction-combat behavior is preserved.
+
+
 ## v0.1.4.3 — Exploration, POIs & Portal Foundation
 
 - Added a reusable persisted return-anchor travel system for interiors/realms. Entry transitions can capture the exact source map/coordinates; paired return transitions pop the anchor only after destination assets prepare successfully and provide safe fallbacks for direct/debug entry.

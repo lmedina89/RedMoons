@@ -1,4 +1,6 @@
-// v0.1.4.3 world data: Cinder Refuge is now its own deliberately composed
+import { WARFRONT_ASSET_KEYS, WARFRONT_COLLIDERS, WARFRONT_DIMENSIONS } from './warfront.js';
+
+// v0.1.4.4.0 world data: Cinder Refuge remains its own deliberately composed
 // settlement map while the Cinder Wilds have room to breathe as a larger
 // exterior region. All placement remains data-driven so future maps can reuse
 // the same render/collision paths without baking coordinates into actor code.
@@ -34,7 +36,11 @@ export const ZONES = Object.freeze([
   },
   {
     id: 'zone_veil_threshold', name: 'Veil Threshold', x: 0, y: 0, width: 1280, height: 896, danger: 'Unstable Realm',
-    levelRange: [1, 8], safe: true, hostile: false, biome: 'mystic_threshold', eventTags: ['portal', 'warfront_future'], dungeonHooks: [], mapId: 'map_veil_threshold'
+    levelRange: [1, 8], safe: true, hostile: false, biome: 'mystic_threshold', eventTags: ['portal', 'warfront'], dungeonHooks: [], mapId: 'map_veil_threshold'
+  },
+  {
+    id: 'zone_veil_warfront', name: 'Veil Warfront', x: 0, y: 0, width: WARFRONT_DIMENSIONS.width, height: WARFRONT_DIMENSIONS.height, danger: 'Ancient Contested Realm',
+    levelRange: [5, 20], safe: false, hostile: true, biome: 'mystic_warfront', eventTags: ['warfront', 'celestial_infernal_conflict'], dungeonHooks: [], mapId: 'map_veil_warfront'
   }
 ]);
 
@@ -54,7 +60,15 @@ export const AREA_DEFS = Object.freeze([
   Object.freeze({ id: 'area_warden_hall', mapId: 'map_warden_hall', parentZoneId: 'zone_warden_hall', name: 'Warden Hall', danger: 'Sanctuary Interior', x: 0, y: 0, width: 1024, height: 768, identity: 'A compact command hall lined with old campaign stone, ledgers and salvaged furnishings.', encounter: Object.freeze({ families: Object.freeze([]), groups: Object.freeze([]) }) }),
   Object.freeze({ id: 'area_torrens_forge', mapId: 'map_torrens_forge', parentZoneId: 'zone_torrens_forge', name: 'Torren’s Forge', danger: 'Workshop Interior', x: 0, y: 0, width: 1024, height: 768, identity: 'A hot working forge packed with tools, racks and repair benches.', encounter: Object.freeze({ families: Object.freeze([]), groups: Object.freeze([]) }) }),
   Object.freeze({ id: 'area_ashgrave_crypt', mapId: 'map_ashgrave_crypt', parentZoneId: 'zone_ashgrave_crypt', name: 'Ashgrave Crypt', danger: 'Sealed Crypt', x: 0, y: 0, width: 1280, height: 896, identity: 'A buried ossuary chamber older than the graves above, with narrow lanes and a sealed cache.', encounter: Object.freeze({ families: Object.freeze([{ id: 'spider', weight: 55 }, { id: 'skeleton', weight: 45 }]), groups: Object.freeze(['pack', 'guard']) }) }),
-  Object.freeze({ id: 'area_veil_threshold', mapId: 'map_veil_threshold', parentZoneId: 'zone_veil_threshold', name: 'Veil Threshold', danger: 'Unstable Realm', x: 0, y: 0, width: 1280, height: 896, identity: 'A small impossible antechamber where celestial geometry and infernal scars overlap before an unopened warfront fracture.', encounter: Object.freeze({ families: Object.freeze([]), groups: Object.freeze([]) }) })
+  Object.freeze({ id: 'area_veil_threshold', mapId: 'map_veil_threshold', parentZoneId: 'zone_veil_threshold', name: 'Veil Threshold', danger: 'Unstable Realm', x: 0, y: 0, width: 1280, height: 896, identity: 'A small impossible antechamber where celestial geometry and infernal scars overlap before the open warfront fracture.', encounter: Object.freeze({ families: Object.freeze([]), groups: Object.freeze([]) }) }),
+  Object.freeze({ id: 'area_warfront_infernal_stronghold', mapId: 'map_veil_warfront', parentZoneId: 'zone_veil_warfront', name: 'Infernal Stronghold', danger: 'Demon Rear Line', x: 0, y: 0, width: 920, height: 3072, identity: 'A brutal occupation fortress driven into structures far older than the Demon Legion.', encounter: Object.freeze({ families: Object.freeze([{ id: 'demon', weight: 80 }, { id: 'imp', weight: 20 }]), groups: Object.freeze(['guard', 'patrol']) }) }),
+  Object.freeze({ id: 'area_warfront_infernal_rear', mapId: 'map_veil_warfront', parentZoneId: 'zone_veil_warfront', name: 'Cinder Bastion', danger: 'Infernal Rear Line', x: 920, y: 0, width: 860, height: 3072, identity: 'Burning supply lanes and reinforced ancient roads feeding the western host.', encounter: Object.freeze({ families: Object.freeze([{ id: 'demon', weight: 70 }, { id: 'imp', weight: 30 }]), groups: Object.freeze(['guard', 'patrol']) }) }),
+  Object.freeze({ id: 'area_warfront_infernal_front', mapId: 'map_veil_warfront', parentZoneId: 'zone_veil_warfront', name: 'Riven Front', danger: 'Infernal Front', x: 1780, y: 0, width: 870, height: 3072, identity: 'The western forward line where cracked earth and old stone are continuously re-fortified.', encounter: Object.freeze({ families: Object.freeze([{ id: 'demon', weight: 75 }, { id: 'imp', weight: 25 }]), groups: Object.freeze(['guard', 'patrol']) }) }),
+  Object.freeze({ id: 'area_warfront_axis', mapId: 'map_veil_warfront', parentZoneId: 'zone_veil_warfront', name: 'Axis of First Light', danger: 'Contested Ancient Ground', x: 2650, y: 0, width: 870, height: 2120, identity: 'An impossible ringed mechanism that neither army truly understands and both refuse to surrender.', encounter: Object.freeze({ families: Object.freeze([{ id: 'celestial', weight: 50 }, { id: 'demon', weight: 50 }]), groups: Object.freeze(['guard', 'patrol']) }) }),
+  Object.freeze({ id: 'area_warfront_unhoused', mapId: 'map_veil_warfront', parentZoneId: 'zone_veil_warfront', name: 'The Unhoused', danger: 'Ruined Neutral Quarter', x: 2650, y: 2120, width: 870, height: 952, identity: 'The remains of a settlement caught beneath a war older and larger than its people.', encounter: Object.freeze({ families: Object.freeze([]), groups: Object.freeze([]) }) }),
+  Object.freeze({ id: 'area_warfront_celestial_front', mapId: 'map_veil_warfront', parentZoneId: 'zone_veil_warfront', name: 'Dawnward Front', danger: 'Celestial Front', x: 3520, y: 0, width: 860, height: 3072, identity: 'Broken sacred roads and defensive geometry holding the eastern side of the Axis.', encounter: Object.freeze({ families: Object.freeze([{ id: 'celestial', weight: 100 }]), groups: Object.freeze(['guard', 'patrol']) }) }),
+  Object.freeze({ id: 'area_warfront_celestial_rear', mapId: 'map_veil_warfront', parentZoneId: 'zone_veil_warfront', name: 'Halo Bastion', danger: 'Celestial Rear Line', x: 4380, y: 0, width: 880, height: 3072, identity: 'Cold luminous waterways and ordered defenses feeding the eastern host.', encounter: Object.freeze({ families: Object.freeze([{ id: 'celestial', weight: 100 }]), groups: Object.freeze(['guard', 'patrol']) }) }),
+  Object.freeze({ id: 'area_warfront_celestial_stronghold', mapId: 'map_veil_warfront', parentZoneId: 'zone_veil_warfront', name: 'Celestial Stronghold', danger: 'Heavenly Rear Line', x: 5260, y: 0, width: 884, height: 3072, identity: 'A pale fortress built through ancient stone, frozen pools and architecture claimed by Heaven.', encounter: Object.freeze({ families: Object.freeze([{ id: 'celestial', weight: 100 }]), groups: Object.freeze(['guard', 'patrol']) }) })
 ]);
 
 export const BUILDING_ORIGIN_Y = 0.82;
@@ -284,7 +298,8 @@ export const COLLIDERS = Object.freeze([
   ...FALLEN_WATCH_WALLS.map(wallCollider),
   ...WILDS_STRUCTURE_COLLIDERS,
   ...BUILDING_DEFS.map(buildingCollider),
-  ...INTERIOR_COLLIDERS
+  ...INTERIOR_COLLIDERS,
+  ...WARFRONT_COLLIDERS
 ]);
 
 export const PROP_DEFS = Object.freeze([
@@ -454,9 +469,16 @@ export const MAP_DEFS = Object.freeze({
   }),
   map_veil_threshold: Object.freeze({
     id: 'map_veil_threshold', name: 'Veil Threshold', width: 1280, height: 896, renderer: 'veil_threshold',
-    entryPoints: Object.freeze({ arrival: Object.freeze({ x: 640, y: 755 }) }),
+    entryPoints: Object.freeze({ arrival: Object.freeze({ x: 640, y: 755 }), warfront_return: Object.freeze({ x: 640, y: 405 }) }),
     zoneIds: Object.freeze(['zone_veil_threshold']), areaIds: Object.freeze(['area_veil_threshold']),
     worldAssetKeys: Object.freeze(['terrain-dirt', 'dungeon-elements', 'castle2-set', 'rocks-cliffs', 'fire'])
+  }),
+  map_veil_warfront: Object.freeze({
+    id: 'map_veil_warfront', name: 'Veil Warfront', width: WARFRONT_DIMENSIONS.width, height: WARFRONT_DIMENSIONS.height, renderer: 'veil_warfront',
+    entryPoints: Object.freeze({ veil_gate: Object.freeze({ x: 3072, y: 2700 }), axis_test: Object.freeze({ x: 3072, y: 1880 }) }),
+    zoneIds: Object.freeze(['zone_veil_warfront']),
+    areaIds: Object.freeze(['area_warfront_infernal_stronghold', 'area_warfront_infernal_rear', 'area_warfront_infernal_front', 'area_warfront_axis', 'area_warfront_unhoused', 'area_warfront_celestial_front', 'area_warfront_celestial_rear', 'area_warfront_celestial_stronghold']),
+    worldAssetKeys: WARFRONT_ASSET_KEYS
   })
 });
 
@@ -512,6 +534,14 @@ export const MAP_TRANSITIONS = Object.freeze([
   Object.freeze({
     id: 'transition_veil_return', mapId: 'map_veil_threshold', x: 640, y: 820, radius: 86, kind: 'return_portal', returnToOrigin: true,
     label: 'Return Through the Veil', fallbackDestinationMapId: 'map_cinder_wilds', fallbackDestinationEntryId: 'first_light_test'
+  }),
+  Object.freeze({
+    id: 'transition_threshold_warfront', mapId: 'map_veil_threshold', x: 640, y: 300, radius: 94, kind: 'portal', captureReturn: true,
+    label: 'Enter the Veil Warfront', destinationMapId: 'map_veil_warfront', destinationEntryId: 'veil_gate'
+  }),
+  Object.freeze({
+    id: 'transition_warfront_threshold', mapId: 'map_veil_warfront', x: 3072, y: 2890, radius: 104, kind: 'return_portal', returnToOrigin: true,
+    label: 'Return to the Veil Threshold', fallbackDestinationMapId: 'map_veil_threshold', fallbackDestinationEntryId: 'warfront_return'
   })
 ]);
 

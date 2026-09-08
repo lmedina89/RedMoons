@@ -129,3 +129,8 @@ True-run sheets are compact action crops and load only with the active player/eq
 ## Sanctuary of the First Light budget
 
 The sanctuary adds no runtime image asset. Its 5.6-second field is one short-lived `Graphics` object redrawn at a bounded 50ms cadence; four healing pulses reuse the existing FX sprite pools and short-lived Graphics rings/beams. Only eligible actors already returned by `friendlyCombatants()` are checked, so healing work scales with the tiny friendly actor set rather than total world population.
+
+
+## v0.1.4.4.0 Warfront atmosphere budget
+
+The first Warfront pass adds 38 persistent world-space ambient sprites total across the full 6144×3072 realm, plus two rotating Graphics containers, one pulsing Veil Graphics object and four tiny periodic flash sprites. Phaser camera culling handles offscreen rendering, while the fixed object count prevents particle growth over time. No full-screen shader/post-process is used. The Warfront ships with zero live enemy/celestial spawns in this pass so geography/FX performance can be measured independently before army simulation is added.

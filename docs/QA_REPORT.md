@@ -1,3 +1,11 @@
+# QA Report — v0.1.4.4.0 Warfront Geography & Atmosphere Foundation
+
+## v0.1.4.4.0 automated/static scope
+
+Release gating adds `tests/warfront-foundation-smoke.mjs`, which validates the 6144×3072 map, exact eight-area partition, three route bands, both stronghold footprints, four outposts, central Axis, ruined settlement, Veil Gate, Warfront-specific runtime asset registry, visible-source collision, three bridge crossings, nested Threshold↔Warfront return behavior, bounded ambient sprite count and the intentional zero-spawn Warfront population.
+
+The normal project suite, all inherited Azrael/Sanctuary/Demon/Celestial/faction/exploration/navigation checks, all JS/MJS syntax checks, ZIP integrity and clean-package static hosting remain required. The container browser is administrator-blocked from local navigation, so no automated live Phaser playthrough is claimed. Physical iPhone Safari remains the release gate for atmosphere, map scale, bridge/water feel and GPU/frame pacing.
+
 # QA Report — v0.1.4.3 Exploration, POIs & Portal Foundation
 
 ## v0.1.4.3 automated/static scope

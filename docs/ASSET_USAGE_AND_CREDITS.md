@@ -237,3 +237,10 @@ v0.1.3.2 introduces no new external visual or audio asset dependency. The Ashen 
 
 `dist/assets/world/buildings/adobe_workshop_full.png` is a local composite made exclusively from the already-included adobe building artwork: the existing `adobe2-set.png` tiles and preserved `adobe_workshop.png` facade. No new third-party art source or license is introduced by this hotfix.
 
+
+
+## v0.1.4.4.0 Warfront 4-Season environment curation
+
+The Veil Warfront activates a compact subset of the already-organized **LPC Revised 4-Season Terrain** library. Runtime files under `dist/assets/world/warfront/` derive directly from the preserved source family: Dirt (Winter), Dirt (Non-Winter), Mountain (Winter), Mountain (Autumn), Ice-Water, Water Reflections and Winter Plants Small. The exact selected source sheets plus Terrain/FX/Terrain-Objects credit files are preserved under `source-assets/world/warfront/4-season/`. Distribution credit records for the same 4-Season families were already preserved under `dist/assets/licenses/original/`.
+
+`ice-water-tile.png` is a 32×32 runtime crop of frame 31 from the preserved Ice-Water source sheet; it introduces no new authorship claim. Existing Castle2/Cave3/workshop provenance notes and attribution holds remain unchanged.
