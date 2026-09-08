@@ -250,3 +250,7 @@ The Veil Warfront activates a compact subset of the already-organized **LPC Revi
 
 This pass introduces no newly authored source image. It reuses the already-registered Castle2/Dungeon Elements/world vegetation runtime sheets plus the compact smith, woodshop and tailor crops created earlier from preserved workshop sources. Those workshop props are now map-loaded only because The Unhoused references them. No pre-existing image bytes are modified by this detail pass; upstream attribution/provenance notes from the prior asset-audit/foundation remain in force.
 
+## v0.1.4.4.3 Lailani runtime crops
+
+The project uses the user-provided `source-assets/character-concepts/2026-09-07/heavenly-and-unique/LailaniAngel.png` as Lailani's canonical authoring sheet. The source is preserved unchanged. Runtime files under `dist/assets/npcs/lailani/` are deterministic compact crops of the complete spellcast, thrust, walk, slash, shoot, hurt and idle action regions. These action blocks preserve Lailani's blue/white outfit and wings. Later expanded action blocks that omit clothing layers remain source-only and are intentionally not shipped as Lailani runtime animations. No new third-party asset dependency is introduced by these crops.
+

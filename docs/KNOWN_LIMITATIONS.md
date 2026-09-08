@@ -148,3 +148,12 @@ v0.1.3.1 is built from the physical-iPhone-validated v0.1.3 combat baseline. Aut
 ## Collision note
 
 The v0.1.2.2 visible-source collision rule remains authoritative. Do not reintroduce invisible decorative blockers. Actor collision proxies also must not use `setDisplaySize()` on the tiny `solid` helper before body sizing, because Arcade bodies inherit GameObject scale.
+
+## v0.1.4.4.3 field-test limitations
+
+- Lailani's Dawnward/Axis position is a **temporary field-test station**, not her final story/home placement. Named-celestial deployment and Azrael's eventual move to the Celestial Stronghold are deferred.
+- Lexi, DemonMythical and AncientDemonLord remain source-only and have no runtime actor/controller in this release.
+- Azrael's simple projectile accuracy/readability is intentionally unchanged while physical testing continues.
+- Lailani uses only complete dressed/winged action blocks from her supplied sheet. Expanded source actions that omit clothing layers are intentionally not used at runtime.
+- Local automated browser navigation is administrator-blocked in the build environment, so physical iPhone Safari remains the release gate for animation/VFX readability and performance.
+

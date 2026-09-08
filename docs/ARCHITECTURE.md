@@ -244,3 +244,15 @@ The Threshold → Warfront transition uses the same bounded return-anchor stack 
 ## v0.1.4.4.2 Living Warfront population contract
 
 Warfront population is exported from `data/warfront.js` as `WARFRONT_SPAWN_REGIONS` and folded into the shared `SPAWN_REGIONS` registry by `data/world.js`. This keeps faction actors on the same Enemy/encounter pipeline as Cinder rather than creating a Warfront-only AI fork. The explicit production budget is 32 actors with zero mythic actors; encounter assist and activation ranges remain locally bounded.
+
+## Named mythic special-actor contract — v0.1.4.4.3
+
+Lailani establishes the second bespoke special-actor implementation after Azrael. Named mythics are not regular encounter rows and do not consume the data-driven 32-slot Warfront army budget. Each can own an independent controller, state machine and presentation layer while using shared combat resolution/status/audio services. Lailani is deliberately not a subclass or recolor of `Azrael`; changes to one actor should not require modifying the other's controller. Runtime source art is map-scoped through `AssetResolver`, and only verified complete action crops are shipped.
+
+The field-test home is data-owned in `LAILANI_DEF`; final named-celestial deployment/home-state persistence remains a later system.
+
+
+
+## v0.1.4.4.3 Lailani special-actor contract
+
+`data/lailani.js` owns Lailani tuning/assets and `entities/Lailani.js` owns her bespoke movement, seven-skill cadence and Mantle state. She participates in the shared faction-safe `CombatSystem` through `WorldScene.combatants()` but does not inherit from Azrael or occupy a normal `SPAWN_REGIONS` army slot. Her special-actor simulation is player-distance gated on the large Warfront; distant state cancels active telegraphs/targeting while absolute cooldown/Mantle timers remain bounded and presentation wakes only when the player returns.

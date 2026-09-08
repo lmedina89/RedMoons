@@ -244,3 +244,12 @@ Automated checks can establish structural correctness but cannot substitute for 
 - Debug reinforcement rectangles are validated inside First-Light Scar and outside static solids.
 - Target replacement, pursuit-bound filtering, bounded faction assist and debug-only spawn instantiation are covered by `tests/faction-warfare-smoke.mjs`.
 - Physical iPhone Safari remains the release gate for actual battle readability, frame pacing and Azrael-vs-warband feel.
+
+## v0.1.4.4.3 — Lailani Field Test validation
+
+- Added a dedicated Lailani smoke suite covering the seven-skill identity contract, exact 60-second Mantle duration, defensive multiplier, bounded self-heal pulse, speed hierarchy versus Azrael, cluster-aware target selection, source/action asset dimensions and Warfront-only streaming.
+- Lailani's temporary home and debug entry are checked against the authored Warfront collider set with safety padding.
+- Existing Living Warfront tests continue to require 32 regular army actors, 16 per faction, while distinguishing that regular-army budget from unique special actors.
+- Protected regression checks should keep Azrael, shared combat, projectiles, faction data, shared FX/audio and travel/event systems byte-identical to v0.1.4.4.2.
+- Automated validation does not replace the physical iPhone Safari visual/performance gate for Lailani's movement cadence, one-minute aura readability or battlefield spectacle.
+

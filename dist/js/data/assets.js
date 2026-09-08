@@ -132,6 +132,19 @@ export const ASSET_DEFS = [
   })),
   { key: 'azrael-hurt', path: 'assets/npcs/azrael/azrael-hurt.png', frameWidth: 64, frameHeight: 64, frames: 6 },
 
+  // v0.1.4.4.3 Lailani Field Test runtime crops. Only action blocks whose
+  // equipment layers are complete in the user-supplied 1536x4224 expanded
+  // sheet are shipped; later source actions with missing clothing remain
+  // source-only instead of appearing as broken animations in play.
+  ...[
+    ['spellcast', 7], ['thrust', 8], ['walk', 9], ['slash', 6],
+    ['shoot', 13], ['idle', 2]
+  ].map(([action, frames]) => ({
+    key: `lailani-${action}`, path: `assets/npcs/lailani/lailani-${action}.png`,
+    frameWidth: 64, frameHeight: 64, frames
+  })),
+  { key: 'lailani-hurt', path: 'assets/npcs/lailani/lailani-hurt.png', frameWidth: 64, frameHeight: 64, frames: 6 },
+
   { key: 'skeleton-walk', path: `${E}skeleton-walk.png`, frameWidth: 64, frameHeight: 64 },
   { key: 'skeleton-slash', path: `${E}skeleton-slash.png`, frameWidth: 64, frameHeight: 64 },
   { key: 'skeleton-bow-shoot', path: `${E}skeleton-bow-shoot.png`, frameWidth: 64, frameHeight: 64 },

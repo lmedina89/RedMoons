@@ -479,7 +479,7 @@ export const MAP_DEFS = Object.freeze({
   }),
   map_veil_warfront: Object.freeze({
     id: 'map_veil_warfront', name: 'Veil Warfront', width: WARFRONT_DIMENSIONS.width, height: WARFRONT_DIMENSIONS.height, renderer: 'veil_warfront',
-    entryPoints: Object.freeze({ veil_gate: Object.freeze({ x: 3072, y: 2700 }), axis_test: Object.freeze({ x: 3072, y: 1880 }) }),
+    entryPoints: Object.freeze({ veil_gate: Object.freeze({ x: 3072, y: 2700 }), axis_test: Object.freeze({ x: 3072, y: 1880 }), lailani_test: Object.freeze({ x: 3560, y: 1575 }) }),
     zoneIds: Object.freeze(['zone_veil_warfront']),
     areaIds: Object.freeze(['area_warfront_infernal_stronghold', 'area_warfront_infernal_rear', 'area_warfront_infernal_front', 'area_warfront_axis', 'area_warfront_unhoused', 'area_warfront_celestial_front', 'area_warfront_celestial_rear', 'area_warfront_celestial_stronghold']),
     worldAssetKeys: WARFRONT_ASSET_KEYS

@@ -148,3 +148,13 @@ The environmental-detail pass adds a hard authored ceiling of **136 static detai
 - Encounter activation ranges are capped at 1080px; distant groups inherit player-scoped sleeping from the shared Enemy controller.
 - Same-faction assistance is capped at two helpers and local radii no larger than 330px.
 - The first pass contains zero mythic actors and does not add new persistent environmental FX beyond the previously approved Warfront budgets.
+
+## Lailani VFX budget — v0.1.4.4.3
+
+Lailani's spectacle is bounded rather than particle-unlimited. Mantle owns one persistent local Graphics aura that redraws on a throttled cadence while active. Movement trails reuse the existing pooled burst system. Lances, Garden and Transcendent Dawn schedule finite short-lived geometry effects, and major abilities remain cooldown/pacing limited. No full-screen shader or permanent particle emitter is introduced. Physical iPhone testing should still verify the worst case where Lailani overlaps an active regular Warfront clash.
+
+
+
+## v0.1.4.4.3 named-actor simulation gate
+
+Lailani is a unique actor outside the 32-slot regular army budget, but her bespoke AI/Graphics are still player-distance gated at 1200px on the 6144×3072 Warfront. When distant she stops movement, drops targets, cancels active telegraphs and hides the persistent Mantle Graphics; delayed damage callbacks also refuse to resolve while sleeping. This prevents an unseen mythic duel from becoming an offscreen CPU/FX cost.

@@ -4,6 +4,7 @@ import { ITEM_DEFS } from '../data/items.js';
 import { NPC_DEFS } from '../data/npcs.js';
 import { DEFAULT_MAP_ID, MAP_DEFS, SPAWN_REGIONS, mapForId } from '../data/world.js';
 import { AZRAEL_DEF } from '../data/specialActors.js';
+import { LAILANI_DEF } from '../data/lailani.js';
 
 const ASSET_BY_KEY = new Map(ASSET_DEFS.map(asset => [asset.key, asset]));
 const LAYER_TEXTURE_FIELDS = Object.freeze(['texture', 'walk', 'run', 'slash', 'backslash', 'halfslash', 'spellcast', 'thrust', 'shoot', 'hurt']);
@@ -88,6 +89,12 @@ export function assetDefsForMap(state, requestedMapId = null) {
   // Load only his compact runtime action crops when the Cinder Region is live.
   if (AZRAEL_DEF.home.mapId === map.id) {
     for (const key of Object.values(AZRAEL_DEF.assets)) addAssetKey(keys, key);
+  }
+
+  // Lailani's field-test actor is independently map-scoped to the Veil
+  // Warfront. Her compact crops are not loaded on Cinder maps.
+  if (LAILANI_DEF.home.mapId === map.id) {
+    for (const key of Object.values(LAILANI_DEF.assets)) addAssetKey(keys, key);
   }
 
   const zoneIds = new Set(map.zoneIds || []);

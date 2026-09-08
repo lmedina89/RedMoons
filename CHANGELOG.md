@@ -1,5 +1,18 @@
 # Changelog
 
+## v0.1.4.4.3 — Lailani Field Test
+
+- Added Lailani as a unique celestial mythic special actor on the Veil Warfront using a dedicated controller independent of Azrael.
+- Added seven bespoke abilities: Mantle of the Empyrean, Seraphic Passage, Lances of the Seventh Sky, Celestial Waltz, Halo of Still Waters, Garden of Heaven and Transcendent Dawn.
+- Added a 60-second Mantle state with bounded aura rendering, 26% resolved-damage reduction, small five-second self-heal pulses and enhanced movement presentation.
+- Added fast curved pursuit/reposition behavior, passage dashes and four-step Waltz movement so Lailani reads as a graceful, dancing battlefield presence rather than a stationary caster.
+- Added seven compact runtime action crops from the user-provided Lailani source sheet; only complete dressed/winged action blocks are used at runtime.
+- Added Warfront-only asset streaming, a temporary Dawnward/Axis field-test home plus `lailani_test` debug entry, and a 1200px player-scoped simulation gate so her mythic AI/FX sleep when the player is elsewhere on the large map.
+- Added **Lailani Field Test** and **Lailani AI Overlay** debug helpers.
+- Added `tests/lailani-field-test-smoke.mjs` covering identity, seven-skill contract, Mantle duration/mitigation/healing, speed hierarchy, asset dimensions/scoping, collision-safe placement and controller independence.
+- Preserved the regular Living Warfront at 32 army slots; Lailani is a separate unique special actor and Lexi/Mythical Demon/Ancient Demon Lord remain source-only.
+- Deliberately did **not** change Azrael placement, Azrael projectile behavior, save schema, common faction abilities, combat resolver, projectile manager, shared FX manager or audio manager.
+
 ## v0.1.4.4.2 — Living Warfront
 
 - Populated the 6144×3072 Veil Warfront with **32 production actors total: 16 celestial and 16 infernal**, remaining below the established 35-actor Cinder Wilds ceiling.

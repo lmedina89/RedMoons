@@ -1,4 +1,22 @@
-# Hell RPG v0.1.4.4.2 — Living Warfront
+# Hell RPG v0.1.4.4.3 — Lailani Field Test
+
+## v0.1.4.4.3 Lailani Field Test
+
+Built directly from the approved **v0.1.4.4.2 Living Warfront** release. Save schema remains **2** and the localStorage key remains `hellrpg.ashfall.save.v1`.
+
+This focused field-test release activates **Lailani, Transcendent Seraph** as the first new named celestial after Azrael while deliberately leaving Azrael's placement, projectile behavior and combat kit unchanged. Lailani is temporarily stationed on the Dawnward side of the Axis so her AI can be observed against the existing regular infernal patrols without changing the wider Warfront population architecture.
+
+- Lailani uses her own independent controller rather than inheriting from or modifying Azrael.
+- Her seven-skill kit is **Mantle of the Empyrean**, **Seraphic Passage**, **Lances of the Seventh Sky**, **Celestial Waltz**, **Halo of Still Waters**, **Garden of Heaven**, and **Transcendent Dawn**.
+- Mantle lasts **60 seconds**, reduces resolved incoming damage while active, provides a deliberately small self-heal on five-second pulses, and maintains a bounded celestial aura.
+- Her movement is intentionally much faster and more lateral than ordinary units: curved orbit/reposition behavior, Seraphic Passage dashes and multi-step Celestial Waltz create the intended dancing-through-the-battlefield identity.
+- Runtime animation crops use only source-sheet actions that preserve Lailani's complete blue/white outfit and wings. Incomplete expanded authoring actions remain source-only.
+- Lailani is a unique celestial mythic special actor and is **not part of the 32-slot regular Warfront army budget**. Her expensive combat simulation is player-distance gated on the large Warfront so she cannot conduct an unseen mythic battle while the player is elsewhere. Lexi, DemonMythical and AncientDemonLord remain source-only.
+- `?debug=1` adds **Lailani Field Test** and **Lailani AI Overlay** helpers.
+- The existing Azrael projectile behavior is intentionally unchanged pending additional physical observation.
+
+Physical iPhone Safari remains the visual/performance release gate. Use **Lailani Field Test** to watch her against the Axis patrol and evaluate whether the movement reads as graceful rather than jittery, whether Mantle remains beautiful/readable for its full minute, whether the seven attacks are visually distinguishable, and whether the Warfront remains smooth.
+
 
 ## v0.1.4.4.2 Living Warfront
 

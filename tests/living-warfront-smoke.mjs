@@ -20,7 +20,7 @@ assert.equal(spawns.length, WARFRONT_SPAWN_REGIONS.length, 'Shared spawn registr
 const actorCount = spawns.reduce((sum, row) => sum + row.count, 0);
 assert.equal(actorCount, WARFRONT_POPULATION_BUDGET.maxProductionActors, 'Living Warfront must obey its explicit production actor budget');
 assert.ok(actorCount <= 35, 'Living Warfront must stay at or below the proven 35-actor Cinder Wilds ceiling');
-assert.equal(WARFRONT_POPULATION_BUDGET.mythicActors, 0, 'First Living Warfront pass must not contain mythic actors');
+assert.equal(WARFRONT_POPULATION_BUDGET.mythicActors, 0, 'Regular Living Warfront spawn budget must remain free of mythic army slots');
 
 const factionCount = { celestial: 0, infernal: 0 };
 const allowedEnemyIds = new Set([
@@ -94,7 +94,7 @@ assert.ok(clashEvents.some(event => event.id === 'event_warfront_axis_clash'), '
 assert.ok(clashEvents.some(event => event.id === 'event_warfront_unhoused_clash'), 'The Unhoused approach must seed a second smaller scout clash');
 
 const assetPaths = ASSET_DEFS.map(asset => `${asset.key} ${asset.path}`.toLowerCase());
-for (const forbidden of ['lailani', 'lexiangel', 'demonmythical', 'ancientdemonlord']) {
+for (const forbidden of ['lexiangel', 'demonmythical', 'ancientdemonlord']) {
   assert.equal(assetPaths.some(text => text.includes(forbidden)), false, `${forbidden} must remain source-only and outside runtime assets`);
 }
 
@@ -107,4 +107,4 @@ const enemySource = await readFile(new URL('../dist/js/entities/Enemy.js', impor
 assert.ok(enemySource.includes('playerDistanceSq > activeRangeSq'), 'Living Warfront must inherit player-scoped offscreen AI sleeping');
 assert.ok(enemySource.includes('targetWithinPursuitBounds'), 'Living Warfront must inherit bounded pursuit/leashes');
 
-console.log(`Living Warfront smoke passed: ${actorCount} production actors (${factionCount.celestial} celestial / ${factionCount.infernal} infernal), ${patrols.length} patrol rows, ${clashEvents.length} localized clash sectors, zero mythic runtime actors.`);
+console.log(`Living Warfront smoke passed: ${actorCount} regular production actors (${factionCount.celestial} celestial / ${factionCount.infernal} infernal), ${patrols.length} patrol rows, ${clashEvents.length} localized clash sectors, zero mythic army spawn slots.`);

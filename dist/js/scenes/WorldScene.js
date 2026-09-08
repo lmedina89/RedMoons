@@ -5,6 +5,7 @@ import { MERCHANT_SUPPLY_DEFS, RECOVERY_DROP_TABLE } from '../data/consumables.j
 import { ITEM_DEFS } from '../data/items.js';
 import { NPC_DEFS } from '../data/npcs.js';
 import { AZRAEL_DEF } from '../data/specialActors.js';
+import { LAILANI_DEF } from '../data/lailani.js';
 import { AREA_DEFS, BUILDING_DEFS, COLLIDERS, DEBUG_SPAWN_REGIONS, DEFAULT_MAP_ID, FALLEN_WATCH_WALLS, HOLLOW_COLLIDERS, HOLLOW_WALLS, INTERIOR_WALLS, MAP_TRANSITIONS, PROP_DEFS, RECOVERY_POINTS, REFUGE_WALLS, SPAWN_REGIONS, TOWN_PROP_DEFS, ZONES, mapForId } from '../data/world.js';
 import { DEBUG, GAME_VERSION, PLAYER_START, RARITY, TILE_SIZE, WORLD_HEIGHT, WORLD_WIDTH } from '../config.js';
 import { gameEvents } from '../core/EventBus.js';
@@ -24,6 +25,7 @@ import { ACTOR_COLLISION_KIND, colliderBlocksActor, enemyIgnoresWorldCollision, 
 import { Enemy } from '../entities/Enemy.js';
 import { NPC } from '../entities/NPC.js';
 import { Azrael } from '../entities/Azrael.js';
+import { Lailani } from '../entities/Lailani.js';
 import { Player } from '../entities/Player.js';
 
 export class WorldScene extends Phaser.Scene {
@@ -79,11 +81,13 @@ export class WorldScene extends Phaser.Scene {
     );
     this.createNPCs();
     this.createAzrael();
+    this.createLailani();
     if (DEBUG) this.dynamicCollisionDebug = this.add.graphics().setDepth(15001);
     this.combat = new CombatSystem(this, this.state, this.player, this.enemies, gameEvents);
     this.player.combat = this.combat;
     for (const enemy of this.enemies) enemy.combat = this.combat;
     if (this.azrael) this.azrael.combat = this.combat;
+    if (this.lailani) this.lailani.combat = this.combat;
     this.recovery = new RecoverySystem(this, this.state, this.inventory, this.player, gameEvents);
     this.worldEvents = new WorldEventSystem(this, this.state, gameEvents);
     this.createLootPool();
@@ -107,6 +111,7 @@ export class WorldScene extends Phaser.Scene {
       window.removeEventListener('pagehide', this.onPageHide);
       document.removeEventListener('visibilitychange', this.onVisibilityChange);
       this.azrael?.destroy();
+      this.lailani?.destroy();
       this.combat?.destroy();
     });
     this.updateZone();
@@ -1329,6 +1334,16 @@ ${point.label || 'Use'}`, {
     // hover/glide and should cross rocks instead of snagging like a walker.
   }
 
+  createLailani() {
+    this.lailani = null;
+    if (LAILANI_DEF.home.mapId !== this.currentMap.id) return;
+    this.lailani = new Lailani(this, LAILANI_DEF);
+    // Lailani's field-test locomotion is deliberately airborne/transcendent.
+    // Like Azrael, her compact proxy obeys map bounds but does not collide with
+    // ground clutter; Seraphic Passage and Celestial Waltz need to cross the
+    // battlefield without snagging on low decorative geometry.
+  }
+
   triggerWorldEvent(event) {
     const members = encounterId => (this.enemies || []).filter(enemy => enemy.encounterId === encounterId && enemy.sprite?.active);
     if (event.kind === 'encounter_alert_player') {
@@ -1363,6 +1378,7 @@ ${point.label || 'Use'}`, {
   combatants() {
     const actors = [this.player, ...(this.enemies || [])];
     if (this.azrael && !this.azrael.dead) actors.push(this.azrael);
+    if (this.lailani && !this.lailani.dead) actors.push(this.lailani);
     return actors.filter(Boolean);
   }
 
@@ -1674,6 +1690,18 @@ ${point.label || 'Use'}`, {
       gameEvents.emit('toast', { text: 'Living Warfront test: approach the Axis to wake the opposing patrols.', tone: 'muted', short: true });
       return;
     }
+    if (action === 'lailani') {
+      if (this.currentMap.id !== 'map_veil_warfront') { this.transitionToMap('map_veil_warfront', 'lailani_test'); return; }
+      moveNear(this.lailani?.body);
+      gameEvents.emit('toast', { text: 'Lailani field test: her Dawnward position can engage the Axis patrols.', tone: 'muted', short: true });
+      return;
+    }
+    if (action === 'lailaniai') {
+      const enabled = this.lailani?.setDebugEnabled(!this.lailani.debugEnabled);
+      gameEvents.emit('toast', { text: enabled ? 'Lailani AI diagnostics on.' : 'Lailani AI diagnostics off.', tone: 'muted', short: true });
+      this.emitState();
+      return;
+    }
     if (action === 'burntcache') {
       if (this.currentMap.id !== 'map_cinder_wilds') { this.transitionToMap('map_cinder_wilds', 'from_refuge', { position: { x: 2200, y: 900 } }); return; }
       this.player.body.setPosition(2200, 900); return;
@@ -1828,7 +1856,7 @@ ${point.label || 'Use'}`, {
     const derived = derivedStats(this.state);
     this.state.player.hp = Math.min(this.state.player.hp, derived.maxHp);
     this.state.player.essence = Math.min(this.state.player.essence, derived.maxEssence);
-    gameEvents.emit('state', { state: this.state, derived, quests: this.questSystem?.activeSummary() || [], combat: this.combat?.snapshot(this.time.now) || { skills: [], effects: [] }, recovery: this.recovery?.snapshot(this.time.now) || { quick: [], food: { active: false }, passive: { active: false } }, interaction: this.interactionSnapshot(), azrael: this.azrael?.snapshot(this.time.now) || null });
+    gameEvents.emit('state', { state: this.state, derived, quests: this.questSystem?.activeSummary() || [], combat: this.combat?.snapshot(this.time.now) || { skills: [], effects: [] }, recovery: this.recovery?.snapshot(this.time.now) || { quick: [], food: { active: false }, passive: { active: false } }, interaction: this.interactionSnapshot(), azrael: this.azrael?.snapshot(this.time.now) || null, lailani: this.lailani?.snapshot(this.time.now) || null });
   }
 
   safeSave() { try { this.saveManager.save(this.state); } catch (error) { console.warn('[Ashfall] Save failed', error); gameEvents.emit('toast', { text: 'Save could not be written on this device.', tone: 'danger' }); } }
@@ -1848,6 +1876,8 @@ ${point.label || 'Use'}`, {
     for (const enemy of this.enemies || []) if (enemy.sprite?.active) drawBody(enemy.sprite.body, 0xff4bd8, 0.55);
     // Gold = ArchAngel Azrael's compact combat/navigation proxy.
     if (this.azrael && !this.azrael.dead) drawBody(this.azrael.body?.body, 0xffd86b, 0.72);
+    // Pale cyan = Lailani's compact airborne field-test proxy.
+    if (this.lailani && !this.lailani.dead) drawBody(this.lailani.body?.body, 0xbff6ff, 0.78);
   }
 
   update(time, delta) {
@@ -1869,6 +1899,7 @@ ${point.label || 'Use'}`, {
     if (DEBUG) this.drawDynamicCollisionDebug();
     if (actionInput.consumeInteract()) this.interact();
     this.azrael?.update(time, delta, this.enemies);
+    this.lailani?.update(time, delta, this.enemies);
     const combatants = this.combatants();
     for (const enemy of this.enemies) enemy.update(time, delta, this.player, combatants);
     for (const npc of this.npcs) npc.update(time, delta, this.player);
