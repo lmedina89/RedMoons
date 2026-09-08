@@ -268,3 +268,7 @@ Automated checks can establish structural correctness but cannot substitute for 
 - Static/runtime checks require the 0/90/180 ms three-shot stagger, 0.60/0.45/0.45 damage shares, center/±26 px coverage fan, 0.42s movement lead, 16 px projectile radius and distinct Judgment impact presentation.
 - Full inherited suites remain authoritative for Azrael's six unchanged abilities, Sanctuary, Lailani, regular celestial/demon combat, faction warfare, Warfront population/geography, portals and save schema.
 - Physical iPhone gate: observe both stationary and moving targets. Successful Judgment bolts must produce visible damage numbers + knockback + celestial impact; bolts should remain straight/wall-blocked and genuine evasive misses should still occur.
+
+## v0.1.4.4.4 — El’exis Field Test validation
+
+Automated coverage adds El’exis-specific field-test and solo-loop smoke suites: seven-skill namespace/hierarchy, Azrael-tier stat envelope, one-minute Crown mitigation, ordinary-vs-mythic healing scaling, support sanctuary thresholds, offscreen simulation, collision-safe field/solo anchors, exact crop dimensions, Warfront-only asset streaming, debug-only reward bypass, El’exis-only solo targeting, and unchanged 32-actor production Warfront population. Physical iPhone Safari remains required for final visual judgement of her Dominion geometry, healing readability, and effect density.

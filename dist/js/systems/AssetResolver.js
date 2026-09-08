@@ -5,6 +5,7 @@ import { NPC_DEFS } from '../data/npcs.js';
 import { DEFAULT_MAP_ID, MAP_DEFS, SPAWN_REGIONS, mapForId } from '../data/world.js';
 import { AZRAEL_DEF } from '../data/specialActors.js';
 import { LAILANI_DEF } from '../data/lailani.js';
+import { ELEXIS_DEF } from '../data/elexis.js';
 
 const ASSET_BY_KEY = new Map(ASSET_DEFS.map(asset => [asset.key, asset]));
 const LAYER_TEXTURE_FIELDS = Object.freeze(['texture', 'walk', 'run', 'slash', 'backslash', 'halfslash', 'spellcast', 'thrust', 'shoot', 'hurt']);
@@ -95,6 +96,13 @@ export function assetDefsForMap(state, requestedMapId = null) {
   // Warfront. Her compact crops are not loaded on Cinder maps.
   if (LAILANI_DEF.home.mapId === map.id) {
     for (const key of Object.values(LAILANI_DEF.assets)) addAssetKey(keys, key);
+  }
+
+
+  // El’exis is independently map-scoped to the Veil Warfront and streams only
+  // her seven compact complete runtime action crops.
+  if (ELEXIS_DEF.home.mapId === map.id) {
+    for (const key of Object.values(ELEXIS_DEF.assets)) addAssetKey(keys, key);
   }
 
   const zoneIds = new Set(map.zoneIds || []);

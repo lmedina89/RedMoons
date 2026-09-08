@@ -1,5 +1,19 @@
 # Changelog
 
+## v0.1.4.4.4 — El’exis Field Test
+
+- Added **El’exis — Mother of the Host** as an independent Azrael-tier named celestial on the Veil Warfront.
+- Added seven bespoke abilities: Crown of Dominion, Spear of the Firmament, Chains of the Seventh Throne, Astral Severance, Edict of Sanctuary, Heavenfall Constellation, and Throne Beyond Heaven.
+- Added support-first AI: El’exis evaluates wounded friendly Celestials before offensive major casts and can move toward a threatened squad to place Edict of Sanctuary. A materially wounded ally now takes priority over entering Crown of Dominion, so immediate rescue comes first.
+- Crown of Dominion lasts 60 seconds, provides El’exis personal mitigation, periodically restores nearby Celestials, refreshes Guard, and emits a restrained retaliatory Dominion pulse.
+- Edict of Sanctuary provides a meaningful initial ordinary-angel heal, sustained smaller pulses, Guard, and enemy slow/control. Allied mythic healing is scaled down to avoid future mythic healing loops.
+- Added independent gold/white/pale-violet Dominion geometry, chain, constellation, sanctuary, spear, and throne effects without modifying shared Azrael/Lailani VFX contracts.
+- Added seven compact runtime crops from the verified complete top LPC action blocks of `LexiAngel.png`; source sheet remains preserved unchanged.
+- Added `El’exis Field Test`, `El’exis Solo Test`, and `El’exis AI Overlay` debug actions. Solo waves are debug-only, bounded to 3–5 demons, target El’exis only, and bypass production rewards.
+- Added 1200px player-scoped simulation gating for the large Warfront.
+- Production Living Warfront remains 32 regular actors. Save schema remains 2.
+- Preserved Lailani’s approved field-test build and Azrael’s v0.1.4.4.3.2 Judgment Blast fix.
+
 ## v0.1.4.4.3.2 — Azrael Judgment Blast Reliability Polish
 
 - Fixed a real Judgment Blast hit-registration defect: Azrael's projectile payload now includes `sourceActor`, allowing the faction-aware projectile manager to resolve hostile demon targets and actual damage.

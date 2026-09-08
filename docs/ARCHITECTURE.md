@@ -267,3 +267,13 @@ Lailani's solo observation loop remains WorldScene/debug orchestration rather th
 `CombatSystem.triggerAllyAbility()` must pass the unique allied actor through `sourceActor` whenever a named ally launches a shared `ProjectileManager` projectile. `ProjectileManager` intentionally resolves valid hit candidates through the firing actor and faction relationship, not through a team string alone. Judgment Blast therefore treats a missing `sourceActor` as a correctness regression.
 
 Azrael's Judgment volley remains data-driven in `specialActors.js`: stagger delays, per-bolt damage scales, shallow fan offsets and movement-lead time are configuration rather than hard-coded balance constants. Delayed bolts re-sample the live target node/velocity immediately before launch; once launched they are ordinary non-homing, wall-blocked pooled projectiles.
+
+## v0.1.4.4.4 El’exis named-celestial contract
+
+- `data/elexis.js` owns El’exis stats, seven-skill cadence, temporary Warfront home, and debug-only solo-wave data.
+- `entities/Elexis.js` is an independent controller. It does not import or subclass Azrael/Lailani.
+- El’exis is a unique special actor, not a `WARFRONT_SPAWN_REGIONS` row; the production Warfront remains exactly 32 ordinary soldiers.
+- AI priority is support-first when ordinary Celestials are meaningfully wounded: locate the highest-need friendly cluster, move into Edict range when necessary, then cast protection/restoration before returning to control/execution logic.
+- Named-mythic cross-healing is deliberately reduced while ordinary Celestials receive full configured healing. This avoids future Azrael/Lailani/El’exis sustain loops without weakening her role as Mother of the Host.
+- El’exis uses a 1200px player-distance simulation gate; delayed constellation/throne/edict effects refuse to resolve while she is offscreen/asleep.
+- Runtime art is map-scoped through `AssetResolver`; only seven verified complete 64px-frame action crops are uploaded when the Veil Warfront is live.

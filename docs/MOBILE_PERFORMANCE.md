@@ -167,3 +167,7 @@ The debug-only Lailani Solo Test suspends the normal 32 Warfront army actors bef
 ## v0.1.4.4.3.2 Judgment volley budget
 
 Judgment Blast now schedules three pooled projectiles per cast instead of one, separated by 90 ms. It does not create a persistent emitter, homing update loop or new full-screen Graphics surface. The existing fixed 44-projectile pool remains unchanged; the added peak cost is two extra short-lived pooled projectiles plus their bounded trails/impacts. Physical iPhone testing should include repeated Judgment casts during ordinary Warfront activity to confirm projectile-pool reuse and frame pacing remain stable.
+
+## v0.1.4.4.4 El’exis effect budget
+
+El’exis adds one persistent Crown `Graphics` object while active. Other Dominion effects are short-lived `Graphics` telegraphs/impacts created only on ability use. Heavenfall Constellation is capped at six scheduled strikes; Throne Beyond Heaven uses two delayed stages. Her simulation sleeps beyond 1200px from the player and delayed mythic effects abort while asleep. The debug solo loop suspends the 32 production Warfront actors rather than running both populations simultaneously.

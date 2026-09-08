@@ -169,3 +169,7 @@ The v0.1.2.2 visible-source collision rule remains authoritative. Do not reintro
 ## v0.1.4.4.3.2 Judgment Blast field-test limitation
 
 The hit-registration defect is repaired, but final Judgment Blast tuning remains a physical-device decision. The three bolts deliberately do not home; fast targets can still evade part or all of the shallow fan. Do not increase homing, projectile count or damage further until several minutes of iPhone observation establish the real post-fix hit rate and readability.
+
+## v0.1.4.4.4 El’exis field-test limitations
+
+El’exis remains at a temporary field-test station south of Halo Bastion. Permanent named-celestial deployment, including Azrael’s move from Cinder Wilds to the Celestial Stronghold and occasional battlefield deployments, is intentionally deferred. The debug solo loop is for physical combat observation and is not production gameplay. Physical iPhone Safari testing remains the visual/performance release gate; automated static/runtime-smoke validation does not substitute for device play.

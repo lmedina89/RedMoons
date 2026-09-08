@@ -145,6 +145,19 @@ export const ASSET_DEFS = [
   })),
   { key: 'lailani-hurt', path: 'assets/npcs/lailani/lailani-hurt.png', frameWidth: 64, frameHeight: 64, frames: 6 },
 
+
+  // v0.1.4.4.4 El’exis Field Test runtime crops. The same verified LPC action
+  // blocks used for Lailani are complete on LexiAngel: full wings, clothing and
+  // gold casting accents remain present in every shipped frame.
+  ...[
+    ['spellcast', 7], ['thrust', 8], ['walk', 9], ['slash', 6],
+    ['shoot', 13], ['idle', 2]
+  ].map(([action, frames]) => ({
+    key: `elexis-${action}`, path: `assets/npcs/elexis/elexis-${action}.png`,
+    frameWidth: 64, frameHeight: 64, frames
+  })),
+  { key: 'elexis-hurt', path: 'assets/npcs/elexis/elexis-hurt.png', frameWidth: 64, frameHeight: 64, frames: 6 },
+
   { key: 'skeleton-walk', path: `${E}skeleton-walk.png`, frameWidth: 64, frameHeight: 64 },
   { key: 'skeleton-slash', path: `${E}skeleton-slash.png`, frameWidth: 64, frameHeight: 64 },
   { key: 'skeleton-bow-shoot', path: `${E}skeleton-bow-shoot.png`, frameWidth: 64, frameHeight: 64 },

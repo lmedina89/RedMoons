@@ -1,4 +1,14 @@
-# Hell RPG v0.1.4.4.3.2 — Azrael Judgment Blast Reliability Polish
+# Hell RPG v0.1.4.4.4 — El’exis Field Test
+
+## v0.1.4.4.4 El’exis Field Test
+
+This build introduces **El’exis — Mother of the Host** as a third independent named celestial field-test actor on the Veil Warfront. She is authored on Azrael’s mythic tier but expresses power through **Dominion, protection, restoration, formation control, and deliberate celestial execution** rather than copying Azrael or Lailani.
+
+Her seven-skill field-test kit is **Crown of Dominion, Spear of the Firmament, Chains of the Seventh Throne, Astral Severance, Edict of Sanctuary, Heavenfall Constellation, and Throne Beyond Heaven**. Crown lasts 60 seconds and periodically heals/Guards nearby Celestials. Edict is support-priority AI: wounded angels can cause El’exis to move toward them and cast a substantial sanctuary heal/Guard field before returning to offense. Allied mythic healing is deliberately reduced so future named celestials cannot form an immortal healing triangle.
+
+`?debug=1` adds **El’exis Field Test**, **El’exis Solo Test**, and **El’exis AI Overlay**. The solo loop suspends the normal 32 Warfront soldiers in that scene instance and recycles bounded 3–5 demon waves against El’exis only, without XP/ash/loot/quest rewards.
+
+The user-supplied `LexiAngel.png` remains preserved in source assets; runtime streams only seven verified complete action crops whose clothing/wings remain intact. Azrael’s Judgment Blast reliability fix and Lailani’s approved combat build are intentionally unchanged.
 
 ## v0.1.4.4.3.2 Azrael Judgment Blast Reliability Polish
 

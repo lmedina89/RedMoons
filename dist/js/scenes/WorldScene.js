@@ -6,6 +6,7 @@ import { ITEM_DEFS } from '../data/items.js';
 import { NPC_DEFS } from '../data/npcs.js';
 import { AZRAEL_DEF } from '../data/specialActors.js';
 import { LAILANI_DEF, LAILANI_SOLO_TEST_DEF } from '../data/lailani.js';
+import { ELEXIS_DEF, ELEXIS_SOLO_TEST_DEF } from '../data/elexis.js';
 import { AREA_DEFS, BUILDING_DEFS, COLLIDERS, DEBUG_SPAWN_REGIONS, DEFAULT_MAP_ID, FALLEN_WATCH_WALLS, HOLLOW_COLLIDERS, HOLLOW_WALLS, INTERIOR_WALLS, MAP_TRANSITIONS, PROP_DEFS, RECOVERY_POINTS, REFUGE_WALLS, SPAWN_REGIONS, TOWN_PROP_DEFS, ZONES, mapForId } from '../data/world.js';
 import { DEBUG, GAME_VERSION, PLAYER_START, RARITY, TILE_SIZE, WORLD_HEIGHT, WORLD_WIDTH } from '../config.js';
 import { gameEvents } from '../core/EventBus.js';
@@ -26,6 +27,7 @@ import { Enemy } from '../entities/Enemy.js';
 import { NPC } from '../entities/NPC.js';
 import { Azrael } from '../entities/Azrael.js';
 import { Lailani } from '../entities/Lailani.js';
+import { Elexis } from '../entities/Elexis.js';
 import { Player } from '../entities/Player.js';
 
 export class WorldScene extends Phaser.Scene {
@@ -49,6 +51,7 @@ export class WorldScene extends Phaser.Scene {
     // destination Scene will render normally but update() will return forever.
     this.transitioning = false;
     this.lailaniSoloTest = null;
+    this.elexisSoloTest = null;
     this.makeRuntimeTextures();
     this.physics.world.setBounds(0, 0, this.currentMap.width, this.currentMap.height);
     this.cameras.main.setBounds(0, 0, this.currentMap.width, this.currentMap.height).setRoundPixels(true).setZoom(1);
@@ -83,12 +86,14 @@ export class WorldScene extends Phaser.Scene {
     this.createNPCs();
     this.createAzrael();
     this.createLailani();
+    this.createElexis();
     if (DEBUG) this.dynamicCollisionDebug = this.add.graphics().setDepth(15001);
     this.combat = new CombatSystem(this, this.state, this.player, this.enemies, gameEvents);
     this.player.combat = this.combat;
     for (const enemy of this.enemies) enemy.combat = this.combat;
     if (this.azrael) this.azrael.combat = this.combat;
     if (this.lailani) this.lailani.combat = this.combat;
+    if (this.elexis) this.elexis.combat = this.combat;
     this.recovery = new RecoverySystem(this, this.state, this.inventory, this.player, gameEvents);
     this.worldEvents = new WorldEventSystem(this, this.state, gameEvents);
     this.createLootPool();
@@ -113,6 +118,7 @@ export class WorldScene extends Phaser.Scene {
       document.removeEventListener('visibilitychange', this.onVisibilityChange);
       this.azrael?.destroy();
       this.lailani?.destroy();
+      this.elexis?.destroy();
       this.combat?.destroy();
     });
     this.updateZone();
@@ -130,6 +136,10 @@ export class WorldScene extends Phaser.Scene {
     if (DEBUG && this.currentMap.id === LAILANI_SOLO_TEST_DEF.mapId && this.registry.get('lailaniSoloRequested')) {
       this.registry.set('lailaniSoloRequested', false);
       this.time.delayedCall(40, () => this.startLailaniSoloTest());
+    }
+    if (DEBUG && this.currentMap.id === ELEXIS_SOLO_TEST_DEF.mapId && this.registry.get('elexisSoloRequested')) {
+      this.registry.set('elexisSoloRequested', false);
+      this.time.delayedCall(40, () => this.startElexisSoloTest());
     }
     if (!this.state.worldFlags.introToastShown && this.currentMap.id === DEFAULT_MAP_ID) {
       this.state.worldFlags.introToastShown = true;
@@ -1349,6 +1359,14 @@ ${point.label || 'Use'}`, {
     // battlefield without snagging on low decorative geometry.
   }
 
+  createElexis() {
+    this.elexis = null;
+    if (ELEXIS_DEF.home.mapId !== this.currentMap.id) return;
+    this.elexis = new Elexis(this, ELEXIS_DEF);
+    // El’exis also uses a compact airborne proxy. Her deliberate glide and
+    // formation-control casts should not snag on decorative ground clutter.
+  }
+
   suspendProductionEnemiesForLailaniSoloTest() {
     for (const enemy of this.enemies || []) {
       if (!enemy || enemy._lailaniSoloTest) continue;
@@ -1460,6 +1478,114 @@ ${point.label || 'Use'}`, {
     return true;
   }
 
+
+  suspendProductionEnemiesForElexisSoloTest() {
+    for (const enemy of this.enemies || []) {
+      if (!enemy || enemy._elexisSoloTest) continue;
+      enemy._elexisSoloSuspended = true;
+      enemy.clearAbility?.();
+      this.combat?.statuses?.clear?.(enemy);
+      enemy.target = null;
+      enemy.respawnAt = Number.MAX_SAFE_INTEGER;
+      enemy.sprite?.setVelocity?.(0);
+      if (enemy.sprite?.body) enemy.sprite.body.enable = false;
+      enemy.sprite?.setActive?.(false)?.setVisible?.(false);
+      enemy.visual?.setVisible?.(false);
+    }
+  }
+
+  createElexisSoloEnemy(enemyId, point, index) {
+    const def = ENEMY_DEFS[enemyId];
+    if (!def || !point) return null;
+    const wave = this.elexisSoloTest?.wave || 1;
+    const spawn = {
+      id: `debug_elexis_solo_${wave}_${index}_${enemyId}`,
+      encounterId: `debug_elexis_solo_wave_${wave}`,
+      archetype: 'guard', mapId: ELEXIS_SOLO_TEST_DEF.mapId,
+      areaId: 'area_warfront_celestial_rear', enemyId,
+      x: point.x - 40, y: point.y - 40, width: 80, height: 80, count: 1,
+      respawnMs: 1000000000, activationRange: 1800, pursuitMargin: 900, debugOnly: true
+    };
+    const callbacks = {
+      hitTarget: (target, amount, x, y, enemy) => this.combat?.enemyMeleeTarget(target, amount, x, y, enemy),
+      beginAbility: (enemy, ability, target) => this.combat?.beginEnemyAbility(enemy, ability, target, enemy.abilityTargetX, enemy.abilityTargetY),
+      triggerAbility: (enemy, ability, targetX, targetY, target) => this.combat?.triggerEnemyAbility(enemy, ability, targetX, targetY, target),
+      damageNumber: (x, y, amount, hostile) => this.combat?.damageNumbers.show(x, y, amount, hostile),
+      alertEncounter: (_enemy, target, time) => {
+        if (!target || target !== this.elexis) return;
+        for (const ally of this.elexisSoloTest?.actors || []) ally?.forceEncounterAggro?.(this.elexis, time);
+      },
+      died: enemy => { enemy._elexisSoloDefeated = true; }
+    };
+    const enemy = new Enemy(this, this.enemyGroup, def, spawn, 0, callbacks);
+    enemy._elexisSoloTest = true;
+    enemy.combat = this.combat;
+    this.enemies.push(enemy);
+    enemy.forceEncounterAggro(this.elexis, this.time.now);
+    return enemy;
+  }
+
+  clearElexisSoloWaveActors() {
+    const actors = this.elexisSoloTest?.actors || [];
+    for (const actor of actors) {
+      actor?.clearAbility?.();
+      this.combat?.statuses?.clear?.(actor);
+      actor?.sprite?.destroy?.();
+      actor?.visual?.destroy?.();
+      const index = this.enemies.indexOf(actor);
+      if (index >= 0) this.enemies.splice(index, 1);
+    }
+    if (this.elexisSoloTest) this.elexisSoloTest.actors = [];
+  }
+
+  spawnElexisSoloWave(time = this.time.now) {
+    if (!this.elexisSoloTest?.active || !this.elexis) return false;
+    this.clearElexisSoloWaveActors();
+    this.elexisSoloTest.wave += 1;
+    const waveIndex = (this.elexisSoloTest.wave - 1) % ELEXIS_SOLO_TEST_DEF.waves.length;
+    const enemyIds = ELEXIS_SOLO_TEST_DEF.waves[waveIndex];
+    const center = ELEXIS_SOLO_TEST_DEF.spawnCenter;
+    this.elexisSoloTest.actors = enemyIds.map((enemyId, index) => {
+      const offset = ELEXIS_SOLO_TEST_DEF.spawnOffsets[index % ELEXIS_SOLO_TEST_DEF.spawnOffsets.length];
+      return this.createElexisSoloEnemy(enemyId, { x: center.x + offset.x, y: center.y + offset.y }, index);
+    }).filter(Boolean);
+    this.elexisSoloTest.nextWaveAt = 0;
+    this.elexisSoloTest.waveCleared = false;
+    const harder = waveIndex === ELEXIS_SOLO_TEST_DEF.waves.length - 1;
+    gameEvents.emit('toast', {
+      text: `El’exis Solo Test • Wave ${this.elexisSoloTest.wave}${harder ? ' • Heavy wave' : ''}`,
+      tone: harder ? 'noble' : 'muted', short: true
+    });
+    return this.elexisSoloTest.actors.length > 0;
+  }
+
+  updateElexisSoloTest(time) {
+    const test = this.elexisSoloTest;
+    if (!test?.active) return;
+    const actors = test.actors || [];
+    if (actors.length && !test.waveCleared && actors.every(actor => !actor || actor.hp <= 0 || actor.state === 'dying' || actor.state === 'dead' || actor.sprite?.active === false)) {
+      test.waveCleared = true;
+      test.nextWaveAt = time + ELEXIS_SOLO_TEST_DEF.nextWaveDelayMs;
+    }
+    if (test.waveCleared && test.nextWaveAt && time >= test.nextWaveAt) this.spawnElexisSoloWave(time);
+  }
+
+  startElexisSoloTest() {
+    if (!DEBUG || this.currentMap.id !== ELEXIS_SOLO_TEST_DEF.mapId || !this.elexis) return false;
+    if (this.elexisSoloTest?.active) {
+      gameEvents.emit('toast', { text: `El’exis Solo Test already running • Wave ${this.elexisSoloTest.wave}`, tone: 'muted', short: true });
+      return true;
+    }
+    this.elexisSoloTest = { active: true, wave: 0, actors: [], nextWaveAt: 0, waveCleared: false };
+    this.suspendProductionEnemiesForElexisSoloTest();
+    this.elexis.relocateForFieldTest(ELEXIS_SOLO_TEST_DEF.elexis.x, ELEXIS_SOLO_TEST_DEF.elexis.y, this.time.now);
+    this.player.body.setPosition(ELEXIS_SOLO_TEST_DEF.player.x, ELEXIS_SOLO_TEST_DEF.player.y);
+    this.player.visual.direction = 3;
+    this.spawnElexisSoloWave(this.time.now);
+    gameEvents.emit('toast', { text: 'Solo loop active: demons target El’exis only. Normal Warfront troops return after a map reload.', tone: 'muted' });
+    return true;
+  }
+
   triggerWorldEvent(event) {
     const members = encounterId => (this.enemies || []).filter(enemy => enemy.encounterId === encounterId && enemy.sprite?.active);
     if (event.kind === 'encounter_alert_player') {
@@ -1495,6 +1621,7 @@ ${point.label || 'Use'}`, {
     const actors = [this.player, ...(this.enemies || [])];
     if (this.azrael && !this.azrael.dead) actors.push(this.azrael);
     if (this.lailani && !this.lailani.dead) actors.push(this.lailani);
+    if (this.elexis && !this.elexis.dead) actors.push(this.elexis);
     return actors.filter(Boolean);
   }
 
@@ -1827,6 +1954,24 @@ ${point.label || 'Use'}`, {
       this.emitState();
       return;
     }
+    if (action === 'elexis') {
+      if (this.currentMap.id !== 'map_veil_warfront' || this.elexisSoloTest?.active) { this.transitionToMap('map_veil_warfront', 'elexis_test'); return; }
+      moveNear(this.elexis?.body);
+      gameEvents.emit('toast', { text: 'El’exis field test: Mother of the Host is stationed behind Dawnward Hold.', tone: 'muted', short: true });
+      return;
+    }
+    if (action === 'elexissolo') {
+      this.transitionToMap(ELEXIS_SOLO_TEST_DEF.mapId, ELEXIS_SOLO_TEST_DEF.entryId, {
+        beforeCommit: () => this.registry.set('elexisSoloRequested', true)
+      });
+      return;
+    }
+    if (action === 'elexisai') {
+      const enabled = this.elexis?.setDebugEnabled(!this.elexis.debugEnabled);
+      gameEvents.emit('toast', { text: enabled ? 'El’exis AI diagnostics on.' : 'El’exis AI diagnostics off.', tone: 'muted', short: true });
+      this.emitState();
+      return;
+    }
     if (action === 'burntcache') {
       if (this.currentMap.id !== 'map_cinder_wilds') { this.transitionToMap('map_cinder_wilds', 'from_refuge', { position: { x: 2200, y: 900 } }); return; }
       this.player.body.setPosition(2200, 900); return;
@@ -1981,7 +2126,7 @@ ${point.label || 'Use'}`, {
     const derived = derivedStats(this.state);
     this.state.player.hp = Math.min(this.state.player.hp, derived.maxHp);
     this.state.player.essence = Math.min(this.state.player.essence, derived.maxEssence);
-    gameEvents.emit('state', { state: this.state, derived, quests: this.questSystem?.activeSummary() || [], combat: this.combat?.snapshot(this.time.now) || { skills: [], effects: [] }, recovery: this.recovery?.snapshot(this.time.now) || { quick: [], food: { active: false }, passive: { active: false } }, interaction: this.interactionSnapshot(), azrael: this.azrael?.snapshot(this.time.now) || null, lailani: this.lailani?.snapshot(this.time.now) || null });
+    gameEvents.emit('state', { state: this.state, derived, quests: this.questSystem?.activeSummary() || [], combat: this.combat?.snapshot(this.time.now) || { skills: [], effects: [] }, recovery: this.recovery?.snapshot(this.time.now) || { quick: [], food: { active: false }, passive: { active: false } }, interaction: this.interactionSnapshot(), azrael: this.azrael?.snapshot(this.time.now) || null, lailani: this.lailani?.snapshot(this.time.now) || null, elexis: this.elexis?.snapshot(this.time.now) || null });
   }
 
   safeSave() { try { this.saveManager.save(this.state); } catch (error) { console.warn('[Ashfall] Save failed', error); gameEvents.emit('toast', { text: 'Save could not be written on this device.', tone: 'danger' }); } }
@@ -2003,6 +2148,8 @@ ${point.label || 'Use'}`, {
     if (this.azrael && !this.azrael.dead) drawBody(this.azrael.body?.body, 0xffd86b, 0.72);
     // Pale cyan = Lailani's compact airborne field-test proxy.
     if (this.lailani && !this.lailani.dead) drawBody(this.lailani.body?.body, 0xbff6ff, 0.78);
+    // Pale violet = El’exis's compact Dominion field-test proxy.
+    if (this.elexis && !this.elexis.dead) drawBody(this.elexis.body?.body, 0xd9c7ff, 0.80);
   }
 
   update(time, delta) {
@@ -2025,12 +2172,15 @@ ${point.label || 'Use'}`, {
     if (actionInput.consumeInteract()) this.interact();
     this.azrael?.update(time, delta, this.enemies);
     this.lailani?.update(time, delta, this.enemies);
+    this.elexis?.update(time, delta, this.enemies);
     const combatants = this.combatants();
     for (const enemy of this.enemies) {
       if (enemy._lailaniSoloTest) enemy.update(time, delta, this.lailani, this.lailani ? [this.lailani] : []);
+      else if (enemy._elexisSoloTest) enemy.update(time, delta, this.elexis, this.elexis ? [this.elexis] : []);
       else enemy.update(time, delta, this.player, combatants);
     }
     this.updateLailaniSoloTest(time);
+    this.updateElexisSoloTest(time);
     for (const npc of this.npcs) npc.update(time, delta, this.player);
     this.updateZone();
     this.updateArea();

@@ -254,3 +254,7 @@ This pass introduces no newly authored source image. It reuses the already-regis
 
 The project uses the user-provided `source-assets/character-concepts/2026-09-07/heavenly-and-unique/LailaniAngel.png` as Lailani's canonical authoring sheet. The source is preserved unchanged. Runtime files under `dist/assets/npcs/lailani/` are deterministic compact crops of the complete spellcast, thrust, walk, slash, shoot, hurt and idle action regions. These action blocks preserve Lailani's blue/white outfit and wings. Later expanded action blocks that omit clothing layers remain source-only and are intentionally not shipped as Lailani runtime animations. No new third-party asset dependency is introduced by these crops.
 
+
+### v0.1.4.4.4 El’exis runtime curation
+
+`LexiAngel.png` from the preserved 2026-09-07 user-supplied unique-character concept set remains unchanged under `source-assets/character-concepts/2026-09-07/heavenly-and-unique/`. Seven compact runtime action crops are derived from source coordinates documented in `docs/ELEXIS_FIELD_TEST.md`. No later incomplete action blocks are shipped.
