@@ -15,6 +15,7 @@ import { DEBUG, GAME_VERSION, PLAYER_START, RARITY, TILE_SIZE, WORLD_HEIGHT, WOR
 import { gameEvents } from '../core/EventBus.js';
 import { POI_DEFS } from '../data/exploration.js';
 import { WARFRONT_AMBIENT_EMITTERS, WARFRONT_BRIDGES, WARFRONT_CLIFF_RIBBONS, WARFRONT_COLLIDERS, WARFRONT_DETAIL_BUDGET, WARFRONT_DETAIL_CLUSTERS, WARFRONT_DETAIL_FX, WARFRONT_LANDMARKS, WARFRONT_ROUTE_BANDS, WARFRONT_RUIN_BUILDINGS, WARFRONT_WATERWAYS } from '../data/warfront.js';
+import { MYTHIC_FREEPLAY_WARFRONT_SPAWNS } from '../data/mythicFreeplayWarfront.js';
 import { actionInput } from '../systems/ActionInput.js';
 import { CombatSystem } from '../systems/CombatSystem.js';
 import { DialogueSystem } from '../systems/DialogueSystem.js';
@@ -1338,7 +1339,10 @@ ${point.label || 'Use'}`, {
       alertEncounter: (enemy, target, time) => this.alertEncounterGroup(enemy, target, time),
       died: enemy => this.onEnemyDied(enemy)
     };
-    const spawnRows = DEBUG ? [...SPAWN_REGIONS, ...DEBUG_SPAWN_REGIONS] : SPAWN_REGIONS;
+    const freeplayWarfront = this.azraelFreeplayActive && this.currentMap.id === 'map_veil_warfront';
+    const spawnRows = freeplayWarfront
+      ? MYTHIC_FREEPLAY_WARFRONT_SPAWNS
+      : (DEBUG ? [...SPAWN_REGIONS, ...DEBUG_SPAWN_REGIONS] : SPAWN_REGIONS);
     for (const spawn of spawnRows) {
       if ((spawn.mapId || DEFAULT_MAP_ID) !== this.currentMap.id) continue;
       const def = ENEMY_DEFS[spawn.enemyId];
@@ -1429,7 +1433,7 @@ ${point.label || 'Use'}`, {
 
   createZerakoth() {
     this.zerakoth = null;
-    if (!DEBUG || ZERAKOTH_DEF.home.mapId !== this.currentMap.id) return;
+    if ((!DEBUG && !this.azraelFreeplayActive) || ZERAKOTH_DEF.home.mapId !== this.currentMap.id) return;
     const callbacks = {
       hitTarget: (target, amount, x, y, actor) => this.combat?.enemyMeleeTarget(target, amount, x, y, actor),
       beginAbility: (actor, ability, target) => this.combat?.beginEnemyAbility(actor, ability, target, actor.abilityTargetX, actor.abilityTargetY),
@@ -2954,7 +2958,7 @@ ${point.label || 'Use'}`, {
     if (canUpdateNamed(this.lailani)) this.lailani.update(time, delta, combatants);
     if (canUpdateNamed(this.elexis)) this.elexis.update(time, delta, combatants);
     if (canUpdateNamed(this.mythicalDemon)) this.mythicalDemon.update(time, delta, combatants);
-    if (canUpdateNamed(this.zerakoth)) this.zerakoth.update(time, delta, this.player, combatants);
+    if (canUpdateNamed(this.zerakoth)) this.zerakoth.update(time, delta, this.azraelFreeplayActive && this.azrael ? this.azrael : this.player, combatants);
     for (const enemy of this.enemies) {
       if (enemy._debugBattleArena && arenaHold) continue;
       if (enemy._lailaniSoloTest) enemy.update(time, delta, this.lailani, this.lailani ? [this.lailani] : []);

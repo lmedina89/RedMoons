@@ -231,6 +231,62 @@ export const ENEMY_DEFS = Object.freeze({
     fixedLoadout: { weapon: 'weapon_pitsteel_sword_npc' }, loot: []
   },
 
+  // Mythic Freeplay Eternal Warfront ranks. These definitions are never used
+  // by campaign spawn tables. They reuse verified existing bodies/equipment,
+  // but carry fixed coherent identities instead of being HP-scaled campaign clones.
+  enemy_freeplay_abyss_warwing_veteran: {
+    id: 'enemy_freeplay_abyss_warwing_veteran', name: 'Abyss Warwing Veteran', family: 'demon', variant: 'abyss_veteran', subfaction: 'demon_legion', role: 'veteran', elite: true, threatTier: 'elite', freeplayOnly: true, level: 22,
+    maxHp: 820, attack: 54, defense: 24, speed: 96, detectRange: 410, attackRange: 62, leashRange: 590, attackCooldown: 900, recoverMs: 300,
+    abilities: ['abyss_rend', 'abyss_bolt', 'void_pulse', 'ember_lunge'], resistances: { fire: 0.26, poison: 0.28, shadow: 0.38, celestial: 0.03 },
+    xp: 0, currency: [0, 0], walkTexture: 'demon-scout-walk', attackTexture: 'demon-scout-slash', walkFrames: 9, attackFrames: 6, scale: 1.13, originY: 0.69, loot: []
+  },
+
+  enemy_freeplay_gravesworn_veteran: {
+    id: 'enemy_freeplay_gravesworn_veteran', name: 'Gravesworn Veteran', family: 'skeleton', variant: 'gravesworn_veteran', subfaction: 'demon_legion', role: 'armored_veteran', elite: true, threatTier: 'elite', freeplayOnly: true, level: 25,
+    maxHp: 1080, attack: 61, defense: 33, speed: 76, detectRange: 400, attackRange: 62, leashRange: 580, attackCooldown: 980, recoverMs: 330,
+    abilities: ['blackguard_aegis', 'ember_lunge', 'hellblade_cleave'], resistances: { fire: 0.22, poison: 0.48, shadow: 0.30, celestial: 0.03 }, staggerResistance: 0.30,
+    xp: 0, currency: [0, 0], layered: true, baseVisual: 'enemy_skeleton_base', walkFrames: 9, attackFrames: 6, scale: 1.08,
+    fixedLoadout: { weapon: 'weapon_iron_arming_sword', offhand: 'offhand_wood_guard', head: 'head_iron_revised', shoulders: 'shoulders_legion', chest: 'chest_silver_legion', legs: 'legs_iron_greaves', hands: 'hands_iron', feet: 'feet_iron' }, loot: []
+  },
+
+  enemy_freeplay_ossuary_knight: {
+    id: 'enemy_freeplay_ossuary_knight', name: 'Ossuary Knight', family: 'skeleton', variant: 'ossuary_knight', subfaction: 'demon_legion', role: 'heavy_knight', elite: true, threatTier: 'elite', freeplayOnly: true, level: 34,
+    maxHp: 1880, attack: 85, defense: 51, speed: 78, detectRange: 420, attackRange: 66, leashRange: 620, attackCooldown: 920, recoverMs: 320,
+    abilities: ['blackguard_aegis', 'dreadknight_cinder_burst', 'hellblade_cleave'], resistances: { fire: 0.30, poison: 0.58, shadow: 0.34, celestial: 0.05 }, staggerResistance: 0.42,
+    xp: 0, currency: [0, 0], layered: true, baseVisual: 'enemy_gilded_skeleton_base', walkFrames: 9, attackFrames: 6, scale: 1.12,
+    fixedLoadout: { weapon: 'weapon_steel_arming_sword', offhand: 'offhand_wood_guard', head: 'head_warden', shoulders: 'shoulders_legion', chest: 'chest_steel_plate', legs: 'legs_iron_greaves', hands: 'hands_legion', feet: 'feet_iron' }, loot: []
+  },
+
+  enemy_freeplay_hellfire_veteran: {
+    id: 'enemy_freeplay_hellfire_veteran', name: 'Hellfire Veteran', family: 'demon', variant: 'hellfire_veteran', subfaction: 'demon_legion', role: 'assault_veteran', elite: true, threatTier: 'elite', freeplayOnly: true, level: 36,
+    maxHp: 2160, attack: 93, defense: 45, speed: 101, detectRange: 440, attackRange: 64, leashRange: 650, attackCooldown: 850, recoverMs: 285,
+    abilities: ['burning_rend', 'hellfire_orb', 'dreadknight_cinder_burst', 'ember_lunge'], resistances: { fire: 0.55, poison: 0.34, shadow: 0.28, celestial: 0.05 }, statusResistances: { burn: 0.70 }, staggerResistance: 0.34,
+    xp: 0, currency: [0, 0], walkTexture: 'hellfire-demon-walk', attackTexture: 'hellfire-demon-slash', walkFrames: 9, attackFrames: 6, scale: 1.15, originY: 0.69, loot: []
+  },
+
+  enemy_freeplay_ashbone_praetorian: {
+    id: 'enemy_freeplay_ashbone_praetorian', name: 'Ashbone Praetorian', family: 'demon', variant: 'ashbone_praetorian', subfaction: 'demon_legion', role: 'praetorian', elite: true, threatTier: 'elite', freeplayOnly: true, level: 42,
+    maxHp: 2860, attack: 109, defense: 66, speed: 88, detectRange: 450, attackRange: 66, leashRange: 680, attackCooldown: 920, recoverMs: 310,
+    abilities: ['blackguard_aegis', 'bone_rend', 'soul_shard', 'ashshock'], resistances: { fire: 0.38, poison: 0.48, shadow: 0.38, celestial: 0.06 }, staggerResistance: 0.52,
+    xp: 0, currency: [0, 0], walkTexture: 'ashbone-demon-walk', attackTexture: 'ashbone-demon-slash', walkFrames: 9, attackFrames: 6, scale: 1.17, originY: 0.69, loot: []
+  },
+
+  enemy_freeplay_dread_ossuary_champion: {
+    id: 'enemy_freeplay_dread_ossuary_champion', name: 'Dread Ossuary Champion', family: 'skeleton', variant: 'dread_ossuary', subfaction: 'demon_legion', role: 'champion', elite: true, threatTier: 'elite', freeplayOnly: true, level: 47,
+    maxHp: 3580, attack: 129, defense: 79, speed: 84, detectRange: 470, attackRange: 68, leashRange: 710, attackCooldown: 840, recoverMs: 290,
+    abilities: ['blackguard_aegis', 'ember_lunge', 'dreadknight_cinder_burst', 'hellblade_cleave'], resistances: { fire: 0.38, poison: 0.68, shadow: 0.44, celestial: 0.07 }, staggerResistance: 0.60,
+    xp: 0, currency: [0, 0], layered: true, baseVisual: 'enemy_blood_skeleton_base', walkFrames: 9, attackFrames: 6, scale: 1.16,
+    fixedLoadout: { weapon: 'weapon_ceramic_arming_sword', offhand: 'offhand_wood_guard', head: 'head_warden', shoulders: 'shoulders_legion', chest: 'chest_steel_plate', legs: 'legs_iron_greaves', hands: 'hands_legion', feet: 'feet_iron' }, loot: []
+  },
+
+  enemy_freeplay_fleshborn_executioner: {
+    id: 'enemy_freeplay_fleshborn_executioner', name: 'Fleshborn Executioner', family: 'demon', variant: 'fleshborn_executioner', subfaction: 'demon_legion', role: 'executioner', elite: true, threatTier: 'elite', freeplayOnly: true, level: 53,
+    maxHp: 4580, attack: 153, defense: 89, speed: 96, detectRange: 500, attackRange: 72, leashRange: 760, attackCooldown: 800, recoverMs: 275,
+    abilities: ['blackguard_aegis', 'flesh_rend', 'predators_rush', 'blood_lance', 'flesh_rupture'], resistances: { fire: 0.46, poison: 0.60, shadow: 0.48, celestial: 0.08 }, statusResistances: { burn: 0.52, poison: 0.66 }, staggerResistance: 0.64,
+    xp: 0, currency: [0, 0], layered: true, baseVisual: 'enemy_fleshborn_base', walkFrames: 9, attackFrames: 6, scale: 1.18,
+    fixedLoadout: { weapon: 'weapon_ceramic_arming_sword', head: 'head_warden', shoulders: 'shoulders_legion', chest: 'chest_steel_plate', legs: 'legs_iron_greaves', hands: 'hands_legion', feet: 'feet_iron' }, loot: []
+  },
+
   enemy_demon_scout: {
     id: 'enemy_demon_scout', name: 'Abyss Ashwing', family: 'demon', variant: 'abyss', subfaction: 'demon_legion', role: 'vanguard', level: 5,
     maxHp: 122, attack: 18, defense: 5, speed: 86, detectRange: 350, attackRange: 58, leashRange: 510, attackCooldown: 1020, recoverMs: 330,

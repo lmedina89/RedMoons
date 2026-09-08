@@ -9,6 +9,7 @@ import { ELEXIS_DEF } from '../data/elexis.js';
 import { MYTHICAL_DEMON_DEF } from '../data/mythicalDemon.js';
 import { ZERAKOTH_DEF } from '../data/zerakoth.js';
 import { DEBUG } from '../config.js';
+import { MYTHIC_FREEPLAY_WARFRONT_SPAWNS } from '../data/mythicFreeplayWarfront.js';
 
 const ASSET_BY_KEY = new Map(ASSET_DEFS.map(asset => [asset.key, asset]));
 const LAYER_TEXTURE_FIELDS = Object.freeze(['texture', 'walk', 'run', 'slash', 'backslash', 'halfslash', 'spellcast', 'thrust', 'shoot', 'hurt']);
@@ -84,7 +85,10 @@ export function assetDefsForMap(state, requestedMapId = null) {
     if (instance) addItem(keys, instance.itemId, 'player');
   }
 
-  const spawnRows = DEBUG ? [...SPAWN_REGIONS, ...DEBUG_SPAWN_REGIONS] : SPAWN_REGIONS;
+  const freeplayWarfront = state?.sessionMode === 'azrael_freeplay' && map.id === 'map_veil_warfront';
+  const spawnRows = freeplayWarfront
+    ? MYTHIC_FREEPLAY_WARFRONT_SPAWNS
+    : (DEBUG ? [...SPAWN_REGIONS, ...DEBUG_SPAWN_REGIONS] : SPAWN_REGIONS);
   for (const spawn of spawnRows) {
     if (mapIdForSpawn(spawn) !== map.id) continue;
     addEnemy(keys, ENEMY_DEFS[spawn.enemyId]);
@@ -119,7 +123,7 @@ export function assetDefsForMap(state, requestedMapId = null) {
 
   // Zerakoth is debug-only in this commander field-test pass. His compact
   // base/warplate/Hellblade layers stream only on the Warfront under ?debug=1.
-  if (DEBUG && ZERAKOTH_DEF.home.mapId === map.id) addEnemy(keys, ZERAKOTH_DEF);
+  if ((DEBUG || state?.sessionMode === 'azrael_freeplay') && ZERAKOTH_DEF.home.mapId === map.id) addEnemy(keys, ZERAKOTH_DEF);
 
   const zoneIds = new Set(map.zoneIds || []);
   for (const npc of Object.values(NPC_DEFS)) {

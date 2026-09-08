@@ -1,4 +1,13 @@
-# Hell RPG v0.1.4.4.5.4 — Azrael Mythic Freeplay Foundation
+# Hell RPG v0.1.4.4.5.4.1 — Mythic Freeplay Eternal Warfront
+
+## v0.1.4.4.5.4.1 Mythic Freeplay Eternal Warfront
+
+- Mythic Freeplay now uses a separate 54-regular-actor Veil Warfront population: 34 Infernal and 20 Celestial actors, spread across all eight Warfront areas. Normal campaign Warfront spawns remain the approved 32 actors.
+- Added Freeplay-only Infernal ranks from Lv22–53: Abyss Warwing Veteran, Gravesworn Veteran, Ossuary Knight, Hellfire Veteran, Ashbone Praetorian, Dread Ossuary Champion and Fleshborn Executioner.
+- Every higher-rank skeletal Freeplay demon uses a complete fixed armor set and fixed weapon rather than randomized partial equipment.
+- Infernal incursions now reach Dawnward/Halo territory while Celestial relief/patrol groups contest the Axis and southern ruins, making the realm feel like a continuing front instead of isolated spawn pockets.
+- Freeplay regular actors use 760–980px local activation ranges; coarse-grid validation caps the approximate simultaneous awake regular population at 20 despite 54 total battlefield slots.
+- Zerakoth is active in Mythic Freeplay as the Lv60 commander; Bloodwing remains the Lv94 mythic. Existing Azrael Freeplay controls, disposable-session protections, save schema 2, and autonomous Azrael AI remain unchanged.
 
 ## v0.1.4.4.5.4 Azrael Mythic Freeplay Foundation
 

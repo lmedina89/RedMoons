@@ -1,5 +1,15 @@
 # Changelog
 
+## v0.1.4.4.5.4.1 — Mythic Freeplay Eternal Warfront
+
+- Added a Freeplay-only 54-regular-actor Veil Warfront population (34 Infernal / 20 Celestial) spread across all eight battlefield areas; normal campaign Warfront remains exactly 32 actors.
+- Added seven Freeplay-only Infernal ranks spanning Lv22–53: Abyss Warwing Veteran, Gravesworn Veteran, Ossuary Knight, Hellfire Veteran, Ashbone Praetorian, Dread Ossuary Champion and Fleshborn Executioner.
+- Higher-rank skeleton variants use complete fixed armor sets and fixed weapons; campaign skeleton definitions/loadouts are unchanged.
+- Added deeper Infernal incursions into Celestial territory, stronger Riven/Axis pressure, southern ruin patrols and additional Celestial defensive/relief formations for a more continuous eternal-war layout.
+- Kept local simulation bounded with 760–980px activation ranges; the 54-slot profile validates to an approximate maximum of 20 simultaneously awake regular actors on a coarse Warfront grid.
+- Zerakoth is enabled in Azrael Mythic Freeplay as the existing Lv60 commander; Bloodwing remains Lv94 mythic. Neither is added to the 32-actor campaign population.
+- Freeplay kills remain rewardless and disposable; save schema remains 2 and normal Azrael autonomous AI remains byte-identical to the approved baseline.
+
 ## v0.1.4.4.5.4 — Azrael Mythic Freeplay Foundation
 
 - Added a normal-title-screen **Mythic Freeplay** entry with **Azrael** as the first and only playable mythic in this pass.
