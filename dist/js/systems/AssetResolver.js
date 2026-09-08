@@ -39,6 +39,9 @@ function addEnemy(keys, enemy) {
     for (const entries of Object.values(enemy.equipmentPool || {})) {
       for (const entry of entries || []) addItem(keys, entry?.itemId);
     }
+    for (const preset of enemy.loadoutPresets || []) {
+      for (const itemId of Object.values(preset?.loadout || {})) addItem(keys, itemId);
+    }
     return;
   }
   for (const spec of [enemy, ...(enemy.visualPool || [])]) {

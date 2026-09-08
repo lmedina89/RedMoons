@@ -4,6 +4,10 @@ const FX_COLORS = Object.freeze({
   blueflame: 0x64a7ff,
   poison: 0x79d64d,
   shadow: 0xb26cff,
+  abyss: 0x7b2cff,
+  hellfire: 0xff3d18,
+  ashbone: 0xe8c96f,
+  blood: 0xb51e2e,
   guard: 0xe7b85d,
   earth: 0xc99558,
   heal: 0x72d78a,
@@ -16,7 +20,7 @@ export class FxManager {
     this.scene = scene;
     this.makeTextures();
     this.pools = new Map();
-    for (const key of ['physical', 'fire', 'blueflame', 'poison', 'shadow', 'guard', 'earth', 'heal', 'essence', 'celestial']) {
+    for (const key of ['physical', 'fire', 'blueflame', 'poison', 'shadow', 'abyss', 'hellfire', 'ashbone', 'blood', 'guard', 'earth', 'heal', 'essence', 'celestial']) {
       this.pools.set(key, Array.from({ length: 12 }, () => scene.add.sprite(0, 0, `fx-${key}`).setVisible(false).setDepth(8600)));
     }
     this.indices = new Map();
@@ -35,6 +39,10 @@ export class FxManager {
     makeOrb('projectile-poison', FX_COLORS.poison, 5);
     makeOrb('projectile-blueflame', FX_COLORS.blueflame, 5);
     makeOrb('projectile-shadow', FX_COLORS.shadow, 6);
+    makeOrb('projectile-abyss', FX_COLORS.abyss, 6);
+    makeOrb('projectile-hellfire', FX_COLORS.hellfire, 6);
+    makeOrb('projectile-ashbone', FX_COLORS.ashbone, 5);
+    makeOrb('projectile-blood', FX_COLORS.blood, 6);
     if (!this.scene.textures.exists('projectile-celestial')) {
       const g = this.scene.add.graphics();
       g.fillStyle(0xfff7c2, 0.16).fillCircle(16, 16, 15);
@@ -110,6 +118,37 @@ export class FxManager {
       if (p >= 1) { timer.remove(false); g.destroy(); }
     }});
     return { destroy: () => { timer.remove(false); if (g.active) g.destroy(); } };
+  }
+
+  demonClaw(x, y, facing = [0, 1], range = 90, kind = 'abyss', scale = 1) {
+    const color = FX_COLORS[kind] || FX_COLORS.shadow;
+    const g = this.scene.add.graphics().setDepth(8520);
+    const angle = Math.atan2(facing[1], facing[0]);
+    const half = 0.58;
+    for (let i = 0; i < 3; i += 1) {
+      const radius = range * (0.58 + i * 0.10) * scale;
+      g.lineStyle(Math.max(2, 5 - i), color, 0.76 - i * 0.14);
+      g.beginPath();
+      g.arc(x, y, radius, angle - half + i * 0.08, angle + half - i * 0.05, false);
+      g.strokePath();
+    }
+    const hx = x + Math.cos(angle) * range * 0.68;
+    const hy = y + Math.sin(angle) * range * 0.68;
+    this.burst(hx, hy, kind, 0.72 * scale);
+    this.scene.tweens.add({ targets: g, alpha: 0, duration: 210, ease: 'Quad.out', onComplete: () => g.destroy() });
+  }
+
+  demonRushTrail(x1, y1, x2, y2, kind = 'blood') {
+    const steps = 4;
+    for (let i = 0; i <= steps; i += 1) {
+      const t = i / steps;
+      this.scene.time.delayedCall(i * 18, () => this.burst(
+        x1 + (x2 - x1) * t,
+        y1 + (y2 - y1) * t - 8,
+        kind,
+        0.52 + t * 0.18
+      ));
+    }
   }
 
   trail(x, y, kind = 'physical') { this.burst(x, y, kind, 0.45); }

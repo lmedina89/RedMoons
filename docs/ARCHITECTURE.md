@@ -189,3 +189,12 @@ True run uses `LayeredCharacter.supportsAction('run')` as an all-visible-body-la
 
 Refuge buildings now expose explicit display dimensions in `BUILDING_DEFS`. `buildingVisualBounds()` and `buildingCollider()` derive static actor solids from those same values, while `WorldScene` renders with `setDisplaySize()`. Future building art swaps should update the display dimensions rather than authoring an independent collider Y offset.
 
+## v0.1.4.2.2 demon ability-family contract
+
+Ordinary Demon Legion actors now share one data-driven combat path rather than bespoke controller classes. Enemy definitions select ability IDs; `ENEMY_ABILITIES` supplies common shapes (`melee_reach`, `projectile`, `radial`, `dash_strike`), damage/VFX kinds, timing and optional status/knockback payloads. `CombatSystem` resolves those shapes through the same enemy windup/trigger pipeline, while `FxManager` supplies pooled procedural family presentation. This keeps color variants cheap to extend and prevents common units from duplicating Azrael-style special-actor logic.
+
+`dash_strike` is world-line-of-sight gated before selection and again before movement. Its travel distance is bounded so the attacker stops near the target rather than teleporting through it. Projectile-family attacks use `ProjectileManager` and retain explicit `wallCollision: true` definitions.
+
+Elite humanoid/creature variation can now use `loadoutPresets`: weighted complete loadout records are rolled once per spawn before ordinary per-slot equipment pools. Fleshborn is the first use and deliberately chooses coherent full armor sets. `AssetResolver` expands every possible preset dependency into the active map texture package before scene commit, so a later random roll cannot request an unloaded layer.
+
+This is intended to become the shared faction pattern: common demons inherit infernal family abilities, common angels later inherit a Celestial Ability Family, elites add a small number of stronger/unique actions, and named mythical beings remain bespoke special actors.

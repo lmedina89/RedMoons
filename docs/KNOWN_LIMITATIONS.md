@@ -1,4 +1,14 @@
-# Known Limitations — v0.1.4.2.1
+# Known Limitations — v0.1.4.2.2
+
+## v0.1.4.2.2 Demon Combat Foundation limits
+
+- Demon skills are the first faction-family combat pass, not final faction balance. Cooldowns, damage, Burn/Stagger chances and Fleshborn pressure remain subject to physical iPhone tuning.
+- Common demon effects intentionally use compact procedural VFX. They should remain visually subordinate to Azrael and future named mythical beings rather than becoming screen-filling boss effects.
+- Fleshborn currently rolls among three curated complete armor presets. Additional high-tier sets should be admitted only after animation/wing-clipping verification; arbitrary per-slot randomization is intentionally avoided.
+- The full RedDemon, TanDemon and DemonLordFlesh concept sheets are user-provided project source art whose exact upstream license/credit records are not present in the repository. Their compact runtime derivatives remain **development-authorized / attribution hold** until provenance is resolved before commercial/store release.
+- Lesser angels still do not have their planned Celestial Ability Family in this release. That mirrored holy melee/ranged/AoE/support foundation is a subsequent faction-combat pass; Azrael remains the only live showcase-tier celestial combatant.
+- Named mythical demons and the user's additional named mythical angels remain future bespoke content. Ordinary family abilities are not intended to approximate that power tier.
+- Physical iPhone Safari remains the release gate for dash feel, wall interaction, Fleshborn composite animation, mixed First-Light readability and performance.
 
 ## v0.1.4.2.1 hotfix limits
 

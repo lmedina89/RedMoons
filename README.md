@@ -1,6 +1,23 @@
-# Hell RPG v0.1.4.2.1 — Refuge Geometry & Building Integrity Hotfix
+# Hell RPG v0.1.4.2.2 — Demon Combat Foundation
 
-Built directly from the physically tested **v0.1.4.2 Living Wilds: Monster Families & Encounter Ecology**. Save schema remains **2** and the localStorage key remains `hellrpg.ashfall.save.v1`.
+Built directly from the physically tested **v0.1.4.2.1 Refuge Geometry & Building Integrity Hotfix**. Save schema remains **2** and the localStorage key remains `hellrpg.ashfall.save.v1`.
+
+## v0.1.4.2.2 Demon Combat Foundation
+
+This release gives the hand-only Demon Legion family a compact, data-driven combat identity without raising the established Cinder Wilds population budget or touching Azrael's seven-skill kit.
+
+- **Abyss Ashwing (black)** now uses Demonic Rend, Abyss Bolt and Void Pulse: short claw pressure, a wall-blocked shadow projectile and a small readable radial burst.
+- **Hellfire Ashwing (red)** uses Burning Rend, Hellfire Orb and Cinder Burst. Its fire abilities can apply a light Burn chance, giving the red variant a straightforward damage identity.
+- **Ashbone Ashwing (tan)** uses Bone Rend, Soul Shard and Ashshock. Ashshock trades raw fire pressure for a wider bone/ash shockwave, knockback and a modest Stagger chance.
+- **Fleshborn Ravager** is the first elite/heavy Demon Legion unit. It uses Flesh Rend, Blood Lance, Flesh Rupture and **Predator's Rush**, a short telegraphed wall-aware dash strike.
+- Fleshborn visuals retain the supplied flesh body and orange wings, then roll one **complete curated armor preset** at spawn rather than mismatched individual parts. The first three coherent sets are Dread Warplate, Silver Legion and Steel Bastion; hands remain weapon-free for the claw-based kit and wings remain visible.
+- Four demon projectile definitions are physical, dodgeable and `wallCollision: true`. Color/type identity is driven by shared ability/VFX data rather than four parallel combat systems.
+- First-Light Scar's Demon Legion patrol now represents all four roles while the total Cinder Wilds budget remains exactly **35 ordinary enemy actor slots**. Existing spawns were rebalanced rather than increasing the mobile workload.
+- `Enemy` supports weighted `loadoutPresets` for complete equipment sets and `dash_strike` line-of-sight gating. `AssetResolver` includes every possible preset dependency before the map is committed.
+- Demon VFX are procedural and deliberately below Azrael-tier spectacle: compact claw arcs, bolts, bursts and rush trails use the existing pooled graphics system rather than additional heavy effect atlases.
+- Refuge building geometry/integrity, Living Wilds encounter ecology, hostile-human factions, save schema and map dimensions/transitions remain intact.
+
+For physical verification, use `?debug=1` and the **Near Abyss Demon / Near Hellfire Demon / Near Ashbone Demon / Near Fleshborn** buttons. Confirm projectiles stop on walls, the three color families read differently, Fleshborn armor sets remain coherent in motion, Predator's Rush never crosses a solid, and the mixed patrol can fight near Azrael without obscuring his mythic presentation.
 
 ## v0.1.4.2.1 Refuge Geometry & Building Integrity Hotfix
 

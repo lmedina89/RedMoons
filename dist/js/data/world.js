@@ -1,4 +1,4 @@
-// v0.1.4.2.1 world data: Cinder Refuge is now its own deliberately composed
+// v0.1.4.2.2 world data: Cinder Refuge is now its own deliberately composed
 // settlement map while the Cinder Wilds have room to breathe as a larger
 // exterior region. All placement remains data-driven so future maps can reuse
 // the same render/collision paths without baking coordinates into actor code.
@@ -116,7 +116,7 @@ export const TOWN_PROP_DEFS = Object.freeze([
 export const SPAWN_REGIONS = Object.freeze([
   // Ashen Causeway: loose imps near the road plus a human toll gang guarding
   // a chokepoint. Shared encounterId values make related actors alert together.
-  { id: 'spawn_cinder_imp_south', encounterId: 'enc_causeway_imps', archetype: 'roam', mapId: 'map_cinder_wilds', areaId: 'area_ashen_causeway', enemyId: 'enemy_cinder_imp', x: 560, y: 650, width: 360, height: 480, count: 2, respawnMs: 7200, activationRange: 900 },
+  { id: 'spawn_cinder_imp_south', encounterId: 'enc_causeway_imps', archetype: 'roam', mapId: 'map_cinder_wilds', areaId: 'area_ashen_causeway', enemyId: 'enemy_cinder_imp', x: 560, y: 650, width: 360, height: 480, count: 1, respawnMs: 7200, activationRange: 900 },
   { id: 'spawn_causeway_scavengers', encounterId: 'enc_causeway_tollgang', archetype: 'guard', mapId: 'map_cinder_wilds', areaId: 'area_ashen_causeway', enemyId: 'enemy_ash_scavenger', x: 720, y: 1320, width: 300, height: 280, count: 2, respawnMs: 9800, activationRange: 980 },
   { id: 'spawn_causeway_enforcer', encounterId: 'enc_causeway_tollgang', archetype: 'guard', mapId: 'map_cinder_wilds', areaId: 'area_ashen_causeway', enemyId: 'enemy_ironbound_raider', x: 830, y: 1400, width: 150, height: 160, count: 1, respawnMs: 12800, activationRange: 980 },
 
@@ -130,10 +130,14 @@ export const SPAWN_REGIONS = Object.freeze([
   { id: 'spawn_cave_spider_south', encounterId: 'enc_cinderwood_web', archetype: 'ambush', mapId: 'map_cinder_wilds', areaId: 'area_cinderwood', enemyId: 'enemy_cave_spider', x: 1450, y: 1390, width: 470, height: 430, count: 2, respawnMs: 8200, activationRange: 850, ambushRange: 155 },
   { id: 'spawn_cinderwood_assassin', encounterId: 'enc_cinderwood_stalker', archetype: 'ambush', mapId: 'map_cinder_wilds', areaId: 'area_cinderwood', enemyId: 'enemy_ash_assassin', x: 2470, y: 1640, width: 190, height: 180, count: 1, respawnMs: 26000, activationRange: 850, ambushRange: 175 },
 
-  // First-Light Scar: a small Demon Legion recon element gives Azrael's
-  // territory an active front line without introducing unfinished friendly
-  // celestial troops yet. Azrael's own controller remains untouched.
-  { id: 'spawn_firstlight_demon_scouts', encounterId: 'enc_firstlight_demon_patrol', archetype: 'patrol', mapId: 'map_cinder_wilds', areaId: 'area_first_light_scar', enemyId: 'enemy_demon_scout', x: 2920, y: 250, width: 500, height: 180, count: 2, respawnMs: 11800, activationRange: 1050, patrolPath: [[2980, 330], [3380, 340], [3700, 610], [3300, 760], [3000, 610]] },
+  // First-Light Scar: a four-role Demon Legion patrol now fields Abyss,
+  // Hellfire, Ashbone and elite Fleshborn combat identities. The population
+  // budget is rebalanced elsewhere so the Wilds remain capped at 35 actors.
+  // Azrael's own controller remains untouched.
+  { id: 'spawn_firstlight_abyss', encounterId: 'enc_firstlight_demon_patrol', archetype: 'patrol', mapId: 'map_cinder_wilds', areaId: 'area_first_light_scar', enemyId: 'enemy_demon_scout', x: 2920, y: 250, width: 220, height: 180, count: 1, respawnMs: 11800, activationRange: 1050, patrolPath: [[2980, 330], [3380, 340], [3700, 610], [3300, 760], [3000, 610]] },
+  { id: 'spawn_firstlight_hellfire', encounterId: 'enc_firstlight_demon_patrol', archetype: 'patrol', mapId: 'map_cinder_wilds', areaId: 'area_first_light_scar', enemyId: 'enemy_hellfire_demon', x: 3150, y: 250, width: 220, height: 180, count: 1, respawnMs: 12400, activationRange: 1050, patrolPath: [[2980, 330], [3380, 340], [3700, 610], [3300, 760], [3000, 610]] },
+  { id: 'spawn_firstlight_ashbone', encounterId: 'enc_firstlight_demon_patrol', archetype: 'patrol', mapId: 'map_cinder_wilds', areaId: 'area_first_light_scar', enemyId: 'enemy_ashbone_demon', x: 3380, y: 250, width: 220, height: 180, count: 1, respawnMs: 13200, activationRange: 1050, patrolPath: [[2980, 330], [3380, 340], [3700, 610], [3300, 760], [3000, 610]] },
+  { id: 'spawn_firstlight_fleshborn', encounterId: 'enc_firstlight_demon_patrol', archetype: 'patrol', mapId: 'map_cinder_wilds', areaId: 'area_first_light_scar', enemyId: 'enemy_fleshborn_demon', x: 3600, y: 300, width: 210, height: 180, count: 1, respawnMs: 17500, activationRange: 1050, patrolPath: [[2980, 330], [3380, 340], [3700, 610], [3300, 760], [3000, 610]] },
 
   // Fallen Watch: undead inside the broken fort, beasts outside it, a human
   // salvage crew east of the wall, and a dormant emberweb nest.
@@ -147,7 +151,7 @@ export const SPAWN_REGIONS = Object.freeze([
   // creatures remain separate packs so the basin does not become one giant pull.
   { id: 'spawn_rotwing_south', encounterId: 'enc_ashgrave_rotwings', archetype: 'pack', mapId: 'map_cinder_wilds', areaId: 'area_ashgrave_hollow', enemyId: 'enemy_rotwing_ravager', x: 4390, y: 1320, width: 430, height: 380, count: 1, respawnMs: 10200, activationRange: 950 },
   { id: 'spawn_blueflame_edge', encounterId: 'enc_ashgrave_blueflame', archetype: 'roam', mapId: 'map_cinder_wilds', areaId: 'area_ashgrave_hollow', enemyId: 'enemy_blueflame_imp', x: 4930, y: 1490, width: 380, height: 330, count: 1, respawnMs: 10800, activationRange: 900 },
-  { id: 'spawn_ashgrave_ritual_guard', encounterId: 'enc_ashgrave_ritual', archetype: 'ritual', mapId: 'map_cinder_wilds', areaId: 'area_ashgrave_hollow', enemyId: 'enemy_ash_skeleton', x: 5040, y: 1160, width: 310, height: 250, count: 2, respawnMs: 10800, activationRange: 1000 },
+  { id: 'spawn_ashgrave_ritual_guard', encounterId: 'enc_ashgrave_ritual', archetype: 'ritual', mapId: 'map_cinder_wilds', areaId: 'area_ashgrave_hollow', enemyId: 'enemy_ash_skeleton', x: 5040, y: 1160, width: 310, height: 250, count: 1, respawnMs: 10800, activationRange: 1000 },
   { id: 'spawn_ashgrave_ritual_mage', encounterId: 'enc_ashgrave_ritual', archetype: 'ritual', mapId: 'map_cinder_wilds', areaId: 'area_ashgrave_hollow', enemyId: 'enemy_skeleton_mage', x: 5150, y: 1240, width: 150, height: 150, count: 1, respawnMs: 14500, activationRange: 1000 },
 
   // Bone Road: explicit military patrol/guard composition.

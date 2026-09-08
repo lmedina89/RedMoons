@@ -1,4 +1,14 @@
-# QA Report — v0.1.4.2.1 Refuge Geometry & Building Integrity Hotfix
+# QA Report — v0.1.4.2.2 Demon Combat Foundation
+
+## v0.1.4.2.2 automated/static scope
+
+`npm run check` covers structural validation plus Azrael, Sanctuary, world-navigation, encounter-ecology, building-integrity and new demon-combat smoke suites. The demon suite validates all four Demon Legion identities, all 13 new family abilities, four wall-blocked projectile definitions, complete Fleshborn armor presets, First-Light population composition and the unchanged **35-slot Wilds actor ceiling**.
+
+Manual source/runtime visual inspection was performed on the black/red/tan/flesh demon crops and on all three Fleshborn armor presets in idle and four-direction slash poses. The composites remain aligned and preserve the Fleshborn's orange-wing silhouette.
+
+Automated tests validate the dash-strike world line-of-sight hook and projectile wall-collision metadata, but they cannot prove live Phaser feel, effect readability, touch performance or every moving collision outcome. Physical iPhone Safari remains the release gate. No automated interactive browser playthrough is claimed for this release.
+
+Regression checks should specifically protect the v0.1.4.2.1 Refuge geometry and v0.1.4.2 encounter ecology. Azrael's own controller, special-actor data, supplied runtime art and Azrael/Sanctuary test files are expected to remain byte-identical; shared `CombatSystem`, `FxManager`, `Enemy`, world/encounter data and asset registries intentionally change for Demon Combat Foundation.
 
 ## v0.1.4.2.1 automated/static scope
 

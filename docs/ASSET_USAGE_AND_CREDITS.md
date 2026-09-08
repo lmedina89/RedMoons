@@ -10,6 +10,20 @@ This document separates assets with supplied attribution from assets whose match
 
 
 
+## v0.1.4.2.2 Demon Combat Foundation runtime crops
+
+Six compact runtime sheets are deterministic rectangular crops from three user-provided Demon Castle concept sheets already preserved under `source-assets/character-concepts/2026-09-07/demon-castle/`:
+
+- `hellfire-demon-walk.png` / `hellfire-demon-slash.png` derive from `RedDemon.png`.
+- `ashbone-demon-walk.png` / `ashbone-demon-slash.png` derive from `TanDemon.png`.
+- `fleshborn-demon-walk.png` / `fleshborn-demon-slash.png` derive from `DemonLordFlesh.png`.
+
+The crop contract matches the previously verified DemonBase runtime extraction: walk uses the 9-frame × 4-direction LPC band and slash uses the 6-frame × 4-direction band. Full 832×3456 authoring sheets remain source-only. These derivatives introduce no new authorship claim.
+
+Exact matching upstream license/credit records for these three concept sheets are not currently present in the project tree, so they remain **development-authorized / attribution hold** and must not be treated as commercially cleared until provenance is resolved. Fleshborn armor overlays reuse already-preserved LPC equipment assets; no new external armor artwork was introduced by this release.
+
+See `dist/assets/licenses/v01422-demon-combat-crops.txt` for the distribution-side hold notice.
+
 ## v0.1.4.2 hostile-character runtime crops
 
 Four compact runtime animation sheets are deterministic rectangular crops from user-provided concept sheets already preserved under `source-assets/character-concepts/2026-09-07/`:

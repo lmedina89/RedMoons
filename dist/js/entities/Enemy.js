@@ -28,6 +28,8 @@ function weightedChoice(entries = []) { return weightedEntry(entries)?.itemId ||
 
 function rollLoadout(definition) {
   if (definition.fixedLoadout) return { ...definition.fixedLoadout };
+  const preset = weightedEntry(definition.loadoutPresets || []);
+  if (preset?.loadout) return { ...preset.loadout };
   const loadout = {};
   for (const [slot, entries] of Object.entries(definition.equipmentPool || {})) {
     const itemId = weightedChoice(entries);
@@ -278,7 +280,7 @@ export class Enemy {
       const ability = ENEMY_ABILITY_DEFS[id];
       if (!ability || time < (this.abilityCooldowns.get(id) || 0)) continue;
       if (distance > ability.range || distance < (ability.minRange || 0)) continue;
-      if ((ability.type === 'melee_reach' || ability.type === 'radial_aoe') && targetNode
+      if ((ability.type === 'melee_reach' || ability.type === 'radial_aoe' || ability.type === 'dash_strike') && targetNode
         && !this.scene.hasWorldLineOfSight?.(this.sprite.x, this.sprite.y, targetNode.x, targetNode.y)) continue;
       return ability;
     }

@@ -1,5 +1,18 @@
 # Changelog
 
+## v0.1.4.2.2 — Demon Combat Foundation
+
+- Added a shared Demon Legion combat-family foundation for the black **Abyss Ashwing**, red **Hellfire Ashwing**, tan **Ashbone Ashwing**, and elite **Fleshborn Ravager**.
+- Added 13 data-driven demon abilities: three color-family kits plus Fleshborn's four-skill elite kit, including the wall-aware **Predator's Rush** dash strike.
+- Added four physical, dodgeable, world-collision projectiles: Abyss Bolt, Hellfire Orb, Soul Shard and Blood Lance.
+- Added lightweight procedural demon claw, burst, projectile and rush-trail presentation with abyss/hellfire/ashbone/blood palettes. Ordinary demon effects remain intentionally below Azrael-tier spectacle.
+- Added compact RedDemon, TanDemon and DemonLordFlesh walk/slash runtime crops from the preserved full concept sheets; full 832×3456 authoring sheets remain source-only.
+- Added weighted complete `loadoutPresets` support. Fleshborn rolls one curated full armor set per spawn (Dread Warplate, Silver Legion or Steel Bastion) while preserving its baked flesh body/wings and weapon-free hands.
+- Reworked First-Light Scar's Demon Legion patrol to include Abyss, Hellfire, Ashbone and Fleshborn roles while preserving the exact **35-slot** Cinder Wilds ordinary-enemy ceiling.
+- Added direct `?debug=1` teleports for all four demon identities plus `tests/demon-combat-smoke.mjs`.
+- Preserved v0.1.4.2.1 Refuge render-derived building collision, NPC route fixes, Living Wilds ecology, map scale/transitions and save schema 2.
+- Azrael's controller, special-actor definition, supplied runtime art and seven-skill data remain unchanged; inherited Azrael/Sanctuary smoke suites continue to pass.
+
 ## v0.1.4.2.1 — Refuge Geometry & Building Integrity Hotfix
 
 - Repaired all nine Cinder Refuge building colliders after physical iPhone testing showed the solids vertically offset into empty ground below the rendered structures.

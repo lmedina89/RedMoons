@@ -162,13 +162,21 @@ export class CombatSystem {
     const node = actorNode(target);
     const tx = targetX ?? node?.x ?? this.player.body.x;
     const ty = targetY ?? node?.y ?? this.player.body.y;
-    if (ability.type === 'radial_aoe') enemy.abilityTelegraph = this.fx.telegraph(x, y, ability.radius, ability.telegraph || 'earth', ability.windupMs);
-    else if (ability.type === 'melee_reach') enemy.abilityTelegraph = this.fx.lineTelegraph(x, y, tx, ty, ability.range, ability.telegraph || 'physical', ability.windupMs);
-    else this.fx.burst(x, y - 18, ability.telegraph === 'fire' ? 'blueflame' : ability.telegraph || 'physical', 0.72);
+    if (ability.type === 'radial_aoe') {
+      enemy.abilityTelegraph = this.fx.telegraph(x, y, ability.radius, ability.telegraph || 'earth', ability.windupMs);
+    } else if (ability.type === 'melee_reach' || ability.type === 'dash_strike') {
+      enemy.abilityTelegraph = this.fx.lineTelegraph(x, y, tx, ty, ability.range, ability.telegraph || 'physical', ability.windupMs);
+    } else {
+      this.fx.burst(x, y - 18, ability.telegraph === 'fire' ? 'blueflame' : ability.telegraph || 'physical', 0.72);
+    }
   }
 
   triggerEnemyAbility(enemy, ability, targetX, targetY, targetRef = null) {
     const x = enemy.sprite.x, y = enemy.sprite.y;
+    const abilityKind = ability.impact || ability.telegraph || 'physical';
+    const damageType = ability.damageType || (abilityKind === 'hellfire' ? 'fire' : abilityKind === 'abyss' || abilityKind === 'blood' ? 'shadow' : 'physical');
+    const audioId = ability.audio || (abilityKind === 'hellfire' ? 'fire' : abilityKind === 'abyss' || abilityKind === 'blood' ? 'shadow' : abilityKind === 'ashbone' ? 'slam' : 'sword');
+
     if (ability.type === 'projectile') {
       this.projectiles.launch(ability.projectileId, {
         team: 'enemy', x, y: y - 10, targetX, targetY,
@@ -177,11 +185,53 @@ export class CombatSystem {
       });
       return;
     }
+
+    if (ability.type === 'dash_strike') {
+      enemy.abilityTelegraph?.destroy?.(); enemy.abilityTelegraph = null;
+      const targetNode = actorNode(targetRef);
+      const tx = targetNode?.x ?? targetX;
+      const ty = targetNode?.y ?? targetY;
+      if (this.scene.hasWorldLineOfSight?.(x, y, tx, ty) === false) return;
+      const dx = tx - x, dy = ty - y;
+      const distance = Math.hypot(dx, dy) || 1;
+      const travel = Math.max(0, Math.min(ability.dashDistance || 110, distance - 42));
+      const nx = x + dx / distance * travel;
+      const ny = y + dy / distance * travel;
+      this.fx.demonRushTrail(x, y, nx, ny, abilityKind);
+      enemy.sprite.setPosition(nx, ny);
+      enemy.setDirection?.(dx, dy);
+      const facing = [dx / distance, dy / distance];
+      this.fx.demonClaw(nx, ny, facing, 82, abilityKind, 1.12);
+      const halfArc = (ability.arcDegrees || 64) * Math.PI / 360;
+      for (const target of this.friendlyTargets()) {
+        const node = actorNode(target);
+        const cdx = node.x - nx, cdy = node.y - ny;
+        const currentDistance = Math.hypot(cdx, cdy);
+        const dot = currentDistance ? (cdx / currentDistance) * facing[0] + (cdy / currentDistance) * facing[1] : 1;
+        if (currentDistance > 86 || dot < Math.cos(halfArc)) continue;
+        const amount = this.resolver.damageTarget(target, enemy.def.attack * ability.damageMultiplier, {
+          type: damageType, sourceX: nx, sourceY: ny, knockback: ability.knockback || 0,
+          impact: abilityKind, enemy, sourceTeam: 'enemy'
+        });
+        if (amount && ability.status && Math.random() <= (ability.status.chance ?? 1)) {
+          this.statuses.apply(target, ability.status.id, { power: enemy.def.attack, x: nx, y: ny, team: 'enemy' });
+        }
+      }
+      this.audio.play(audioId, { throttleMs: 120, volume: 0.075 });
+      this.shakeAt(nx, ny, 82, 0.0024, 300);
+      return;
+    }
+
     if (ability.type === 'melee_reach') {
       enemy.abilityTelegraph?.destroy?.(); enemy.abilityTelegraph = null;
       const aimAngle = Phaser.Math.Angle.Between(x, y, targetX, targetY);
+      const facing = [Math.cos(aimAngle), Math.sin(aimAngle)];
       const halfArc = (ability.arcDegrees || 40) * Math.PI / 360;
-      this.fx.burst(x + Math.cos(aimAngle) * Math.min(ability.range * 0.62, 72), y + Math.sin(aimAngle) * Math.min(ability.range * 0.62, 72), 'physical', 0.9);
+      if (['abyss', 'hellfire', 'ashbone', 'blood'].includes(abilityKind)) {
+        this.fx.demonClaw(x, y, facing, ability.range, abilityKind, abilityKind === 'blood' ? 1.10 : 0.92);
+      } else {
+        this.fx.burst(x + facing[0] * Math.min(ability.range * 0.62, 72), y + facing[1] * Math.min(ability.range * 0.62, 72), abilityKind, 0.9);
+      }
       for (const target of this.friendlyTargets()) {
         const node = actorNode(target);
         const currentDx = node.x - x, currentDy = node.y - y;
@@ -189,30 +239,38 @@ export class CombatSystem {
         const currentAngle = Phaser.Math.Angle.Between(x, y, node.x, node.y);
         const angleDelta = Math.abs(Phaser.Math.Angle.Wrap(currentAngle - aimAngle));
         if (distance <= ability.range && angleDelta <= halfArc) {
-          this.resolver.damageTarget(target, enemy.def.attack * ability.damageMultiplier, {
-            type: 'physical', sourceX: x, sourceY: y, knockback: ability.knockback || 0,
-            impact: 'physical', enemy, sourceTeam: 'enemy'
+          const amount = this.resolver.damageTarget(target, enemy.def.attack * ability.damageMultiplier, {
+            type: damageType, sourceX: x, sourceY: y, knockback: ability.knockback || 0,
+            impact: abilityKind, enemy, sourceTeam: 'enemy'
           });
+          if (amount && ability.status && Math.random() <= (ability.status.chance ?? 1)) {
+            this.statuses.apply(target, ability.status.id, { power: enemy.def.attack, x, y, team: 'enemy' });
+          }
         }
       }
-      this.audio.play('sword', { throttleMs: 90 });
+      this.audio.play(audioId, { throttleMs: 100, volume: 0.06 });
       return;
     }
+
     if (ability.type === 'radial_aoe') {
       enemy.abilityTelegraph?.destroy?.(); enemy.abilityTelegraph = null;
-      this.fx.ring(x, y, ability.radius, ability.telegraph || 'earth', 300);
+      this.fx.ring(x, y, ability.radius, abilityKind, 330);
+      this.scene.time.delayedCall(55, () => this.fx.ring(x, y, ability.radius * 0.72, abilityKind, 290));
+      this.fx.burst(x, y - 5, abilityKind, abilityKind === 'blood' ? 1.28 : 1.0);
       for (const target of this.friendlyTargets()) {
         const node = actorNode(target);
         const distance = Phaser.Math.Distance.Between(x, y, node.x, node.y);
         if (distance > ability.radius) continue;
         const amount = this.resolver.damageTarget(target, enemy.def.attack * ability.damageMultiplier, {
-          type: 'physical', sourceX: x, sourceY: y, knockback: ability.knockback || 0,
-          impact: 'earth', enemy, sourceTeam: 'enemy'
+          type: damageType, sourceX: x, sourceY: y, knockback: ability.knockback || 0,
+          impact: abilityKind, enemy, sourceTeam: 'enemy'
         });
-        if (amount && ability.status && Math.random() <= (ability.status.chance ?? 1)) this.statuses.apply(target, ability.status.id, { power: enemy.def.attack, x, y, team: 'enemy' });
+        if (amount && ability.status && Math.random() <= (ability.status.chance ?? 1)) {
+          this.statuses.apply(target, ability.status.id, { power: enemy.def.attack, x, y, team: 'enemy' });
+        }
       }
-      this.audio.play('slam');
-      this.shakeAt(x, y, 130, 0.004, 430);
+      this.audio.play(audioId, { throttleMs: 140, volume: 0.07 });
+      this.shakeAt(x, y, abilityKind === 'blood' ? 115 : 88, abilityKind === 'blood' ? 0.0032 : 0.0023, 360);
     }
   }
 

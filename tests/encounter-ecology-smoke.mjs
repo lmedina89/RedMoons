@@ -16,7 +16,7 @@ for (const archetypeId of ['roam', 'pack', 'patrol', 'guard', 'ritual', 'ambush'
   assert.ok(ENCOUNTER_GROUP_ARCHETYPES[archetypeId], `Missing encounter archetype ${archetypeId}`);
 }
 
-for (const enemyId of ['enemy_ash_scavenger', 'enemy_ironbound_raider', 'enemy_ash_assassin', 'enemy_demon_scout']) {
+for (const enemyId of ['enemy_ash_scavenger', 'enemy_ironbound_raider', 'enemy_ash_assassin', 'enemy_demon_scout', 'enemy_hellfire_demon', 'enemy_ashbone_demon', 'enemy_fleshborn_demon']) {
   assert.ok(ENEMY_DEFS[enemyId], `Missing ecology enemy ${enemyId}`);
 }
 assert.equal(ENEMY_DEFS.enemy_ash_scavenger.layered, true, 'Ash Scavengers should use layered LPC gear');
@@ -24,7 +24,8 @@ assert.equal(ENEMY_DEFS.enemy_ironbound_raider.layered, true, 'Ironbound Raiders
 assert.ok(Object.keys(ENEMY_DEFS.enemy_ash_scavenger.equipmentPool || {}).length >= 7, 'Scavengers need meaningful per-spawn outfit variety');
 assert.ok(Object.keys(ENEMY_DEFS.enemy_ironbound_raider.equipmentPool || {}).length >= 7, 'Raiders need meaningful per-spawn armored variety');
 assert.equal(ENEMY_DEFS.enemy_ash_assassin.rare, true, 'Ashblade Stalker should remain a rare human encounter');
-assert.equal(ENEMY_DEFS.enemy_demon_scout.family, 'demon', 'Demon scout must seed the Demon Legion family');
+assert.equal(ENEMY_DEFS.enemy_demon_scout.family, 'demon', 'Abyss demon must seed the Demon Legion family');
+assert.equal(ENEMY_DEFS.enemy_fleshborn_demon.elite, true, 'Fleshborn must be an elite Demon Legion heavy');
 
 const areaById = new Map(AREA_DEFS.map(area => [area.id, area]));
 const allSolids = [...COLLIDERS, ...HOLLOW_COLLIDERS];
@@ -52,14 +53,14 @@ assert.equal(wildPopulation, 35, 'Living Wilds should use composition rather tha
 assert.ok(SPAWN_REGIONS.some(s => s.encounterId === 'enc_causeway_tollgang' && s.enemyId === 'enemy_ash_scavenger'), 'Causeway needs a live scavenger group');
 assert.ok(SPAWN_REGIONS.some(s => s.encounterId === 'enc_causeway_tollgang' && s.enemyId === 'enemy_ironbound_raider'), 'Causeway toll gang needs an armored enforcer');
 assert.ok(SPAWN_REGIONS.some(s => s.encounterId === 'enc_cinderwood_stalker' && s.enemyId === 'enemy_ash_assassin'), 'Cinderwood needs its rare hostile-human ambush');
-assert.ok(SPAWN_REGIONS.some(s => s.encounterId === 'enc_firstlight_demon_patrol' && s.enemyId === 'enemy_demon_scout'), 'First-Light Scar needs a Demon Legion recon patrol');
+for (const enemyId of ['enemy_demon_scout', 'enemy_hellfire_demon', 'enemy_ashbone_demon', 'enemy_fleshborn_demon']) assert.ok(SPAWN_REGIONS.some(s => s.encounterId === 'enc_firstlight_demon_patrol' && s.enemyId === enemyId), `First-Light Scar must field ${enemyId}`);
 assert.ok(SPAWN_REGIONS.filter(s => s.encounterId === 'enc_bone_road_patrol').length >= 3, 'Bone Road patrol should mix multiple undead roles');
 assert.ok(SPAWN_REGIONS.filter(s => s.encounterId === 'enc_ashgrave_ritual').length >= 2, 'Ashgrave ritual should mix guard and caster roles');
 
 const state = createDefaultState();
 state.player.mapId = 'map_cinder_wilds';
 const keys = new Set(assetDefsForMap(state, 'map_cinder_wilds').map(asset => asset.key));
-for (const key of ['npc-olive-walk', 'ash-assassin-walk', 'ash-assassin-slash', 'demon-scout-walk', 'demon-scout-slash']) {
+for (const key of ['npc-olive-walk', 'ash-assassin-walk', 'ash-assassin-slash', 'demon-scout-walk', 'demon-scout-slash', 'hellfire-demon-walk', 'hellfire-demon-slash', 'ashbone-demon-walk', 'ashbone-demon-slash', 'fleshborn-demon-walk', 'fleshborn-demon-slash']) {
   assert.ok(keys.has(key), `Cinder Wilds asset package must include ${key}`);
 }
 
@@ -69,6 +70,6 @@ for (const token of ['activationRange', 'dormant', 'wakeFromAmbush', 'forceEncou
   assert.ok(enemySource.includes(token), `Enemy runtime must implement ${token}`);
 }
 assert.ok(worldSource.includes('alertEncounterGroup'), 'WorldScene must coordinate local encounter aggro');
-assert.ok(worldSource.includes("action === 'scavenger'") && worldSource.includes("action === 'assassin'") && worldSource.includes("action === 'demonscout'"), 'Debug mode should expose the new ecology actors for field testing');
+assert.ok(worldSource.includes("action === 'scavenger'") && worldSource.includes("action === 'assassin'") && worldSource.includes("action === 'demonscout'") && worldSource.includes("action === 'fleshborn'"), 'Debug mode should expose ecology and Demon Combat actors for field testing');
 
 console.log(`Encounter ecology smoke passed: ${Object.keys(ENCOUNTER_DEFS).length} groups, ${Object.keys(MONSTER_FAMILY_DEFS).length} families, ${wildPopulation} Wilds actor slots.`);

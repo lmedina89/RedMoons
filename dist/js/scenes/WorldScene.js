@@ -919,6 +919,9 @@ ${point.label || 'Use'}`, {
     if (action === 'raider') moveNear(this.enemies.find(enemy => enemy.sprite.active && enemy.def.id === 'enemy_ironbound_raider')?.sprite);
     if (action === 'assassin') moveNear(this.enemies.find(enemy => enemy.sprite.active && enemy.def.id === 'enemy_ash_assassin')?.sprite);
     if (action === 'demonscout') moveNear(this.enemies.find(enemy => enemy.sprite.active && enemy.def.id === 'enemy_demon_scout')?.sprite);
+    if (action === 'hellfire') moveNear(this.enemies.find(enemy => enemy.sprite.active && enemy.def.id === 'enemy_hellfire_demon')?.sprite);
+    if (action === 'ashbone') moveNear(this.enemies.find(enemy => enemy.sprite.active && enemy.def.id === 'enemy_ashbone_demon')?.sprite);
+    if (action === 'fleshborn') moveNear(this.enemies.find(enemy => enemy.sprite.active && enemy.def.id === 'enemy_fleshborn_demon')?.sprite);
     if (action === 'spider') moveNear(this.enemies.find(enemy => enemy.sprite.active && enemy.def.id === 'enemy_cave_spider')?.sprite);
     if (action === 'blueflame') moveNear(this.enemies.find(enemy => enemy.sprite.active && enemy.def.id === 'enemy_blueflame_imp')?.sprite);
     if (action === 'emberweb') moveNear(this.enemies.find(enemy => enemy.sprite.active && enemy.def.id === 'enemy_ember_spider')?.sprite);

@@ -198,13 +198,56 @@ export const ENEMY_DEFS = Object.freeze({
   },
 
   enemy_demon_scout: {
-    id: 'enemy_demon_scout', name: 'Ashwing Legion Scout', family: 'demon', subfaction: 'demon_legion', role: 'vanguard', level: 5,
-    maxHp: 122, attack: 18, defense: 5, speed: 86, detectRange: 350, attackRange: 54, leashRange: 510, attackCooldown: 1020, recoverMs: 330,
+    id: 'enemy_demon_scout', name: 'Abyss Ashwing', family: 'demon', variant: 'abyss', subfaction: 'demon_legion', role: 'vanguard', level: 5,
+    maxHp: 122, attack: 18, defense: 5, speed: 86, detectRange: 350, attackRange: 58, leashRange: 510, attackCooldown: 1020, recoverMs: 330,
+    abilities: ['abyss_rend', 'abyss_bolt', 'void_pulse'],
     xp: 105, currency: [9, 17], walkTexture: 'demon-scout-walk', attackTexture: 'demon-scout-slash', walkFrames: 9, attackFrames: 6, scale: 1.08, originY: 0.69,
     loot: [
       { itemId: 'weapon_iron_arming_sword', chance: 0.036, rarityWeights: goodLoot },
       { itemId: 'head_iron_revised', chance: 0.030, rarityWeights: goodLoot },
       { itemId: 'chest_silver_legion', chance: 0.024, rarityWeights: goodLoot }
+    ]
+  },
+
+  enemy_hellfire_demon: {
+    id: 'enemy_hellfire_demon', name: 'Hellfire Ashwing', family: 'demon', variant: 'hellfire', subfaction: 'demon_legion', role: 'assault', level: 6,
+    maxHp: 144, attack: 20, defense: 5, speed: 89, detectRange: 365, attackRange: 59, leashRange: 525, attackCooldown: 980, recoverMs: 315,
+    abilities: ['burning_rend', 'hellfire_orb', 'cinder_burst'],
+    xp: 128, currency: [11, 20], walkTexture: 'hellfire-demon-walk', attackTexture: 'hellfire-demon-slash', walkFrames: 9, attackFrames: 6, scale: 1.09, originY: 0.69,
+    loot: [
+      { itemId: 'weapon_steel_arming_sword', chance: 0.035, rarityWeights: goodLoot },
+      { itemId: 'chest_silver_legion', chance: 0.030, rarityWeights: goodLoot },
+      { itemId: 'hands_legion', chance: 0.032, rarityWeights: goodLoot }
+    ]
+  },
+
+  enemy_ashbone_demon: {
+    id: 'enemy_ashbone_demon', name: 'Ashbone Ashwing', family: 'demon', variant: 'ashbone', subfaction: 'demon_legion', role: 'bulwark', level: 6,
+    maxHp: 168, attack: 19, defense: 8, speed: 78, detectRange: 350, attackRange: 60, leashRange: 520, attackCooldown: 1100, recoverMs: 350,
+    abilities: ['bone_rend', 'soul_shard', 'ashshock'],
+    xp: 134, currency: [12, 21], walkTexture: 'ashbone-demon-walk', attackTexture: 'ashbone-demon-slash', walkFrames: 9, attackFrames: 6, scale: 1.10, originY: 0.69,
+    loot: [
+      { itemId: 'head_iron_revised', chance: 0.038, rarityWeights: goodLoot },
+      { itemId: 'chest_silver_legion', chance: 0.032, rarityWeights: goodLoot },
+      { itemId: 'feet_leather_revised', chance: 0.036, rarityWeights: goodLoot }
+    ]
+  },
+
+  enemy_fleshborn_demon: {
+    id: 'enemy_fleshborn_demon', name: 'Fleshborn Ravager', family: 'demon', variant: 'fleshborn', subfaction: 'demon_legion', role: 'elite', elite: true, level: 8,
+    maxHp: 278, attack: 26, defense: 11, speed: 82, detectRange: 390, attackRange: 64, leashRange: 560, attackCooldown: 980, recoverMs: 340,
+    abilities: ['flesh_rend', 'predators_rush', 'blood_lance', 'flesh_rupture'],
+    xp: 260, currency: [22, 36], layered: true, baseVisual: 'enemy_fleshborn_base', walkFrames: 9, attackFrames: 6, scale: 1.12,
+    loadoutPresets: [
+      { id: 'dread_warplate', weight: 32, loadout: { head: 'head_warden', shoulders: 'shoulders_legion', chest: 'chest_ash_plate', legs: 'legs_iron_greaves', hands: 'hands_iron', feet: 'feet_iron' } },
+      { id: 'silver_legion', weight: 34, loadout: { head: 'head_iron_revised', shoulders: 'shoulders_legion', chest: 'chest_silver_legion', legs: 'legs_iron_greaves', hands: 'hands_legion', feet: 'feet_revised' } },
+      { id: 'steel_bastion', weight: 34, loadout: { head: 'head_iron_revised', shoulders: 'shoulders_legion', chest: 'chest_steel_plate', legs: 'legs_iron_greaves', hands: 'hands_legion', feet: 'feet_revised' } }
+    ],
+    loot: [
+      { itemId: 'chest_steel_plate', chance: 0.075, rarityWeights: { normal: 0.25, magic: 0.55, noble: 0.20 } },
+      { itemId: 'head_iron_revised', chance: 0.065, rarityWeights: { normal: 0.28, magic: 0.56, noble: 0.16 } },
+      { itemId: 'hands_legion', chance: 0.060, rarityWeights: { normal: 0.30, magic: 0.55, noble: 0.15 } },
+      { itemId: 'weapon_steel_arming_sword', chance: 0.045, rarityWeights: { normal: 0.28, magic: 0.57, noble: 0.15 } }
     ]
   },
 
