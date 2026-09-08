@@ -1,5 +1,19 @@
-# Hell RPG v0.1.4.4.5.2 — Zerakoth, Warden of the Pit Field Test
+# Hell RPG v0.1.4.4.5.3 — Debug Battle Arena & Spectator Controls
 
+
+## v0.1.4.4.5.3 Debug Battle Arena & Spectator Controls
+
+- Reorganized `?debug=1` diagnostics into categorized **Arena Controls**, **Celestial Summons**, **Infernal Summons**, existing named field tests, world tests, and legacy/player diagnostics.
+- Added an isolated **Debug Battle Arena** in the southern Veil Warfront. Entering it preserves the legitimate pre-arena save/return position and arena activity is never written into the real save.
+- Added individual named summons for **Azrael, Lailani, El’exis, Zerakoth, and Bloodwing Scourge**, plus repeatable Dreadknight/Sentinel/Guardian/Fleshborn unit summons.
+- Added bounded faction presets: **Celestial Named Trio, Infernal Named Pair, Celestial Squad, Infernal Squad, All Named Clash, and Army Clash**. The arena hard-caps at 14 debug combatants for mobile safety.
+- Added setup **Battle Hold**, Start/Hold toggle, Clear Arena, Reset Fight, and Exit Arena. Named actors retain their real canonical stats, levels, threat tiers, skills, faction rules and worthy-opponent behavior.
+- Added debug-only **God Mode**. While enabled the player takes zero resolved damage and is removed from AI combat target pools, allowing low-level characters to spectate without pulling aggro away from the actual matchup.
+- Arena-spawned ordinary units use rewardless death callbacks; no XP, ash, loot or quest credit can be generated. Production Living Warfront remains exactly 32 regular actors.
+- Debug Warfront asset streaming now includes Azrael's existing compact runtime crops only when `?debug=1`, allowing arena summoning without moving his canonical Cinder home or preloading his full source sheet.
+- Save schema remains **2** and `hellrpg.ashfall.save.v1` is unchanged. All v0.1.4.4.5.2 Zerakoth content and earlier approved mythic/faction behavior remain intact.
+
+Physical iPhone Safari remains the release gate. Use **Enter / Center Arena**, turn **God Mode ON**, stage a matchup while HOLD is active, then tap **Start Battle**.
 
 ## v0.1.4.4.5.2 Zerakoth, Warden of the Pit Field Test
 

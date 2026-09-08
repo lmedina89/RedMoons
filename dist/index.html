@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <meta name="theme-color" content="#120907">
-  <meta name="description" content="Hell RPG v0.1.4.4.5.2 — Zerakoth, Warden of the Pit Field Test, a mobile-first pixel action RPG.">
+  <meta name="description" content="Hell RPG v0.1.4.4.5.3 — Debug Battle Arena & Spectator Controls, a mobile-first pixel action RPG.">
   <title>Hell RPG — Ashfall Foundation</title>
   <link rel="stylesheet" href="css/game.css">
 </head>
@@ -43,7 +43,7 @@
             <button type="button" id="confirm-new-game" class="danger-button">Overwrite & Start</button>
           </div>
         </section>
-        <small class="start-version">v0.1.4.4.5.2 • save schema 2</small>
+        <small class="start-version">v0.1.4.4.5.3 • save schema 2</small>
       </div>
     </section>
 
@@ -130,70 +130,121 @@
 
     <aside id="rotate-advisory" aria-live="polite"><span aria-hidden="true">↻</span><strong>Rotate to landscape</strong><small>Ashfall is designed first for iPhone landscape.</small></aside>
     <aside id="debug-panel" class="hidden" aria-label="Development diagnostics">
-      <strong>Diagnostics</strong>
-      <button type="button" data-debug="refuge">Map: Refuge</button>
-      <button type="button" data-debug="hollow">Map: Hollow</button>
-      <button type="button" data-debug="wardenhall">Map: Warden Hall</button>
-      <button type="button" data-debug="forge">Map: Torren’s Forge</button>
-      <button type="button" data-debug="crypt">Map: Ashgrave Crypt</button>
-      <button type="button" data-debug="veil">Map: Veil Threshold</button>
-      <button type="button" data-debug="warfront">Map: Veil Warfront</button>
-      <button type="button" data-debug="warfrontaxis">Warfront Axis Clash</button>
-      <button type="button" data-debug="demonknight">Demon Knight Elite Test</button>
-      <button type="button" data-debug="zerakoth">Zerakoth Field Test</button>
-      <button type="button" data-debug="zerakothsolo">Zerakoth Solo Test</button>
-      <button type="button" data-debug="zerakothai">Zerakoth AI Overlay</button>
-      <button type="button" data-debug="mythicaldemon">Mythical Demon Field Test</button>
-      <button type="button" data-debug="mythicaldemonsolo">Mythical Demon Solo Test</button>
-      <button type="button" data-debug="mythicaldemonai">Mythical Demon AI Overlay</button>
-      <button type="button" data-debug="lailani">Lailani Field Test</button>
-      <button type="button" data-debug="lailanisolo">Lailani Solo Test</button>
-      <button type="button" data-debug="lailaniai">Lailani AI Overlay</button>
-      <button type="button" data-debug="elexis">El’exis Field Test</button>
-      <button type="button" data-debug="elexissolo">El’exis Solo Test</button>
-      <button type="button" data-debug="elexisai">El’exis AI Overlay</button>
-      <button type="button" data-debug="burntcache">Near Burnt-Hamlet Cache</button>
-      <button type="button" data-debug="level">Grant test XP</button>
-      <button type="button" data-debug="combatkit">Combat Test Kit</button>
-      <button type="button" data-debug="recoverykit">Recovery Test Kit</button>
-      <button type="button" data-debug="ranges">Combat Ranges</button>
-      <button type="button" data-debug="azrael">Near ArchAngel Azrael</button>
-      <button type="button" data-debug="azraelai">Azrael AI Overlay</button>
-      <button type="button" data-debug="warband">Faction War Test</button>
-      <button type="button" data-debug="vesra">Near Vesra</button>
-      <button type="button" data-debug="merchant">Near Merchant</button>
-      <button type="button" data-debug="imp">Near Cinder Imp</button>
-      <button type="button" data-debug="blight">Near Blight Imp</button>
-      <button type="button" data-debug="goblin">Near Goblin</button>
-      <button type="button" data-debug="scavenger">Near Ash Scavenger</button>
-      <button type="button" data-debug="raider">Near Ironbound Raider</button>
-      <button type="button" data-debug="assassin">Near Ashblade Stalker</button>
-      <button type="button" data-debug="demonscout">Near Abyss Demon</button>
-      <button type="button" data-debug="hellfire">Near Hellfire Demon</button>
-      <button type="button" data-debug="ashbone">Near Ashbone Demon</button>
-      <button type="button" data-debug="fleshborn">Near Fleshborn</button>
-      <button type="button" data-debug="sentinel">Near First-Light Sentinel</button>
-      <button type="button" data-debug="guardian">Near Heavenly Guardian</button>
-      <button type="button" data-debug="spider">Near Cave Spider</button>
-      <button type="button" data-debug="blueflame">Near Blueflame</button>
-      <button type="button" data-debug="emberweb">Near Ember Spider</button>
-      <button type="button" data-debug="carrion">Near Carrion</button>
-      <button type="button" data-debug="rotwing">Near Rotwing</button>
-      <button type="button" data-debug="slate">Near Slate</button>
-      <button type="button" data-debug="spearman">Near Spearman</button>
-      <button type="button" data-debug="archer">Near Archer</button>
-      <button type="button" data-debug="mage">Near Mage</button>
-      <button type="button" data-debug="bloodbone">Near Bloodbone</button>
-      <button type="button" data-debug="gilded">Near Gilded</button>
-      <button type="button" data-debug="golem">Near Golem</button>
-      <button type="button" data-debug="boss">Near Captain</button>
-      <button type="button" data-debug="heart">Drop Heart</button>
-      <button type="button" data-debug="magichelm">Add Magic Bronze Helm</button>
-      <button type="button" data-debug="gear115">Add Gear Test Set</button>
-      <button type="button" data-debug="wings">Unlock Wings</button>
-      <button type="button" data-debug="fall">Fall</button>
+      <div class="debug-head"><strong>DEBUG CONTROL</strong><span id="debug-arena-status">Arena inactive</span></div>
+      <details open class="debug-section debug-arena-section">
+        <summary>Arena Controls</summary>
+        <div class="debug-strip">
+          <button type="button" data-debug="battlearena">Enter / Center Arena</button>
+          <button type="button" id="debug-godmode" data-debug="godmode">God Mode: OFF</button>
+          <button type="button" id="debug-arena-start" data-debug="arenastart" data-arena-only>Start Battle</button>
+          <button type="button" data-debug="arenareset" data-arena-only>Reset Fight</button>
+          <button type="button" data-debug="arenaclear" data-arena-only>Clear Arena</button>
+          <button type="button" data-debug="arenaexit" data-arena-only>Exit Arena</button>
+          <button type="button" data-debug="arena_all_named" data-arena-only>Stage All Named</button>
+          <button type="button" data-debug="arena_army_clash" data-arena-only>Stage Army Clash</button>
+        </div>
+      </details>
+      <details open class="debug-section debug-celestial-section">
+        <summary>Celestial Summons</summary>
+        <div class="debug-strip">
+          <button type="button" data-debug="arena_azrael" data-arena-only>+ Azrael</button>
+          <button type="button" data-debug="arena_lailani" data-arena-only>+ Lailani</button>
+          <button type="button" data-debug="arena_elexis" data-arena-only>+ El’exis</button>
+          <button type="button" data-debug="arena_celestial_named" data-arena-only>Named Trio</button>
+          <button type="button" data-debug="arena_sentinel" data-arena-only>+ Sentinel</button>
+          <button type="button" data-debug="arena_guardian" data-arena-only>+ Guardian</button>
+          <button type="button" data-debug="arena_celestial_squad" data-arena-only>Celestial Squad</button>
+        </div>
+      </details>
+      <details open class="debug-section debug-infernal-section">
+        <summary>Infernal Summons</summary>
+        <div class="debug-strip">
+          <button type="button" data-debug="arena_zerakoth" data-arena-only>+ Zerakoth</button>
+          <button type="button" data-debug="arena_bloodwing" data-arena-only>+ Bloodwing</button>
+          <button type="button" data-debug="arena_infernal_named" data-arena-only>Named Pair</button>
+          <button type="button" data-debug="arena_dreadknight" data-arena-only>+ Dreadknight</button>
+          <button type="button" data-debug="arena_fleshborn" data-arena-only>+ Fleshborn</button>
+          <button type="button" data-debug="arena_infernal_squad" data-arena-only>Infernal Squad</button>
+        </div>
+      </details>
+      <details class="debug-section">
+        <summary>Existing Field Tests & AI</summary>
+        <div class="debug-strip">
+          <button type="button" data-debug="demonknight">Demon Knight Elite Test</button>
+          <button type="button" data-debug="zerakoth">Zerakoth Field Test</button>
+          <button type="button" data-debug="zerakothsolo">Zerakoth Solo Test</button>
+          <button type="button" data-debug="zerakothai">Zerakoth AI Overlay</button>
+          <button type="button" data-debug="mythicaldemon">Mythical Demon Field Test</button>
+          <button type="button" data-debug="mythicaldemonsolo">Mythical Demon Solo Test</button>
+          <button type="button" data-debug="mythicaldemonai">Mythical Demon AI Overlay</button>
+          <button type="button" data-debug="lailani">Lailani Field Test</button>
+          <button type="button" data-debug="lailanisolo">Lailani Solo Test</button>
+          <button type="button" data-debug="lailaniai">Lailani AI Overlay</button>
+          <button type="button" data-debug="elexis">El’exis Field Test</button>
+          <button type="button" data-debug="elexissolo">El’exis Solo Test</button>
+          <button type="button" data-debug="elexisai">El’exis AI Overlay</button>
+          <button type="button" data-debug="azrael">Near ArchAngel Azrael</button>
+          <button type="button" data-debug="azraelai">Azrael AI Overlay</button>
+        </div>
+      </details>
+      <details class="debug-section">
+        <summary>Maps & World Tests</summary>
+        <div class="debug-strip">
+          <button type="button" data-debug="refuge">Map: Refuge</button>
+          <button type="button" data-debug="hollow">Map: Hollow</button>
+          <button type="button" data-debug="wardenhall">Map: Warden Hall</button>
+          <button type="button" data-debug="forge">Map: Torren’s Forge</button>
+          <button type="button" data-debug="crypt">Map: Ashgrave Crypt</button>
+          <button type="button" data-debug="veil">Map: Veil Threshold</button>
+          <button type="button" data-debug="warfront">Map: Veil Warfront</button>
+          <button type="button" data-debug="warfrontaxis">Warfront Axis Clash</button>
+          <button type="button" data-debug="warband">Faction War Test</button>
+          <button type="button" data-debug="burntcache">Near Burnt-Hamlet Cache</button>
+        </div>
+      </details>
+      <details class="debug-section">
+        <summary>Player / Enemy Diagnostics</summary>
+        <div class="debug-strip">
+          <button type="button" data-debug="level">Grant test XP</button>
+          <button type="button" data-debug="combatkit">Combat Test Kit</button>
+          <button type="button" data-debug="recoverykit">Recovery Test Kit</button>
+          <button type="button" data-debug="ranges">Combat Ranges</button>
+          <button type="button" data-debug="vesra">Near Vesra</button>
+          <button type="button" data-debug="merchant">Near Merchant</button>
+          <button type="button" data-debug="imp">Near Cinder Imp</button>
+          <button type="button" data-debug="blight">Near Blight Imp</button>
+          <button type="button" data-debug="goblin">Near Goblin</button>
+          <button type="button" data-debug="scavenger">Near Ash Scavenger</button>
+          <button type="button" data-debug="raider">Near Ironbound Raider</button>
+          <button type="button" data-debug="assassin">Near Ashblade Stalker</button>
+          <button type="button" data-debug="demonscout">Near Abyss Demon</button>
+          <button type="button" data-debug="hellfire">Near Hellfire Demon</button>
+          <button type="button" data-debug="ashbone">Near Ashbone Demon</button>
+          <button type="button" data-debug="fleshborn">Near Fleshborn</button>
+          <button type="button" data-debug="sentinel">Near First-Light Sentinel</button>
+          <button type="button" data-debug="guardian">Near Heavenly Guardian</button>
+          <button type="button" data-debug="spider">Near Cave Spider</button>
+          <button type="button" data-debug="blueflame">Near Blueflame</button>
+          <button type="button" data-debug="emberweb">Near Ember Spider</button>
+          <button type="button" data-debug="carrion">Near Carrion</button>
+          <button type="button" data-debug="rotwing">Near Rotwing</button>
+          <button type="button" data-debug="slate">Near Slate</button>
+          <button type="button" data-debug="spearman">Near Spearman</button>
+          <button type="button" data-debug="archer">Near Archer</button>
+          <button type="button" data-debug="mage">Near Mage</button>
+          <button type="button" data-debug="bloodbone">Near Bloodbone</button>
+          <button type="button" data-debug="gilded">Near Gilded</button>
+          <button type="button" data-debug="golem">Near Golem</button>
+          <button type="button" data-debug="boss">Near Captain</button>
+          <button type="button" data-debug="heart">Drop Heart</button>
+          <button type="button" data-debug="magichelm">Add Magic Bronze Helm</button>
+          <button type="button" data-debug="gear115">Add Gear Test Set</button>
+          <button type="button" data-debug="wings">Unlock Wings</button>
+          <button type="button" data-debug="fall">Fall</button>
+        </div>
+      </details>
     </aside>
-    <div id="build-label">v0.1.4.4.5.2 • save schema 2</div>
+    <div id="build-label">v0.1.4.4.5.3 • save schema 2</div>
   </main>
 
   <script src="vendor/phaser.min.js"></script>

@@ -55,6 +55,9 @@ export class CombatResolver {
   }
 
   damagePlayer(player, base, options = {}) {
+    // ?debug=1 God Mode is a spectator safety layer for battle observation.
+    // It never enters save data and only suppresses player damage in-memory.
+    if (this.scene?.debugGodMode === true) return 0;
     if (!player || player.dead) return 0;
     const type = options.type || 'physical';
     const result = this.resolveAmount(base, player, type, options);

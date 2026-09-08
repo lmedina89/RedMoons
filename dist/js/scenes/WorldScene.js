@@ -9,6 +9,7 @@ import { LAILANI_DEF, LAILANI_SOLO_TEST_DEF } from '../data/lailani.js';
 import { ELEXIS_DEF, ELEXIS_SOLO_TEST_DEF } from '../data/elexis.js';
 import { MYTHICAL_DEMON_DEF, MYTHICAL_DEMON_SOLO_TEST_DEF } from '../data/mythicalDemon.js';
 import { ZERAKOTH_DEF, ZERAKOTH_SOLO_TEST_DEF, ZERAKOTH_SPAWN_DEF } from '../data/zerakoth.js';
+import { DEBUG_ARENA_GROUPS, DEBUG_ARENA_NAMED_SUMMONS, DEBUG_ARENA_UNIT_SUMMONS, DEBUG_BATTLE_ARENA_DEF } from '../data/debugArena.js';
 import { AREA_DEFS, BUILDING_DEFS, COLLIDERS, DEBUG_SPAWN_REGIONS, DEFAULT_MAP_ID, FALLEN_WATCH_WALLS, HOLLOW_COLLIDERS, HOLLOW_WALLS, INTERIOR_WALLS, MAP_TRANSITIONS, PROP_DEFS, RECOVERY_POINTS, REFUGE_WALLS, SPAWN_REGIONS, TOWN_PROP_DEFS, ZONES, mapForId } from '../data/world.js';
 import { DEBUG, GAME_VERSION, PLAYER_START, RARITY, TILE_SIZE, WORLD_HEIGHT, WORLD_WIDTH } from '../config.js';
 import { gameEvents } from '../core/EventBus.js';
@@ -58,6 +59,9 @@ export class WorldScene extends Phaser.Scene {
     this.elexisSoloTest = null;
     this.mythicalDemonSoloTest = null;
     this.zerakothSoloTest = null;
+    this.debugGodMode = DEBUG && Boolean(this.registry.get('debugGodMode'));
+    this.debugBattleArenaRequested = DEBUG && this.currentMap.id === DEBUG_BATTLE_ARENA_DEF.mapId && Boolean(this.registry.get('debugBattleArenaRequested'));
+    this.debugBattleArena = null;
     this.makeRuntimeTextures();
     this.physics.world.setBounds(0, 0, this.currentMap.width, this.currentMap.height);
     this.cameras.main.setBounds(0, 0, this.currentMap.width, this.currentMap.height).setRoundPixels(true).setZoom(1);
@@ -104,6 +108,7 @@ export class WorldScene extends Phaser.Scene {
     if (this.elexis) this.elexis.combat = this.combat;
     if (this.mythicalDemon) this.mythicalDemon.combat = this.combat;
     if (this.zerakoth) this.zerakoth.combat = this.combat;
+    if (this.debugBattleArenaRequested) this.startDebugBattleArena();
     this.recovery = new RecoverySystem(this, this.state, this.inventory, this.player, gameEvents);
     this.worldEvents = new WorldEventSystem(this, this.state, gameEvents);
     this.createLootPool();
@@ -1362,7 +1367,8 @@ ${point.label || 'Use'}`, {
 
   createAzrael() {
     this.azrael = null;
-    if (AZRAEL_DEF.home.mapId !== this.currentMap.id) return;
+    const arenaSummon = DEBUG && this.debugBattleArenaRequested && this.currentMap.id === DEBUG_BATTLE_ARENA_DEF.mapId;
+    if (AZRAEL_DEF.home.mapId !== this.currentMap.id && !arenaSummon) return;
     this.azrael = new Azrael(this, AZRAEL_DEF);
     // His hidden proxy obeys world bounds, but intentionally does not collide
     // with low terrain props: the field-test locomotion is a wing-assisted
@@ -1409,6 +1415,299 @@ ${point.label || 'Use'}`, {
       died: () => {}
     };
     this.zerakoth = new Zerakoth(this, this.enemyGroup, ZERAKOTH_DEF, ZERAKOTH_SPAWN_DEF, callbacks);
+  }
+
+  debugArenaNamedActor(key) {
+    if (key === 'azrael') return this.azrael;
+    if (key === 'lailani') return this.lailani;
+    if (key === 'elexis') return this.elexis;
+    if (key === 'zerakoth') return this.zerakoth;
+    if (key === 'bloodwing') return this.mythicalDemon;
+    return null;
+  }
+
+  debugArenaFaction(actorOrKey) {
+    if (typeof actorOrKey === 'string') return DEBUG_ARENA_NAMED_SUMMONS[actorOrKey]?.faction || DEBUG_ARENA_UNIT_SUMMONS[actorOrKey]?.faction || null;
+    return actorOrKey?.faction || actorOrKey?.def?.faction || null;
+  }
+
+  debugArenaActorNode(actor) { return actor?.body || actor?.sprite || null; }
+
+  setDebugArenaNamedDormant(actor, dormant = true) {
+    if (!actor) return;
+    actor._debugArenaDormant = Boolean(dormant);
+    actor._debugArenaSummoned = !dormant;
+    actor.target = null;
+    actor.supportTarget = null;
+    actor.clearAbility?.();
+    actor.abilityTelegraph?.destroy?.();
+    actor.abilityTelegraph = null;
+    actor.currentAbility = null;
+    actor.abilityTriggered = false;
+    this.combat?.statuses?.clear?.(actor);
+    const node = this.debugArenaActorNode(actor);
+    node?.setVelocity?.(0);
+    if (node?.body) node.body.enable = !dormant;
+    if (dormant) {
+      actor.sprite?.setVisible?.(false);
+      actor.visual?.setVisible?.(false);
+      actor.nameplate?.setVisible?.(false);
+      actor.debugText?.setVisible?.(false);
+      actor.mantleGraphics?.clear?.().setVisible?.(false);
+      actor.crownGraphics?.clear?.().setVisible?.(false);
+      actor.ascendanceGraphics?.clear?.().setVisible?.(false);
+    }
+  }
+
+  suspendProductionEnemiesForDebugArena() {
+    for (const enemy of this.enemies || []) {
+      if (!enemy || enemy._debugBattleArena) continue;
+      enemy._debugArenaProductionSuspended = true;
+      enemy.clearAbility?.();
+      this.combat?.statuses?.clear?.(enemy);
+      enemy.target = null;
+      enemy.respawnAt = Number.MAX_SAFE_INTEGER;
+      enemy.sprite?.setVelocity?.(0);
+      if (enemy.sprite?.body) enemy.sprite.body.enable = false;
+      enemy.sprite?.setActive?.(false)?.setVisible?.(false);
+      enemy.visual?.setVisible?.(false);
+    }
+  }
+
+  startDebugBattleArena() {
+    if (!DEBUG || this.currentMap.id !== DEBUG_BATTLE_ARENA_DEF.mapId) return false;
+    this.registry.set('debugBattleArenaRequested', true);
+    this.debugBattleArena = {
+      active: true,
+      hold: true,
+      started: false,
+      resolved: false,
+      named: new Set(),
+      units: []
+    };
+    this.suspendProductionEnemiesForDebugArena();
+    for (const key of Object.keys(DEBUG_ARENA_NAMED_SUMMONS)) this.setDebugArenaNamedDormant(this.debugArenaNamedActor(key), true);
+    this.player.body.setPosition(DEBUG_BATTLE_ARENA_DEF.spectator.x, DEBUG_BATTLE_ARENA_DEF.spectator.y).setVelocity(0);
+    this.player.visual.direction = 0;
+    if (this.debugGodMode) {
+      const stats = derivedStats(this.state);
+      this.state.player.hp = stats.maxHp;
+      this.player.dead = false;
+      this.deathAnnounced = false;
+      gameEvents.emit('death-cleared');
+    }
+    gameEvents.emit('toast', { text: 'Debug Battle Arena ready • setup is on HOLD. Summon both factions, then Start Battle.', tone: 'muted' });
+    return true;
+  }
+
+  debugArenaRosterCount() {
+    const arena = this.debugBattleArena;
+    return arena?.active ? arena.named.size + arena.units.length : 0;
+  }
+
+  debugArenaSideCount(faction) {
+    const arena = this.debugBattleArena;
+    if (!arena?.active) return 0;
+    let count = 0;
+    for (const key of arena.named) if (DEBUG_ARENA_NAMED_SUMMONS[key]?.faction === faction) count += 1;
+    for (const unit of arena.units) if (this.debugArenaFaction(unit) === faction) count += 1;
+    return count;
+  }
+
+  nextDebugArenaSlot(faction) {
+    const slots = faction === 'celestial' ? DEBUG_BATTLE_ARENA_DEF.celestialSlots : DEBUG_BATTLE_ARENA_DEF.infernalSlots;
+    return slots[this.debugArenaSideCount(faction) % slots.length] || null;
+  }
+
+  summonDebugArenaNamed(key, quiet = false) {
+    const arena = this.debugBattleArena;
+    const spec = DEBUG_ARENA_NAMED_SUMMONS[key];
+    const actor = this.debugArenaNamedActor(key);
+    if (!arena?.active || !spec || !actor) return false;
+    if (!arena.named.has(key) && this.debugArenaRosterCount() >= DEBUG_BATTLE_ARENA_DEF.maxActors) {
+      if (!quiet) gameEvents.emit('toast', { text: `Arena cap reached (${DEBUG_BATTLE_ARENA_DEF.maxActors} actors). Clear or reset before adding more.`, tone: 'danger', short: true });
+      return false;
+    }
+    let slot = actor._debugArenaSlot;
+    if (!arena.named.has(key) || !slot) slot = this.nextDebugArenaSlot(spec.faction);
+    if (!slot) return false;
+    actor._debugArenaSlot = slot;
+    actor.relocateForFieldTest?.(slot.x, slot.y, this.time.now);
+    actor._debugArenaDormant = false;
+    actor._debugArenaSummoned = true;
+    const node = this.debugArenaActorNode(actor);
+    if (node?.body) node.body.enable = true;
+    actor.visual?.setVisible?.(true);
+    actor.nameplate?.setVisible?.(true);
+    arena.named.add(key);
+    arena.resolved = false;
+    if (!quiet) gameEvents.emit('toast', { text: `${spec.label} summoned to the ${spec.faction === 'celestial' ? 'Celestial' : 'Infernal'} side.`, tone: spec.faction === 'celestial' ? 'normal' : 'danger', short: true });
+    return true;
+  }
+
+  createDebugArenaUnit(key, quiet = false) {
+    const arena = this.debugBattleArena;
+    const spec = DEBUG_ARENA_UNIT_SUMMONS[key];
+    const def = spec && ENEMY_DEFS[spec.enemyId];
+    if (!arena?.active || !spec || !def) return null;
+    if (this.debugArenaRosterCount() >= DEBUG_BATTLE_ARENA_DEF.maxActors) {
+      if (!quiet) gameEvents.emit('toast', { text: `Arena cap reached (${DEBUG_BATTLE_ARENA_DEF.maxActors} actors).`, tone: 'danger', short: true });
+      return null;
+    }
+    const slot = this.nextDebugArenaSlot(spec.faction);
+    if (!slot) return null;
+    const serial = arena.units.length + 1;
+    const spawn = {
+      id: `debug_battle_arena_${key}_${serial}`,
+      encounterId: `debug_battle_arena_${spec.faction}_${serial}`,
+      archetype: 'guard', mapId: DEBUG_BATTLE_ARENA_DEF.mapId, areaId: 'area_warfront_unhoused', enemyId: spec.enemyId,
+      x: slot.x - 36, y: slot.y - 36, width: 72, height: 72, count: 1,
+      respawnMs: 1000000000, activationRange: 1800, pursuitMargin: 900, debugOnly: true
+    };
+    const callbacks = {
+      hitTarget: (target, amount, x, y, enemy) => this.combat?.enemyMeleeTarget(target, amount, x, y, enemy),
+      beginAbility: (enemy, ability, target) => this.combat?.beginEnemyAbility(enemy, ability, target, enemy.abilityTargetX, enemy.abilityTargetY),
+      triggerAbility: (enemy, ability, targetX, targetY, target) => this.combat?.triggerEnemyAbility(enemy, ability, targetX, targetY, target),
+      damageNumber: (x, y, amount, hostile) => this.combat?.damageNumbers.show(x, y, amount, hostile),
+      alertEncounter: () => {},
+      // Arena deaths are observation-only: no XP, ash, loot or quest callbacks.
+      died: enemy => { enemy._debugArenaDefeated = true; enemy.respawnAt = Number.MAX_SAFE_INTEGER; }
+    };
+    const enemy = new Enemy(this, this.enemyGroup, def, spawn, 900 + serial, callbacks);
+    enemy._debugBattleArena = true;
+    enemy._debugArenaKey = key;
+    enemy.combat = this.combat;
+    enemy.homeX = slot.x; enemy.homeY = slot.y; enemy.sprite.setPosition(slot.x, slot.y);
+    enemy.visual?.render?.(slot.x, slot.y, 'idle', 0, slot.y);
+    this.enemies.push(enemy);
+    arena.units.push(enemy);
+    arena.resolved = false;
+    if (!quiet) gameEvents.emit('toast', { text: `${spec.label} added to the ${spec.faction === 'celestial' ? 'Celestial' : 'Infernal'} side.`, tone: spec.faction === 'celestial' ? 'normal' : 'danger', short: true });
+    return enemy;
+  }
+
+  destroyDebugArenaUnit(unit) {
+    if (!unit) return;
+    unit.clearAbility?.();
+    this.combat?.statuses?.clear?.(unit);
+    unit.sprite?.destroy?.();
+    unit.visual?.destroy?.();
+    const index = this.enemies.indexOf(unit);
+    if (index >= 0) this.enemies.splice(index, 1);
+  }
+
+  clearDebugBattleArena({ quiet = false } = {}) {
+    const arena = this.debugBattleArena;
+    if (!arena?.active) return false;
+    for (const key of arena.named) {
+      const actor = this.debugArenaNamedActor(key);
+      if (actor) actor._debugArenaSlot = null;
+      this.setDebugArenaNamedDormant(actor, true);
+    }
+    for (const unit of [...arena.units]) this.destroyDebugArenaUnit(unit);
+    arena.named.clear();
+    arena.units = [];
+    arena.hold = true;
+    arena.started = false;
+    arena.resolved = false;
+    if (!quiet) gameEvents.emit('toast', { text: 'Arena cleared • setup HOLD restored.', tone: 'muted', short: true });
+    return true;
+  }
+
+  summonDebugArenaGroup(groupKey, { replace = false, quiet = false } = {}) {
+    const arena = this.debugBattleArena;
+    const group = DEBUG_ARENA_GROUPS[groupKey];
+    if (!arena?.active || !group) return false;
+    if (replace) this.clearDebugBattleArena({ quiet: true });
+    let added = 0;
+    for (const key of group.named) if (this.summonDebugArenaNamed(key, true)) added += 1;
+    for (const key of group.units) if (this.createDebugArenaUnit(key, true)) added += 1;
+    if (!quiet) gameEvents.emit('toast', { text: `${groupKey === 'armyClash' ? 'Army Clash' : groupKey === 'allNamed' ? 'All Named Clash' : 'Faction group'} staged • ${this.debugArenaRosterCount()} arena actors • HOLD.`, tone: 'muted', short: true });
+    return added > 0;
+  }
+
+  resetDebugBattleArena() {
+    const arena = this.debugBattleArena;
+    if (!arena?.active) return false;
+    const named = [...arena.named];
+    const units = arena.units.map(unit => unit._debugArenaKey).filter(Boolean);
+    this.clearDebugBattleArena({ quiet: true });
+    for (const key of named) this.summonDebugArenaNamed(key, true);
+    for (const key of units) this.createDebugArenaUnit(key, true);
+    gameEvents.emit('toast', { text: `Arena reset • ${this.debugArenaRosterCount()} actors restored at full health • HOLD.`, tone: 'muted', short: true });
+    return true;
+  }
+
+  setDebugBattleHold(hold) {
+    const arena = this.debugBattleArena;
+    if (!arena?.active) return false;
+    arena.hold = Boolean(hold);
+    arena.resolved = false;
+    arena.started = !arena.hold;
+    if (arena.hold) {
+      const actors = [...arena.named].map(key => this.debugArenaNamedActor(key)).filter(Boolean);
+      for (const actor of actors) {
+        actor.target = null; actor.supportTarget = null; actor.currentAbility = null;
+        actor.abilityTelegraph?.destroy?.(); actor.abilityTelegraph = null;
+        actor.state = 'idle';
+        this.debugArenaActorNode(actor)?.setVelocity?.(0);
+      }
+      for (const enemy of arena.units) {
+        enemy.clearAbility?.(); enemy.target = null; enemy.state = 'idle'; enemy.sprite?.setVelocity?.(0);
+      }
+    }
+    gameEvents.emit('toast', { text: arena.hold ? 'Battle HOLD enabled.' : 'Battle started.', tone: arena.hold ? 'muted' : 'danger', short: true });
+    return true;
+  }
+
+  debugArenaActorAlive(actor) {
+    const node = this.debugArenaActorNode(actor);
+    return Boolean(actor && !actor._debugArenaDormant && actor.dead !== true && actor.state !== 'dying' && actor.state !== 'dead' && node?.active !== false && (node?.body?.enable !== false || actor.isFriendlyActor));
+  }
+
+  updateDebugBattleArena() {
+    const arena = this.debugBattleArena;
+    if (!arena?.active) return;
+    if (this.debugGodMode) {
+      const stats = derivedStats(this.state);
+      this.state.player.hp = stats.maxHp;
+      this.player.dead = false;
+      this.deathAnnounced = false;
+    }
+    for (const key of arena.named) {
+      const actor = this.debugArenaNamedActor(key);
+      if (actor?.dead || actor?.state === 'dead' || actor?.state === 'dying') actor.respawnAt = Number.MAX_SAFE_INTEGER;
+    }
+    for (const enemy of arena.units) if (enemy?.state === 'dead' || enemy?.state === 'dying' || enemy?.sprite?.active === false) enemy.respawnAt = Number.MAX_SAFE_INTEGER;
+    if (arena.hold || arena.resolved || !arena.started) return;
+    const roster = [];
+    for (const key of arena.named) roster.push({ faction: DEBUG_ARENA_NAMED_SUMMONS[key]?.faction, actor: this.debugArenaNamedActor(key) });
+    for (const unit of arena.units) roster.push({ faction: this.debugArenaFaction(unit), actor: unit });
+    const hadCelestial = roster.some(entry => entry.faction === 'celestial');
+    const hadInfernal = roster.some(entry => entry.faction === 'monster');
+    if (!hadCelestial || !hadInfernal) return;
+    const celestialAlive = roster.filter(entry => entry.faction === 'celestial' && this.debugArenaActorAlive(entry.actor)).length;
+    const infernalAlive = roster.filter(entry => entry.faction === 'monster' && this.debugArenaActorAlive(entry.actor)).length;
+    if (celestialAlive > 0 && infernalAlive > 0) return;
+    arena.resolved = true;
+    arena.hold = true;
+    for (const key of arena.named) this.debugArenaActorNode(this.debugArenaNamedActor(key))?.setVelocity?.(0);
+    for (const unit of arena.units) unit?.sprite?.setVelocity?.(0);
+    const result = celestialAlive > 0 ? 'Celestial victory' : infernalAlive > 0 ? 'Infernal victory' : 'Mutual destruction';
+    gameEvents.emit('toast', { text: `${result} • Reset Arena to run the matchup again.`, tone: celestialAlive > 0 ? 'normal' : 'danger' });
+  }
+
+  debugSnapshot() {
+    if (!DEBUG) return null;
+    const arena = this.debugBattleArena;
+    return {
+      godMode: Boolean(this.debugGodMode),
+      arena: arena?.active ? {
+        active: true, hold: Boolean(arena.hold), started: Boolean(arena.started), resolved: Boolean(arena.resolved),
+        total: this.debugArenaRosterCount(), celestial: this.debugArenaSideCount('celestial'), infernal: this.debugArenaSideCount('monster'),
+        maxActors: DEBUG_BATTLE_ARENA_DEF.maxActors
+      } : { active: false, hold: true, started: false, resolved: false, total: 0, celestial: 0, infernal: 0, maxActors: DEBUG_BATTLE_ARENA_DEF.maxActors }
+    };
   }
 
   suspendProductionEnemiesForLailaniSoloTest() {
@@ -1878,12 +2177,15 @@ ${point.label || 'Use'}`, {
   }
 
   combatants() {
-    const actors = [this.player, ...(this.enemies || [])];
-    if (this.azrael && !this.azrael.dead) actors.push(this.azrael);
-    if (this.lailani && !this.lailani.dead) actors.push(this.lailani);
-    if (this.elexis && !this.elexis.dead) actors.push(this.elexis);
-    if (this.mythicalDemon && !this.mythicalDemon.dead) actors.push(this.mythicalDemon);
-    if (this.zerakoth?.sprite?.active) actors.push(this.zerakoth);
+    // Debug God Mode is also spectator mode: omit the player from target pools
+    // so arena combatants fight each other instead of wasting casts on a
+    // low-level observer. Damage immunity remains a second hard safety layer.
+    const actors = this.debugGodMode ? [...(this.enemies || [])] : [this.player, ...(this.enemies || [])];
+    if (this.azrael && !this.azrael.dead && !this.azrael._debugArenaDormant) actors.push(this.azrael);
+    if (this.lailani && !this.lailani.dead && !this.lailani._debugArenaDormant) actors.push(this.lailani);
+    if (this.elexis && !this.elexis.dead && !this.elexis._debugArenaDormant) actors.push(this.elexis);
+    if (this.mythicalDemon && !this.mythicalDemon.dead && !this.mythicalDemon._debugArenaDormant) actors.push(this.mythicalDemon);
+    if (this.zerakoth?.sprite?.active && !this.zerakoth._debugArenaDormant) actors.push(this.zerakoth);
     return actors.filter(Boolean);
   }
 
@@ -2171,7 +2473,7 @@ ${point.label || 'Use'}`, {
     }
     if (command.type === 'allocateStats') this.allocateStats(command.points);
     if (command.type === 'respawn') this.respawnAtRefuge();
-    if (command.type === 'save') { this.safeSave(); gameEvents.emit('toast', { text: 'Progress saved.', tone: 'normal', short: true }); }
+    if (command.type === 'save') { const saved = this.safeSave(); gameEvents.emit('toast', { text: saved ? 'Progress saved.' : 'Battle Arena is isolated; your real save was not changed.', tone: saved ? 'normal' : 'muted', short: true }); }
     if (command.type === 'debug') this.runDiagnostic(command.action);
   }
 
@@ -2181,6 +2483,76 @@ ${point.label || 'Use'}`, {
       this.player.body.setPosition(target.x - 58, target.y);
       this.player.visual.direction = 3;
     };
+    const requireArena = () => {
+      if (this.debugBattleArena?.active) return true;
+      gameEvents.emit('toast', { text: 'Enter the Debug Battle Arena first.', tone: 'muted', short: true });
+      return false;
+    };
+    if (action === 'godmode') {
+      this.debugGodMode = !this.debugGodMode;
+      this.registry.set('debugGodMode', this.debugGodMode);
+      if (this.debugGodMode) {
+        const stats = derivedStats(this.state);
+        this.state.player.hp = stats.maxHp;
+        this.player.dead = false;
+        this.deathAnnounced = false;
+        gameEvents.emit('death-cleared');
+      }
+      gameEvents.emit('toast', { text: this.debugGodMode ? 'God Mode ON • invulnerable spectator; AI ignores you.' : 'God Mode OFF • player can be targeted and damaged again.', tone: this.debugGodMode ? 'normal' : 'muted', short: true });
+      this.emitState();
+      return;
+    }
+    if (action === 'battlearena') {
+      if (this.debugBattleArena?.active) {
+        this.player.body.setPosition(DEBUG_BATTLE_ARENA_DEF.spectator.x, DEBUG_BATTLE_ARENA_DEF.spectator.y).setVelocity(0);
+        this.emitState();
+        return;
+      }
+      // Save the legitimate game position before entering the isolated arena.
+      this.safeSave();
+      this.registry.set('debugBattleArenaReturn', {
+        mapId: this.currentMap.id,
+        entryPointId: this.state.player.entryPointId || null,
+        x: this.player.body.x,
+        y: this.player.body.y
+      });
+      this.registry.set('debugBattleArenaRequested', true);
+      this.transitionToMap(DEBUG_BATTLE_ARENA_DEF.mapId, DEBUG_BATTLE_ARENA_DEF.entryId);
+      return;
+    }
+    if (action === 'arenaexit') {
+      if (!requireArena()) return;
+      const origin = this.registry.get('debugBattleArenaReturn') || { mapId: DEFAULT_MAP_ID, entryPointId: 'cinder_start', x: PLAYER_START.x, y: PLAYER_START.y };
+      this.clearDebugBattleArena({ quiet: true });
+      this.debugBattleArena.active = false;
+      this.registry.set('debugBattleArenaRequested', false);
+      this.registry.remove?.('debugBattleArenaReturn');
+      this.transitionToMap(origin.mapId, origin.entryPointId || 'cinder_start', { position: { x: origin.x, y: origin.y } });
+      return;
+    }
+    if (action === 'arenastart') {
+      if (!requireArena()) return;
+      this.setDebugBattleHold(!this.debugBattleArena.hold);
+      this.emitState();
+      return;
+    }
+    if (action === 'arenaclear') { if (requireArena()) { this.clearDebugBattleArena(); this.emitState(); } return; }
+    if (action === 'arenareset') { if (requireArena()) { this.resetDebugBattleArena(); this.emitState(); } return; }
+    if (action === 'arena_azrael') { if (requireArena()) { this.summonDebugArenaNamed('azrael'); this.emitState(); } return; }
+    if (action === 'arena_lailani') { if (requireArena()) { this.summonDebugArenaNamed('lailani'); this.emitState(); } return; }
+    if (action === 'arena_elexis') { if (requireArena()) { this.summonDebugArenaNamed('elexis'); this.emitState(); } return; }
+    if (action === 'arena_zerakoth') { if (requireArena()) { this.summonDebugArenaNamed('zerakoth'); this.emitState(); } return; }
+    if (action === 'arena_bloodwing') { if (requireArena()) { this.summonDebugArenaNamed('bloodwing'); this.emitState(); } return; }
+    if (action === 'arena_dreadknight') { if (requireArena()) { this.createDebugArenaUnit('dreadknight'); this.emitState(); } return; }
+    if (action === 'arena_sentinel') { if (requireArena()) { this.createDebugArenaUnit('sentinel'); this.emitState(); } return; }
+    if (action === 'arena_guardian') { if (requireArena()) { this.createDebugArenaUnit('guardian'); this.emitState(); } return; }
+    if (action === 'arena_fleshborn') { if (requireArena()) { this.createDebugArenaUnit('fleshborn'); this.emitState(); } return; }
+    if (action === 'arena_celestial_named') { if (requireArena()) { this.summonDebugArenaGroup('celestialNamed'); this.emitState(); } return; }
+    if (action === 'arena_infernal_named') { if (requireArena()) { this.summonDebugArenaGroup('infernalNamed'); this.emitState(); } return; }
+    if (action === 'arena_celestial_squad') { if (requireArena()) { this.summonDebugArenaGroup('celestialSquad'); this.emitState(); } return; }
+    if (action === 'arena_infernal_squad') { if (requireArena()) { this.summonDebugArenaGroup('infernalSquad'); this.emitState(); } return; }
+    if (action === 'arena_all_named') { if (requireArena()) { this.summonDebugArenaGroup('allNamed', { replace: true }); this.emitState(); } return; }
+    if (action === 'arena_army_clash') { if (requireArena()) { this.summonDebugArenaGroup('armyClash', { replace: true }); this.emitState(); } return; }
     if (action === 'hollow') { this.transitionToMap('map_ashfall_hollow', 'hollow_center'); return; }
     if (action === 'refuge') { this.transitionToMap(DEFAULT_MAP_ID, 'cinder_start'); return; }
     if (action === 'wardenhall') { this.transitionToMap('map_warden_hall', 'arrival'); return; }
@@ -2437,10 +2809,16 @@ ${point.label || 'Use'}`, {
     const derived = derivedStats(this.state);
     this.state.player.hp = Math.min(this.state.player.hp, derived.maxHp);
     this.state.player.essence = Math.min(this.state.player.essence, derived.maxEssence);
-    gameEvents.emit('state', { state: this.state, derived, quests: this.questSystem?.activeSummary() || [], combat: this.combat?.snapshot(this.time.now) || { skills: [], effects: [] }, recovery: this.recovery?.snapshot(this.time.now) || { quick: [], food: { active: false }, passive: { active: false } }, interaction: this.interactionSnapshot(), azrael: this.azrael?.snapshot(this.time.now) || null, lailani: this.lailani?.snapshot(this.time.now) || null, elexis: this.elexis?.snapshot(this.time.now) || null, mythicalDemon: this.mythicalDemon?.snapshot(this.time.now) || null, zerakoth: this.zerakoth?.snapshot(this.time.now) || null });
+    gameEvents.emit('state', { state: this.state, derived, quests: this.questSystem?.activeSummary() || [], combat: this.combat?.snapshot(this.time.now) || { skills: [], effects: [] }, recovery: this.recovery?.snapshot(this.time.now) || { quick: [], food: { active: false }, passive: { active: false } }, interaction: this.interactionSnapshot(), azrael: this.azrael?.snapshot(this.time.now) || null, lailani: this.lailani?.snapshot(this.time.now) || null, elexis: this.elexis?.snapshot(this.time.now) || null, mythicalDemon: this.mythicalDemon?.snapshot(this.time.now) || null, zerakoth: this.zerakoth?.snapshot(this.time.now) || null, debug: this.debugSnapshot() });
   }
 
-  safeSave() { try { this.saveManager.save(this.state); } catch (error) { console.warn('[Ashfall] Save failed', error); gameEvents.emit('toast', { text: 'Save could not be written on this device.', tone: 'danger' }); } }
+  safeSave() {
+    // The battle laboratory is a disposable debug scene. Never let its map
+    // position, summoned roster or spectator state overwrite a real save.
+    if (DEBUG && (this.debugBattleArena?.active || this.registry.get('debugBattleArenaRequested'))) return false;
+    try { this.saveManager.save(this.state); return true; }
+    catch (error) { console.warn('[Ashfall] Save failed', error); gameEvents.emit('toast', { text: 'Save could not be written on this device.', tone: 'danger' }); return false; }
+  }
 
   drawDynamicCollisionDebug() {
     if (!this.dynamicCollisionDebug) return;
@@ -2486,12 +2864,15 @@ ${point.label || 'Use'}`, {
     if (DEBUG) this.drawDynamicCollisionDebug();
     if (actionInput.consumeInteract()) this.interact();
     const combatants = this.combatants();
-    this.azrael?.update(time, delta, combatants);
-    this.lailani?.update(time, delta, combatants);
-    this.elexis?.update(time, delta, combatants);
-    this.mythicalDemon?.update(time, delta, combatants);
-    this.zerakoth?.update(time, delta, this.player, combatants);
+    const arenaHold = Boolean(this.debugBattleArena?.active && this.debugBattleArena.hold);
+    const canUpdateNamed = actor => actor && !actor._debugArenaDormant && !(arenaHold && actor._debugArenaSummoned);
+    if (canUpdateNamed(this.azrael)) this.azrael.update(time, delta, combatants);
+    if (canUpdateNamed(this.lailani)) this.lailani.update(time, delta, combatants);
+    if (canUpdateNamed(this.elexis)) this.elexis.update(time, delta, combatants);
+    if (canUpdateNamed(this.mythicalDemon)) this.mythicalDemon.update(time, delta, combatants);
+    if (canUpdateNamed(this.zerakoth)) this.zerakoth.update(time, delta, this.player, combatants);
     for (const enemy of this.enemies) {
+      if (enemy._debugBattleArena && arenaHold) continue;
       if (enemy._lailaniSoloTest) enemy.update(time, delta, this.lailani, this.lailani ? [this.lailani] : []);
       else if (enemy._elexisSoloTest) enemy.update(time, delta, this.elexis, this.elexis ? [this.elexis] : []);
       else if (enemy._mythicalDemonSoloTest) enemy.update(time, delta, this.mythicalDemon, this.mythicalDemon ? [this.mythicalDemon] : []);
@@ -2502,6 +2883,7 @@ ${point.label || 'Use'}`, {
     this.updateElexisSoloTest(time);
     this.updateMythicalDemonSoloTest(time);
     this.updateZerakothSoloTest(time);
+    this.updateDebugBattleArena();
     for (const npc of this.npcs) npc.update(time, delta, this.player);
     this.updateZone();
     this.updateArea();

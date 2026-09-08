@@ -554,6 +554,25 @@ export class Azrael {
     this.renderFrame('combatIdle', 0);
   }
 
+  relocateForFieldTest(x, y, time = this.scene.time.now) {
+    const nextX = Number(x);
+    const nextY = Number(y);
+    if (!Number.isFinite(nextX) || !Number.isFinite(nextY)) return false;
+    this.abilityTelegraph?.destroy?.();
+    this.abilityTelegraph = null;
+    this.currentAbility = null;
+    this.abilityTriggered = false;
+    this.combat?.statuses?.clear?.(this);
+    this.homeX = nextX;
+    this.homeY = nextY;
+    this.respawn(time);
+    this.body.setPosition(nextX, nextY);
+    this.sprite.setPosition(nextX, nextY).setDepth(nextY + 3);
+    this.nameplate.setPosition(nextX, nextY - 86).setDepth(nextY + 9000);
+    this.lastActionName = 'Arena vigil';
+    return true;
+  }
+
   snapshot(time = this.scene.time.now) {
     const p = actorPoint(this.target);
     return {

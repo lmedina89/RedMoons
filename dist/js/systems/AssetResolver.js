@@ -92,7 +92,9 @@ export function assetDefsForMap(state, requestedMapId = null) {
 
   // The temporary Azrael field-test actor is map-scoped just like enemies.
   // Load only his compact runtime action crops when the Cinder Region is live.
-  if (AZRAEL_DEF.home.mapId === map.id) {
+  if (AZRAEL_DEF.home.mapId === map.id || (DEBUG && map.id === 'map_veil_warfront')) {
+    // Debug Warfront sessions also stream Azrael's compact crops so the battle
+    // arena can summon him without loading his full preserved source sheet.
     for (const key of Object.values(AZRAEL_DEF.assets)) addAssetKey(keys, key);
   }
 

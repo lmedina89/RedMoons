@@ -1,5 +1,17 @@
 # Changelog
 
+## v0.1.4.4.5.3 — Debug Battle Arena & Spectator Controls
+
+- Rebuilt the `?debug=1` menu into categorized arena, faction-summon, named-field-test, world-test and legacy diagnostic sections for iPhone-friendly testing.
+- Added an isolated southern **Debug Battle Arena** on the Veil Warfront with collision-clear authored spectator/Celestial/Infernal slots and a 14-actor mobile-conscious summon cap.
+- Added individual named summons for Azrael, Lailani, El’exis, Zerakoth and Bloodwing Scourge, plus repeatable Sentinel, Guardian, Dreadknight and Fleshborn summons.
+- Added Celestial Named Trio, Infernal Named Pair, Celestial Squad, Infernal Squad, All Named Clash and Army Clash group staging.
+- Added setup **Battle Hold**, Start/Hold, Reset Fight, Clear Arena and Exit Arena controls. Unique actors use their real canonical stats/AI/skills and do not respawn automatically after arena defeat.
+- Added debug-only **God Mode / spectator targeting**: resolved player damage is suppressed and the player is removed from AI combat target pools while enabled.
+- Arena-spawned ordinary combatants bypass production rewards; entering the arena saves the legitimate origin first, then arena position/state is blocked from save writes until exit.
+- Debug Warfront streaming now includes Azrael's compact runtime action crops so he can be summoned in the arena without changing his canonical Cinder placement.
+- Production Warfront remains 32 regular actors; save schema remains 2; no existing combat balance, source artwork, named-actor stats or ability definitions were intentionally changed.
+
 ## v0.1.4.4.5.2 — Zerakoth, Warden of the Pit Field Test
 
 - Activated **Zerakoth — Warden of the Pit** as a debug-only named Infernal commander, internally **Level 60 / commander tier**, filling the hierarchy between the Lv30 Infernal Dreadknight and Lv94 Bloodwing Scourge.

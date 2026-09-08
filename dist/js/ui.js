@@ -205,6 +205,27 @@ export class UIManager {
       button.style.setProperty('--cooldown-angle', `${Math.round(fraction * 360)}deg`);
       button.setAttribute('aria-label', `${quick.name}, ${quick.count} remaining${quick.remainingMs > 0 ? `, ${Math.ceil(quick.remainingMs / 1000)} seconds cooldown` : ''}`);
     }
+    if (DEBUG) this.renderDebugControls();
+  }
+
+  renderDebugControls() {
+    const debug = this.snapshot?.debug || {};
+    const arena = debug.arena || { active: false, hold: true, total: 0, celestial: 0, infernal: 0, maxActors: 14 };
+    const god = $('#debug-godmode');
+    if (god) {
+      god.textContent = `God Mode: ${debug.godMode ? 'ON' : 'OFF'}`;
+      god.classList.toggle('debug-active', Boolean(debug.godMode));
+    }
+    const fight = $('#debug-arena-start');
+    if (fight) {
+      fight.textContent = arena.hold ? 'Start Battle' : 'Battle Hold';
+      fight.classList.toggle('debug-active', arena.active && !arena.hold);
+    }
+    const status = $('#debug-arena-status');
+    if (status) status.textContent = arena.active
+      ? `Arena • C ${arena.celestial} vs I ${arena.infernal} • ${arena.total}/${arena.maxActors} • ${arena.hold ? 'HOLD' : 'LIVE'}`
+      : `Arena inactive • God ${debug.godMode ? 'ON' : 'OFF'}`;
+    document.querySelectorAll('[data-arena-only]').forEach(button => { button.disabled = !arena.active; });
   }
 
   openPanel(requestedPanel) {
