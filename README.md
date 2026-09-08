@@ -1,4 +1,26 @@
-# Hell RPG v0.1.4.4.0.1 — Warfront Geography & Atmosphere Foundation
+# Hell RPG v0.1.4.4.1 — Strongholds, Outposts & Environmental Detail
+
+
+## v0.1.4.4.1 Strongholds, Outposts & Environmental Detail
+
+Built directly from the physically tested **v0.1.4.4.0.1 Warfront Visual Assembly Hotfix**. Save schema remains **2** and the localStorage key remains `hellrpg.ashfall.save.v1`.
+
+This pass keeps the approved 6144×3072 Warfront geography intact and gives each major location an authored environmental identity without introducing live Warfront armies or named mythical characters.
+
+- **Infernal Stronghold** now reads as an occupied ancient fortress: captured heraldry, ritual altar, demonic war statue, bone remains, field fires and darkened vegetation reinforce its muster/ritual role.
+- **Cinder Bastion** is a logistics/repair outpost with coherent supply stacks, smith equipment, racks, banners and repair fires instead of a miniature copy of the main fortress.
+- **Riven Hold** is a damaged forward redoubt with a central war brazier, debris, bones, prison/fortification fragments and sparse field supplies.
+- **Dawnward Hold** is a deliberately uncluttered sacred forward defense centered on a luminous relic and pale celestial banners.
+- **Halo Bastion** is a rear sanctuary/supply node built around a complete ancient font, winter plants and celestial stores adjacent to the luminous channel.
+- **Celestial Stronghold** now centers on a large ancient sanctuary font, ordered relic pedestals, pale banners, luminous orbs and frosted vegetation; it remains clearly ancient architecture occupied by Heaven rather than a newly built white castle.
+- **The Unhoused** reuses curated blacksmith, woodshop and tailor props alongside crates, broken household pieces and dead timber so the ruined quarter reads as a lost civilian/workshop settlement rather than generic battlefield clutter.
+- Six large visible centerpiece props receive explicit `landmark-prop` actor collision; small clutter remains visual-only so traversal is not over-blocked.
+- Added six bounded world-space landmark pulse/fade effects. They use Graphics containers/tweens rather than a shader or unbounded particles, and scale around their local landmark origins.
+- Authored environmental detail is guarded by an explicit **136-sprite ceiling** for the entire realm and **6 persistent detail-FX objects**. The existing 38 ambient world sprites remain unchanged.
+- Warfront production army population remains **zero** in this release. v0.1.4.4.2 remains the planned Living Warfront population/faction-battle pass.
+
+Physical iPhone testing should focus on whether each stronghold/outpost now reads as a distinct place, whether The Unhoused feels like a ruined civilian quarter, whether large centerpiece collision matches visible art, and whether the added detail/FX remain smooth while crossing the whole map.
+
 
 ## v0.1.4.4.0.1 visual assembly hotfix
 

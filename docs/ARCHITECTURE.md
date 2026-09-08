@@ -233,3 +233,9 @@ The four proof maps deliberately reuse existing curated runtime art through `MAP
 The dedicated `map_veil_warfront` is a streamed 6144×3072 map, not an extension of Cinder Wilds. `dist/js/data/warfront.js` owns realm-specific landmarks, route bands, cliff ribbons, waterways, bridge positions, ruined structures, visible-source colliders, ambient emitter metadata and the Warfront asset key package. `world.js` registers only the map/zone/area/travel integration; `WorldScene` consumes the Warfront data through a dedicated renderer.
 
 The Threshold → Warfront transition uses the same bounded return-anchor stack as interiors. This proves nested travel without adding a second travel system. Warfront actor population is deliberately zero in 0.1.4.4.0.1; later army passes must reuse map-scoped spawning/activation rather than loading an always-live battlefield. Persistent ambience is capped and world-space; full-screen custom shaders remain out of the baseline mobile contract.
+
+
+## v0.1.4.4.1 Warfront landmark-detail contract
+
+`WARFRONT_DETAIL_CLUSTERS` describes semantic landmark roles rather than hundreds of individual sprite rows. `WorldScene.drawWarfrontDetailCluster()` translates those bounded clusters into compositions from the audited runtime palette. `WARFRONT_DETAIL_BUDGET` hard-caps authored static detail and persistent landmark FX. Large centerpieces that visually read as solid are represented by `landmark-prop` colliders in the same shared actor collision registry; small clutter intentionally remains non-blocking. This layer is independent of encounter/spawn data so v0.1.4.4.2 can add armies without coupling faction simulation to environment rendering.
+

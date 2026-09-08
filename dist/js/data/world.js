@@ -1,6 +1,6 @@
 import { WARFRONT_ASSET_KEYS, WARFRONT_COLLIDERS, WARFRONT_DIMENSIONS } from './warfront.js';
 
-// v0.1.4.4.0.1 world data: Cinder Refuge remains its own deliberately composed
+// v0.1.4.4.1 world data: Cinder Refuge remains its own deliberately composed
 // settlement map while the Cinder Wilds have room to breathe as a larger
 // exterior region. All placement remains data-driven so future maps can reuse
 // the same render/collision paths without baking coordinates into actor code.

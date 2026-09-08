@@ -1,4 +1,4 @@
-// v0.1.4.4.0.1 Warfront geography/atmosphere data. This file deliberately owns
+// v0.1.4.4.1 Warfront geography/atmosphere/detail data. This file deliberately owns
 // the special realm's composition metadata so later stronghold/population
 // passes can add content without hard-coding a second monolithic WorldScene.
 
@@ -56,6 +56,37 @@ export const WARFRONT_CLIFF_RIBBONS = Object.freeze([
   Object.freeze({ id: 'east_crown_2', x: 3945, y: 735, length: 500, theme: 'celestial' })
 ]);
 
+
+
+// v0.1.4.4.1 detail clusters deliberately describe landmark identity rather
+// than individual decorative sprites. WorldScene translates each cluster into
+// a bounded composition from already-audited assets. This keeps later army
+// passes independent from environment art and gives tests a stable way to
+// verify that every major base/outpost/settlement received a detail pass.
+export const WARFRONT_DETAIL_CLUSTERS = Object.freeze([
+  Object.freeze({ id: 'detail_infernal_stronghold', landmarkId: 'infernal_stronghold', kind: 'infernal_stronghold', x: 470, y: 1535, faction: 'infernal', spriteBudget: 28 }),
+  Object.freeze({ id: 'detail_infernal_rear', landmarkId: 'infernal_rear', kind: 'infernal_rear', x: 1280, y: 900, faction: 'infernal', spriteBudget: 14 }),
+  Object.freeze({ id: 'detail_infernal_forward', landmarkId: 'infernal_forward', kind: 'infernal_forward', x: 2130, y: 1560, faction: 'infernal', spriteBudget: 14 }),
+  Object.freeze({ id: 'detail_unhoused', landmarkId: 'ruined_settlement', kind: 'unhoused', x: 3160, y: 2390, faction: 'neutral', spriteBudget: 24 }),
+  Object.freeze({ id: 'detail_celestial_forward', landmarkId: 'celestial_forward', kind: 'celestial_forward', x: 4010, y: 1560, faction: 'celestial', spriteBudget: 14 }),
+  Object.freeze({ id: 'detail_celestial_rear', landmarkId: 'celestial_rear', kind: 'celestial_rear', x: 4860, y: 900, faction: 'celestial', spriteBudget: 14 }),
+  Object.freeze({ id: 'detail_celestial_stronghold', landmarkId: 'celestial_stronghold', kind: 'celestial_stronghold', x: 5665, y: 1535, faction: 'celestial', spriteBudget: 28 })
+]);
+
+export const WARFRONT_DETAIL_FX = Object.freeze([
+  Object.freeze({ id: 'infernal_altar_glow', kind: 'infernal_pulse', x: 470, y: 1535, radius: 112 }),
+  Object.freeze({ id: 'riven_brazier_glow', kind: 'infernal_pulse', x: 2130, y: 1560, radius: 72 }),
+  Object.freeze({ id: 'dawnward_relic_glow', kind: 'celestial_pulse', x: 4010, y: 1560, radius: 76 }),
+  Object.freeze({ id: 'halo_pool_glow', kind: 'celestial_pulse', x: 4860, y: 900, radius: 90 }),
+  Object.freeze({ id: 'celestial_sanctuary_glow', kind: 'celestial_pulse', x: 5665, y: 1535, radius: 118 }),
+  Object.freeze({ id: 'unhoused_memory_glow', kind: 'ancient_fade', x: 3160, y: 2445, radius: 98 })
+]);
+
+export const WARFRONT_DETAIL_BUDGET = Object.freeze({
+  maxAuthoredSprites: 136,
+  maxPersistentDetailFx: 6
+});
+
 export const WARFRONT_COLLIDERS = Object.freeze([
   // Infernal stronghold shell, east-facing gate left open.
   solid('warfront-infernal-north', 480, 720, 800, 38, 'stronghold-wall'),
@@ -103,6 +134,18 @@ export const WARFRONT_COLLIDERS = Object.freeze([
   solid('warfront-ruin-house-east', 3370, 2305, 122, 78, 'ruined-building'),
   solid('warfront-ruin-workshop', 3230, 2585, 138, 78, 'ruined-building'),
 
+
+
+  // v0.1.4.4.1 large authored landmark props. Small clutter remains visual-only,
+  // but the six centerpiece structures that read as solid on-screen share the
+  // same visible-source collision rules as the rest of the Warfront.
+  solid('warfront-infernal-war-altar', 470, 1535, 174, 104, 'landmark-prop'),
+  solid('warfront-cinder-bastion-supply', 1280, 900, 112, 72, 'landmark-prop'),
+  solid('warfront-riven-hold-brazier', 2130, 1560, 86, 72, 'landmark-prop'),
+  solid('warfront-dawnward-relic', 4010, 1560, 88, 78, 'landmark-prop'),
+  solid('warfront-halo-bastion-font', 4860, 900, 112, 82, 'landmark-prop'),
+  solid('warfront-celestial-sanctuary-font', 5665, 1535, 174, 108, 'landmark-prop'),
+
   // Eight ancient pillars define the Axis without sealing the central floor.
   ...Array.from({ length: 8 }, (_, i) => {
     const a = (i / 8) * Math.PI * 2;
@@ -120,5 +163,8 @@ export const WARFRONT_ASSET_KEYS = Object.freeze([
   'warfront-winter-dirt', 'warfront-infernal-dirt', 'warfront-mountain-winter', 'warfront-mountain-autumn',
   'warfront-ice-water-tile', 'warfront-water-reflections', 'warfront-winter-plants', 'warfront-bridge-straight',
   'castle2-set', 'dungeon-elements', 'cave3-set', 'bridge', 'fire',
-  'adobe-house-east', 'adobe-house-west', 'adobe-workshop', 'rocks-cliffs', 'tree-trunks'
+  'adobe-house-east', 'adobe-house-west', 'adobe-workshop', 'rocks-cliffs', 'rocks-grass', 'tree-trunks',
+  'pine-tree-large', 'pine-tree-cluster', 'bush-evergreen', 'bush-seasonal', 'mushrooms', 'tall-grass',
+  'prop-smith-forge', 'prop-smith-racks', 'prop-smith-tools', 'prop-wood-bench', 'prop-wood-toolboard',
+  'prop-tailor-display', 'prop-tailor-loom'
 ]);

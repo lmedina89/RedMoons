@@ -1,5 +1,15 @@
 # Changelog
 
+## v0.1.4.4.1 — Strongholds, Outposts & Environmental Detail
+
+- Preserved the approved 6144×3072 Veil Warfront geography, portals, routes, Axis, water crossings and ambient budget while deepening all seven major non-Axis landmarks.
+- Added distinct authored compositions for Infernal Stronghold, Cinder Bastion, Riven Hold, Dawnward Hold, Halo Bastion, Celestial Stronghold and The Unhoused.
+- Reused existing audited Castle2, Dungeon Elements, workshop, vegetation and terrain assets; no pre-existing image bytes were edited.
+- Added six visible-source `landmark-prop` colliders for the largest centerpiece structures while leaving minor clutter non-blocking.
+- Added six bounded local landmark pulse/fade Graphics effects and an explicit 136 authored-sprite ceiling; the existing 38 Warfront ambient sprites remain unchanged.
+- Kept Warfront army population at zero. Common-unit faction population remains reserved for v0.1.4.4.2.
+- Save schema remains 2; no Azrael, Demon Combat, Celestial Combat, faction-combat, travel or exploration logic is retuned.
+
 ## v0.1.4.4.0.1 — Warfront Visual Assembly Hotfix
 
 - Restored the two omitted Castle2 crown frames above the Axis of First Light tree/orb so the ancient centerpiece renders as the complete source composition.

@@ -244,3 +244,9 @@ v0.1.3.2 introduces no new external visual or audio asset dependency. The Ashen 
 The Veil Warfront activates a compact subset of the already-organized **LPC Revised 4-Season Terrain** library. Runtime files under `dist/assets/world/warfront/` derive directly from the preserved source family: Dirt (Winter), Dirt (Non-Winter), Mountain (Winter), Mountain (Autumn), Ice-Water, Water Reflections and Winter Plants Small. The exact selected source sheets plus Terrain/FX/Terrain-Objects credit files are preserved under `source-assets/world/warfront/4-season/`. Distribution credit records for the same 4-Season families were already preserved under `dist/assets/licenses/original/`.
 
 `ice-water-tile.png` is a 32×32 runtime crop of frame 31 from the preserved Ice-Water source sheet; it introduces no new authorship claim. Existing Castle2/Cave3/workshop provenance notes and attribution holds remain unchanged.
+
+
+## v0.1.4.4.1 Warfront environmental reuse
+
+This pass introduces no newly authored source image. It reuses the already-registered Castle2/Dungeon Elements/world vegetation runtime sheets plus the compact smith, woodshop and tailor crops created earlier from preserved workshop sources. Those workshop props are now map-loaded only because The Unhoused references them. No pre-existing image bytes are modified by this detail pass; upstream attribution/provenance notes from the prior asset-audit/foundation remain in force.
+

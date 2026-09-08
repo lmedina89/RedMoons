@@ -134,3 +134,9 @@ The sanctuary adds no runtime image asset. Its 5.6-second field is one short-liv
 ## v0.1.4.4.0.1 Warfront atmosphere budget
 
 The first Warfront pass adds 38 persistent world-space ambient sprites total across the full 6144×3072 realm, plus two rotating Graphics containers, one pulsing Veil Graphics object and four tiny periodic flash sprites. Phaser camera culling handles offscreen rendering, while the fixed object count prevents particle growth over time. No full-screen shader/post-process is used. The Warfront ships with zero live enemy/celestial spawns in this pass so geography/FX performance can be measured independently before army simulation is added.
+
+
+## v0.1.4.4.1 landmark-detail budget
+
+The environmental-detail pass adds a hard authored ceiling of **136 static detail sprites** across all seven major landmark clusters and exactly **6 persistent landmark Graphics/tween effects**. Static images/sprites are camera-culled by Phaser and do not run AI. The prior 38 ambient world sprites remain unchanged, no full-screen shader is added, and Warfront actor population remains zero so the cost of environment detail can be physically isolated before v0.1.4.4.2 introduces armies.
+

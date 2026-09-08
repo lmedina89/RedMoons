@@ -171,7 +171,7 @@ export const ASSET_DEFS = [
   { key: 'adobe-house-west', path: `${W}buildings/adobe_house_west.png`, image: true },
   { key: 'adobe-workshop', path: `${W}buildings/adobe_workshop_full.png`, image: true },
 
-  // v0.1.4.4.0.1 Warfront-specific runtime environment assets curated from the
+  // v0.1.4.4.1 Warfront-specific runtime environment assets curated from the
   // already-preserved LPC Revised 4-Season Terrain library. Only the compact
   // sheets needed by the dedicated realm are map-loaded; the original source
   // sheets/credits remain preserved under source-assets/world/warfront/.

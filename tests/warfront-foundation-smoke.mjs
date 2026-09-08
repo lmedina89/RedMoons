@@ -12,6 +12,9 @@ const {
   WARFRONT_CLIFF_RIBBONS,
   WARFRONT_COLLIDERS,
   WARFRONT_DIMENSIONS,
+  WARFRONT_DETAIL_BUDGET,
+  WARFRONT_DETAIL_CLUSTERS,
+  WARFRONT_DETAIL_FX,
   WARFRONT_LANDMARKS,
   WARFRONT_ROUTE_BANDS,
   WARFRONT_RUIN_BUILDINGS,
@@ -39,6 +42,14 @@ assert.ok(WARFRONT_LANDMARKS.some(row => row.id === 'axis'), 'The Axis of First 
 assert.ok(WARFRONT_LANDMARKS.some(row => row.id === 'ruined_settlement'), 'The ruined neutral settlement must exist');
 assert.ok(WARFRONT_LANDMARKS.some(row => row.id === 'veil_arrival'), 'The Veil Gate arrival landmark must exist');
 
+
+const detailedLandmarks = new Set(WARFRONT_DETAIL_CLUSTERS.map(row => row.landmarkId));
+for (const id of ['infernal_stronghold', 'infernal_rear', 'infernal_forward', 'ruined_settlement', 'celestial_forward', 'celestial_rear', 'celestial_stronghold']) {
+  assert.ok(detailedLandmarks.has(id), `v0.1.4.4.1 must give ${id} an authored environmental-detail cluster`);
+}
+assert.equal(WARFRONT_DETAIL_CLUSTERS.reduce((sum, row) => sum + row.spriteBudget, 0), WARFRONT_DETAIL_BUDGET.maxAuthoredSprites, 'Authored Warfront detail must stay inside one explicit mobile sprite budget');
+assert.equal(WARFRONT_DETAIL_FX.length, WARFRONT_DETAIL_BUDGET.maxPersistentDetailFx, 'Persistent landmark FX must remain explicitly bounded');
+
 assert.ok(WARFRONT_CLIFF_RIBBONS.length >= 4, 'Both territorial halves must use authored cliff screening');
 assert.equal(WARFRONT_BRIDGES.length, 3, 'Luminous channel must expose three authored crossings');
 assert.ok(WARFRONT_WATERWAYS.some(row => row.id === 'luminous_channel'), 'Celestial territory must use real luminous water geography');
@@ -46,13 +57,13 @@ assert.equal(WARFRONT_RUIN_BUILDINGS.length, 3, 'Southern neutral ruins must see
 
 const warfrontSolids = COLLIDERS.filter(row => row.mapId === map.id);
 assert.equal(warfrontSolids.length, WARFRONT_COLLIDERS.length, 'All Warfront data colliders must enter the shared actor collision registry');
-for (const source of ['stronghold-wall', 'outpost-wall', 'ancient-cliff', 'luminous-water', 'ruined-building', 'axis-pillar']) {
+for (const source of ['stronghold-wall', 'outpost-wall', 'ancient-cliff', 'luminous-water', 'ruined-building', 'axis-pillar', 'landmark-prop']) {
   assert.ok(warfrontSolids.some(row => row.source === source), `Warfront must expose visible-source collision for ${source}`);
 }
 
 const assetKeys = new Set(ASSET_DEFS.map(asset => asset.key));
 for (const key of WARFRONT_ASSET_KEYS) assert.ok(assetKeys.has(key), `Warfront references missing runtime asset key ${key}`);
-for (const key of ['warfront-winter-dirt', 'warfront-infernal-dirt', 'warfront-mountain-winter', 'warfront-mountain-autumn', 'warfront-ice-water-tile', 'warfront-water-reflections', 'warfront-winter-plants', 'warfront-bridge-straight']) {
+for (const key of ['warfront-winter-dirt', 'warfront-infernal-dirt', 'warfront-mountain-winter', 'warfront-mountain-autumn', 'warfront-ice-water-tile', 'warfront-water-reflections', 'warfront-winter-plants', 'warfront-bridge-straight', 'prop-smith-forge', 'prop-smith-racks', 'prop-smith-tools', 'prop-wood-bench', 'prop-wood-toolboard', 'prop-tailor-display', 'prop-tailor-loom']) {
   assert.ok(assetKeys.has(key), `Audited 4-Season Warfront asset must be registered: ${key}`);
 }
 
@@ -63,7 +74,7 @@ assert.ok(leave?.returnToOrigin && leave.fallbackDestinationMapId === 'map_veil_
 
 const ambientCount = WARFRONT_AMBIENT_EMITTERS.reduce((sum, row) => sum + row.count, 0);
 assert.ok(ambientCount >= 30 && ambientCount <= 42, 'Persistent ambient world sprites must stay bounded while still visibly present');
-assert.equal(SPAWN_REGIONS.filter(row => row.mapId === map.id).length, 0, 'v0.1.4.4.0.1 must remain a geography/atmosphere pass with no live Warfront army population yet');
+assert.equal(SPAWN_REGIONS.filter(row => row.mapId === map.id).length, 0, 'v0.1.4.4.1 must remain an environment/detail pass with no live Warfront army population yet');
 
 const worldSource = await readFile(new URL('../dist/js/scenes/WorldScene.js', import.meta.url), 'utf8');
 for (const needle of ['buildVeilWarfront()', 'createWarfrontAmbientFx()', 'drawWarfrontCliffRibbon(ribbon)', 'drawWarfrontWallCollider(collider)', "action === 'warfront'"]) {
@@ -75,6 +86,11 @@ assert.ok(worldSource.includes("[[172, -64, -128], [173, 0, -128]"), 'Axis tree/
 assert.ok(worldSource.includes("'warfront-bridge-straight'"), 'Warfront crossings must render the curated straight bridge sprite');
 assert.ok(!worldSource.includes("this.add.image(bridge.x, bridge.y, 'bridge')"), 'Warfront must never render the complete bridge authoring sheet as one crossing');
 assert.ok(worldSource.includes('one continuous ancient shelf'), 'Warfront cliff ribbons must render as continuous shelves rather than cycling unrelated source frames');
+assert.ok(worldSource.includes('drawWarfrontDetailCluster(cluster)') && worldSource.includes('createWarfrontDetailFx()'), 'Warfront renderer must separate authored landmark detail and bounded persistent detail FX from the base geography');
+for (const key of ['prop-smith-forge', 'prop-wood-bench', 'prop-tailor-loom']) assert.ok(worldSource.includes(key), `The Unhoused must reuse curated civilian/workshop asset ${key}`);
+assert.ok(worldSource.includes("case 'celestial_stronghold'") && worldSource.includes("case 'infernal_stronghold'"), 'Both main strongholds must receive distinct authored detail compositions');
+assert.ok(worldSource.includes('castle(160, -41, 0') && worldSource.includes('castle(161, 41, 0'), 'Infernal ritual altar must assemble both verified Castle2 source halves');
+assert.ok(worldSource.includes('this.add.container(def.x, def.y)'), 'Landmark pulse FX must scale around local world-space origins rather than drifting around 0,0');
 assert.ok(!worldSource.includes('add.shader(') && !worldSource.includes('this.add.shader('), 'Foundation atmosphere must avoid permanent full-screen custom shaders on iPhone');
 
-console.log(`Warfront foundation smoke passed: ${map.width}x${map.height}, ${areas.length} areas, ${warfrontSolids.length} solids, ${ambientCount} bounded ambient sprites, zero live army spawns.`);
+console.log(`Warfront detail smoke passed: ${map.width}x${map.height}, ${areas.length} areas, ${warfrontSolids.length} solids, ${ambientCount} bounded ambient sprites, zero live army spawns.`);

@@ -1,4 +1,4 @@
-# Veil Warfront Foundation — v0.1.4.4.0.1
+# Veil Warfront Foundation — v0.1.4.4.1
 
 ## Purpose
 
@@ -19,6 +19,10 @@ Celestial territory uses winter ground, pale architecture, icy water, reflection
 
 Ambient FX are bounded: 38 world-space mote/ember/rune-dust sprites, two rotating Axis Graphics rings, one Veil pulse and four tiny distant-battle flash sprites. No custom full-screen shader is used.
 
+## v0.1.4.4.1 landmark-detail layer
+
+The geography remains fixed, but the seven non-Axis landmark zones now have distinct environmental roles and bounded authored detail. Main strongholds receive ritual/sanctuary centerpiece compositions, rear outposts emphasize logistics/support, forward outposts emphasize damaged defense, and The Unhoused mixes workshop/civilian remnants. Six large centerpiece objects add visible-source collision; minor clutter remains visual-only. A 136 authored-sprite ceiling and six persistent landmark Graphics FX keep this richer pass mobile-conscious.
+
 ## Staged next pass
 
-v0.1.4.4.1 should deepen the two strongholds/outposts and environmental storytelling only after physical iPhone scale/sightline feedback. v0.1.4.4.2 can then populate the map with bounded common-unit faction warfare. Named mythical actors remain separate bespoke releases.
+v0.1.4.4.2 can populate the approved/detail-complete map with bounded common-unit faction warfare. Named mythical actors remain separate bespoke releases.

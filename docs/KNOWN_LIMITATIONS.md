@@ -1,4 +1,9 @@
-# Known Limitations — v0.1.4.4.0.1
+# Known Limitations — v0.1.4.4.1
+
+## v0.1.4.4.1 Warfront detail limits
+
+The Warfront remains intentionally unpopulated by production armies and has no capture/state simulation, stronghold interiors, mythic appearances or Warfront-specific loot progression yet. Minor decorative clutter is not collision-backed; only structures large enough to read as meaningful movement blockers receive `landmark-prop` collision. Physical iPhone testing is still required for final composition, readability and performance approval.
+
 
 
 ## v0.1.4.4.0.1 Warfront foundation limits

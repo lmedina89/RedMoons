@@ -9,7 +9,7 @@ import { AREA_DEFS, BUILDING_DEFS, COLLIDERS, DEBUG_SPAWN_REGIONS, DEFAULT_MAP_I
 import { DEBUG, GAME_VERSION, PLAYER_START, RARITY, TILE_SIZE, WORLD_HEIGHT, WORLD_WIDTH } from '../config.js';
 import { gameEvents } from '../core/EventBus.js';
 import { POI_DEFS } from '../data/exploration.js';
-import { WARFRONT_AMBIENT_EMITTERS, WARFRONT_BRIDGES, WARFRONT_CLIFF_RIBBONS, WARFRONT_COLLIDERS, WARFRONT_LANDMARKS, WARFRONT_ROUTE_BANDS, WARFRONT_RUIN_BUILDINGS, WARFRONT_WATERWAYS } from '../data/warfront.js';
+import { WARFRONT_AMBIENT_EMITTERS, WARFRONT_BRIDGES, WARFRONT_CLIFF_RIBBONS, WARFRONT_COLLIDERS, WARFRONT_DETAIL_BUDGET, WARFRONT_DETAIL_CLUSTERS, WARFRONT_DETAIL_FX, WARFRONT_LANDMARKS, WARFRONT_ROUTE_BANDS, WARFRONT_RUIN_BUILDINGS, WARFRONT_WATERWAYS } from '../data/warfront.js';
 import { actionInput } from '../systems/ActionInput.js';
 import { CombatSystem } from '../systems/CombatSystem.js';
 import { DialogueSystem } from '../systems/DialogueSystem.js';
@@ -572,7 +572,7 @@ export class WorldScene extends Phaser.Scene {
   }
 
   drawWarfrontCliffRibbon(ribbon) {
-    // v0.1.4.4.0.1: the mountain source is a composition sheet, not a row of
+    // v0.1.4.4.1: the mountain source is a composition sheet, not a row of
     // interchangeable standalone cliff tiles. The previous renderer cycled
     // unrelated frames and exposed their square source backgrounds/gaps.
     // Keep the same collider/geography but render one continuous ancient shelf
@@ -637,6 +637,145 @@ export class WorldScene extends Phaser.Scene {
         .setTint(tint)
         .setAlpha(outpost ? 0.86 : 0.96)
         .setDepth(y - 4);
+    }
+  }
+
+
+  addWarfrontDetailSprite(texture, x, y, { frame = null, scale = 1, tint = null, alpha = 1, depthOffset = 0, angle = 0, flipX = false, flipY = false } = {}) {
+    this.warfrontDetailSpriteCount = this.warfrontDetailSpriteCount || 0;
+    if (this.warfrontDetailSpriteCount >= WARFRONT_DETAIL_BUDGET.maxAuthoredSprites) return null;
+    if (this.warfrontDetailClusterLimit != null && this.warfrontDetailSpriteCount >= this.warfrontDetailClusterLimit) return null;
+    const sprite = frame == null ? this.add.image(x, y, texture) : this.add.sprite(x, y, texture, frame);
+    sprite.setScale(scale).setAlpha(alpha).setDepth(y + depthOffset).setAngle(angle).setFlip(flipX, flipY);
+    if (tint != null) sprite.setTint(tint);
+    this.warfrontDetailSpriteCount += 1;
+    return sprite;
+  }
+
+  drawWarfrontDetailCluster(cluster) {
+    const clusterStart = this.warfrontDetailSpriteCount || 0;
+    this.warfrontDetailClusterLimit = Math.min(WARFRONT_DETAIL_BUDGET.maxAuthoredSprites, clusterStart + cluster.spriteBudget);
+    const add = (texture, dx, dy, options = {}) => this.addWarfrontDetailSprite(texture, cluster.x + dx, cluster.y + dy, options);
+    const castle = (frame, dx, dy, options = {}) => add('castle2-set', dx, dy, { frame, ...options });
+    const dungeon = (frame, dx, dy, options = {}) => add('dungeon-elements', dx, dy, { frame, ...options });
+    const fire = (dx, dy, scale = 1) => add('fire', dx, dy, { frame: 0, scale, tint: 0xffa06a, alpha: 0.9, depthOffset: 4 });
+
+    switch (cluster.kind) {
+      case 'infernal_stronghold': {
+        // Ancient fortress occupied rather than built by the Demon Legion: old
+        // stone, captured heraldry, ritual furniture, bones and field fires.
+        castle(160, -41, 0, { scale: 2.55, tint: 0xb37456, depthOffset: 4 });
+        castle(161, 41, 0, { scale: 2.55, tint: 0xb37456, depthOffset: 4 });
+        castle(235, 0, -285, { scale: 2.15, tint: 0x755044, alpha: 0.9, depthOffset: -8 });
+        castle(112, -250, -255, { scale: 1.85, tint: 0x8e4037 });
+        castle(113, 250, -255, { scale: 1.85, tint: 0x8e4037, flipX: true });
+        for (const [dx, dy] of [[-330,-60],[330,-60],[-330,145],[330,145]]) fire(dx, dy, 1.35);
+        for (const [dx,dy,frame,scale] of [[-190,120,177,1.4],[190,125,177,1.4],[-290,255,234,1.4],[280,255,234,1.45],[0,235,235,1.55]]) {
+          castle(frame, dx, dy, { scale, tint: frame === 177 ? 0xa67a66 : 0x8c6254 });
+        }
+        dungeon(80, -105, 150, { scale: 1.25, tint: 0xc5a28f });
+        dungeon(92, 110, 155, { scale: 1.25, tint: 0xc5a28f });
+        add('pine-tree-cluster', -305, -410, { scale: 0.9, tint: 0x3d2527, alpha: 0.66, depthOffset: -25 });
+        add('pine-tree-cluster', 285, -400, { scale: 0.82, tint: 0x44282a, alpha: 0.62, depthOffset: -25 });
+        break;
+      }
+      case 'infernal_rear': {
+        // Cinder Bastion is logistics and repair, not another mini castle.
+        castle(137, -150, -115, { scale: 1.45, tint: 0xa84237 });
+        castle(137, 150, -115, { scale: 1.45, tint: 0xa84237, flipX: true });
+        for (const [dx,dy] of [[-42,-5],[0,-5],[42,-5],[-20,35],[25,35]]) castle(234, dx, dy, { scale: 1.15, tint: 0x806057 });
+        add('prop-smith-forge', -115, 105, { scale: 0.48, tint: 0x9a6856, alpha: 0.9 });
+        add('prop-smith-racks', 120, 112, { scale: 0.42, tint: 0x9b7563, alpha: 0.86 });
+        fire(-175, 70, 1.05);
+        fire(180, 72, 1.05);
+        break;
+      }
+      case 'infernal_forward': {
+        // Riven Hold reads as a damaged front-line redoubt.
+        castle(137, -155, -120, { scale: 1.5, tint: 0xb14739 });
+        castle(112, 155, -120, { scale: 1.35, tint: 0x884036 });
+        fire(0, 0, 1.55);
+        castle(177, -70, 70, { scale: 1.25, tint: 0xa98473 });
+        castle(177, 75, 72, { scale: 1.2, tint: 0xa98473, flipX: true });
+        dungeon(98, -135, 100, { scale: 1.1, tint: 0x79625d });
+        dungeon(88, 135, 100, { scale: 1.1, tint: 0x79625d });
+        castle(234, -160, -5, { scale: 1.1, tint: 0x7b5a4f });
+        castle(234, 160, -5, { scale: 1.1, tint: 0x7b5a4f });
+        break;
+      }
+      case 'celestial_forward': {
+        // Dawnward Hold is a sparse sacred redoubt: clear sight-lines, captured
+        // ancient stones and one luminous field relic rather than clutter.
+        castle(138, -155, -118, { scale: 1.5, tint: 0xe5f0ef });
+        castle(138, 155, -118, { scale: 1.5, tint: 0xe5f0ef, flipX: true });
+        castle(100, 0, 0, { scale: 2.25, tint: 0xf5efbd, depthOffset: 5 });
+        castle(251, 0, 58, { scale: 1.65, tint: 0xd9d8c5 });
+        for (const [dx,dy,frame] of [[-125,78,0],[125,78,1],[-175,15,2],[175,15,3]]) add('warfront-winter-plants', dx, dy, { frame, scale: 1.7, tint: 0xe9ffff, alpha: 0.76 });
+        break;
+      }
+      case 'celestial_rear': {
+        // Halo Bastion is a rear sanctuary/supply node around the luminous
+        // channel. Two fountain halves compose one complete ancient font.
+        castle(135, -155, -118, { scale: 1.5, tint: 0xe9f1ef });
+        castle(135, 155, -118, { scale: 1.5, tint: 0xe9f1ef, flipX: true });
+        castle(217, -30, 0, { scale: 1.9, tint: 0xe9efe1, depthOffset: 4 });
+        castle(218, 30, 0, { scale: 1.9, tint: 0xe9efe1, depthOffset: 4 });
+        castle(233, -138, 95, { scale: 1.2, tint: 0xd9e6df });
+        castle(234, 135, 100, { scale: 1.15, tint: 0xb8c5bd });
+        for (const [dx,dy,frame] of [[-120,58,0],[120,58,2],[-185,20,4],[185,20,5]]) add('warfront-winter-plants', dx, dy, { frame, scale: 1.75, tint: 0xf0ffff, alpha: 0.8 });
+        break;
+      }
+      case 'celestial_stronghold': {
+        // Heaven occupies an ancient sanctuary. The stronghold centers on a
+        // broad sacred font and ordered relics rather than modern barracks.
+        castle(217, -32, 0, { scale: 3.0, tint: 0xf0f2df, depthOffset: 5 });
+        castle(218, 32, 0, { scale: 3.0, tint: 0xf0f2df, depthOffset: 5 });
+        for (const [dx,dy] of [[-255,-255],[255,-255],[-255,240],[255,240]]) castle(100, dx, dy, { scale: 1.75, tint: 0xf8efb2 });
+        for (const [dx,dy,frame] of [[-310,-95,135],[310,-95,138],[-310,120,135],[310,120,138]]) castle(frame, dx, dy, { scale: 1.7, tint: 0xe9f3f1 });
+        for (const [dx,dy] of [[-245,55],[245,55],[-180,-180],[180,-180]]) castle(251, dx, dy, { scale: 1.35, tint: 0xdadac8 });
+        add('pine-tree-large', -315, 335, { scale: 1.22, tint: 0xd9f3ef, alpha: 0.82, depthOffset: -20 });
+        add('pine-tree-large', 315, 335, { scale: 1.22, tint: 0xd9f3ef, alpha: 0.82, depthOffset: -20 });
+        for (const [dx,dy,frame] of [[-90,170,0],[90,170,1],[-150,245,2],[150,245,3]]) add('warfront-winter-plants', dx, dy, { frame, scale: 1.85, tint: 0xf0ffff, alpha: 0.8 });
+        break;
+      }
+      case 'unhoused': {
+        // Domestic/workshop remnants intentionally mix professions so the
+        // quarter reads as a lost civilian place, not generic battlefield loot.
+        add('prop-smith-forge', -230, 165, { scale: 0.48, tint: 0x7f7370, alpha: 0.72 });
+        add('prop-smith-tools', -155, 205, { scale: 0.55, tint: 0x817675, alpha: 0.68 });
+        add('prop-wood-bench', 165, 175, { scale: 0.42, tint: 0x7d706c, alpha: 0.68, angle: -5 });
+        add('prop-wood-toolboard', 210, 215, { scale: 0.4, tint: 0x756967, alpha: 0.65 });
+        add('prop-tailor-display', 80, -105, { scale: 0.38, tint: 0x84777a, alpha: 0.62, angle: 3 });
+        add('prop-tailor-loom', 240, -70, { scale: 0.62, tint: 0x837477, alpha: 0.68 });
+        for (const [dx,dy,frame,scale] of [[-300,-40,234,1.15],[-260,20,234,1.1],[285,70,234,1.1],[300,120,177,1.15],[-30,175,238,1.25]]) castle(frame, dx, dy, { scale, tint: 0x777071, alpha: 0.76 });
+        add('tree-trunks', -320, 205, { frame: 3, scale: 1.5, tint: 0x6b5d5c, alpha: 0.78 });
+        add('tree-trunks', 315, -165, { frame: 6, scale: 1.4, tint: 0x6b5d5c, alpha: 0.72 });
+        break;
+      }
+      default: break;
+    }
+    this.warfrontDetailClusterLimit = null;
+  }
+
+  createWarfrontDetailFx() {
+    this.warfrontDetailFx = [];
+    for (const def of WARFRONT_DETAIL_FX.slice(0, WARFRONT_DETAIL_BUDGET.maxPersistentDetailFx)) {
+      // Keep pulse geometry local to a world-space container so scaling
+      // breathes around the landmark itself rather than around world origin.
+      const container = this.add.container(def.x, def.y).setDepth(def.y - 25).setAlpha(0.48);
+      const g = this.add.graphics();
+      const celestial = def.kind === 'celestial_pulse';
+      const infernal = def.kind === 'infernal_pulse';
+      const primary = celestial ? 0xdffaff : (infernal ? 0xff6d46 : 0xe2c98c);
+      const secondary = celestial ? 0xf5e6a6 : (infernal ? 0x6e1f22 : 0x8da6ae);
+      g.lineStyle(celestial || infernal ? 4 : 3, primary, 0.38).strokeEllipse(0, 0, def.radius * 2, def.radius * 1.22);
+      g.lineStyle(2, secondary, 0.28).strokeEllipse(0, 0, def.radius * 1.45, def.radius * 0.82);
+      if (def.kind === 'ancient_fade') {
+        g.lineStyle(1, 0xd6eef4, 0.22).strokeCircle(0, 0, def.radius * 0.62);
+      }
+      container.add(g);
+      this.tweens.add({ targets: container, alpha: { from: def.kind === 'ancient_fade' ? 0.12 : 0.3, to: 0.72 }, scaleX: { from: 0.96, to: 1.04 }, scaleY: { from: 0.96, to: 1.04 }, duration: def.kind === 'ancient_fade' ? 2600 : 1750, yoyo: true, repeat: -1, ease: 'Sine.easeInOut' });
+      this.warfrontDetailFx.push(container);
     }
   }
 
@@ -775,8 +914,8 @@ export class WorldScene extends Phaser.Scene {
     // Visible walls are driven from the same collider rows used by physics.
     for (const collider of WARFRONT_COLLIDERS.filter(row => ['stronghold-wall', 'outpost-wall'].includes(row.source))) this.drawWarfrontWallCollider(collider);
 
-    // Stronghold identity remains a footprint in 0.1.4.4.0.1; the next detail
-    // pass can replace/extend these compositions without changing geography.
+    // Stronghold gates remain geography anchors; v0.1.4.4.1 extends them
+    // with bounded landmark-detail clusters without changing the approved map.
     const addGate = (x, y, celestial) => {
       const tint = celestial ? 0xebf1e5 : 0x6f453d;
       const frames = [64, 65, 66, 67, 68, 69, 70];
@@ -785,24 +924,11 @@ export class WorldScene extends Phaser.Scene {
     addGate(875, 1550, false);
     addGate(5265, 1550, true);
 
-    // Infernal occupation: dungeon/bone/fire language mixed into the ancient
-    // fortress rather than a generic lava castle.
-    for (const [x, y, frame] of [[300, 1060, 176], [640, 1040, 178], [260, 1900, 114], [640, 1980, 119], [500, 1840, 128]]) {
-      this.add.sprite(x, y, 'castle2-set', frame).setScale(1.28).setTint(0x8f5f50).setDepth(y + 4);
-    }
-    for (const [x, y, frame] of [[250, 1300, 64], [310, 1300, 65], [620, 1820, 64], [680, 1820, 65]]) {
-      this.add.sprite(x, y, 'dungeon-elements', frame).setScale(1.65).setTint(0xa36a55).setDepth(y + 5);
-    }
-
-    // Celestial occupation: fountain/statue/pale-stone language with sparse
-    // winter plants around the inner court.
-    for (const [x, y, frame] of [[5500, 1080, 217], [5532, 1080, 218], [5564, 1080, 219], [5800, 1840, 100], [5480, 1910, 116]]) {
-      this.add.sprite(x, y, 'castle2-set', frame).setScale(1.35).setTint(0xe9efe4).setDepth(y + 4);
-    }
-    for (let i = 0; i < 12; i += 1) {
-      this.add.sprite(5380 + (i % 4) * 150, 1280 + Math.floor(i / 4) * 310, 'warfront-winter-plants', i % 6)
-        .setScale(1.8).setTint(0xe9ffff).setAlpha(0.78).setDepth(1400 + i);
-    }
+    // v0.1.4.4.1 landmark detail pass. Strongholds/outposts/civilian ruins are
+    // authored as bounded data-driven clusters; no army actors are introduced.
+    this.warfrontDetailSpriteCount = 0;
+    for (const cluster of WARFRONT_DETAIL_CLUSTERS) this.drawWarfrontDetailCluster(cluster);
+    this.createWarfrontDetailFx();
 
     // Central Axis: real Castle2 mystical fragments + procedural ancient rings.
     const axis = this.add.graphics().setDepth(-850);
