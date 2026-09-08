@@ -16,7 +16,7 @@ const { CombatSystem } = await import('../dist/js/systems/CombatSystem.js');
 const { areHostile } = await import('../dist/js/data/factions.js');
 
 assert.deepEqual(INFERNAL_LEVEL_HIERARCHY.demonKnight, { internalLevel: 30, threatTier: 'elite' });
-assert.deepEqual(INFERNAL_LEVEL_HIERARCHY.zerakoth, { internalLevel: 60, threatTier: 'commander', reserved: true });
+assert.deepEqual(INFERNAL_LEVEL_HIERARCHY.zerakoth, { internalLevel: 60, threatTier: 'commander' });
 
 const knight = ENEMY_DEFS.enemy_infernal_dreadknight;
 assert.ok(knight, 'Infernal Dreadknight definition must exist');

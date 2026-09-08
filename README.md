@@ -1,5 +1,17 @@
-# Hell RPG v0.1.4.4.5.1 — Demon Knight Elite Foundation
+# Hell RPG v0.1.4.4.5.2 — Zerakoth, Warden of the Pit Field Test
 
+
+## v0.1.4.4.5.2 Zerakoth, Warden of the Pit Field Test
+
+- Added **Zerakoth, Warden of the Pit** as the first named **Level 60 / commander-tier** Infernal, above the Lv30 Dreadknight and below Lv94 Bloodwing Scourge.
+- Zerakoth uses a fixed black/crimson **Warden's Warplate** and permanent **Warden's Hellblade** over compact runtime derivatives from the preserved `Truetrans.png` source; no randomized loadout is used.
+- Added six independent commander abilities: **Warden's Rend, Pitbound Rush, Ashen Decree, Hellbrand Volley, Ward of the Pit, and Pitfall Eruption**. Effects stay dark/crimson/hellfire and intentionally below mythic scale.
+- Pitfall Eruption participates in the existing worthy-opponent hierarchy: normal crowd gates remain, while one mythic/apex foe can justify the major cast.
+- All Zerakoth attacks remain faction-safe. Infernal allies cannot be damaged by his melee, dash, projectiles, control or AoE.
+- Added `?debug=1` **Zerakoth Field Test**, **Zerakoth Solo Test**, and **Zerakoth AI Overlay**. Solo mode recycles rewardless 3–5 Celestial waves in a clear isolated Warfront pocket.
+- Production Warfront remains 32 regular actors; save schema remains 2 and the existing localStorage identity is unchanged.
+
+Physical iPhone Safari remains the release gate. Use the solo loop first to validate armor/Hellblade alignment, all six abilities, commander-tier feel, and sustained performance.
 
 ## v0.1.4.4.5.1 Demon Knight Elite Foundation
 

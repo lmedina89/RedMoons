@@ -8,6 +8,7 @@ const FX_COLORS = Object.freeze({
   hellfire: 0xff3d18,
   ashbone: 0xe8c96f,
   blood: 0xb51e2e,
+  warden: 0x8f1738,
   guard: 0xe7b85d,
   earth: 0xc99558,
   heal: 0x72d78a,
@@ -20,7 +21,7 @@ export class FxManager {
     this.scene = scene;
     this.makeTextures();
     this.pools = new Map();
-    for (const key of ['physical', 'fire', 'blueflame', 'poison', 'shadow', 'abyss', 'hellfire', 'ashbone', 'blood', 'guard', 'earth', 'heal', 'essence', 'celestial']) {
+    for (const key of ['physical', 'fire', 'blueflame', 'poison', 'shadow', 'abyss', 'hellfire', 'ashbone', 'blood', 'warden', 'guard', 'earth', 'heal', 'essence', 'celestial']) {
       this.pools.set(key, Array.from({ length: 12 }, () => scene.add.sprite(0, 0, `fx-${key}`).setVisible(false).setDepth(8600)));
     }
     this.indices = new Map();
@@ -43,6 +44,7 @@ export class FxManager {
     makeOrb('projectile-hellfire', FX_COLORS.hellfire, 6);
     makeOrb('projectile-ashbone', FX_COLORS.ashbone, 5);
     makeOrb('projectile-blood', FX_COLORS.blood, 6);
+    makeOrb('projectile-warden', FX_COLORS.warden, 7);
     makeOrb('projectile-lumen', FX_COLORS.celestial, 5);
     if (!this.scene.textures.exists('projectile-celestial')) {
       const g = this.scene.add.graphics();

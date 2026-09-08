@@ -179,6 +179,17 @@ export const ASSET_DEFS = [
   { key: 'pitsteel-sword-walk', path: 'assets/enemies/demon-knight/pitsteel-sword-walk.png', frameWidth: 64, frameHeight: 64 },
   { key: 'pitsteel-sword-slash', path: 'assets/enemies/demon-knight/pitsteel-sword-slash.png', frameWidth: 128, frameHeight: 128, oversized: true },
 
+  // v0.1.4.4.5.2 Zerakoth commander presentation. Truetrans.png remains
+  // source-only and unchanged; runtime layers are compact synchronized crops.
+  { key: 'zerakoth-base-walk', path: 'assets/npcs/zerakoth/zerakoth-base-walk.png', frameWidth: 64, frameHeight: 64 },
+  { key: 'zerakoth-base-slash', path: 'assets/npcs/zerakoth/zerakoth-base-slash.png', frameWidth: 64, frameHeight: 64 },
+  { key: 'zerakoth-base-hurt', path: 'assets/npcs/zerakoth/zerakoth-base-hurt.png', frameWidth: 64, frameHeight: 64 },
+  { key: 'zerakoth-warplate-walk', path: 'assets/npcs/zerakoth/zerakoth-warplate-walk.png', frameWidth: 64, frameHeight: 64 },
+  { key: 'zerakoth-warplate-slash', path: 'assets/npcs/zerakoth/zerakoth-warplate-slash.png', frameWidth: 64, frameHeight: 64 },
+  { key: 'zerakoth-warplate-hurt', path: 'assets/npcs/zerakoth/zerakoth-warplate-hurt.png', frameWidth: 64, frameHeight: 64 },
+  { key: 'wardens-hellblade-walk', path: 'assets/npcs/zerakoth/wardens-hellblade-walk.png', frameWidth: 64, frameHeight: 64 },
+  { key: 'wardens-hellblade-slash', path: 'assets/npcs/zerakoth/wardens-hellblade-slash.png', frameWidth: 128, frameHeight: 128, oversized: true },
+
   { key: 'skeleton-walk', path: `${E}skeleton-walk.png`, frameWidth: 64, frameHeight: 64 },
   { key: 'skeleton-slash', path: `${E}skeleton-slash.png`, frameWidth: 64, frameHeight: 64 },
   { key: 'skeleton-bow-shoot', path: `${E}skeleton-bow-shoot.png`, frameWidth: 64, frameHeight: 64 },
@@ -349,6 +360,8 @@ export const LAYER_ASSETS = Object.freeze({
   enemy_fleshborn_base: { walk: 'fleshborn-demon-walk', slash: 'fleshborn-demon-slash', geometry: 'revised64Basic', attackFallback: 'slash' },
   enemy_base_angel_base: { walk: 'base-angel-walk', slash: 'base-angel-slash', geometry: 'revised64Basic', attackFallback: 'slash' },
   enemy_demon_knight_base: { walk: 'demon-knight-walk', slash: 'demon-knight-slash', hurt: 'demon-knight-hurt', geometry: 'revised64Elite', attackFallback: 'slash' },
+  zerakoth_base: { walk: 'zerakoth-base-walk', slash: 'zerakoth-base-slash', hurt: 'zerakoth-base-hurt', geometry: 'revised64Elite', attackFallback: 'slash' },
+  zerakoth_warplate: { walk: 'zerakoth-warplate-walk', slash: 'zerakoth-warplate-slash', hurt: 'zerakoth-warplate-hurt', geometry: 'revised64Elite', attackFallback: 'slash' },
 
   // Backwards alias used by older code/tools; player rendering explicitly asks
   // for player_red_base in v0.1.2.
@@ -398,6 +411,7 @@ export const LAYER_ASSETS = Object.freeze({
   weapon_copper_arming_sword_fg: { walk: 'copper-arming-sword-walk', slash: 'copper-arming-sword-slash', backslash: 'copper-arming-sword-backslash', halfslash: 'copper-arming-sword-halfslash', geometry: 'armingSword', oversizedSources: ['slash', 'backslash', 'halfslash'] },
   weapon_steel_arming_sword_fg: { walk: 'steel-arming-sword-walk', slash: 'steel-arming-sword-slash', backslash: 'steel-arming-sword-backslash', halfslash: 'steel-arming-sword-halfslash', geometry: 'armingSword', oversizedSources: ['slash', 'backslash', 'halfslash'] },
   weapon_pitsteel_sword_fg: { walk: 'pitsteel-sword-walk', slash: 'pitsteel-sword-slash', geometry: 'armingSwordBasic', oversizedSources: ['slash'], attackFallback: 'slash' },
+  weapon_wardens_hellblade_fg: { walk: 'wardens-hellblade-walk', slash: 'wardens-hellblade-slash', geometry: 'armingSwordBasic', oversizedSources: ['slash'], attackFallback: 'slash' },
   weapon_gold_arming_sword_fg: { walk: 'gold-arming-sword-walk', slash: 'gold-arming-sword-slash', backslash: 'gold-arming-sword-backslash', halfslash: 'gold-arming-sword-halfslash', geometry: 'armingSword', oversizedSources: ['slash', 'backslash', 'halfslash'] },
   weapon_ceramic_arming_sword_fg: { walk: 'ceramic-arming-sword-walk', slash: 'ceramic-arming-sword-slash', backslash: 'ceramic-arming-sword-backslash', halfslash: 'ceramic-arming-sword-halfslash', geometry: 'armingSword', oversizedSources: ['slash', 'backslash', 'halfslash'] },
   weapon_katana_npc_fg: { walk: 'katana-walk', slash: 'katana-slash', geometry: 'katanaNpc128', oversizedSources: ['walk', 'slash'], attackFallback: 'slash' },

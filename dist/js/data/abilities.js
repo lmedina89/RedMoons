@@ -97,6 +97,45 @@ export const ENEMY_ABILITY_DEFS = Object.freeze({
     damageMultiplier: 1.18, knockback: 82, damageType: 'shadow', impact: 'blood', telegraph: 'blood', audio: 'shadow'
   }),
 
+
+  // v0.1.4.4.5.2 Zerakoth — Warden of the Pit. Commander-scale effects use
+  // the shared faction-safe pipeline and remain deliberately below mythic FX.
+  zerakoth_ward_pit: Object.freeze({
+    id: 'zerakoth_ward_pit', name: 'Ward of the Pit', type: 'self_guard', animation: 'attack',
+    range: 9999, minRange: 0, cooldownMs: 10400, windupMs: 720, triggerAt: 0.70, recoverMs: 400,
+    castHpThreshold: 0.58, durationMs: 6200, telegraph: 'warden', audio: 'shadow'
+  }),
+  zerakoth_pitfall_eruption: Object.freeze({
+    id: 'zerakoth_pitfall_eruption', name: 'Pitfall Eruption', type: 'targeted_aoe', animation: 'attack',
+    range: 335, minRange: 40, radius: 168, targetClusterRadius: 155, minCluster: 2, worthyTargetTier: 'mythic',
+    cooldownMs: 10800, windupMs: 1120, triggerAt: 0.78, recoverMs: 540, major: true, majorLockMs: 4300,
+    damageMultiplier: 1.22, knockback: 205, damageType: 'fire', impact: 'warden',
+    status: Object.freeze({ id: 'stagger', chance: 0.38 }), telegraph: 'warden', audio: 'slam'
+  }),
+  zerakoth_ashen_decree: Object.freeze({
+    id: 'zerakoth_ashen_decree', name: 'Ashen Decree', type: 'melee_reach', animation: 'attack',
+    range: 176, minRange: 0, arcDegrees: 150, cooldownMs: 5100, windupMs: 710, triggerAt: 0.70, recoverMs: 420,
+    damageMultiplier: 0.90, knockback: 82, damageType: 'shadow', impact: 'warden',
+    status: Object.freeze({ id: 'slow', chance: 1 }), telegraph: 'warden', audio: 'shadow'
+  }),
+  zerakoth_hellbrand_volley: Object.freeze({
+    id: 'zerakoth_hellbrand_volley', name: 'Hellbrand Volley', type: 'projectile', projectileId: 'warden_hellbrand', animation: 'attack',
+    range: 410, minRange: 115, cooldownMs: 4300, windupMs: 660, triggerAt: 0.62, recoverMs: 350,
+    damageMultiplier: 0.34, projectileDelays: Object.freeze([0, 90, 180, 270]),
+    projectileFanOffsets: Object.freeze([0, -28, 28, 0]), telegraph: 'warden', audio: 'shadow'
+  }),
+  zerakoth_pitbound_rush: Object.freeze({
+    id: 'zerakoth_pitbound_rush', name: 'Pitbound Rush', type: 'dash_strike', animation: 'attack',
+    range: 282, minRange: 90, arcDegrees: 74, dashDistance: 184, cooldownMs: 3900, windupMs: 510, triggerAt: 0.68, recoverMs: 350,
+    damageMultiplier: 1.16, knockback: 136, damageType: 'fire', impact: 'warden',
+    status: Object.freeze({ id: 'burn', chance: 0.28 }), telegraph: 'warden', audio: 'fire'
+  }),
+  zerakoth_wardens_rend: Object.freeze({
+    id: 'zerakoth_wardens_rend', name: "Warden's Rend", type: 'melee_reach', animation: 'attack',
+    range: 138, minRange: 0, arcDegrees: 126, cooldownMs: 1480, windupMs: 470, triggerAt: 0.57, recoverMs: 300,
+    damageMultiplier: 1.27, knockback: 104, damageType: 'shadow', impact: 'warden', telegraph: 'warden', audio: 'shadow'
+  }),
+
   flesh_rend: Object.freeze({
     id: 'flesh_rend', name: 'Flesh Rend', type: 'melee_reach', animation: 'attack',
     range: 104, minRange: 0, arcDegrees: 96, cooldownMs: 1650, windupMs: 460, triggerAt: 0.56, recoverMs: 320,

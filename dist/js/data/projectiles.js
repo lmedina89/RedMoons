@@ -38,5 +38,9 @@ export const PROJECTILE_DEFS = Object.freeze({
   blood_lance: Object.freeze({
     id: 'blood_lance', speed: 300, lifetimeMs: 1750, radius: 9, texture: 'projectile-blood',
     damageType: 'shadow', trail: 'blood', impact: 'blood', wallCollision: true
+  }),
+  warden_hellbrand: Object.freeze({
+    id: 'warden_hellbrand', speed: 318, lifetimeMs: 1800, radius: 10, texture: 'projectile-warden',
+    damageType: 'shadow', trail: 'warden', impact: 'warden', knockback: 72, wallCollision: true
   })
 });

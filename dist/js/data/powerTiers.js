@@ -14,7 +14,7 @@ export const THREAT_TIERS = Object.freeze({
 
 export const INFERNAL_LEVEL_HIERARCHY = Object.freeze({
   demonKnight: Object.freeze({ internalLevel: 30, threatTier: 'elite' }),
-  zerakoth: Object.freeze({ internalLevel: 60, threatTier: 'commander', reserved: true })
+  zerakoth: Object.freeze({ internalLevel: 60, threatTier: 'commander' })
 });
 
 export const MYTHIC_LEVEL_HIERARCHY = Object.freeze({

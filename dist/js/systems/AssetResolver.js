@@ -7,6 +7,7 @@ import { AZRAEL_DEF } from '../data/specialActors.js';
 import { LAILANI_DEF } from '../data/lailani.js';
 import { ELEXIS_DEF } from '../data/elexis.js';
 import { MYTHICAL_DEMON_DEF } from '../data/mythicalDemon.js';
+import { ZERAKOTH_DEF } from '../data/zerakoth.js';
 import { DEBUG } from '../config.js';
 
 const ASSET_BY_KEY = new Map(ASSET_DEFS.map(asset => [asset.key, asset]));
@@ -113,6 +114,10 @@ export function assetDefsForMap(state, requestedMapId = null) {
   if (MYTHICAL_DEMON_DEF.home.mapId === map.id) {
     for (const key of Object.values(MYTHICAL_DEMON_DEF.assets)) addAssetKey(keys, key);
   }
+
+  // Zerakoth is debug-only in this commander field-test pass. His compact
+  // base/warplate/Hellblade layers stream only on the Warfront under ?debug=1.
+  if (DEBUG && ZERAKOTH_DEF.home.mapId === map.id) addEnemy(keys, ZERAKOTH_DEF);
 
   const zoneIds = new Set(map.zoneIds || []);
   for (const npc of Object.values(NPC_DEFS)) {

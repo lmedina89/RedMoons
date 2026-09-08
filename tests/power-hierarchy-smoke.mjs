@@ -14,7 +14,7 @@ const { CombatSystem } = await import('../dist/js/systems/CombatSystem.js');
 
 assert.deepEqual(THREAT_TIERS, { ordinary: 0, elite: 1, commander: 2, boss: 3, mythic: 4, apex: 5 });
 assert.deepEqual(INFERNAL_LEVEL_HIERARCHY.demonKnight, { internalLevel: 30, threatTier: 'elite' });
-assert.deepEqual(INFERNAL_LEVEL_HIERARCHY.zerakoth, { internalLevel: 60, threatTier: 'commander', reserved: true });
+assert.deepEqual(INFERNAL_LEVEL_HIERARCHY.zerakoth, { internalLevel: 60, threatTier: 'commander' });
 assert.deepEqual(MYTHIC_LEVEL_HIERARCHY.mythicalDemon, { internalLevel: 94, threatTier: 'mythic' });
 assert.deepEqual(MYTHIC_LEVEL_HIERARCHY.lailani, { internalLevel: 96, threatTier: 'mythic' });
 assert.deepEqual(MYTHIC_LEVEL_HIERARCHY.ancientDemonLord, { internalLevel: 98, threatTier: 'apex', reserved: true });

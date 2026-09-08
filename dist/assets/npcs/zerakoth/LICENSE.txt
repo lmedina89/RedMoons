@@ -1,0 +1,17 @@
+Zerakoth runtime derivative note — v0.1.4.4.5.2
+
+Development-only compact runtime derivatives for Hell RPG.
+
+Base identity:
+- source-assets/character-concepts/2026-09-07/heavenly-and-unique/Truetrans.png
+- Original user-provided authoring sheet is preserved unchanged and remains on attribution/provenance hold for any commercial/store distribution.
+
+Commander armor layer:
+- Composed only from existing project LPC-compatible runtime/source gear geometry already present in this repository, then given a blackened/crimson infernal treatment for Zerakoth.
+- Existing source/runtime gear files are not modified.
+
+Warden's Hellblade:
+- Derived from the project's already-proven LPC arming-sword/Pitsteel geometry with a distinct black/crimson infernal treatment.
+- Existing sword files are not modified.
+
+This note does not replace upstream credits. Resolve the exact upstream provenance of the user-provided Truetrans authoring sheet before commercial/store release.

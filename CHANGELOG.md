@@ -1,5 +1,18 @@
 # Changelog
 
+## v0.1.4.4.5.2 — Zerakoth, Warden of the Pit Field Test
+
+- Activated **Zerakoth — Warden of the Pit** as a debug-only named Infernal commander, internally **Level 60 / commander tier**, filling the hierarchy between the Lv30 Infernal Dreadknight and Lv94 Bloodwing Scourge.
+- Reclassified the previously reserved Zerakoth hierarchy slot as live while leaving the future **Ancient Demon Lord Lv98 / apex** reserved.
+- Preserved `Truetrans.png` unchanged/source-only and added compact walk/slash/hurt runtime derivatives with a fixed black/crimson **Warden's Warplate** plus permanent synchronized **Warden's Hellblade**. No random equipment is used.
+- Added six bespoke dark/fiery commander abilities: **Warden's Rend, Pitbound Rush, Ashen Decree, Hellbrand Volley, Ward of the Pit, and Pitfall Eruption**.
+- Added a reusable wall-blocked `warden_hellbrand` projectile, bounded four-shot volley support that leaves all inherited single-shot projectiles on their previous immediate path, and shared targeted-AoE handling for Pitfall Eruption.
+- Pitfall Eruption preserves its two-target crowd gate against ordinary units but can escalate against one `mythic`/`apex` worthy opponent through the existing data-driven threat hierarchy.
+- Zerakoth's melee, dash, control, projectile and AoE paths all use the shared faction resolver; normal demons, Dreadknights and Bloodwing remain protected from Infernal friendly fire.
+- Added **Zerakoth Field Test**, **Zerakoth Solo Test**, and **Zerakoth AI Overlay**. Solo mode uses a collision-clear southern pocket, suspends production enemies for that scene instance, and recycles bounded 3–5 Celestial waves with no production rewards.
+- Production Living Warfront remains **32 regular actors**. Save schema remains **2** and `hellrpg.ashfall.save.v1` is unchanged.
+- Preserved the approved Dreadknight, Bloodwing, El’exis healing, Lailani, Azrael, common faction balance, portals, maps and existing source art.
+
 ## v0.1.4.4.5.1 — Demon Knight Elite Foundation
 
 - Added **Infernal Dreadknight** as a debug-only Level-30 `elite` Demon Legion combatant on the Veil Warfront; the 32-slot production Warfront population is unchanged.

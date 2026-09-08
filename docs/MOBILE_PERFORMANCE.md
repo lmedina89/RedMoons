@@ -176,3 +176,7 @@ El’exis adds one persistent Crown `Graphics` object while active. Other Domini
 ## v0.1.4.4.5.1 debug-only Demon Knight streaming
 
 The Level-30 Infernal Dreadknight adds only three compact 64px character action sheets and two Pitsteel sword sheets. Because the actor is debug-only in this pass, `AssetResolver` expands `DEBUG_SPAWN_REGIONS` only when `?debug=1`; production Warfront map packages do not pay the new texture cost. The full 832×3456 `TransupOrHolyKnight.png` authoring sheet remains outside runtime `dist/`.
+
+## v0.1.4.4.5.2 Zerakoth debug streaming
+
+Zerakoth is debug-only in this pass and his eight compact runtime sheets are Warfront-scoped under `?debug=1`. His AI uses the existing 1200px player-scoped simulation behavior inherited from grounded enemies. Solo waves remain bounded to 3–5 actors and production enemies are suspended for that debug scene instance. VFX use the existing pooled/bounded FX systems; no full-screen shader or source authoring sheet is loaded.

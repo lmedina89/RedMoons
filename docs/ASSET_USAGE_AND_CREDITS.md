@@ -267,3 +267,7 @@ The project uses the user-provided `source-assets/character-concepts/2026-09-07/
 ### v0.1.4.4.4 El’exis runtime curation
 
 `LexiAngel.png` from the preserved 2026-09-07 user-supplied unique-character concept set remains unchanged under `source-assets/character-concepts/2026-09-07/heavenly-and-unique/`. Seven compact runtime action crops are derived from source coordinates documented in `docs/ELEXIS_FIELD_TEST.md`. No later incomplete action blocks are shipped.
+
+## v0.1.4.4.5.2 Zerakoth runtime derivatives
+
+`Truetrans.png` remains unchanged under source assets and is not preloaded. Zerakoth ships only compact walk/slash/hurt derivatives plus a fixed Warden's Warplate layer and Warden's Hellblade layer under `dist/assets/npcs/zerakoth/`. The user-provided source remains on attribution/provenance hold for commercial distribution; see the runtime derivative note beside the generated PNGs. Existing gear/weapon/source files are unchanged.

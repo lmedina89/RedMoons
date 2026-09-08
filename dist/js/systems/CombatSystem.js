@@ -199,6 +199,9 @@ export class CombatSystem {
       this.fx.burst(x, y - 18, ability.telegraph || 'blood', 0.86);
     } else if (ability.type === 'radial_aoe') {
       enemy.abilityTelegraph = this.fx.telegraph(x, y, ability.radius, ability.telegraph || 'earth', ability.windupMs);
+    } else if (ability.type === 'targeted_aoe') {
+      enemy.abilityTelegraph = this.fx.telegraph(tx, ty, ability.radius, ability.telegraph || 'blood', ability.windupMs);
+      this.fx.ring(tx, ty, ability.radius * 0.72, ability.telegraph || 'blood', ability.windupMs);
     } else if (ability.type === 'melee_reach' || ability.type === 'dash_strike') {
       enemy.abilityTelegraph = this.fx.lineTelegraph(x, y, tx, ty, ability.range, ability.telegraph || 'physical', ability.windupMs);
     } else {
@@ -250,11 +253,33 @@ export class CombatSystem {
     }
 
     if (ability.type === 'projectile') {
-      this.projectiles.launch(ability.projectileId, {
-        team: sourceTeam, sourceActor: enemy, x, y: y - 10, targetX, targetY,
-        damage: enemy.def.attack * ability.damageMultiplier, sourcePower: enemy.def.attack,
-        status: ability.status || null, sourceId: enemy.def.id, targetRef
-      });
+      const delays = ability.projectileDelays;
+      if (!Array.isArray(delays) || delays.length <= 1) {
+        this.projectiles.launch(ability.projectileId, {
+          team: sourceTeam, sourceActor: enemy, x, y: y - 10, targetX, targetY,
+          damage: enemy.def.attack * ability.damageMultiplier, sourcePower: enemy.def.attack,
+          status: ability.status || null, sourceId: enemy.def.id, targetRef
+        });
+        return;
+      }
+      const fanOffsets = ability.projectileFanOffsets || [];
+      delays.forEach((delay, index) => this.scene.time.delayedCall(delay, () => {
+        if (!enemy?.sprite?.active || enemy.dead) return;
+        const liveNode = actorNode(targetRef);
+        const liveX = liveNode?.x ?? targetX;
+        const liveY = liveNode?.y ?? targetY;
+        const sx = enemy.sprite.x, sy = enemy.sprite.y - 10;
+        const dx = liveX - sx, dy = liveY - sy;
+        const distance = Math.hypot(dx, dy) || 1;
+        const offset = fanOffsets[index] || 0;
+        const aimX = liveX + (-dy / distance) * offset;
+        const aimY = liveY + (dx / distance) * offset;
+        this.projectiles.launch(ability.projectileId, {
+          team: sourceTeam, sourceActor: enemy, x: sx, y: sy, targetX: aimX, targetY: aimY,
+          damage: enemy.def.attack * ability.damageMultiplier, sourcePower: enemy.def.attack,
+          status: ability.status || null, sourceId: enemy.def.id, targetRef
+        });
+      }));
       return;
     }
 
@@ -321,6 +346,32 @@ export class CombatSystem {
         }
       }
       this.audio.play(audioId, { throttleMs: 100, volume: 0.06 });
+      return;
+    }
+
+    if (ability.type === 'targeted_aoe') {
+      enemy.abilityTelegraph?.destroy?.(); enemy.abilityTelegraph = null;
+      const targetNode = actorNode(targetRef);
+      const cx = targetNode?.x ?? targetX;
+      const cy = targetNode?.y ?? targetY;
+      if (this.scene.hasWorldLineOfSight?.(x, y, cx, cy) === false) return;
+      this.fx.ring(cx, cy, ability.radius, abilityKind, 430);
+      this.scene.time.delayedCall(70, () => this.fx.ring(cx, cy, ability.radius * 0.62, 'hellfire', 360));
+      this.fx.burst(cx, cy - 8, abilityKind, 1.35);
+      this.fx.burst(cx, cy + 10, 'hellfire', 0.92);
+      for (const target of hostileTargets) {
+        const node = actorNode(target);
+        if (!node || Phaser.Math.Distance.Between(cx, cy, node.x, node.y) > ability.radius) continue;
+        const amount = this.resolver.damageTarget(target, enemy.def.attack * ability.damageMultiplier, {
+          type: damageType, sourceX: cx, sourceY: cy, knockback: ability.knockback || 0,
+          impact: abilityKind, enemy, sourceTeam, sourceActor: enemy
+        });
+        if (amount && ability.status && Math.random() <= (ability.status.chance ?? 1)) {
+          this.statuses.apply(target, ability.status.id, { power: enemy.def.attack, x: cx, y: cy, team: sourceTeam });
+        }
+      }
+      this.audio.play(audioId, { throttleMs: 160, volume: 0.075 });
+      this.shakeAt(cx, cy, 150, 0.0034, 420);
       return;
     }
 

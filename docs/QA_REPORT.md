@@ -296,3 +296,7 @@ Automated coverage adds El’exis-specific field-test and solo-loop smoke suites
 - `AssetResolver` now includes `DEBUG_SPAWN_REGIONS` only when `?debug=1`, allowing genuinely new debug-only enemy art to stream without polluting production map packages.
 - Production Living Warfront remains 32 actors. Save schema remains 2. No existing mythic/angel/demon source sheet is modified.
 - Automated validation does not replace physical iPhone Safari review of sword alignment, blackened armor readability, VFX hierarchy, combat feel or frame pacing.
+
+## v0.1.4.4.5.2 — Zerakoth field-test validation
+
+Added `tests/zerakoth-field-test-smoke.mjs` and `tests/zerakoth-solo-test-smoke.mjs` covering Lv60/commander hierarchy, fixed armor/Hellblade loadout, six-skill contract, worthy-target escalation, same-faction Infernal protection, wall-blocked Hellbrand projectile contract, debug streaming, bounded rewardless solo waves, safe anchors, and unchanged 32-actor production population. The complete inherited suite remains mandatory before packaging.

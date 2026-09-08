@@ -8,6 +8,7 @@ import { AZRAEL_DEF } from '../data/specialActors.js';
 import { LAILANI_DEF, LAILANI_SOLO_TEST_DEF } from '../data/lailani.js';
 import { ELEXIS_DEF, ELEXIS_SOLO_TEST_DEF } from '../data/elexis.js';
 import { MYTHICAL_DEMON_DEF, MYTHICAL_DEMON_SOLO_TEST_DEF } from '../data/mythicalDemon.js';
+import { ZERAKOTH_DEF, ZERAKOTH_SOLO_TEST_DEF, ZERAKOTH_SPAWN_DEF } from '../data/zerakoth.js';
 import { AREA_DEFS, BUILDING_DEFS, COLLIDERS, DEBUG_SPAWN_REGIONS, DEFAULT_MAP_ID, FALLEN_WATCH_WALLS, HOLLOW_COLLIDERS, HOLLOW_WALLS, INTERIOR_WALLS, MAP_TRANSITIONS, PROP_DEFS, RECOVERY_POINTS, REFUGE_WALLS, SPAWN_REGIONS, TOWN_PROP_DEFS, ZONES, mapForId } from '../data/world.js';
 import { DEBUG, GAME_VERSION, PLAYER_START, RARITY, TILE_SIZE, WORLD_HEIGHT, WORLD_WIDTH } from '../config.js';
 import { gameEvents } from '../core/EventBus.js';
@@ -30,6 +31,7 @@ import { Azrael } from '../entities/Azrael.js';
 import { Lailani } from '../entities/Lailani.js';
 import { Elexis } from '../entities/Elexis.js';
 import { MythicalDemon } from '../entities/MythicalDemon.js';
+import { Zerakoth } from '../entities/Zerakoth.js';
 import { Player } from '../entities/Player.js';
 
 export class WorldScene extends Phaser.Scene {
@@ -55,6 +57,7 @@ export class WorldScene extends Phaser.Scene {
     this.lailaniSoloTest = null;
     this.elexisSoloTest = null;
     this.mythicalDemonSoloTest = null;
+    this.zerakothSoloTest = null;
     this.makeRuntimeTextures();
     this.physics.world.setBounds(0, 0, this.currentMap.width, this.currentMap.height);
     this.cameras.main.setBounds(0, 0, this.currentMap.width, this.currentMap.height).setRoundPixels(true).setZoom(1);
@@ -91,6 +94,7 @@ export class WorldScene extends Phaser.Scene {
     this.createLailani();
     this.createElexis();
     this.createMythicalDemon();
+    this.createZerakoth();
     if (DEBUG) this.dynamicCollisionDebug = this.add.graphics().setDepth(15001);
     this.combat = new CombatSystem(this, this.state, this.player, this.enemies, gameEvents);
     this.player.combat = this.combat;
@@ -99,6 +103,7 @@ export class WorldScene extends Phaser.Scene {
     if (this.lailani) this.lailani.combat = this.combat;
     if (this.elexis) this.elexis.combat = this.combat;
     if (this.mythicalDemon) this.mythicalDemon.combat = this.combat;
+    if (this.zerakoth) this.zerakoth.combat = this.combat;
     this.recovery = new RecoverySystem(this, this.state, this.inventory, this.player, gameEvents);
     this.worldEvents = new WorldEventSystem(this, this.state, gameEvents);
     this.createLootPool();
@@ -125,6 +130,7 @@ export class WorldScene extends Phaser.Scene {
       this.lailani?.destroy();
       this.elexis?.destroy();
       this.mythicalDemon?.destroy();
+      this.zerakoth?.destroy();
       this.combat?.destroy();
     });
     this.updateZone();
@@ -150,6 +156,10 @@ export class WorldScene extends Phaser.Scene {
     if (DEBUG && this.currentMap.id === MYTHICAL_DEMON_SOLO_TEST_DEF.mapId && this.registry.get('mythicalDemonSoloRequested')) {
       this.registry.set('mythicalDemonSoloRequested', false);
       this.time.delayedCall(40, () => this.startMythicalDemonSoloTest());
+    }
+    if (DEBUG && this.currentMap.id === ZERAKOTH_SOLO_TEST_DEF.mapId && this.registry.get('zerakothSoloRequested')) {
+      this.registry.set('zerakothSoloRequested', false);
+      this.time.delayedCall(40, () => this.startZerakothSoloTest());
     }
     if (!this.state.worldFlags.introToastShown && this.currentMap.id === DEFAULT_MAP_ID) {
       this.state.worldFlags.introToastShown = true;
@@ -1385,6 +1395,22 @@ ${point.label || 'Use'}`, {
     // principle as named celestials: world bounds apply, low clutter does not.
   }
 
+
+  createZerakoth() {
+    this.zerakoth = null;
+    if (!DEBUG || ZERAKOTH_DEF.home.mapId !== this.currentMap.id) return;
+    const callbacks = {
+      hitTarget: (target, amount, x, y, actor) => this.combat?.enemyMeleeTarget(target, amount, x, y, actor),
+      beginAbility: (actor, ability, target) => this.combat?.beginEnemyAbility(actor, ability, target, actor.abilityTargetX, actor.abilityTargetY),
+      triggerAbility: (actor, ability, targetX, targetY, target) => this.combat?.triggerEnemyAbility(actor, ability, targetX, targetY, target),
+      damageNumber: (x, y, amount, hostile) => this.combat?.damageNumbers.show(x, y, amount, hostile),
+      alertEncounter: () => {},
+      // Named field-test deaths bypass normal XP/ash/loot/quest reward handling.
+      died: () => {}
+    };
+    this.zerakoth = new Zerakoth(this, this.enemyGroup, ZERAKOTH_DEF, ZERAKOTH_SPAWN_DEF, callbacks);
+  }
+
   suspendProductionEnemiesForLailaniSoloTest() {
     for (const enemy of this.enemies || []) {
       if (!enemy || enemy._lailaniSoloTest) continue;
@@ -1713,6 +1739,113 @@ ${point.label || 'Use'}`, {
     return true;
   }
 
+  suspendProductionEnemiesForZerakothSoloTest() {
+    for (const enemy of this.enemies || []) {
+      if (!enemy || enemy._zerakothSoloTest) continue;
+      enemy._zerakothSoloSuspended = true;
+      enemy.clearAbility?.();
+      this.combat?.statuses?.clear?.(enemy);
+      enemy.target = null;
+      enemy.respawnAt = Number.MAX_SAFE_INTEGER;
+      enemy.sprite?.setVelocity?.(0);
+      if (enemy.sprite?.body) enemy.sprite.body.enable = false;
+      enemy.sprite?.setActive?.(false)?.setVisible?.(false);
+      enemy.visual?.setVisible?.(false);
+    }
+  }
+
+  createZerakothSoloEnemy(enemyId, point, index) {
+    const def = ENEMY_DEFS[enemyId];
+    if (!def || !point) return null;
+    const wave = this.zerakothSoloTest?.wave || 1;
+    const spawn = {
+      id: `debug_zerakoth_solo_${wave}_${index}_${enemyId}`,
+      encounterId: `debug_zerakoth_solo_wave_${wave}`,
+      archetype: 'guard', mapId: ZERAKOTH_SOLO_TEST_DEF.mapId,
+      areaId: 'area_warfront_infernal_front', enemyId,
+      x: point.x - 40, y: point.y - 40, width: 80, height: 80, count: 1,
+      respawnMs: 1000000000, activationRange: 1800, pursuitMargin: 900, debugOnly: true
+    };
+    const callbacks = {
+      hitTarget: (target, amount, x, y, enemy) => this.combat?.enemyMeleeTarget(target, amount, x, y, enemy),
+      beginAbility: (enemy, ability, target) => this.combat?.beginEnemyAbility(enemy, ability, target, enemy.abilityTargetX, enemy.abilityTargetY),
+      triggerAbility: (enemy, ability, targetX, targetY, target) => this.combat?.triggerEnemyAbility(enemy, ability, targetX, targetY, target),
+      damageNumber: (x, y, amount, hostile) => this.combat?.damageNumbers.show(x, y, amount, hostile),
+      alertEncounter: (_enemy, target, time) => {
+        if (!target || target !== this.zerakoth) return;
+        for (const ally of this.zerakothSoloTest?.actors || []) ally?.forceEncounterAggro?.(this.zerakoth, time);
+      },
+      died: enemy => { enemy._zerakothSoloDefeated = true; }
+    };
+    const enemy = new Enemy(this, this.enemyGroup, def, spawn, 0, callbacks);
+    enemy._zerakothSoloTest = true;
+    enemy.combat = this.combat;
+    this.enemies.push(enemy);
+    enemy.forceEncounterAggro(this.zerakoth, this.time.now);
+    return enemy;
+  }
+
+  clearZerakothSoloWaveActors() {
+    const actors = this.zerakothSoloTest?.actors || [];
+    for (const actor of actors) {
+      actor?.clearAbility?.();
+      this.combat?.statuses?.clear?.(actor);
+      actor?.sprite?.destroy?.();
+      actor?.visual?.setVisible?.(false);
+      const index = this.enemies.indexOf(actor);
+      if (index >= 0) this.enemies.splice(index, 1);
+    }
+    if (this.zerakothSoloTest) this.zerakothSoloTest.actors = [];
+  }
+
+  spawnZerakothSoloWave(time = this.time.now) {
+    if (!this.zerakothSoloTest?.active || !this.zerakoth) return false;
+    this.clearZerakothSoloWaveActors();
+    this.zerakothSoloTest.wave += 1;
+    const waveIndex = (this.zerakothSoloTest.wave - 1) % ZERAKOTH_SOLO_TEST_DEF.waves.length;
+    const enemyIds = ZERAKOTH_SOLO_TEST_DEF.waves[waveIndex];
+    const center = ZERAKOTH_SOLO_TEST_DEF.spawnCenter;
+    this.zerakothSoloTest.actors = enemyIds.map((enemyId, index) => {
+      const offset = ZERAKOTH_SOLO_TEST_DEF.spawnOffsets[index % ZERAKOTH_SOLO_TEST_DEF.spawnOffsets.length];
+      return this.createZerakothSoloEnemy(enemyId, { x: center.x + offset.x, y: center.y + offset.y }, index);
+    }).filter(Boolean);
+    this.zerakothSoloTest.nextWaveAt = 0;
+    this.zerakothSoloTest.waveCleared = false;
+    const harder = waveIndex >= 2;
+    gameEvents.emit('toast', {
+      text: `Zerakoth Solo Test • Wave ${this.zerakothSoloTest.wave}${harder ? ' • Guardian pressure' : ''}`,
+      tone: harder ? 'danger' : 'muted', short: true
+    });
+    return this.zerakothSoloTest.actors.length > 0;
+  }
+
+  updateZerakothSoloTest(time) {
+    const test = this.zerakothSoloTest;
+    if (!test?.active) return;
+    const actors = test.actors || [];
+    if (actors.length && !test.waveCleared && actors.every(actor => !actor || actor.hp <= 0 || actor.state === 'dying' || actor.state === 'dead' || actor.sprite?.active === false)) {
+      test.waveCleared = true;
+      test.nextWaveAt = time + ZERAKOTH_SOLO_TEST_DEF.nextWaveDelayMs;
+    }
+    if (test.waveCleared && test.nextWaveAt && time >= test.nextWaveAt) this.spawnZerakothSoloWave(time);
+  }
+
+  startZerakothSoloTest() {
+    if (!DEBUG || this.currentMap.id !== ZERAKOTH_SOLO_TEST_DEF.mapId || !this.zerakoth) return false;
+    if (this.zerakothSoloTest?.active) {
+      gameEvents.emit('toast', { text: `Zerakoth Solo Test already running • Wave ${this.zerakothSoloTest.wave}`, tone: 'muted', short: true });
+      return true;
+    }
+    this.zerakothSoloTest = { active: true, wave: 0, actors: [], nextWaveAt: 0, waveCleared: false };
+    this.suspendProductionEnemiesForZerakothSoloTest();
+    this.zerakoth.relocateForFieldTest(ZERAKOTH_SOLO_TEST_DEF.zerakoth.x, ZERAKOTH_SOLO_TEST_DEF.zerakoth.y, this.time.now);
+    this.player.body.setPosition(ZERAKOTH_SOLO_TEST_DEF.player.x, ZERAKOTH_SOLO_TEST_DEF.player.y);
+    this.player.visual.direction = 3;
+    this.spawnZerakothSoloWave(this.time.now);
+    gameEvents.emit('toast', { text: 'Solo loop active: Celestial test waves target Zerakoth only. Normal Warfront troops return after a map reload.', tone: 'muted' });
+    return true;
+  }
+
   triggerWorldEvent(event) {
     const members = encounterId => (this.enemies || []).filter(enemy => enemy.encounterId === encounterId && enemy.sprite?.active);
     if (event.kind === 'encounter_alert_player') {
@@ -1750,6 +1883,7 @@ ${point.label || 'Use'}`, {
     if (this.lailani && !this.lailani.dead) actors.push(this.lailani);
     if (this.elexis && !this.elexis.dead) actors.push(this.elexis);
     if (this.mythicalDemon && !this.mythicalDemon.dead) actors.push(this.mythicalDemon);
+    if (this.zerakoth?.sprite?.active) actors.push(this.zerakoth);
     return actors.filter(Boolean);
   }
 
@@ -2107,6 +2241,27 @@ ${point.label || 'Use'}`, {
       gameEvents.emit('toast', { text: 'Demon Knight elite test: Lv30 Infernal Dreadknight near Riven Hold.', tone: 'danger', short: true });
       return;
     }
+    if (action === 'zerakoth') {
+      if (this.currentMap.id !== ZERAKOTH_SOLO_TEST_DEF.mapId || this.zerakothSoloTest?.active) {
+        this.transitionToMap(ZERAKOTH_SOLO_TEST_DEF.mapId, 'zerakoth_test');
+        return;
+      }
+      moveNear(this.zerakoth?.sprite);
+      gameEvents.emit('toast', { text: 'Zerakoth field test: Lv60 Warden of the Pit on the Infernal front.', tone: 'danger', short: true });
+      return;
+    }
+    if (action === 'zerakothsolo') {
+      this.transitionToMap(ZERAKOTH_SOLO_TEST_DEF.mapId, ZERAKOTH_SOLO_TEST_DEF.entryId, {
+        beforeCommit: () => this.registry.set('zerakothSoloRequested', true)
+      });
+      return;
+    }
+    if (action === 'zerakothai') {
+      const enabled = this.zerakoth?.setDebugEnabled(!this.zerakoth.debugEnabled);
+      gameEvents.emit('toast', { text: enabled ? 'Zerakoth AI diagnostics on.' : 'Zerakoth AI diagnostics off.', tone: 'muted', short: true });
+      this.emitState();
+      return;
+    }
     if (action === 'mythicaldemon') {
       if (this.currentMap.id !== MYTHICAL_DEMON_SOLO_TEST_DEF.mapId || this.mythicalDemonSoloTest?.active) {
         this.transitionToMap(MYTHICAL_DEMON_SOLO_TEST_DEF.mapId, 'mythical_demon_test');
@@ -2282,7 +2437,7 @@ ${point.label || 'Use'}`, {
     const derived = derivedStats(this.state);
     this.state.player.hp = Math.min(this.state.player.hp, derived.maxHp);
     this.state.player.essence = Math.min(this.state.player.essence, derived.maxEssence);
-    gameEvents.emit('state', { state: this.state, derived, quests: this.questSystem?.activeSummary() || [], combat: this.combat?.snapshot(this.time.now) || { skills: [], effects: [] }, recovery: this.recovery?.snapshot(this.time.now) || { quick: [], food: { active: false }, passive: { active: false } }, interaction: this.interactionSnapshot(), azrael: this.azrael?.snapshot(this.time.now) || null, lailani: this.lailani?.snapshot(this.time.now) || null, elexis: this.elexis?.snapshot(this.time.now) || null, mythicalDemon: this.mythicalDemon?.snapshot(this.time.now) || null });
+    gameEvents.emit('state', { state: this.state, derived, quests: this.questSystem?.activeSummary() || [], combat: this.combat?.snapshot(this.time.now) || { skills: [], effects: [] }, recovery: this.recovery?.snapshot(this.time.now) || { quick: [], food: { active: false }, passive: { active: false } }, interaction: this.interactionSnapshot(), azrael: this.azrael?.snapshot(this.time.now) || null, lailani: this.lailani?.snapshot(this.time.now) || null, elexis: this.elexis?.snapshot(this.time.now) || null, mythicalDemon: this.mythicalDemon?.snapshot(this.time.now) || null, zerakoth: this.zerakoth?.snapshot(this.time.now) || null });
   }
 
   safeSave() { try { this.saveManager.save(this.state); } catch (error) { console.warn('[Ashfall] Save failed', error); gameEvents.emit('toast', { text: 'Save could not be written on this device.', tone: 'danger' }); } }
@@ -2308,6 +2463,8 @@ ${point.label || 'Use'}`, {
     if (this.elexis && !this.elexis.dead) drawBody(this.elexis.body?.body, 0xd9c7ff, 0.80);
     // Crimson = first infernal mythic field-test proxy.
     if (this.mythicalDemon && !this.mythicalDemon.dead) drawBody(this.mythicalDemon.body?.body, 0xff4c3a, 0.82);
+    // Deep crimson = Zerakoth's grounded commander proxy.
+    if (this.zerakoth?.sprite?.active) drawBody(this.zerakoth.sprite.body, 0x8f1738, 0.88);
   }
 
   update(time, delta) {
@@ -2333,15 +2490,18 @@ ${point.label || 'Use'}`, {
     this.lailani?.update(time, delta, combatants);
     this.elexis?.update(time, delta, combatants);
     this.mythicalDemon?.update(time, delta, combatants);
+    this.zerakoth?.update(time, delta, this.player, combatants);
     for (const enemy of this.enemies) {
       if (enemy._lailaniSoloTest) enemy.update(time, delta, this.lailani, this.lailani ? [this.lailani] : []);
       else if (enemy._elexisSoloTest) enemy.update(time, delta, this.elexis, this.elexis ? [this.elexis] : []);
       else if (enemy._mythicalDemonSoloTest) enemy.update(time, delta, this.mythicalDemon, this.mythicalDemon ? [this.mythicalDemon] : []);
+      else if (enemy._zerakothSoloTest) enemy.update(time, delta, this.zerakoth, this.zerakoth ? [this.zerakoth] : []);
       else enemy.update(time, delta, this.player, combatants);
     }
     this.updateLailaniSoloTest(time);
     this.updateElexisSoloTest(time);
     this.updateMythicalDemonSoloTest(time);
+    this.updateZerakothSoloTest(time);
     for (const npc of this.npcs) npc.update(time, delta, this.player);
     this.updateZone();
     this.updateArea();
