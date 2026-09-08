@@ -132,7 +132,7 @@ export const ASSET_DEFS = [
   })),
   { key: 'azrael-hurt', path: 'assets/npcs/azrael/azrael-hurt.png', frameWidth: 64, frameHeight: 64, frames: 6 },
 
-  // v0.1.4.4.5.4.4 Seraphel Mythic Freeplay. FallenAngel.png is fully
+  // v0.1.4.4.5.4.4.1 Seraphel Mythic Freeplay. FallenAngel.png is fully
   // populated across all 54 Expanded-LPC rows, so every complete action block
   // is preserved as a compact runtime crop instead of loading the 832x3456
   // authoring sheet into mobile Safari.

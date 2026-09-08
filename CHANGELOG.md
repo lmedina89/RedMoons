@@ -1,6 +1,6 @@
 # Changelog
 
-## v0.1.4.4.5.4.4 — Seraphel, the Shattered Halo Mythic Freeplay
+## v0.1.4.4.5.4.4.1 — Seraphel Multihit Reliability Polish
 
 - Added **Seraphel, the Shattered Halo** as a disposable Mythic Freeplay-only Lv220/apex Fallen character. Canonical primary sheet: STR205 / DEX285 / VIT270 / SPR355 = 1,115 legal points; resource model Infinite Essence.
 - Added the independent `fallen` faction. Celestials and Infernals are both hostile to Fallen actors while their existing mutual hostility remains intact.

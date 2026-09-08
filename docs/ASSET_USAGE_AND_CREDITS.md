@@ -12,7 +12,7 @@ This document separates assets with supplied attribution from assets whose match
 
 
 
-## v0.1.4.4.5.4.4 Seraphel runtime source/crops
+## v0.1.4.4.5.4.4.1 Seraphel runtime source/crops
 
 `source-assets/character-concepts/2026-09-08/fallen/FallenAngel.png` is the user-supplied authoritative source for **Seraphel, the Shattered Halo**. The 832×3456 source is preserved unchanged (SHA-256 `7326ac496b216e28f251cf537bb28f70c4dc80a49388629a28617a7e8a93e472`). Runtime ships 15 compact action-band crops under `dist/assets/npcs/seraphel/`; all expected frames in all 54 source rows were audited as populated.
 

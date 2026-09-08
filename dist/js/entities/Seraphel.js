@@ -247,6 +247,49 @@ export class Seraphel {
     return hits;
   }
 
+  scheduleHostileRadialPulses(x, y, radius, multiplier, damageType, knockback, status, delays = [0], options = {}) {
+    const palette = options.palette || PALETTES.fallen;
+    const baseRadiusScale = options.baseRadiusScale ?? 1;
+    const radiusStepScale = options.radiusStepScale ?? 0;
+    const particleBase = options.particleBase ?? 10;
+    const particleStep = options.particleStep ?? 2;
+    const fxDuration = options.fxDuration ?? 460;
+    const cameraShake = options.cameraShake || null;
+    let totalHits = 0;
+    delays.forEach((delay, i) => this.scene.time.delayedCall(delay, () => {
+      if (this.dead) return;
+      const scale = options.scales?.[i] ?? 1;
+      const burstRadius = radius * (baseRadiusScale + radiusStepScale * i);
+      const final = i === delays.length - 1;
+      const pulseHits = this.radialDamage(x, y, radius, multiplier * scale, damageType, final ? knockback : knockback * 0.22, status);
+      totalHits += pulseHits;
+      this.paletteBurst(x, y, palette, burstRadius, fxDuration, particleBase + i * particleStep);
+      if (options.featherBurst) this.featherBurst(x, y, palette, burstRadius * 0.82, (options.featherBase ?? 12) + i * (options.featherStep ?? 2), options.featherDuration ?? 520);
+      if (options.halo && (options.haloEveryPulse || final)) this.brokenHalo(x, y, burstRadius * (options.haloScale ?? 0.78), palette, options.haloDuration ?? 480);
+      if (cameraShake && pulseHits) this.scene.cameras.main.shake(cameraShake.ms + i * (cameraShake.msStep ?? 0), cameraShake.intensity + i * (cameraShake.intensityStep ?? 0));
+    }));
+    return totalHits;
+  }
+
+  selectPrismaticTarget(i = 0, used = new Set()) {
+    const ability = this.def.abilities.prismaticDominion;
+    const live = this.hostileTargets().filter(target => {
+      const node = actorNode(target);
+      return node && Math.hypot(node.x - this.body.x, node.y - this.body.y) <= ability.range;
+    });
+    if (!live.length) return null;
+    let pool = live.filter(target => !used.has(target));
+    if (!pool.length) pool = live;
+    pool.sort((a, b) => {
+      const an = actorNode(a), bn = actorNode(b);
+      const ad = Math.hypot(an.x - this.body.x, an.y - this.body.y);
+      const bd = Math.hypot(bn.x - this.body.x, bn.y - this.body.y);
+      if (Math.abs(ad - bd) > 0.01) return ad - bd;
+      return String(a.id || '').localeCompare(String(b.id || '')) || i;
+    });
+    return pool[0] || null;
+  }
+
   coneDamage(stage) {
     const facing = directionVector(this.direction);
     const cosThreshold = Math.cos((stage.arcDegrees || 110) * Math.PI / 360);
@@ -412,11 +455,26 @@ export class Seraphel {
   triggerAbility(ability) {
     const x = this.abilityTargetX, y = this.abilityTargetY;
     if (ability.id === 'seraphel_pyre_fallen_sun') {
-      const hits = this.radialDamage(x, y, ability.radius, ability.damageMultiplier, 'fire', ability.knockback, ability.status);
-      this.paletteBurst(x, y, PALETTES.fire, ability.radius, 760, 20);
-      this.featherBurst(x, y, PALETTES.fire, ability.radius * 0.85, 18, 680);
+      const pulseDelays = ability.pulseDelays || [0, 150, 310, 520];
+      this.scheduleHostileRadialPulses(x, y, ability.radius, ability.damageMultiplier, 'fire', ability.knockback, ability.status, pulseDelays, {
+        scales: ability.pulseScales || [1.00, 0.56, 0.42, 0.36],
+        palette: PALETTES.fire,
+        baseRadiusScale: 0.52,
+        radiusStepScale: 0.16,
+        particleBase: 14,
+        particleStep: 3,
+        fxDuration: 520,
+        featherBurst: true,
+        featherBase: 10,
+        featherStep: 2,
+        featherDuration: 560,
+        halo: true,
+        haloEveryPulse: false,
+        haloScale: 0.68,
+        haloDuration: 460,
+        cameraShake: { ms: 110, msStep: 18, intensity: 0.0032, intensityStep: 0.0008 }
+      });
       this.combat?.audio?.play?.('fire', { volume: 0.12, throttleMs: 300 });
-      if (hits) this.scene.cameras.main.shake(180, 0.0062);
       return;
     }
     if (ability.id === 'seraphel_crown_frozen_abyss') {
@@ -454,23 +512,31 @@ export class Seraphel {
     }
     if (ability.id === 'seraphel_prismatic_dominion') {
       const colors = PALETTES.prism;
+      const damageTypes = ['fire','ice','lightning','wind','earth','celestial','shadow'];
+      const usedTargets = new Set();
+      let firedAnyBeam = false;
       for (let i = 0; i < ability.strikes; i += 1) this.scene.time.delayedCall(i * ability.strikeDelayMs, () => {
         if (this.dead) return;
-        const live = this.hostileTargets();
-        if (!live.length) return;
-        const target = live[i % live.length];
+        const target = this.selectPrismaticTarget(i, usedTargets);
+        if (!target) return;
         const node = actorNode(target);
-        if (!node) return;
+        if (!node || !actorAlive(target)) return;
+        firedAnyBeam = true;
+        usedTargets.add(target);
         const angle = i * Math.PI * 2 / ability.strikes;
         const sx = this.body.x + Math.cos(angle) * 74;
         const sy = this.body.y + Math.sin(angle) * 74 - 10;
-        this.beam(sx, sy, node.x, node.y - 8, [colors[i], colors[(i + 2) % colors.length], 0xffffff], 260, 9);
-        this.damageTarget(target, ability.damageMultiplier, ['fire','ice','lightning','wind','earth','celestial','shadow'][i], sx, sy, ability.knockback * 0.20);
-        this.paletteBurst(node.x, node.y, [colors[i], colors[(i + 1) % colors.length], 0xffffff], 76, 320, 7);
-        if (i === ability.strikes - 1) {
-          this.radialDamage(this.body.x, this.body.y, ability.radius, ability.finalDamageMultiplier, 'celestial', ability.knockback);
-          this.paletteBurst(this.body.x, this.body.y, colors, ability.radius, 720, 28);
-        }
+        this.beam(sx, sy, node.x, node.y - 8, [colors[i], colors[(i + 2) % colors.length], 0xffffff], 290, 10);
+        const hit = this.damageTarget(target, ability.damageMultiplier, damageTypes[i], sx, sy, ability.knockback * 0.24);
+        if (hit) this.paletteBurst(node.x, node.y, [colors[i], colors[(i + 1) % colors.length], 0xffffff], 86, 360, 9);
+      });
+      this.scene.time.delayedCall((ability.strikes - 1) * ability.strikeDelayMs + (ability.collapseDelayMs || 140), () => {
+        if (this.dead) return;
+        const collapseHits = this.radialDamage(this.body.x, this.body.y, ability.radius, ability.finalDamageMultiplier, 'celestial', ability.knockback);
+        this.paletteBurst(this.body.x, this.body.y, colors, ability.radius, 820, 30);
+        this.brokenHalo(this.body.x, this.body.y, ability.radius * 0.74, colors, 720);
+        this.featherBurst(this.body.x, this.body.y, colors, ability.radius * 0.86, 18, 620);
+        if (firedAnyBeam || collapseHits) this.scene.cameras.main.shake(215, 0.0071);
       });
       this.combat?.audio?.play?.('seraphic_judgment', { volume: 0.13, throttleMs: 400 });
       return;

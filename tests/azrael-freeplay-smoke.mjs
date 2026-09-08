@@ -11,7 +11,7 @@ const { AZRAEL_DEF } = await import('../dist/js/data/specialActors.js');
 const { assetDefsForMap } = await import('../dist/js/systems/AssetResolver.js');
 const { AzraelFreeplayController } = await import('../dist/js/systems/AzraelFreeplayController.js');
 
-assert.equal(GAME_VERSION, '0.1.4.4.5.4.4');
+assert.equal(GAME_VERSION, '0.1.4.4.5.4.4.1');
 assert.equal(SAVE_VERSION, 2);
 assert.equal(SAVE_KEY, 'hellrpg.ashfall.save.v1');
 assert.equal(AZRAEL_DEF.internalLevel, 175);

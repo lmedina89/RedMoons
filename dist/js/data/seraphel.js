@@ -77,6 +77,7 @@ export const SERAPHEL_DEF = Object.freeze({
     pyreFallenSun: Object.freeze({
       id: 'seraphel_pyre_fallen_sun', name: 'Pyre of the Fallen Sun', element: 'fire',
       range: 500, radius: 214, damageMultiplier: 1.34, knockback: 245,
+      pulseDelays: Object.freeze([0, 150, 310, 520]), pulseScales: Object.freeze([1.00, 0.56, 0.42, 0.36]),
       cooldownMs: 6100, windupMs: 900, triggerAt: 0.70, recoverMs: 420,
       status: Object.freeze({ id: 'burn', chance: 1 }), major: true, majorLockMs: 3000
     }),
@@ -107,7 +108,7 @@ export const SERAPHEL_DEF = Object.freeze({
     }),
     prismaticDominion: Object.freeze({
       id: 'seraphel_prismatic_dominion', name: 'Prismatic Dominion', element: 'all',
-      range: 500, radius: 272, strikes: 7, strikeDelayMs: 125,
+      range: 500, radius: 272, strikes: 7, strikeDelayMs: 125, collapseDelayMs: 160,
       damageMultiplier: 0.31, finalDamageMultiplier: 0.58, knockback: 155,
       cooldownMs: 10800, windupMs: 980, triggerAt: 0.70, recoverMs: 520,
       major: true, majorLockMs: 5200

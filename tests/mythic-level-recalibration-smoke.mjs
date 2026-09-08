@@ -12,7 +12,7 @@ const { LAILANI_DEF } = await import('../dist/js/data/lailani.js');
 const { ELEXIS_DEF } = await import('../dist/js/data/elexis.js');
 const { MYTHICAL_DEMON_DEF } = await import('../dist/js/data/mythicalDemon.js');
 
-assert.equal(GAME_VERSION, '0.1.4.4.5.4.4');
+assert.equal(GAME_VERSION, '0.1.4.4.5.4.4.1');
 assert.equal(SAVE_VERSION, 2);
 assert.equal(SAVE_KEY, 'hellrpg.ashfall.save.v1');
 

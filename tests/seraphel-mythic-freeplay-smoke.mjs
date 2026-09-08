@@ -19,7 +19,7 @@ const { assetDefsForMap } = await import('../dist/js/systems/AssetResolver.js');
 const { Seraphel } = await import('../dist/js/entities/Seraphel.js');
 const { SeraphelFreeplayController } = await import('../dist/js/systems/SeraphelFreeplayController.js');
 
-assert.equal(GAME_VERSION, '0.1.4.4.5.4.4');
+assert.equal(GAME_VERSION, '0.1.4.4.5.4.4.1');
 assert.equal(SAVE_VERSION, 2);
 assert.equal(SAVE_KEY, 'hellrpg.ashfall.save.v1');
 assert.deepEqual(MYTHIC_LEVEL_HIERARCHY.seraphel, { internalLevel: 220, threatTier: 'apex' });
@@ -54,6 +54,10 @@ assert.deepEqual(abilities.map(a => a.name), [
 ]);
 assert.deepEqual(abilities.map(a => a.element), ['fire', 'ice_water', 'lightning_wind', 'earth', 'light_dark', 'all', 'all']);
 assert.equal(SERAPHEL_DEF.abilities.sevenfoldCataclysm.ultimate, true);
+assert.deepEqual(SERAPHEL_DEF.abilities.pyreFallenSun.pulseDelays, [0, 150, 310, 520]);
+assert.deepEqual(SERAPHEL_DEF.abilities.pyreFallenSun.pulseScales, [1.00, 0.56, 0.42, 0.36]);
+assert.equal(SERAPHEL_DEF.abilities.prismaticDominion.strikes, 7);
+assert.equal(SERAPHEL_DEF.abilities.prismaticDominion.collapseDelayMs, 160);
 assert.equal(SERAPHEL_DEF.abilities.sevenfoldCataclysm.stages, 7);
 assert.ok(SERAPHEL_DEF.abilities.sevenfoldCataclysm.cooldownMs >= 18000, 'Sevenfold must remain an ultimate rather than spam');
 
@@ -181,4 +185,4 @@ assert.equal(seraphelSource.includes('FreeplayController'), false);
 assert.equal(SeraphelFreeplayController.prototype.requestAbility instanceof Function, true);
 assert.equal(fs.existsSync(new URL('../dist/js/systems/SeraphelAIController.js', import.meta.url)), false, 'Optional boss AI must remain deferred');
 
-console.log('Seraphel Mythic Freeplay smoke passed: Lv220 apex legal stat sheet, Fallen three-way faction, full 54-row action vocabulary, escalating six-hit combo, seven ultra-color elemental abilities, corpse-safe Tempest bounces, disposable Freeplay/short respawn, safe Warfront entry, unchanged production population, and untouched existing named AI.');
+console.log('Seraphel Mythic Freeplay smoke passed: Lv220 apex legal stat sheet, Fallen three-way faction, full 54-row action vocabulary, escalating six-hit combo, seven ultra-color elemental abilities, Pyre/Prismatic multihit metadata, corpse-safe Tempest bounces, disposable Freeplay/short respawn, safe Warfront entry, unchanged production population, and untouched existing named AI.');

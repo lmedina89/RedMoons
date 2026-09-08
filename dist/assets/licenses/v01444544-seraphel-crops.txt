@@ -1,4 +1,4 @@
-v0.1.4.4.5.4.4 — Seraphel runtime crops
+v0.1.4.4.5.4.4.1 — Seraphel runtime crops
 
 Source: source-assets/character-concepts/2026-09-08/fallen/FallenAngel.png
 Source SHA-256: 7326ac496b216e28f251cf537bb28f70c4dc80a49388629a28617a7e8a93e472

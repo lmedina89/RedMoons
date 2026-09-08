@@ -2,7 +2,7 @@
 
 ## Scope
 
-v0.1.4.4.5.4.4 introduces **Seraphel, the Shattered Halo** as a disposable Mythic Freeplay character only. He is intentionally not a campaign spawn, quest target, loot source, or optional boss yet. A future optional-boss controller may reuse this release's actor/ability implementations without duplicating them.
+v0.1.4.4.5.4.4.1 introduces **Seraphel, the Shattered Halo** as a disposable Mythic Freeplay character only. He is intentionally not a campaign spawn, quest target, loot source, or optional boss yet. A future optional-boss controller may reuse this release's actor/ability implementations without duplicating them.
 
 ## Canonical identity
 

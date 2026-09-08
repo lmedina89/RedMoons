@@ -11,7 +11,7 @@ function sheet(level, archetype, stats, resourceModel = 'finite_essence') {
   });
 }
 
-// v0.1.4.4.5.4.3 canonical supernatural-level pass. v0.1.4.4.5.4.4 adds
+// v0.1.4.4.5.4.3 canonical supernatural-level pass. v0.1.4.4.5.4.4.1 adds
 // Seraphel at Lv220 without changing the existing recalibrated sheets.
 // preserve each physically approved character's established stat identity while
 // scaling that distribution into the legal budget for the user's chosen level.

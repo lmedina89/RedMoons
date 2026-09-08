@@ -330,7 +330,7 @@ button:active { transform: translateY(1px); filter: brightness(1.25); }
   .mythic-choice-row button { min-height: 44px; }
 }
 
-/* v0.1.4.4.5.4.4 — Seraphel Fallen Mythic Freeplay controls. */
+/* v0.1.4.4.5.4.4.1 — Seraphel Fallen Mythic Freeplay controls. */
 .mythic-ultimate-button { position: absolute; right: 232px; bottom: 104px; width: 60px; height: 60px; min-height: 60px; padding: 3px; border-radius: 50%; border: 2px solid #d85cff; background: radial-gradient(circle at 38% 30%, #a43d70, #321040 52%, #0d0714 78%); color: #fff0bd; font: 800 .55rem Arial, sans-serif; pointer-events: auto; touch-action: manipulation; box-shadow: 0 0 14px #8a35d766, 0 3px 10px #0009; overflow: hidden; }
 .mythic-ultimate-button span { display: block; color: #ffe26e; font-size: .72rem; line-height: 1; }
 .mythic-ultimate-button small { display: block; margin-top: 4px; color: #f0c9ff; font: 800 .49rem Arial, sans-serif; }

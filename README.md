@@ -1,7 +1,7 @@
-# Hell RPG v0.1.4.4.5.4.4 — Seraphel, the Shattered Halo Mythic Freeplay
+# Hell RPG v0.1.4.4.5.4.4.1 — Seraphel Multihit Reliability Polish
 
 
-## v0.1.4.4.5.4.4 Seraphel, the Shattered Halo Mythic Freeplay
+## v0.1.4.4.5.4.4.1 Seraphel Multihit Reliability Polish
 
 - Added **Seraphel, the Shattered Halo** to normal-title-screen Mythic Freeplay as a Lv220 / apex **Fallen** character with a legal 1,115-point STR/DEX/VIT/SPR sheet and Infinite Essence.
 - Added the independent `fallen` faction: both Celestials and Infernals are hostile to Seraphel while Heaven-vs-Hell relations remain unchanged.
