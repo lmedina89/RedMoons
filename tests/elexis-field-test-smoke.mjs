@@ -14,7 +14,7 @@ assert.equal(ELEXIS_DEF.title, 'Mother of the Host');
 assert.equal(ELEXIS_DEF.home.mapId, 'map_veil_warfront');
 assert.equal(ELEXIS_DEF.faction, 'celestial');
 assert.equal(ELEXIS_DEF.tier, 'mythic');
-assert.equal(ELEXIS_DEF.internalLevel, 99, 'El’exis should be authored on Azrael’s mythic tier');
+assert.equal(ELEXIS_DEF.internalLevel, 150, 'El’exis should be authored on the recalibrated apex-celestial tier');
 assert.equal(Object.keys(ELEXIS_DEF.abilities).length, 7, 'El’exis must ship exactly seven named abilities');
 
 const { crownDominion, spearFirmament, chainsSeventhThrone, astralSeverance, edictSanctuary, heavenfallConstellation, throneBeyondHeaven } = ELEXIS_DEF.abilities;

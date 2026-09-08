@@ -22,8 +22,8 @@ v0.1.4.4.5.4.1 introduces a session-only Warfront population selected only when 
 - Lv47 Dread Ossuary Champion
 - Lv53 Fleshborn Executioner
 - Lv60 Zerakoth, Warden of the Pit
-- Lv94 Bloodwing Scourge
-- Lv98 Ancient Demon Lord remains reserved
+- Lv135 Bloodwing Scourge
+- Lv160 Ancient Demon Lord remains reserved
 
 Gravesworn Veteran, Ossuary Knight and Dread Ossuary Champion use complete fixed armor/weapon loadouts. Existing campaign skeleton definitions and their randomized equipment remain unchanged.
 

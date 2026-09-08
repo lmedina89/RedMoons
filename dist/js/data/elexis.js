@@ -1,3 +1,9 @@
+import { CANONICAL_POWER_STAT_SHEETS } from './mythicStatSheets.js';
+import { MYTHIC_LEVEL_HIERARCHY } from './powerTiers.js';
+
+const elexisHierarchy = MYTHIC_LEVEL_HIERARCHY.elexis;
+const elexisSheet = CANONICAL_POWER_STAT_SHEETS.elexis;
+
 // v0.1.4.4.4.1 El’exis Healing Polish. El’exis is an Azrael-tier named celestial
 // built around Dominion, protection, restoration, and deliberate formation
 // control. She is independent from Azrael and Lailani controllers and from the
@@ -9,9 +15,13 @@ export const ELEXIS_DEF = Object.freeze({
   displayName: 'El’exis',
   faction: 'celestial',
   tier: 'mythic',
-  threatTier: 'apex',
+  threatTier: elexisHierarchy.threatTier,
   unique: true,
-  internalLevel: 99,
+  internalLevel: elexisHierarchy.internalLevel,
+  primaryStats: elexisSheet.stats,
+  statBudget: elexisSheet.statBudget,
+  combatStatsMode: elexisSheet.combatStatsMode,
+  resourceModel: elexisSheet.resourceModel,
   levelDisplay: '???',
 
   // Comparable overall battlefield value to Azrael, expressed through control

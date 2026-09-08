@@ -1,6 +1,8 @@
 import { INFERNAL_LEVEL_HIERARCHY } from './powerTiers.js';
+import { CANONICAL_POWER_STAT_SHEETS } from './mythicStatSheets.js';
 
 const hierarchy = INFERNAL_LEVEL_HIERARCHY.zerakoth;
+const statSheet = CANONICAL_POWER_STAT_SHEETS.zerakoth;
 
 export const ZERAKOTH_DEF = Object.freeze({
   id: 'npc_zerakoth_warden_pit',
@@ -18,9 +20,12 @@ export const ZERAKOTH_DEF = Object.freeze({
   level: hierarchy.internalLevel,
   levelDisplay: '???',
   threatTier: hierarchy.threatTier,
+  primaryStats: statSheet.stats,
+  statBudget: statSheet.statBudget,
+  combatStatsMode: statSheet.combatStatsMode,
 
   // Commander band: a decisive step above Lv30 elites, but intentionally well
-  // below Bloodwing's Lv94 mythic durability/damage budget.
+  // below Bloodwing's Lv135 mythic durability/damage budget.
   maxHp: 6100,
   attack: 188,
   defense: 102,

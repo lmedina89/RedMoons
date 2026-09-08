@@ -12,7 +12,7 @@ assert.equal(MYTHICAL_DEMON_DEF.home.mapId, 'map_veil_warfront');
 assert.equal(MYTHICAL_DEMON_DEF.faction, 'monster');
 assert.equal(MYTHICAL_DEMON_DEF.tier, 'mythic');
 assert.equal(MYTHICAL_DEMON_DEF.threatTier, 'mythic');
-assert.equal(MYTHICAL_DEMON_DEF.internalLevel, 94);
+assert.equal(MYTHICAL_DEMON_DEF.internalLevel, 135);
 assert.equal(MYTHICAL_DEMON_DEF.levelDisplay, '???');
 assert.equal(MYTHICAL_DEMON_DEF.unique, true);
 assert.equal(Object.keys(MYTHICAL_DEMON_DEF.abilities).length, 7, 'First infernal mythic must ship seven bespoke abilities');
@@ -87,4 +87,4 @@ assert.equal(source.includes("from './Lailani.js'"), false, 'Infernal mythic mus
 assert.equal(source.includes("from './Elexis.js'"), false, 'Infernal mythic must not subclass El’exis');
 for (const token of ['updateAscendance', 'rush_dash', 'fxMawPulse', 'fxEclipseImpact', 'fxCataclysmImpact']) assert.ok(source.includes(token), `Mythical Demon controller must preserve ${token}`);
 
-console.log('Mythical Demon field-test smoke passed: internal Lv94 infernal mythic, seven independent abilities, worthy-foe Cataclysm duel escalation, bounded simulation, safe Warfront placement, and compact Warfront-only runtime crops.');
+console.log('Mythical Demon field-test smoke passed: internal Lv135 infernal mythic, seven independent abilities, worthy-foe Cataclysm duel escalation, bounded simulation, safe Warfront placement, and compact Warfront-only runtime crops.');

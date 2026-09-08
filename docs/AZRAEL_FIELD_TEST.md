@@ -9,7 +9,7 @@ This is a temporary gameplay harness for validating a future mythic celestial ch
 - Display: **ARCHANGEL AZRAEL**
 - Visible level: **Lv. ???**
 - Tier: **CELESTIAL MYTHIC**
-- Internal field-test level: 99
+- Original field-test level: 99; current canonical level after v0.1.4.4.5.4.3 recalibration: 175
 - Takes real damage; no invulnerability flag.
 - Friendly to the player; hostile to monsters.
 - Never damages, staggers or knocks back the player in this friendly field test.

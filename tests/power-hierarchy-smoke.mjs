@@ -15,17 +15,17 @@ const { CombatSystem } = await import('../dist/js/systems/CombatSystem.js');
 assert.deepEqual(THREAT_TIERS, { ordinary: 0, elite: 1, commander: 2, boss: 3, mythic: 4, apex: 5 });
 assert.deepEqual(INFERNAL_LEVEL_HIERARCHY.demonKnight, { internalLevel: 30, threatTier: 'elite' });
 assert.deepEqual(INFERNAL_LEVEL_HIERARCHY.zerakoth, { internalLevel: 60, threatTier: 'commander' });
-assert.deepEqual(MYTHIC_LEVEL_HIERARCHY.mythicalDemon, { internalLevel: 94, threatTier: 'mythic' });
-assert.deepEqual(MYTHIC_LEVEL_HIERARCHY.lailani, { internalLevel: 96, threatTier: 'mythic' });
-assert.deepEqual(MYTHIC_LEVEL_HIERARCHY.ancientDemonLord, { internalLevel: 98, threatTier: 'apex', reserved: true });
-assert.deepEqual(MYTHIC_LEVEL_HIERARCHY.azrael, { internalLevel: 99, threatTier: 'apex' });
-assert.deepEqual(MYTHIC_LEVEL_HIERARCHY.elexis, { internalLevel: 99, threatTier: 'apex' });
+assert.deepEqual(MYTHIC_LEVEL_HIERARCHY.mythicalDemon, { internalLevel: 135, threatTier: 'mythic' });
+assert.deepEqual(MYTHIC_LEVEL_HIERARCHY.lailani, { internalLevel: 150, threatTier: 'mythic' });
+assert.deepEqual(MYTHIC_LEVEL_HIERARCHY.ancientDemonLord, { internalLevel: 160, threatTier: 'apex', reserved: true });
+assert.deepEqual(MYTHIC_LEVEL_HIERARCHY.azrael, { internalLevel: 175, threatTier: 'apex' });
+assert.deepEqual(MYTHIC_LEVEL_HIERARCHY.elexis, { internalLevel: 150, threatTier: 'apex' });
 assert.equal(MYTHIC_LEVEL_HIERARCHY.playerHardCap, 100);
 
-assert.equal(AZRAEL_DEF.internalLevel, 99); assert.equal(AZRAEL_DEF.threatTier, 'apex');
-assert.equal(LAILANI_DEF.internalLevel, 96); assert.equal(LAILANI_DEF.threatTier, 'mythic');
-assert.equal(ELEXIS_DEF.internalLevel, 99); assert.equal(ELEXIS_DEF.threatTier, 'apex');
-assert.equal(MYTHICAL_DEMON_DEF.internalLevel, 94); assert.equal(MYTHICAL_DEMON_DEF.threatTier, 'mythic');
+assert.equal(AZRAEL_DEF.internalLevel, 175); assert.equal(AZRAEL_DEF.threatTier, 'apex');
+assert.equal(LAILANI_DEF.internalLevel, 150); assert.equal(LAILANI_DEF.threatTier, 'mythic');
+assert.equal(ELEXIS_DEF.internalLevel, 150); assert.equal(ELEXIS_DEF.threatTier, 'apex');
+assert.equal(MYTHICAL_DEMON_DEF.internalLevel, 135); assert.equal(MYTHICAL_DEMON_DEF.threatTier, 'mythic');
 
 const ordinary = { faction: 'monster', def: { faction: 'monster', tier: 'common' }, sprite: { x: 100, y: 0, active: true }, dead: false, state: 'idle' };
 const mythic = { faction: 'monster', def: { faction: 'monster', tier: 'mythic', threatTier: 'mythic' }, sprite: { x: 200, y: 0, active: true }, dead: false, state: 'idle' };
@@ -87,4 +87,4 @@ for (const [name, source] of [['Azrael', azraelSource], ['Lailani', lailaniSourc
   assert.ok(source.includes('isWorthyTarget'), `${name} AI must consult the shared worthy-target hierarchy`);
 }
 
-console.log('Power hierarchy smoke passed: canonical 94/96/98/99 mythic ladder, ordinary-vs-worthy distinction, Azrael 1v1 Heavenfall escalation, and special-actor celestial damage resolution.');
+console.log('Power hierarchy smoke passed: recalibrated 135/150/160/175 mythic ladder, ordinary-vs-worthy distinction, Azrael 1v1 Heavenfall escalation, and special-actor celestial damage resolution.');

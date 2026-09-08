@@ -13,7 +13,7 @@ const { ZERAKOTH_DEF } = await import('../dist/js/data/zerakoth.js');
 const { MYTHICAL_DEMON_DEF } = await import('../dist/js/data/mythicalDemon.js');
 const { assetDefsForMap } = await import('../dist/js/systems/AssetResolver.js');
 
-assert.equal(GAME_VERSION, '0.1.4.4.5.4.1');
+assert.equal(GAME_VERSION, '0.1.4.4.5.4.3');
 
 // Campaign contract is still the physically approved 32 regular actors.
 const campaignCount = WARFRONT_SPAWN_REGIONS.reduce((sum, row) => sum + row.count, 0);
@@ -92,9 +92,9 @@ for (let x = 100; x < 6044; x += 100) for (let y = 100; y < 2972; y += 100) {
 }
 assert.ok(approximateMaxActive <= MYTHIC_FREEPLAY_WARFRONT_BUDGET.maxApproxActiveRegularActors, `Approximate local wake budget exceeded: ${approximateMaxActive}`);
 
-// Freeplay also activates the existing Lv60 commander; Bloodwing remains Lv94 mythic.
+// Freeplay also activates the existing Lv60 commander; Bloodwing is canonically Lv135 mythic.
 assert.equal(ZERAKOTH_DEF.internalLevel, 60);
-assert.equal(MYTHICAL_DEMON_DEF.internalLevel, 94);
+assert.equal(MYTHICAL_DEMON_DEF.internalLevel, 135);
 const worldScene = fs.readFileSync(new URL('../dist/js/scenes/WorldScene.js', import.meta.url), 'utf8');
 const resolver = fs.readFileSync(new URL('../dist/js/systems/AssetResolver.js', import.meta.url), 'utf8');
 assert.match(worldScene, /MYTHIC_FREEPLAY_WARFRONT_SPAWNS/);

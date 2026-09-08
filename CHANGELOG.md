@@ -1,5 +1,25 @@
 # Changelog
 
+## v0.1.4.4.5.4.3 — Mythic Level Recalibration
+
+- Recalibrated canonical named-mythic levels to **Azrael 175**, **El’exis 150**, **Lailani 150**, **Bloodwing Scourge 135**, and reserved **Ancient Demon Lord 160** while retaining the supernatural Level-250 ceiling.
+- Auto-scaled each STR/DEX/VIT/SPR sheet from its established archetype weighting into the exact legal budget: Azrael 890 points, El’exis/Lailani 765 each, Bloodwing 690, Ancient Demon Lord 815.
+- Locked exact sheets: Azrael 305/175/288/122; El’exis 143/128/217/277; Lailani 124/278/162/201; Bloodwing 235/171/206/78; Ancient Demon Lord 274/145/283/113.
+- Added explicit **Infinite Essence** resource metadata for named mythics while keeping SPR finite and budget-valid. Azrael Mythic Freeplay now displays `∞ Essence`.
+- Preserved physically tested combat tuning: HP/attack/defense, resistances, skills, cooldowns, major pacing, AI controllers and VFX are unchanged by the level/stat recalibration.
+- Zerakoth remains Lv60 Commander and Infernal Dreadknight remains Lv30 Elite; threat tiers remain separate from numeric level.
+- Save schema remains 2 and `hellrpg.ashfall.save.v1` is unchanged.
+
+## v0.1.4.4.5.4.2 — Mythic Stat Sheet Foundation
+
+- Added a shared primary-stat progression contract: 5 STR/DEX/VIT/SPR at Level 1 and +5 allocatable primary points per level thereafter.
+- Locked separate canonical ceilings of Level 100 for mortal/player progression and Level 250 for supernatural Celestial/Infernal beings; Level 250 carries exactly 1,265 primary-stat points.
+- Added valid canonical STR/DEX/VIT/SPR sheets for Infernal Dreadknight, Zerakoth, Bloodwing Scourge, Lailani, reserved Ancient Demon Lord, Azrael and El’exis.
+- Preserved every current named actor level and all existing hand-tuned HP/attack/defense values; the new sheets are progression/identity metadata only in this foundation pass.
+- Added explicit `combatStatsMode: hand_tuned_preserved` markers so future supernatural scaling work cannot silently replace physically tested combat tuning.
+- Added dedicated stat-sheet validation covering the +5-per-level budget, Level-250 ceiling, exact sheet totals, current combat-value preservation, save schema and existing player development cap.
+- No character AI, abilities, VFX, spawn population, art, Freeplay behavior, campaign progression, save schema or localStorage identity changed.
+
 ## v0.1.4.4.5.4.1 — Mythic Freeplay Eternal Warfront
 
 - Added a Freeplay-only 54-regular-actor Veil Warfront population (34 Infernal / 20 Celestial) spread across all eight battlefield areas; normal campaign Warfront remains exactly 32 actors.

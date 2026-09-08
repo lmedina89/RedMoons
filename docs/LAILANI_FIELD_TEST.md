@@ -8,7 +8,7 @@ This is the first focused runtime validation of **Lailani, Transcendent Seraph**
 
 - Display: **LAILANI** / **TRANSCENDENT SERAPH** on separate readable mythic-nameplate lines
 - Tier: celestial mythic / unique special actor
-- Internal field-test level: 96
+- Original field-test level: 96; current canonical level after v0.1.4.4.5.4.3 recalibration: 150
 - Takes real damage; she is not invulnerable.
 - Friendly to the player and ordinary celestial forces; hostile to infernal actors.
 - Deliberately faster and more mobile than Azrael, but with a different role and presentation rather than a direct power copy.

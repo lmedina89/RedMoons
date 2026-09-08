@@ -1,4 +1,19 @@
-# Hell RPG v0.1.4.4.5.4.1 — Mythic Freeplay Eternal Warfront
+# Hell RPG v0.1.4.4.5.4.3 — Mythic Level Recalibration
+
+## v0.1.4.4.5.4.3 Mythic Level Recalibration
+
+- Canonical supernatural levels are now **Azrael 175**, **El’exis 150**, **Lailani 150**, **Bloodwing Scourge 135**, and reserved **Ancient Demon Lord 160**.
+- Each character's STR/DEX/VIT/SPR allocation is automatically scaled from its established archetype weighting and spends exactly the common `20 + ((level - 1) × 5)` budget.
+- Named mythics use **Infinite Essence** for supernatural abilities. SPR remains finite/budget-valid; Infinite Essence is a resource rule, not an infinite primary stat.
+- Existing HP/attack/defense, abilities, cooldowns, AI, VFX, Warfront populations and campaign/Freeplay behavior are preserved in this pass.
+- Azrael Freeplay now labels its resource bar **∞ Essence**.
+
+See `docs/MYTHIC_LEVEL_RECALIBRATION.md`. Historical release notes below retain the levels that were current in those older versions; this `.5.4.3` section is authoritative for the current build.
+
+## v0.1.4.4.5.4.2 Mythic Stat Sheet Foundation
+
+This foundation release introduced the canonical +5-primary-points-per-level stat budget and Level-250 supernatural ceiling before the `.5.4.3` level recalibration.
+
 
 ## v0.1.4.4.5.4.1 Mythic Freeplay Eternal Warfront
 

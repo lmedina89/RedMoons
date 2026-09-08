@@ -1,3 +1,9 @@
+import { CANONICAL_POWER_STAT_SHEETS } from './mythicStatSheets.js';
+import { MYTHIC_LEVEL_HIERARCHY } from './powerTiers.js';
+
+const azraelHierarchy = MYTHIC_LEVEL_HIERARCHY.azrael;
+const azraelSheet = CANONICAL_POWER_STAT_SHEETS.azrael;
+
 export const AZRAEL_DEF = Object.freeze({
   id: 'npc_archangel_azrael',
   name: 'Azrael',
@@ -5,9 +11,13 @@ export const AZRAEL_DEF = Object.freeze({
   displayName: 'ArchAngel Azrael',
   faction: 'celestial',
   tier: 'mythic',
-  threatTier: 'apex',
+  threatTier: azraelHierarchy.threatTier,
   unique: true,
-  internalLevel: 99,
+  internalLevel: azraelHierarchy.internalLevel,
+  primaryStats: azraelSheet.stats,
+  statBudget: azraelSheet.statBudget,
+  combatStatsMode: azraelSheet.combatStatsMode,
+  resourceModel: azraelSheet.resourceModel,
   levelDisplay: '???',
 
   // These are intentionally real combat stats, not an invulnerability flag.

@@ -1,5 +1,8 @@
-// v0.1.4.4.5 canonical combat-threat hierarchy. Internal levels remain the
-// familiar RPG progression value; threat tiers answer a different AI question:
+// v0.1.4.4.5 combat-threat hierarchy, extended in v0.1.4.4.5.4.3 with
+// separate mortal (100) and supernatural (250) canonical ceilings plus the
+// first canonical rescale of named mythic levels. Threat tier remains separate
+// from level so AI escalation logic does not change merely because labels do.
+// Threat tiers answer a different AI question:
 // "is this single opponent important enough to justify an area/signature cast?"
 // Keeping those concepts separate lets mythics use their full kit in duels
 // without teaching ordinary units to waste screen-filling attacks on one mob.
@@ -18,12 +21,14 @@ export const INFERNAL_LEVEL_HIERARCHY = Object.freeze({
 });
 
 export const MYTHIC_LEVEL_HIERARCHY = Object.freeze({
-  mythicalDemon: Object.freeze({ internalLevel: 94, threatTier: 'mythic' }),
-  lailani: Object.freeze({ internalLevel: 96, threatTier: 'mythic' }),
-  ancientDemonLord: Object.freeze({ internalLevel: 98, threatTier: 'apex', reserved: true }),
-  azrael: Object.freeze({ internalLevel: 99, threatTier: 'apex' }),
-  elexis: Object.freeze({ internalLevel: 99, threatTier: 'apex' }),
-  playerHardCap: 100
+  mythicalDemon: Object.freeze({ internalLevel: 135, threatTier: 'mythic' }),
+  lailani: Object.freeze({ internalLevel: 150, threatTier: 'mythic' }),
+  ancientDemonLord: Object.freeze({ internalLevel: 160, threatTier: 'apex', reserved: true }),
+  azrael: Object.freeze({ internalLevel: 175, threatTier: 'apex' }),
+  elexis: Object.freeze({ internalLevel: 150, threatTier: 'apex' }),
+  playerHardCap: 100,
+  mortalHardCap: 100,
+  supernaturalHardCap: 250
 });
 
 export function threatTierOf(actor) {

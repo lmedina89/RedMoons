@@ -2,7 +2,7 @@
 
 ## v0.1.4.4.5.2 scope
 
-Zerakoth is the first named **commander-tier** Infernal between the reusable Lv30 Dreadknight and the Lv94 Bloodwing Scourge. His visible level remains `Lv. ???`; his internal combat level is **60** and his threat tier is **commander**.
+Zerakoth is the first named **commander-tier** Infernal between the reusable Lv30 Dreadknight and the Lv135 Bloodwing Scourge. His visible level remains `Lv. ???`; his internal combat level is **60** and his threat tier is **commander**.
 
 He is debug-only in this release. The production Living Warfront remains exactly 32 regular actors.
 

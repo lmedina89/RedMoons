@@ -1,9 +1,11 @@
 import { MYTHIC_LEVEL_HIERARCHY } from './powerTiers.js';
+import { CANONICAL_POWER_STAT_SHEETS } from './mythicStatSheets.js';
 
 // v0.1.4.4.5 first infernal mythic field test. "Mythical Demon" is an
 // intentionally provisional field-test identity; the source/kit are stable,
 // while a later story pass may replace the display name without changing IDs.
 const hierarchy = MYTHIC_LEVEL_HIERARCHY.mythicalDemon;
+const statSheet = CANONICAL_POWER_STAT_SHEETS.mythicalDemon;
 
 export const MYTHICAL_DEMON_DEF = Object.freeze({
   id: 'npc_mythical_demon_bloodwing',
@@ -15,10 +17,14 @@ export const MYTHICAL_DEMON_DEF = Object.freeze({
   threatTier: hierarchy.threatTier,
   unique: true,
   internalLevel: hierarchy.internalLevel,
+  primaryStats: statSheet.stats,
+  statBudget: statSheet.statBudget,
+  combatStatsMode: statSheet.combatStatsMode,
+  resourceModel: statSheet.resourceModel,
   levelDisplay: '???',
 
-  // Level 94: decisively above ordinary troops/commanders but intentionally
-  // below the reserved Lv98 Ancient Demon Lord and Lv99 apex celestials.
+  // Level 135: decisively above ordinary troops/commanders while remaining
+  // below the reserved Lv160 Ancient Demon Lord and the highest apex celestials.
   maxHp: 14200,
   attack: 388,
   defense: 198,

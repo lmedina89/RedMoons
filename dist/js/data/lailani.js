@@ -1,3 +1,9 @@
+import { CANONICAL_POWER_STAT_SHEETS } from './mythicStatSheets.js';
+import { MYTHIC_LEVEL_HIERARCHY } from './powerTiers.js';
+
+const lailaniHierarchy = MYTHIC_LEVEL_HIERARCHY.lailani;
+const lailaniSheet = CANONICAL_POWER_STAT_SHEETS.lailani;
+
 // v0.1.4.4.3.1 Lailani Field-Test Polish. This named celestial remains independent
 // from the ordinary Warfront population budget and from Azrael's controller.
 // Her identity is speed, graceful repositioning, layered holy geometry, and a
@@ -9,9 +15,13 @@ export const LAILANI_DEF = Object.freeze({
   displayName: 'Lailani',
   faction: 'celestial',
   tier: 'mythic',
-  threatTier: 'mythic',
+  threatTier: lailaniHierarchy.threatTier,
   unique: true,
-  internalLevel: 96,
+  internalLevel: lailaniHierarchy.internalLevel,
+  primaryStats: lailaniSheet.stats,
+  statBudget: lailaniSheet.statBudget,
+  combatStatsMode: lailaniSheet.combatStatsMode,
+  resourceModel: lailaniSheet.resourceModel,
   levelDisplay: '???',
 
   maxHp: 14800,

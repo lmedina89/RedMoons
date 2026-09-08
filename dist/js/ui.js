@@ -173,6 +173,8 @@ export class UIManager {
       $('#hud-coins').textContent = 'AZRAEL • FREEPLAY';
       $('#hp-text').textContent = `${Math.ceil(hp)} / ${maxHp}`;
       $('#hp-fill').style.width = `${Math.max(0, Math.min(100, hp / maxHp * 100))}%`;
+      $('#essence-text').textContent = '∞ Essence';
+      $('#essence-fill').style.width = '100%';
       $('#quest-tracker').innerHTML = '';
       const interaction = this.snapshot.interaction || { available: false, label: 'Use', detail: 'Nothing nearby' };
       const interactButton = $('#interact-button');

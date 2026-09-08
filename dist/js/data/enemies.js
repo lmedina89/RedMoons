@@ -1,3 +1,5 @@
+import { CANONICAL_POWER_STAT_SHEETS } from './mythicStatSheets.js';
+
 const basicLoot = Object.freeze({ normal: 0.72, magic: 0.24, noble: 0.04 });
 const goodLoot = Object.freeze({ normal: 0.55, magic: 0.37, noble: 0.08 });
 
@@ -223,6 +225,7 @@ export const ENEMY_DEFS = Object.freeze({
   enemy_infernal_dreadknight: {
     id: 'enemy_infernal_dreadknight', name: 'Infernal Dreadknight', family: 'demon', variant: 'dreadknight',
     subfaction: 'demon_legion', role: 'elite_knight', elite: true, threatTier: 'elite', level: 30,
+    primaryStats: CANONICAL_POWER_STAT_SHEETS.demonKnight.stats, statBudget: CANONICAL_POWER_STAT_SHEETS.demonKnight.statBudget, combatStatsMode: CANONICAL_POWER_STAT_SHEETS.demonKnight.combatStatsMode,
     maxHp: 1450, attack: 72, defense: 38, speed: 94, detectRange: 430, attackRange: 66, leashRange: 620, attackCooldown: 920, recoverMs: 320,
     abilities: ['blackguard_aegis', 'ember_lunge', 'dreadknight_cinder_burst', 'hellblade_cleave'],
     resistances: { fire: 0.42, poison: 0.32, shadow: 0.34, celestial: 0.06 },

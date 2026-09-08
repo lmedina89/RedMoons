@@ -28,9 +28,9 @@ assert.equal(ZERAKOTH_DEF.fixedLoadout.chest, 'armor_zerakoth_warplate_npc');
 assert.equal(ZERAKOTH_DEF.fixedLoadout.weapon, 'weapon_wardens_hellblade_npc');
 assert.equal(ZERAKOTH_DEF.abilities.length, 6);
 assert.ok(ZERAKOTH_DEF.maxHp > ENEMY_DEFS.enemy_infernal_dreadknight.maxHp * 3, 'Lv60 commander must decisively exceed Lv30 elite durability');
-assert.ok(ZERAKOTH_DEF.maxHp < 9000 && ZERAKOTH_DEF.attack < 300, 'Lv60 commander must remain clearly below Lv94 Bloodwing mythic budget');
-assert.equal(MYTHIC_LEVEL_HIERARCHY.mythicalDemon.internalLevel, 94);
-assert.deepEqual(MYTHIC_LEVEL_HIERARCHY.ancientDemonLord, { internalLevel: 98, threatTier: 'apex', reserved: true });
+assert.ok(ZERAKOTH_DEF.maxHp < 9000 && ZERAKOTH_DEF.attack < 300, 'Lv60 commander must remain clearly below Lv135 Bloodwing mythic budget');
+assert.equal(MYTHIC_LEVEL_HIERARCHY.mythicalDemon.internalLevel, 135);
+assert.deepEqual(MYTHIC_LEVEL_HIERARCHY.ancientDemonLord, { internalLevel: 160, threatTier: 'apex', reserved: true });
 
 assert.ok(ITEM_DEFS.armor_zerakoth_warplate_npc?.npcOnly);
 assert.equal(ITEM_DEFS.armor_zerakoth_warplate_npc.visual, 'zerakoth_warplate');
