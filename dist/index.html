@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <meta name="theme-color" content="#120907">
-  <meta name="description" content="Hell RPG v0.1.4.4.5.3.1 — Debug Panel Docking Hotfix, a mobile-first pixel action RPG.">
+  <meta name="description" content="Hell RPG v0.1.4.4.5.4 — Azrael Mythic Freeplay Foundation, a mobile-first pixel action RPG.">
   <title>Hell RPG — Ashfall Foundation</title>
   <link rel="stylesheet" href="css/game.css">
 </head>
@@ -18,12 +18,13 @@
         <div class="start-copy">
           <small>ASHFALL FOUNDATION</small>
           <h1>HELL RPG</h1>
-          <p>Choose how to enter the Cinder Region.</p>
+          <p>Choose your campaign or enter Mythic Freeplay.</p>
         </div>
         <div class="start-actions">
           <button type="button" id="continue-game">Continue</button>
           <button type="button" id="new-game">New Game</button>
           <button type="button" id="load-game">Load Save</button>
+          <button type="button" id="mythic-freeplay">Mythic Freeplay</button>
         </div>
         <section id="load-slot-panel" class="start-subpanel hidden" aria-label="Saved game">
           <div id="save-slot-empty"><strong>No save found</strong><small>Start a New Game to create one.</small></div>
@@ -35,6 +36,15 @@
           </div>
           <button type="button" id="load-slot-button">Load This Save</button>
         </section>
+        <section id="mythic-freeplay-panel" class="start-subpanel mythic-freeplay-panel hidden" aria-label="Mythic Freeplay">
+          <strong>MYTHIC FREEPLAY</strong>
+          <p>Disposable combat sandbox. No quests, progression, loot rewards, or save writes. Your campaign save is never touched.</p>
+          <div class="mythic-choice-row">
+            <button type="button" id="freeplay-azrael"><span>AZRAEL</span><small>ArchAngel • Lv. ??? • Full 7-skill kit</small></button>
+            <button type="button" disabled aria-label="More mythic characters will be added after Azrael is physically approved"><span>MORE LATER</span><small>One mythic at a time</small></button>
+          </div>
+          <button type="button" id="cancel-freeplay" class="subtle-button">Back</button>
+        </section>
         <section id="new-game-confirm" class="start-subpanel danger-panel hidden" aria-label="Confirm new game">
           <strong>Replace the current save?</strong>
           <p>New Game starts a fresh Level-1 character with the Wayfarer starter outfit. Your current single-slot save will be overwritten.</p>
@@ -43,7 +53,7 @@
             <button type="button" id="confirm-new-game" class="danger-button">Overwrite & Start</button>
           </div>
         </section>
-        <small class="start-version">v0.1.4.4.5.3.1 • save schema 2</small>
+        <small class="start-version">v0.1.4.4.5.4 • save schema 2</small>
       </div>
     </section>
 
@@ -97,6 +107,7 @@
           <button type="button" id="skill-button-1" class="skill-button" data-skill-slot="1" aria-label="Skill 2" disabled><span>II</span><small>Locked</small><b></b></button>
           <button type="button" id="skill-button-2" class="skill-button" data-skill-slot="2" aria-label="Skill 3" disabled><span>III</span><small>Locked</small><b></b></button>
         </div>
+        <button type="button" id="mythic-bank-toggle" class="mythic-bank-toggle hidden" aria-label="Switch mythic ability bank">Skills I</button>
         <button type="button" id="attack-button" class="round-button attack" aria-label="Attack">Attack</button>
       </div>
     </section>
@@ -244,7 +255,7 @@
         </div>
       </details>
     </aside>
-    <div id="build-label">v0.1.4.4.5.3.1 • save schema 2</div>
+    <div id="build-label">v0.1.4.4.5.4 • save schema 2</div>
   </main>
 
   <script src="vendor/phaser.min.js"></script>

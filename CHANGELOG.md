@@ -1,5 +1,19 @@
 # Changelog
 
+## v0.1.4.4.5.4 — Azrael Mythic Freeplay Foundation
+
+- Added a normal-title-screen **Mythic Freeplay** entry with **Azrael** as the first and only playable mythic in this pass.
+- Freeplay creates a disposable fresh session directly on the Celestial side of the Veil Warfront; it never calls save reset/write and therefore never replaces the campaign slot. Save schema remains 2 and `hellrpg.ashfall.save.v1` is unchanged.
+- Added a separate `AzraelFreeplayController` for human joystick/input control. Azrael's existing autonomous AI actor/controller remains the normal-game path and is not used while the player controls him.
+- Reused Azrael's exact existing Level-99/apex stats, compact runtime art, CombatSystem ability implementations, cooldowns, major-skill pacing, VFX and audio. No duplicate freeplay ability definitions were created.
+- Added a dedicated Mythic Combat HUD: **Strike** performs Celestial Strike, while two three-skill banks expose Wing Burst, Judgment Blast, Sanctified Nova, Seraphic Judgment, Sanctuary of the First Light and Heavenfall with real cooldown/major-lock feedback.
+- Azrael's compact runtime assets follow the disposable session across existing maps so normal transitions/roaming remain possible without preloading his preserved full source sheet.
+- Freeplay NPCs remain available for ambient conversation, but quest acceptance/turn-in, merchant progression, loot/POI/recovery interaction, inventory/stat mutation, kill rewards and all save writes are suppressed.
+- Production Living Warfront remains exactly 32 regular actors. No artwork was added or modified.
+- Lailani, El’exis, Bloodwing, Zerakoth, the Dreadknight, the Debug Battle Arena and normal campaign systems are otherwise preserved.
+
+Physical iPhone Safari remains the release gate. Validate Azrael movement/aiming, both skill banks, all seven abilities, map transitions, death/respawn behavior and—most importantly—that returning to the normal campaign still leaves autonomous Azrael unchanged.
+
 ## v0.1.4.4.5.3.1 — Debug Panel Docking Hotfix
 
 - Added an explicit **Minimize** control to the `?debug=1` panel after physical iPhone testing showed the full battle-arena selector obscured too much of the battlefield.

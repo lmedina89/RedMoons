@@ -5,6 +5,7 @@ import { CONSUMABLE_EFFECT_DEFS, MERCHANT_SUPPLY_DEFS } from './data/consumables
 import { DEBUG, RARITY } from './config.js';
 import { gameEvents } from './core/EventBus.js';
 import { equipmentBonuses, previewDerivedStats, statBreakdown, xpForLevel } from './systems/StatsSystem.js';
+import { AZRAEL_DEF } from './data/specialActors.js';
 
 const $ = selector => document.querySelector(selector);
 const EQUIPMENT_SLOTS = Object.freeze([
@@ -31,8 +32,10 @@ export class UIManager {
     this.toastPriority = -1;
     this.toastCooldowns = new Map();
     this.debugPanelMinimized = false;
+    this.mythicSkillBank = 0;
     this.bindEvents();
     this.bindTouchControls();
+    $('#mythic-bank-toggle')?.addEventListener('click', () => { this.mythicSkillBank = this.mythicSkillBank ? 0 : 1; this.renderHud(); });
     if (DEBUG) {
       $('#debug-panel').classList.remove('hidden');
       $('#debug-panel-toggle')?.addEventListener('click', () => this.setDebugPanelMinimized(!this.debugPanelMinimized));
@@ -143,7 +146,9 @@ export class UIManager {
     $('#interact-button').addEventListener('pointerup', event => { event.preventDefault(); gameEvents.emit('command', { type: 'interact' }); });
     document.querySelectorAll('[data-skill-slot]').forEach(button => button.addEventListener('pointerdown', event => {
       event.preventDefault();
-      if (!button.disabled) gameEvents.emit('command', { type: 'skill', slot: Number(button.dataset.skillSlot) });
+      if (button.disabled) return;
+      if (button.dataset.mythicAbility) gameEvents.emit('command', { type: 'mythicAbility', abilityId: button.dataset.mythicAbility });
+      else gameEvents.emit('command', { type: 'skill', slot: Number(button.dataset.skillSlot) });
     }));
     document.querySelectorAll('[data-quick-consumable]').forEach(button => button.addEventListener('pointerdown', event => {
       event.preventDefault();
@@ -155,6 +160,63 @@ export class UIManager {
     if (!this.snapshot) return;
     const { state, derived, quests } = this.snapshot;
     const player = state.player;
+    const freeplay = this.snapshot.freeplay;
+    const isAzraelFreeplay = freeplay?.mode === 'azrael_freeplay';
+    $('#hud')?.classList.toggle('mythic-freeplay', Boolean(isAzraelFreeplay));
+    $('#touch-controls')?.classList.toggle('mythic-freeplay', Boolean(isAzraelFreeplay));
+    $('#mythic-bank-toggle')?.classList.toggle('hidden', !isAzraelFreeplay);
+    if (isAzraelFreeplay) {
+      const azrael = this.snapshot.azrael || {};
+      const hp = Math.max(0, Number(azrael.hp) || 0);
+      const maxHp = Math.max(1, Number(azrael.maxHp) || AZRAEL_DEF.maxHp);
+      $('#hud-level').textContent = 'Lv. ???';
+      $('#hud-coins').textContent = 'AZRAEL • FREEPLAY';
+      $('#hp-text').textContent = `${Math.ceil(hp)} / ${maxHp}`;
+      $('#hp-fill').style.width = `${Math.max(0, Math.min(100, hp / maxHp * 100))}%`;
+      $('#quest-tracker').innerHTML = '';
+      const interaction = this.snapshot.interaction || { available: false, label: 'Use', detail: 'Nothing nearby' };
+      const interactButton = $('#interact-button');
+      interactButton.textContent = interaction.label || 'Use';
+      interactButton.classList.toggle('available', Boolean(interaction.available));
+      interactButton.classList.toggle('inactive', !interaction.available);
+      interactButton.setAttribute('aria-label', interaction.available ? `${interaction.label || 'Use'}: ${interaction.detail || 'nearby interaction'}` : 'Interact');
+      $('#attack-button').textContent = 'Strike';
+      $('#attack-button').setAttribute('aria-label', 'Celestial Strike');
+      const banks = [
+        ['wingBurst', 'judgmentBlast', 'sanctifiedNova'],
+        ['seraphicJudgment', 'sanctuaryFirstLight', 'heavenfall']
+      ];
+      const keys = banks[this.mythicSkillBank] || banks[0];
+      const cooldowns = azrael.cooldowns || {};
+      keys.forEach((key, slot) => {
+        const ability = AZRAEL_DEF.abilities[key];
+        const button = $(`#skill-button-${slot}`);
+        if (!button || !ability) return;
+        const remaining = Math.max(0, Number(cooldowns[ability.id]) || 0);
+        const majorLockRemaining = ability.major ? Math.max(0, Number(freeplay.majorLockRemaining) || 0) : 0;
+        const displayedRemaining = Math.max(remaining, majorLockRemaining);
+        button.disabled = displayedRemaining > 0 || Boolean(freeplay.actionLocked);
+        button.dataset.mythicAbility = ability.id;
+        button.dataset.rank = '';
+        button.classList.toggle('cooling', displayedRemaining > 0);
+        button.classList.remove('unavailable');
+        button.querySelector('span').textContent = String(slot + 1);
+        button.querySelector('small').textContent = ability.name.replace('Sanctuary of the First Light', 'Sanctuary').replace('Seraphic Judgment', 'Seraphic').replace('Sanctified Nova', 'Nova').replace('Judgment Blast', 'Judgment').replace('Wing Burst', 'Wing Burst').replace('Heavenfall', 'Heavenfall');
+        button.querySelector('b').textContent = displayedRemaining > 0 ? `${Math.ceil(displayedRemaining / 1000)}s` : '';
+        const fraction = ability.cooldownMs > 0 ? Math.max(0, Math.min(1, displayedRemaining / ability.cooldownMs)) : 0;
+        button.style.setProperty('--cooldown-angle', `${Math.round(fraction * 360)}deg`);
+        button.setAttribute('aria-label', `${ability.name}${displayedRemaining > 0 ? `, ${Math.ceil(displayedRemaining / 1000)} seconds until ready` : ''}`);
+      });
+      const bankToggle = $('#mythic-bank-toggle');
+      if (bankToggle) bankToggle.textContent = this.mythicSkillBank ? 'Skills II' : 'Skills I';
+      const statusStrip = $('#status-strip');
+      if (statusStrip) statusStrip.innerHTML = `<span class="status-chip status-buff">ARCHANGEL AZRAEL<b>FREEPLAY</b></span>${freeplay.actionName ? `<span class="status-chip">${freeplay.actionName}</span>` : ''}`;
+      if (DEBUG) this.renderDebugControls();
+      return;
+    }
+    $('#attack-button').textContent = 'Attack';
+    $('#attack-button').setAttribute('aria-label', 'Attack');
+    for (let slot = 0; slot < 3; slot += 1) $(`#skill-button-${slot}`)?.removeAttribute('data-mythic-ability');
     $('#hud-level').textContent = `Lv. ${player.level}`;
     $('#hud-coins').textContent = `${player.currency} ash`;
     $('#hp-text').textContent = `${Math.ceil(player.hp)} / ${derived.maxHp}`;

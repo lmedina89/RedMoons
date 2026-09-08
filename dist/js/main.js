@@ -2,6 +2,7 @@ import { DEBUG } from './config.js';
 import { SaveManager } from './core/SaveManager.js';
 import { WorldScene } from './scenes/WorldScene.js';
 import { UIManager } from './ui.js';
+import { createDefaultState } from './core/GameState.js';
 
 window.__ashfallTouchMoving = false;
 window.__ashfallRun = false;
@@ -17,6 +18,10 @@ const startScreen = $('#start-screen');
 const continueButton = $('#continue-game');
 const loadButton = $('#load-game');
 const newButton = $('#new-game');
+const mythicButton = $('#mythic-freeplay');
+const mythicPanel = $('#mythic-freeplay-panel');
+const azraelFreeplayButton = $('#freeplay-azrael');
+const cancelFreeplayButton = $('#cancel-freeplay');
 const loadPanel = $('#load-slot-panel');
 const loadSlotButton = $('#load-slot-button');
 const newConfirm = $('#new-game-confirm');
@@ -51,7 +56,20 @@ function refreshStartScreen() {
   }
 }
 
-function bootGame(state) {
+
+function createAzraelFreeplayState() {
+  const state = createDefaultState();
+  state.sessionMode = 'azrael_freeplay';
+  state.player.mapId = 'map_veil_warfront';
+  state.player.entryPointId = 'azrael_freeplay';
+  state.player.x = 5550;
+  state.player.y = 1710;
+  // Freeplay is disposable. This state is deliberately never handed to SaveManager.save().
+  state.worldFlags.introToastShown = true;
+  return state;
+}
+
+function bootGame(state, options = {}) {
   if (game) return;
   startScreen.classList.add('hidden');
   $('#loading-screen').classList.remove('hidden');
@@ -76,6 +94,7 @@ function bootGame(state) {
       preBoot: gameInstance => {
         gameInstance.registry.set('state', state);
         gameInstance.registry.set('saveManager', saveManager);
+        gameInstance.registry.set('sessionMode', options.sessionMode || state?.sessionMode || null);
       }
     },
     scene: [WorldScene]
@@ -88,9 +107,23 @@ continueButton.addEventListener('click', () => {
   if (existingState) bootGame(existingState);
 });
 
+mythicButton?.addEventListener('click', () => {
+  loadPanel.classList.add('hidden');
+  newConfirm.classList.add('hidden');
+  mythicPanel?.classList.toggle('hidden');
+});
+
+azraelFreeplayButton?.addEventListener('click', () => {
+  const state = createAzraelFreeplayState();
+  bootGame(state, { sessionMode: 'azrael_freeplay' });
+});
+
+cancelFreeplayButton?.addEventListener('click', () => mythicPanel?.classList.add('hidden'));
+
 loadButton.addEventListener('click', () => {
   loadPanel.classList.toggle('hidden');
   newConfirm.classList.add('hidden');
+  mythicPanel?.classList.add('hidden');
 });
 
 loadSlotButton.addEventListener('click', () => {
@@ -99,6 +132,7 @@ loadSlotButton.addEventListener('click', () => {
 
 newButton.addEventListener('click', () => {
   loadPanel.classList.add('hidden');
+  mythicPanel?.classList.add('hidden');
   if (existingState) newConfirm.classList.remove('hidden');
   else {
     const state = saveManager.reset();

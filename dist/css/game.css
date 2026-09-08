@@ -43,7 +43,7 @@ button:active { transform: translateY(1px); filter: brightness(1.25); }
 .start-copy small { color: #a6795d; font: 700 .64rem Arial, sans-serif; letter-spacing: .16em; }
 .start-copy h1 { margin: 2px 0 3px; color: var(--gold); font-size: clamp(1.55rem, 4vw, 2.35rem); letter-spacing: .12em; }
 .start-copy p { margin: 0; color: var(--muted); font: .78rem Arial, sans-serif; }
-.start-actions { grid-column: 1 / -1; display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+.start-actions { grid-column: 1 / -1; display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; }
 .start-actions button { min-height: 48px; }
 .start-actions button:first-child { border-color: #bd7547; color: #ffe0a3; background: linear-gradient(#5b2d20, #2d1510); }
 .start-actions button:disabled, .start-subpanel button:disabled { opacity: .42; cursor: not-allowed; }
@@ -306,3 +306,26 @@ button:active { transform: translateY(1px); filter: brightness(1.25); }
   .recovery-button { width: 48px; height: 48px; min-height: 48px; }
 }
 .status-recovery { border-color: #5f9a69; color: #b9edc1; }
+
+/* v0.1.4.4.5.4 — disposable Azrael Mythic Freeplay. */
+#mythic-freeplay { border-color: #9b8144; color: #f7e6a7; background: linear-gradient(#44351c, #20170e); }
+.mythic-freeplay-panel { border-left: 3px solid #e4c66d; }
+.mythic-freeplay-panel > strong { color: #f6dc83; letter-spacing: .11em; font-size: .72rem; }
+.mythic-choice-row { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin: 8px 0; }
+.mythic-choice-row button { min-height: 54px; display: grid; align-content: center; gap: 3px; }
+.mythic-choice-row button span { color: #ffe89c; font-weight: 800; letter-spacing: .08em; }
+.mythic-choice-row button small { color: #bfb69a; font: .62rem Arial, sans-serif; }
+.subtle-button { min-height: 34px; padding: 5px 12px; opacity: .82; }
+.mythic-bank-toggle { position: absolute; right: 164px; bottom: 76px; width: 66px; min-height: 40px; padding: 3px 5px; border-radius: 18px; border-color: #b59a52; background: linear-gradient(#4c421f, #1e180c); color: #ffedaf; font: 800 .58rem Arial, sans-serif; pointer-events: auto; touch-action: manipulation; }
+#hud.mythic-freeplay .hud-actions [data-panel], #hud.mythic-freeplay #save-button, #hud.mythic-freeplay #quest-tracker { display: none; }
+#hud.mythic-freeplay .portrait { color: #fff0a2; border-color: #d5b354; background: radial-gradient(circle, #75612d, #21170c 72%); }
+#hud.mythic-freeplay .bar.essence, #hud.mythic-freeplay .bar.xp { display: none; }
+#hud.mythic-freeplay .hud-vitals { height: 65px; border-left-color: #e4c35e; }
+#touch-controls.mythic-freeplay .recovery-cluster { display: none; }
+#touch-controls.mythic-freeplay #attack-button { color: #fff0b5; border-color: #d2aa46; background: radial-gradient(circle at 40% 32%, #806427, #291c0d 72%); }
+#touch-controls.mythic-freeplay .skill-button { border-color: #a98b44; background: radial-gradient(circle at 45% 30%, #5d4c22, #21180d 72%); }
+#touch-controls.mythic-freeplay .skill-button span { color: #fff0ad; }
+@media (max-height: 430px) {
+  .start-actions { grid-template-columns: repeat(4, 1fr); }
+  .mythic-choice-row button { min-height: 44px; }
+}

@@ -1,4 +1,16 @@
-# Hell RPG v0.1.4.4.5.3.1 — Debug Panel Docking Hotfix
+# Hell RPG v0.1.4.4.5.4 — Azrael Mythic Freeplay Foundation
+
+## v0.1.4.4.5.4 Azrael Mythic Freeplay Foundation
+
+- The title menu now exposes **Mythic Freeplay** alongside Continue, New Game and Load Save.
+- **Azrael** is the only selectable mythic in this first pass. He begins on the safer Celestial side of the Veil Warfront with his real Level-99/apex combat identity and full existing seven-skill kit.
+- Mythic Freeplay is disposable: it does not overwrite/delete the campaign slot, cannot save, grants no XP/ash/loot/quest progress and disables inventory/stat/merchant progression. NPC conversation and normal map travel remain available.
+- Human control lives in a separate `AzraelFreeplayController`; normal autonomous Azrael continues through his existing AI path whenever Freeplay is not active.
+- The Mythic HUD uses **Strike** plus two three-skill banks to expose all seven real Azrael abilities without cramming seven buttons onto the iPhone combat wheel. Existing ability damage, cooldowns, pacing, VFX and audio are reused rather than duplicated.
+- Azrael's compact runtime action crops stream with the Freeplay session across existing maps. No source or runtime art is changed.
+- Save schema remains **2**, `hellrpg.ashfall.save.v1` is unchanged, and the production Living Warfront remains **32 regular actors**.
+
+Physical iPhone Safari remains the release gate. Test Azrael Freeplay first, then launch the normal campaign and verify his autonomous behavior still feels exactly like the approved build.
 
 ## v0.1.4.4.5.3.1 Debug Panel Docking Hotfix
 
